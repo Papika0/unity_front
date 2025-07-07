@@ -5,7 +5,6 @@ import AboutSection from '../components/home/AboutSection.vue'
 import ProjectsSection from '../components/home/ProjectsSection.vue'
 import FeaturedProject from '../components/home/FeaturedProject.vue'
 import NewsSection from '../components/home/NewsSection.vue'
-import NewsletterSection from '../components/home/NewsletterSection.vue'
 
 const { t } = useTranslations()
 </script>
@@ -17,7 +16,6 @@ const { t } = useTranslations()
     <ProjectsSection />
     <FeaturedProject />
     <NewsSection />
-    <NewsletterSection />
   </div>
 </template>
 
