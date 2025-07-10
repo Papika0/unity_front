@@ -3,6 +3,8 @@ import HomeView from '../views/HomeView.vue'
 import AboutView from '../views/AboutView.vue'
 import ProjectsView from '../views/ProjectsView.vue'
 import ProjectDetailView from '../views/ProjectDetailView.vue'
+import NewsView from '../views/NewsView.vue'
+import NewsDetailView from '../views/NewsDetailView.vue'
 import ContactView from '../views/ContactView.vue'
 import GalleryView from '../views/GalleryView.vue'
 
@@ -28,6 +30,16 @@ const router = createRouter({
       path: '/projects/:id',
       name: 'project-detail',
       component: ProjectDetailView,
+    },
+    {
+      path: '/news',
+      name: 'news',
+      component: NewsView,
+    },
+    {
+      path: '/news/:id',
+      name: 'news-detail',
+      component: NewsDetailView,
     },
     {
       path: '/contact',
