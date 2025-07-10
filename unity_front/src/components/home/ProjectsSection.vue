@@ -1,36 +1,35 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useTranslations } from '../../composables/useTranslations'
+import { useProjectsStore } from '../../stores/projects'
 
 const { t } = useTranslations()
+const projectsStore = useProjectsStore()
 
-const projects = [
-  {
-    id: 1,
-    title: t('projects.project1'),
-    address: t('projects.address1'),
-    status: t('projects.status1'),
-    statusColor: 'text-amber-300',
-    image: 'https://placehold.co/447x507',
-  },
-  {
-    id: 2,
-    title: t('projects.project2'),
-    address: t('projects.address2'),
-    status: t('projects.status2'),
-    statusColor: 'text-amber-300',
-    image: 'https://placehold.co/448x506',
-    overlay: true,
-  },
-  {
-    id: 3,
-    title: t('projects.project3'),
-    address: t('projects.address3'),
-    status: t('projects.status3'),
-    statusColor: 'text-amber-300',
-    image: 'https://placehold.co/447x507',
-    overlay: true,
-  },
-]
+const statusColorMap = {
+  ongoing: 'text-amber-300',
+  completed: 'text-green-400',
+  planning: 'text-blue-400',
+}
+
+const statusTextMap = {
+  ongoing: 'მიმდინარე',
+  completed: 'დასრულებული',
+  planning: 'დაგეგმილი',
+}
+
+// Get first 3 active projects for homepage display
+const displayProjects = computed(() =>
+  projectsStore.activeProjects.slice(0, 3).map((project, index) => ({
+    id: project.id,
+    title: project.title.ka,
+    address: project.location.ka,
+    status: statusTextMap[project.status],
+    statusColor: statusColorMap[project.status],
+    image: project.main_image || 'https://placehold.co/447x507',
+    overlay: index > 0, // Apply overlay to projects after the first one
+  })),
+)
 </script>
 
 <template>
@@ -46,7 +45,7 @@ const projects = [
 
       <!-- Projects Grid -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-        <div v-for="project in projects" :key="project.id" class="relative">
+        <div v-for="project in displayProjects" :key="project.id" class="relative">
           <div class="relative">
             <img :src="project.image" :alt="project.title" class="w-full h-[507px] object-cover" />
             <div v-if="project.overlay" class="absolute inset-0 bg-zinc-900/50"></div>
@@ -72,11 +71,12 @@ const projects = [
           <div
             class="h-28 bg-gradient-to-b from-amber-300 via-amber-400 to-yellow-600 flex items-center px-8"
           >
-            <span
-              class="text-black text-2xl font-normal font-roboto uppercase leading-tight tracking-[3.36px]"
+            <router-link
+              :to="`/projects/${project.id}`"
+              class="text-black text-2xl font-normal font-roboto uppercase leading-tight tracking-[3.36px] hover:opacity-80 transition-opacity"
             >
               {{ t('projects.discover') }} {{ project.title }}
-            </span>
+            </router-link>
           </div>
         </div>
       </div>

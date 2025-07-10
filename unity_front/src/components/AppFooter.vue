@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
+import { useProjectsStore } from '../stores/projects'
 
 const { t } = useTranslations()
+const projectsStore = useProjectsStore()
 
 const businessLinks = [
   { key: 'footer.home', path: '/' },
@@ -13,14 +16,14 @@ const businessLinks = [
   { key: 'footer.cookies', path: '/cookies' },
 ]
 
-const projectLinks = [
-  { key: 'footer.project1', path: '/projects/1' },
-  { key: 'footer.project2', path: '/projects/2' },
-  { key: 'footer.project3', path: '/projects/3' },
-  { key: 'footer.project4', path: '/projects/4' },
-  { key: 'footer.project5', path: '/projects/5' },
-  { key: 'footer.project6', path: '/projects/6' },
-]
+// Get first 6 active projects for footer links
+const projectLinks = computed(() =>
+  projectsStore.activeProjects.slice(0, 6).map((project) => ({
+    id: project.id,
+    title: project.title.ka,
+    path: `/projects/${project.id}`,
+  })),
+)
 
 const socialLinks = [
   { key: 'footer.facebook', url: '#' },
@@ -33,17 +36,34 @@ const socialLinks = [
 <template>
   <footer class="bg-white text-zinc-900 py-16 px-4">
     <div class="max-w-7xl mx-auto">
-      <!-- Newsletter Section -->
+      <!-- Contact Call-to-Action Section -->
       <div class="mb-16">
-        <div class="flex justify-between items-center border-b border-zinc-900/20 pb-4 mb-8">
-          <h2 class="text-xl font-normal font-roboto leading-loose">გახდით ჩვენი გამომწერი</h2>
-          <button
-            class="text-base font-normal font-roboto uppercase leading-relaxed tracking-widest text-zinc-900 hover:text-zinc-600"
-          >
-            Subscribe
-          </button>
+        <div
+          class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-zinc-900/20 pb-6 mb-8"
+        >
+          <div class="mb-4 md:mb-0">
+            <h2 class="text-2xl font-normal font-roboto leading-loose mb-2">
+              მოვუსმინოთ თქვენს იდეებს
+            </h2>
+            <p class="text-base font-normal font-roboto leading-relaxed text-zinc-600">
+              გვითხარით თქვენი პროექტის შესახებ და ჩვენ დაგეხმარებით მის განხორციელებაში
+            </p>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <router-link
+              to="/contact"
+              class="px-6 py-3 bg-zinc-900 text-white text-sm font-normal font-roboto uppercase leading-relaxed tracking-widest hover:bg-zinc-800 transition-colors duration-200 text-center"
+            >
+              კონტაქტი
+            </router-link>
+            <a
+              href="tel:995577300333"
+              class="px-6 py-3 border border-zinc-900 text-zinc-900 text-sm font-normal font-roboto uppercase leading-relaxed tracking-widest hover:bg-zinc-900 hover:text-white transition-colors duration-200 text-center"
+            >
+              ზარის მოთხოვნა
+            </a>
+          </div>
         </div>
-        <div class="border-b border-zinc-900/20"></div>
       </div>
 
       <!-- Main Footer Content -->
@@ -115,52 +135,12 @@ const socialLinks = [
         <div>
           <h3 class="text-lg font-normal font-roboto leading-normal mb-6">პროექტები</h3>
           <ul class="space-y-4">
-            <li>
+            <li v-for="project in projectLinks" :key="project.id">
               <router-link
-                to="/projects/1"
+                :to="project.path"
                 class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
               >
-                პროექტი 1
-              </router-link>
-            </li>
-            <li>
-              <router-link
-                to="/projects/2"
-                class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
-              >
-                პროექტი 2
-              </router-link>
-            </li>
-            <li>
-              <router-link
-                to="/projects/3"
-                class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
-              >
-                პროექტი 3
-              </router-link>
-            </li>
-            <li>
-              <router-link
-                to="/projects/4"
-                class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
-              >
-                პროექტი 4
-              </router-link>
-            </li>
-            <li>
-              <router-link
-                to="/projects/5"
-                class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
-              >
-                პროექტი 5
-              </router-link>
-            </li>
-            <li>
-              <router-link
-                to="/projects/6"
-                class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
-              >
-                პროექტი 6
+                {{ project.title }}
               </router-link>
             </li>
           </ul>
