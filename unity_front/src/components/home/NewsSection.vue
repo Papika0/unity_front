@@ -24,7 +24,7 @@ const newsItems = [
       >
         {{ t('news.title') }}
       </h3>
-      <div class="h-6 bg-amber-300 mb-12"></div>
+      <img src="../../assets/Vector_10.png" alt="" class="mb-12" />
 
       <div class="space-y-16">
         <div v-for="(news, index) in newsItems" :key="index" class="space-y-8">

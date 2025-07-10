@@ -41,7 +41,7 @@ const displayProjects = computed(() =>
       >
         {{ t('projects.title') }}
       </h2>
-      <div class="h-7 bg-amber-300 mb-16"></div>
+      <img src="../../assets/Vector_10.png" alt="" class="mb-16" />
 
       <!-- Projects Grid -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
