@@ -76,7 +76,8 @@ export const useNewsStore = defineStore('news', () => {
       tags: ['uniTY ბალანსი', 'მშენებლობა', 'ვაკე', 'პირველი ეტაპი'],
       views: 1250,
       meta_title: 'უნიტიმ დაასრულა uniTY ბალანსის პირველი ეტაპი',
-      meta_description: 'უნიტიმ წარმატებით დაასრულა uniTY ბალანსის პირველი ეტაპი - 120 ბინიანი თანამედროვე საცხოვრებელი კომპლექსი ვაკეში.',
+      meta_description:
+        'უნიტიმ წარმატებით დაასრულა uniTY ბალანსის პირველი ეტაპი - 120 ბინიანი თანამედროვე საცხოვრებელი კომპლექსი ვაკეში.',
       created_at: '2024-07-01T08:30:00Z',
       updated_at: '2024-07-01T09:00:00Z',
     },
@@ -124,7 +125,8 @@ export const useNewsStore = defineStore('news', () => {
       tags: ['თანამშრომლობა', 'ასოციაცია', 'გერმანია', 'საერთაშორისო'],
       views: 890,
       meta_title: 'უნიტი ქართულ-გერმანული ბიზნეს ასოციაციის წევრი გახდა',
-      meta_description: 'უნიტი გახდა ქართულ-გერმანული ბიზნეს ასოციაციის წევრი, რაც ხაზს უსვამს ევროპული სტანდარტების დანერგვისადმი ჩვენს მისწრაფებას.',
+      meta_description:
+        'უნიტი გახდა ქართულ-გერმანული ბიზნეს ასოციაციის წევრი, რაც ხაზს უსვამს ევროპული სტანდარტების დანერგვისადმი ჩვენს მისწრაფებას.',
       created_at: '2024-06-15T13:00:00Z',
       updated_at: '2024-06-15T14:30:00Z',
     },
@@ -175,7 +177,8 @@ export const useNewsStore = defineStore('news', () => {
       tags: ['ტექნოლოგია', 'ინოვაცია', 'BIM', 'ჭკვიანი სახლი'],
       views: 1580,
       meta_title: 'მშენებლობის ინდუსტრიაში ახალი ტექნოლოგიები',
-      meta_description: 'მშენებლობის ინდუსტრიაში ახალი ტექნოლოგიები კარდინალურად ცვლის სფეროს. უნიტი აქტიურად იყენებს ინოვაციურ მიღწევებს.',
+      meta_description:
+        'მშენებლობის ინდუსტრიაში ახალი ტექნოლოგიები კარდინალურად ცვლის სფეროს. უნიტი აქტიურად იყენებს ინოვაციურ მიღწევებს.',
       created_at: '2024-05-20T10:00:00Z',
       updated_at: '2024-05-20T11:15:00Z',
     },
@@ -226,7 +229,8 @@ export const useNewsStore = defineStore('news', () => {
       tags: ['ვორკშოპი', 'ბათუმი', 'მდგრადი განვითარება', 'საერთაშორისო'],
       views: 720,
       meta_title: 'უნიტი მონაწილეობდა საერთაშორისო მშენებლობის ვორკშოპში',
-      meta_description: 'უნიტის წარმომადგენლები მონაწილეობდნენ ბათუმში ჩატარებულ საერთაშორისო მშენებლობის ვორკშოპში "მდგრადი განვითარება 2024".',
+      meta_description:
+        'უნიტის წარმომადგენლები მონაწილეობდნენ ბათუმში ჩატარებულ საერთაშორისო მშენებლობის ვორკშოპში "მდგრადი განვითარება 2024".',
       created_at: '2024-04-10T15:30:00Z',
       updated_at: '2024-04-10T16:45:00Z',
     },
@@ -236,14 +240,16 @@ export const useNewsStore = defineStore('news', () => {
   const error = ref<string | null>(null)
 
   // Getters
-  const activeArticles = computed(() => 
-    articles.value.filter((article) => article.is_active)
-      .sort((a, b) => new Date(b.publish_date).getTime() - new Date(a.publish_date).getTime())
+  const activeArticles = computed(() =>
+    articles.value
+      .filter((article) => article.is_active)
+      .sort((a, b) => new Date(b.publish_date).getTime() - new Date(a.publish_date).getTime()),
   )
 
   const featuredArticles = computed(() =>
-    articles.value.filter((article) => article.is_featured && article.is_active)
-      .sort((a, b) => new Date(b.publish_date).getTime() - new Date(a.publish_date).getTime())
+    articles.value
+      .filter((article) => article.is_featured && article.is_active)
+      .sort((a, b) => new Date(b.publish_date).getTime() - new Date(a.publish_date).getTime()),
   )
 
   const articlesByCategory = computed(() => {
@@ -259,8 +265,8 @@ export const useNewsStore = defineStore('news', () => {
 
   const recentArticles = computed(() => activeArticles.value.slice(0, 5))
 
-  const popularArticles = computed(() => 
-    [...activeArticles.value].sort((a, b) => b.views - a.views).slice(0, 5)
+  const popularArticles = computed(() =>
+    [...activeArticles.value].sort((a, b) => b.views - a.views).slice(0, 5),
   )
 
   // Actions
@@ -269,7 +275,8 @@ export const useNewsStore = defineStore('news', () => {
   }
 
   const getArticlesByCategory = (category: NewsArticle['category']): NewsArticle[] => {
-    return articles.value.filter((article) => article.category === category && article.is_active)
+    return articles.value
+      .filter((article) => article.category === category && article.is_active)
       .sort((a, b) => new Date(b.publish_date).getTime() - new Date(a.publish_date).getTime())
   }
 
@@ -281,12 +288,12 @@ export const useNewsStore = defineStore('news', () => {
         (article.title[lang].toLowerCase().includes(lowercaseQuery) ||
           article.content[lang].toLowerCase().includes(lowercaseQuery) ||
           article.excerpt[lang].toLowerCase().includes(lowercaseQuery) ||
-          article.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery)))
+          article.tags.some((tag) => tag.toLowerCase().includes(lowercaseQuery))),
     )
   }
 
   const incrementViews = (id: number): void => {
-    const article = articles.value.find(article => article.id === id)
+    const article = articles.value.find((article) => article.id === id)
     if (article) {
       article.views++
     }
