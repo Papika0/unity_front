@@ -8,6 +8,16 @@ import NewsDetailView from '../views/NewsDetailView.vue'
 import ContactView from '../views/ContactView.vue'
 import GalleryView from '../views/GalleryView.vue'
 
+// Admin imports
+import AdminLoginView from '../views/admin/AdminLoginView.vue'
+import AdminLayout from '../views/admin/AdminLayout.vue'
+import AdminDashboardView from '../views/admin/AdminDashboardView.vue'
+import AdminProjectsView from '../views/admin/AdminProjectsView.vue'
+import AdminTranslationsView from '../views/admin/AdminTranslationsView.vue'
+
+// Guards
+import { requireAuth, redirectIfAuthenticated } from './guards'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -51,7 +61,61 @@ const router = createRouter({
       name: 'gallery',
       component: GalleryView,
     },
+    // Admin routes
+    {
+      path: '/admin/login',
+      name: 'admin-login',
+      component: AdminLoginView,
+      meta: { requiresGuest: true },
+    },
+    {
+      path: '/admin',
+      component: AdminLayout,
+      beforeEnter: requireAuth,
+      children: [
+        {
+          path: '',
+          redirect: '/admin/dashboard',
+        },
+        {
+          path: 'dashboard',
+          name: 'admin-dashboard',
+          component: AdminDashboardView,
+        },
+        {
+          path: 'projects',
+          name: 'admin-projects',
+          component: AdminProjectsView,
+        },
+        {
+          path: 'translations',
+          name: 'admin-translations',
+          component: AdminTranslationsView,
+        },
+      ],
+    },
   ],
+})
+
+// Initialize auth on app start
+router.beforeEach(async (to, from, next) => {
+  // Initialize auth store if needed
+  const { useAuthStore } = await import('@/stores/auth')
+  const authStore = useAuthStore()
+
+  // Initialize auth if token exists but user is not loaded
+  if (authStore.token && !authStore.user) {
+    authStore.initAuth()
+  }
+
+  // Handle guest-only routes (like login)
+  if (to.meta.requiresGuest && authStore.isAuthenticated) {
+    console.log('Already authenticated, redirecting from login to dashboard')
+    next('/admin/dashboard')
+    return
+  }
+
+  next()
 })
 
 export default router
