@@ -8,6 +8,10 @@ import NewsDetailView from '../views/NewsDetailView.vue'
 import ContactView from '../views/ContactView.vue'
 import GalleryView from '../views/GalleryView.vue'
 
+// Layout imports
+import PublicLayout from '../layouts/PublicLayout.vue'
+import AdminRootLayout from '../layouts/AdminRootLayout.vue'
+
 // Admin imports
 import AdminLoginView from '../views/admin/AdminLoginView.vue'
 import AdminLayout from '../views/admin/AdminLayout.vue'
@@ -21,76 +25,89 @@ import { requireAuth, redirectIfAuthenticated } from './guards'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    // Public routes with header/footer
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
-    },
-    {
-      path: '/about',
-      name: 'about',
-      component: AboutView,
-    },
-    {
-      path: '/projects',
-      name: 'projects',
-      component: ProjectsView,
-    },
-    {
-      path: '/projects/:id',
-      name: 'project-detail',
-      component: ProjectDetailView,
-    },
-    {
-      path: '/news',
-      name: 'news',
-      component: NewsView,
-    },
-    {
-      path: '/news/:id',
-      name: 'news-detail',
-      component: NewsDetailView,
-    },
-    {
-      path: '/contact',
-      name: 'contact',
-      component: ContactView,
-    },
-    {
-      path: '/gallery',
-      name: 'gallery',
-      component: GalleryView,
-    },
-    // Admin routes
-    {
-      path: '/admin/login',
-      name: 'admin-login',
-      component: AdminLoginView,
-      meta: { requiresGuest: true },
-    },
-    {
-      path: '/admin',
-      component: AdminLayout,
-      beforeEnter: requireAuth,
+      component: PublicLayout,
       children: [
         {
           path: '',
-          redirect: '/admin/dashboard',
+          name: 'home',
+          component: HomeView,
         },
         {
-          path: 'dashboard',
-          name: 'admin-dashboard',
-          component: AdminDashboardView,
+          path: 'about',
+          name: 'about',
+          component: AboutView,
         },
         {
           path: 'projects',
-          name: 'admin-projects',
-          component: AdminProjectsView,
+          name: 'projects',
+          component: ProjectsView,
         },
         {
-          path: 'translations',
-          name: 'admin-translations',
-          component: AdminTranslationsView,
+          path: 'projects/:id',
+          name: 'project-detail',
+          component: ProjectDetailView,
+        },
+        {
+          path: 'news',
+          name: 'news',
+          component: NewsView,
+        },
+        {
+          path: 'news/:id',
+          name: 'news-detail',
+          component: NewsDetailView,
+        },
+        {
+          path: 'contact',
+          name: 'contact',
+          component: ContactView,
+        },
+        {
+          path: 'gallery',
+          name: 'gallery',
+          component: GalleryView,
+        },
+      ],
+    },
+    // Admin routes without header/footer
+    {
+      path: '/admin',
+      component: AdminRootLayout,
+      children: [
+        {
+          path: 'login',
+          name: 'admin-login',
+          component: AdminLoginView,
+          meta: { requiresGuest: true },
+        },
+        {
+          path: '',
+          component: AdminLayout,
+          beforeEnter: requireAuth,
+          children: [
+            {
+              path: '',
+              redirect: '/admin/dashboard',
+            },
+            {
+              path: 'dashboard',
+              name: 'admin-dashboard',
+              component: AdminDashboardView,
+            },
+            {
+              path: 'projects',
+              name: 'admin-projects',
+              component: AdminProjectsView,
+            },
+            {
+              path: 'translations',
+              name: 'admin-translations',
+              component: AdminTranslationsView,
+            },
+          ],
         },
       ],
     },
