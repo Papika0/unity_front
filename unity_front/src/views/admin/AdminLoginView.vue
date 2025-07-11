@@ -1,38 +1,45 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-900">
+  <div
+    class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4"
+  >
     <!-- Loading overlay when redirecting -->
-    <div v-if="redirecting" class="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
+    <div
+      v-if="redirecting"
+      class="fixed inset-0 bg-white/95 backdrop-blur-sm flex items-center justify-center z-50"
+    >
       <div class="text-center">
         <div
-          class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"
+          class="animate-spin rounded-full h-10 w-10 border-2 border-amber-500 border-t-transparent mx-auto mb-3"
         ></div>
-        <p class="text-white">Redirecting to dashboard...</p>
+        <p class="text-slate-600 text-sm font-medium">მიმართავს დაშბორდზე...</p>
       </div>
     </div>
 
-    <div class="max-w-md w-full space-y-8">
-      <div class="text-center">
+    <div class="w-full max-w-sm mx-auto">
+      <!-- Header Section -->
+      <div class="text-center mb-6">
         <!-- Logo -->
         <div
-          class="mx-auto h-16 w-16 bg-indigo-600 rounded-lg flex items-center justify-center mb-6"
+          class="mx-auto h-16 w-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm p-2"
         >
-          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-            ></path>
-          </svg>
+          <img
+            src="@/assets/logo_black.png"
+            alt="Unity Logo"
+            class="h-full w-full object-contain"
+          />
         </div>
-        <h2 class="text-3xl font-bold text-white">Admin Portal</h2>
-        <p class="mt-2 text-sm text-gray-400">Sign in to access the admin dashboard</p>
+        <h1 class="text-2xl font-bold text-slate-800 mb-1">ადმინისტრაციული პანელი</h1>
+        <p class="text-slate-500 text-sm">შედით თქვენი ანგარიშით</p>
       </div>
 
-      <div class="bg-white rounded-lg shadow-2xl px-8 py-8">
-        <form class="space-y-6" @submit.prevent="handleLogin">
+      <!-- Login Card -->
+      <div class="bg-white rounded-2xl shadow-lg border border-slate-200/50 p-6 sm:p-8">
+        <form class="space-y-5" @submit.prevent="handleLogin">
+          <!-- Email Field -->
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+            <label for="email" class="block text-sm font-medium text-slate-700 mb-2"
+              >ელ. ფოსტა</label
+            >
             <input
               id="email"
               v-model="form.email"
@@ -40,13 +47,16 @@
               type="email"
               autocomplete="email"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="Enter your email"
+              class="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 placeholder-slate-400 text-slate-700 transition-all duration-200 text-sm"
+              placeholder="თქვენი ელ. ფოსტის მისამართი"
             />
           </div>
 
+          <!-- Password Field -->
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <label for="password" class="block text-sm font-medium text-slate-700 mb-2"
+              >პაროლი</label
+            >
             <input
               id="password"
               v-model="form.password"
@@ -54,81 +64,88 @@
               type="password"
               autocomplete="current-password"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="Enter your password"
+              class="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 placeholder-slate-400 text-slate-700 transition-all duration-200 text-sm"
+              placeholder="თქვენი პაროლი"
             />
           </div>
 
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <input
-                id="remember-me"
-                v-model="form.rememberMe"
-                name="remember-me"
-                type="checkbox"
-                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label for="remember-me" class="ml-2 block text-sm text-gray-700">
-                Remember me
-              </label>
-            </div>
+          <!-- Remember Me -->
+          <div class="flex items-center">
+            <input
+              id="remember-me"
+              v-model="form.rememberMe"
+              name="remember-me"
+              type="checkbox"
+              class="h-4 w-4 text-amber-500 focus:ring-amber-400 border-slate-300 rounded"
+            />
+            <label for="remember-me" class="ml-2 text-sm text-slate-600">დამიმახსოვრე</label>
           </div>
 
+          <!-- Error Message -->
           <div
             v-if="authStore.error"
-            class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm"
+            class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start space-x-2"
           >
-            <div class="flex items-center">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>{{ authStore.error }}</span>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            :disabled="authStore.loading"
+            class="w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
+          >
+            <svg
+              v-if="authStore.loading"
+              class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+            {{ authStore.loading ? 'შესვლა...' : 'შესვლა დაშბორდში' }}
+          </button>
+
+          <!-- Back Link -->
+          <div class="text-center pt-2">
+            <router-link
+              to="/"
+              class="text-sm text-slate-500 hover:text-amber-600 transition-colors duration-200 inline-flex items-center space-x-1"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
               </svg>
-              {{ authStore.error }}
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              :disabled="authStore.loading"
-              class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <span
-                v-if="authStore.loading"
-                class="absolute left-0 inset-y-0 flex items-center pl-3"
-              >
-                <svg
-                  class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-              </span>
-              {{ authStore.loading ? 'Signing in...' : 'Sign in to Dashboard' }}
-            </button>
-          </div>
-
-          <div class="text-center">
-            <router-link to="/" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
-              ← Back to main site
+              <span>დაბრუნება მთავარ საიტზე</span>
             </router-link>
           </div>
         </form>
