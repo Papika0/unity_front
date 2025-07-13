@@ -17,6 +17,7 @@ import AdminLoginView from '../views/admin/AdminLoginView.vue'
 import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminDashboardView from '../views/admin/AdminDashboardView.vue'
 import AdminProjectsView from '../views/admin/AdminProjectsView.vue'
+import AdminProjectDetailView from '../views/admin/AdminProjectDetailView.vue'
 import AdminTranslationsView from '../views/admin/AdminTranslationsView.vue'
 
 // Guards
@@ -101,6 +102,11 @@ const router = createRouter({
               path: 'projects',
               name: 'admin-projects',
               component: AdminProjectsView,
+            },
+            {
+              path: 'projects/:id',
+              name: 'admin-project-detail',
+              component: AdminProjectDetailView,
             },
             {
               path: 'translations',

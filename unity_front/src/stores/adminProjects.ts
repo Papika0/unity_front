@@ -64,6 +64,34 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
     }
   }
 
+  const fetchProject = async (
+    id: number,
+  ): Promise<{ success: boolean; data?: Project; error?: string }> => {
+    try {
+      loading.value = true
+      error.value = ''
+
+      const response = await getProject(id)
+      const project: Project = response.data.data || response.data
+
+      // Update current project and projects array if needed
+      currentProject.value = project
+      const index = projects.value.findIndex((p) => p.id === id)
+      if (index !== -1) {
+        projects.value[index] = project
+      }
+
+      return { success: true, data: project }
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'პროექტის ჩატვირთვა ვერ მოხერხდა'
+      error.value = errorMessage
+      console.error('Error loading project:', err)
+      return { success: false, error: errorMessage }
+    } finally {
+      loading.value = false
+    }
+  }
+
   const addProject = async (projectData: FormData) => {
     try {
       saving.value = true
@@ -166,6 +194,7 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
     // Actions
     loadProjects,
     loadProject,
+    fetchProject,
     addProject,
     editProject,
     removeProject,
