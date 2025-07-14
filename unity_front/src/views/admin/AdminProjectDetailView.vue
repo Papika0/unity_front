@@ -288,9 +288,10 @@ async function fetchProject() {
 
 function editProject() {
   if (project.value) {
-    // Navigate to edit page or open edit modal
-    // For now, we'll just log - you can implement edit functionality
-    console.log('Edit project:', project.value.id)
+    router.push({
+      name: 'admin-project-edit',
+      params: { id: project.value.id.toString() },
+    })
   }
 }
 

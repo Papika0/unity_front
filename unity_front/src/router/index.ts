@@ -104,9 +104,19 @@ const router = createRouter({
               component: AdminProjectsView,
             },
             {
+              path: 'projects/add',
+              name: 'admin-project-add',
+              component: () => import('@/views/admin/AdminProjectAddView.vue'),
+            },
+            {
               path: 'projects/:id',
               name: 'admin-project-detail',
               component: AdminProjectDetailView,
+            },
+            {
+              path: 'projects/:id/edit',
+              name: 'admin-project-edit',
+              component: () => import('@/views/admin/AdminProjectEditView.vue'),
             },
             {
               path: 'translations',

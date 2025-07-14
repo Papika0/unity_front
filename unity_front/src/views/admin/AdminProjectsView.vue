@@ -5,7 +5,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div class="flex-1">
           <h1
-            class="text-4xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent break-words"
+            class="text-4xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent break-words leading-tight py-1"
           >
             პროექტები
           </h1>
@@ -16,7 +16,7 @@
 
         <div class="flex-shrink-0">
           <button
-            @click="showCreateModal = true"
+            @click="goToAddProject"
             class="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-6 py-3 rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 w-full sm:w-auto"
           >
             <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,121 +240,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Create/Edit Modal -->
-      <div
-        v-if="showCreateModal || showEditModal"
-        class="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4 backdrop-blur-sm"
-      >
-        <div
-          class="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-auto transform transition-all duration-300 scale-100"
-        >
-          <div class="p-8">
-            <div class="flex items-center justify-between mb-6">
-              <h3
-                class="text-2xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent"
-              >
-                {{ showEditModal ? 'პროექტის რედაქტირება' : 'ახალი პროექტის შექმნა' }}
-              </h3>
-              <button
-                @click="closeModal"
-                class="text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  ></path>
-                </svg>
-              </button>
-            </div>
-
-            <form @submit.prevent="saveProject" class="space-y-6">
-              <div>
-                <label for="title" class="block text-sm font-semibold text-slate-700 mb-2"
-                  >პროექტის სახელწოდება</label
-                >
-                <input
-                  v-model="projectForm.title"
-                  type="text"
-                  id="title"
-                  required
-                  class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 bg-slate-50 focus:bg-white"
-                  placeholder="შეიყვანეთ პროექტის სახელწოდება"
-                />
-              </div>
-
-              <div>
-                <label for="description" class="block text-sm font-semibold text-slate-700 mb-2"
-                  >აღწერა</label
-                >
-                <textarea
-                  v-model="projectForm.description"
-                  id="description"
-                  rows="4"
-                  required
-                  class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 resize-none bg-slate-50 focus:bg-white"
-                  placeholder="პროექტის დეტალური აღწერა"
-                ></textarea>
-              </div>
-
-              <div>
-                <label for="image" class="block text-sm font-semibold text-slate-700 mb-2"
-                  >პროექტის სურათი</label
-                >
-                <div class="relative">
-                  <input
-                    @change="handleImageChange"
-                    type="file"
-                    id="image"
-                    accept="image/*"
-                    class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 bg-slate-50 focus:bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 file:transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div class="flex gap-4 pt-4">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="flex-1 px-6 py-3 text-sm font-medium text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all duration-200 transform hover:scale-105"
-                >
-                  გაუქმება
-                </button>
-                <button
-                  type="submit"
-                  :disabled="saving"
-                  class="flex-1 px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg"
-                >
-                  <svg
-                    v-if="saving"
-                    class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    ></circle>
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  {{ saving ? 'იწერება...' : 'პროექტის შენახვა' }}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -369,61 +254,14 @@ const router = useRouter()
 const adminProjectsStore = useAdminProjectsStore()
 const backendUrl = import.meta.env.VITE_BACKEND_URL
 
-const showCreateModal = ref(false)
-const showEditModal = ref(false)
-const editingProject = ref<Project | null>(null)
-
 // Use computed properties from the store
 const projects = computed(() => adminProjectsStore.filteredProjects)
 const loading = computed(() => adminProjectsStore.loading)
 const saving = computed(() => adminProjectsStore.saving)
 const error = computed(() => adminProjectsStore.error)
 
-const projectForm = reactive({
-  title: '',
-  description: '',
-  image: null as File | null,
-})
-
-const handleImageChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files[0]) {
-    projectForm.image = target.files[0]
-  }
-}
-
-const saveProject = async () => {
-  try {
-    const formData = new FormData()
-    formData.append('title', projectForm.title)
-    formData.append('description', projectForm.description)
-    if (projectForm.image) {
-      formData.append('main_image', projectForm.image)
-    }
-
-    let result
-    if (showEditModal.value && editingProject.value) {
-      result = await adminProjectsStore.editProject(editingProject.value.id, formData)
-    } else {
-      result = await adminProjectsStore.addProject(formData)
-    }
-
-    if (result.success) {
-      closeModal()
-    } else {
-      console.error('Error saving project:', result.error)
-    }
-  } catch (error) {
-    console.error('Error saving project:', error)
-  }
-}
-
-const editProject = (project: Project) => {
-  editingProject.value = project
-  projectForm.title = project.title
-  projectForm.description = project.description
-  projectForm.image = null
-  showEditModal.value = true
+function goToAddProject() {
+  router.push({ name: 'admin-project-add' })
 }
 
 const deleteProjectConfirm = async (project: Project) => {
@@ -433,15 +271,6 @@ const deleteProjectConfirm = async (project: Project) => {
       console.error('Error deleting project:', result.error)
     }
   }
-}
-
-const closeModal = () => {
-  showCreateModal.value = false
-  showEditModal.value = false
-  editingProject.value = null
-  projectForm.title = ''
-  projectForm.description = ''
-  projectForm.image = null
 }
 
 const goToDetail = (id: number) => {
