@@ -1,243 +1,103 @@
 <template>
-  <div>
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">Translations</h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Manage translations for multiple languages across your application.
-        </p>
-      </div>
-      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-        <button
-          @click="showCreateModal = true"
-          type="button"
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
-        >
-          Add Translation
-        </button>
-      </div>
-    </div>
-
-    <!-- Search Bar -->
-    <div class="mt-6">
-      <div class="max-w-lg">
-        <label for="search" class="sr-only">Search translations</label>
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg
-              class="h-5 w-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div class="container mx-auto px-6 py-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1
+              class="text-4xl font-light bg-gradient-to-r from-indigo-500 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2 tracking-tight"
             >
+              თარგმანების მართვა
+            </h1>
+            <p class="text-slate-600 text-lg font-light">მართეთ აპლიკაციის თარგმანები სამ ენაზე</p>
+          </div>
+          <button
+            @click="showCreateModal = true"
+            class="inline-flex items-center gap-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-2xl font-medium shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                d="M12 4v16m8-8H4"
               ></path>
             </svg>
-          </div>
-          <input
-            v-model="searchQuery"
-            @input="debounceSearch"
-            type="text"
-            id="search"
-            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Search translations..."
-          />
+            ახალი თარგმანი
+          </button>
         </div>
       </div>
-    </div>
 
-    <!-- Translations Table -->
-    <div class="mt-8 flex flex-col">
-      <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Key
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    English
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Georgian
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Updated
-                  </th>
-                  <th scope="col" class="relative px-6 py-3">
-                    <span class="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="translation in translations" :key="translation.id">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">
-                      {{ translation.key }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="text-sm text-gray-900 max-w-xs">
-                      {{ translation.en }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="text-sm text-gray-900 max-w-xs">
-                      {{ translation.ka }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ formatDate(translation.updated_at) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      @click="editTranslation(translation)"
-                      class="text-indigo-600 hover:text-indigo-900 mr-4"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      @click="deleteTranslationConfirm(translation)"
-                      class="text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+      <!-- Search Bar -->
+      <div class="mb-8">
+        <SearchBar
+          v-model="searchQuery"
+          placeholder="ძიება თარგმანებში..."
+          @update:model-value="debounceSearch"
+        />
+      </div>
+
+      <!-- Translations Table -->
+      <div class="mb-4">
+        <div class="text-sm text-slate-700 mb-4 font-medium">
+          <span v-if="totalPages > 1"> გვერდი {{ currentPage }} / {{ totalPages }} სულ </span>
+          <span v-else> სულ {{ translations.length }} თარგმანი </span>
+        </div>
+
+        <!-- Loading State -->
+        <div v-if="loading" class="flex items-center justify-center py-12">
+          <div class="flex items-center space-x-3">
+            <svg class="animate-spin w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <span class="text-slate-700 font-medium">იტვირთება...</span>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Pagination -->
-    <div v-if="totalPages > 1" class="mt-6 flex items-center justify-between">
-      <div class="flex-1 flex justify-between sm:hidden">
-        <button
-          @click="previousPage"
-          :disabled="currentPage === 1"
-          class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <button
-          @click="nextPage"
-          :disabled="currentPage === totalPages"
-          class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-        >
-          Next
-        </button>
+        <!-- Translations Table -->
+        <TranslationTable
+          v-else
+          :translations="translations"
+          @edit="editTranslation"
+          @delete="deleteTranslationConfirm"
+        />
       </div>
-      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-        <div>
-          <p class="text-sm text-gray-700">Showing page {{ currentPage }} of {{ totalPages }}</p>
-        </div>
-        <div>
-          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-            <button
-              @click="previousPage"
-              :disabled="currentPage === 1"
-              class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </nav>
-        </div>
-      </div>
-    </div>
 
-    <!-- Create/Edit Modal -->
-    <div
-      v-if="showCreateModal || showEditModal"
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-    >
-      <div
-        class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white"
-      >
-        <div class="mt-3">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">
-            {{ showEditModal ? 'Edit Translation' : 'Create New Translation' }}
-          </h3>
-          <form @submit.prevent="saveTranslation">
-            <div class="mb-4">
-              <label for="key" class="block text-sm font-medium text-gray-700">Key</label>
-              <input
-                v-model="translationForm.key"
-                type="text"
-                id="key"
-                required
-                :disabled="showEditModal"
-                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100"
-                placeholder="e.g., home.welcome_message"
-              />
-            </div>
-            <div class="mb-4">
-              <label for="en" class="block text-sm font-medium text-gray-700">English</label>
-              <textarea
-                v-model="translationForm.en"
-                id="en"
-                rows="3"
-                required
-                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="English translation"
-              ></textarea>
-            </div>
-            <div class="mb-4">
-              <label for="ka" class="block text-sm font-medium text-gray-700">Georgian</label>
-              <textarea
-                v-model="translationForm.ka"
-                id="ka"
-                rows="3"
-                required
-                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="ქართული თარგმანი"
-              ></textarea>
-            </div>
-            <div class="flex justify-end space-x-3">
-              <button
-                type="button"
-                @click="closeModal"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                :disabled="saving"
-                class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50"
-              >
-                {{ saving ? 'Saving...' : 'Save' }}
-              </button>
-            </div>
-          </form>
-        </div>
+      <!-- Pagination -->
+      <div class="mt-8">
+        <Pagination
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          @previous="previousPage"
+          @next="nextPage"
+          @goto="goToPage"
+        />
       </div>
+
+      <!-- Create/Edit Modal -->
+      <TranslationModal
+        :is-open="showCreateModal || showEditModal"
+        :is-edit="showEditModal"
+        :form="translationForm"
+        :saving="saving"
+        :translating="translating"
+        @close="closeModal"
+        @submit="saveTranslation"
+        @translate="translateText"
+      />
     </div>
   </div>
 </template>
@@ -251,11 +111,14 @@ import {
   deleteTranslation,
 } from '@/services/translations'
 import type { Translation } from '@/types'
+import { TranslationTable, TranslationModal, SearchBar, Pagination } from '@/components/admin'
 
 const translations = ref<Translation[]>([])
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const saving = ref(false)
+const translating = ref(false)
+const loading = ref(false)
 const searchQuery = ref('')
 const currentPage = ref(1)
 const totalPages = ref(1)
@@ -263,19 +126,45 @@ const editingTranslation = ref<Translation | null>(null)
 
 const translationForm = reactive({
   key: '',
-  en: '',
-  ka: '',
+  text_en: '',
+  text_ka: '',
+  text_ru: '',
+  group: 'general',
+  active: true,
 })
 
 let searchTimeout: number
 
 const loadTranslations = async () => {
   try {
+    loading.value = true
     const response = await getTranslations(currentPage.value, searchQuery.value)
-    translations.value = response.data.data || response.data
-    totalPages.value = Math.ceil((response.data.total || translations.value.length) / 10)
+
+    // Handle different API response structures
+    if (response.data.data && Array.isArray(response.data.data)) {
+      // Laravel paginated response structure
+      translations.value = response.data.data
+      if (response.data.meta) {
+        totalPages.value = response.data.meta.last_page || 1
+        currentPage.value = response.data.meta.current_page || 1
+      } else {
+        totalPages.value = Math.ceil((response.data.total || translations.value.length) / 15)
+      }
+    } else if (Array.isArray(response.data)) {
+      // Simple array response
+      translations.value = response.data
+      totalPages.value = 1
+    } else {
+      // Fallback
+      translations.value = []
+      totalPages.value = 1
+    }
   } catch (error) {
     console.error('Error loading translations:', error)
+    translations.value = []
+    totalPages.value = 1
+  } finally {
+    loading.value = false
   }
 }
 
@@ -287,14 +176,78 @@ const debounceSearch = () => {
   }, 300)
 }
 
+const translateText = async (fromLang: string, toLang: string) => {
+  if (translating.value) return
+
+  const sourceText = translationForm[`text_${fromLang}` as keyof typeof translationForm]
+  if (!sourceText || typeof sourceText !== 'string') return
+
+  try {
+    translating.value = true
+    // Mock translation - replace with real translation service
+    const translatedText = await mockTranslate(sourceText, fromLang, toLang)
+
+    if (toLang === 'en') {
+      translationForm.text_en = translatedText
+    } else if (toLang === 'ru') {
+      translationForm.text_ru = translatedText
+    }
+  } catch (error) {
+    console.error('Translation failed:', error)
+  } finally {
+    translating.value = false
+  }
+}
+
+// Mock translation function - replace with real translation service
+const mockTranslate = async (text: string, fromLang: string, toLang: string): Promise<string> => {
+  // Simulate API call delay
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
+  // Basic mock translations for common phrases
+  const translations: Record<string, Record<string, string>> = {
+    // Common Georgian phrases to English/Russian
+    'მთავარი გვერდი': { en: 'Home Page', ru: 'Главная страница' },
+    კონტაქტი: { en: 'Contact', ru: 'Контакт' },
+    'ჩვენ შესახებ': { en: 'About Us', ru: 'О нас' },
+    პროექტები: { en: 'Projects', ru: 'Проекты' },
+    სერვისები: { en: 'Services', ru: 'Услуги' },
+    გამოცდილება: { en: 'Experience', ru: 'Опыт' },
+    პორტფოლიო: { en: 'Portfolio', ru: 'Портфолио' },
+    თანამშრომლობა: { en: 'Collaboration', ru: 'Сотрудничество' },
+    'ახალი პროექტი': { en: 'New Project', ru: 'Новый проект' },
+    წარმატებული: { en: 'Successful', ru: 'Успешный' },
+  }
+
+  // Check if we have a specific translation
+  if (translations[text] && translations[text][toLang]) {
+    return translations[text][toLang]
+  }
+
+  // For demo purposes, return transliterated or original text
+  // In a real app, this would call a translation service like Google Translate API
+  return text
+}
+
 const saveTranslation = async () => {
   try {
     saving.value = true
 
+    const formData = {
+      key: translationForm.key,
+      text: {
+        en: translationForm.text_en,
+        ka: translationForm.text_ka,
+        ru: translationForm.text_ru,
+      },
+      group: translationForm.group,
+      active: translationForm.active,
+    }
+
     if (showEditModal.value && editingTranslation.value) {
-      await updateTranslation(editingTranslation.value.id, translationForm)
+      await updateTranslation(editingTranslation.value.id, formData)
     } else {
-      await addTranslation(translationForm)
+      await addTranslation(formData)
     }
 
     await loadTranslations()
@@ -309,13 +262,16 @@ const saveTranslation = async () => {
 const editTranslation = (translation: Translation) => {
   editingTranslation.value = translation
   translationForm.key = translation.key
-  translationForm.en = translation.en
-  translationForm.ka = translation.ka
+  translationForm.text_en = translation.text_en
+  translationForm.text_ka = translation.text_ka
+  translationForm.text_ru = translation.text_ru || ''
+  translationForm.group = translation.group || 'general'
+  translationForm.active = translation.active === 1
   showEditModal.value = true
 }
 
 const deleteTranslationConfirm = async (translation: Translation) => {
-  if (confirm(`Are you sure you want to delete translation "${translation.key}"?`)) {
+  if (confirm(`დარწმუნებული ხართ, რომ გსურთ თარგმანის "${translation.key}" წაშლა?`)) {
     try {
       await deleteTranslation(translation.id)
       await loadTranslations()
@@ -330,8 +286,11 @@ const closeModal = () => {
   showEditModal.value = false
   editingTranslation.value = null
   translationForm.key = ''
-  translationForm.en = ''
-  translationForm.ka = ''
+  translationForm.text_en = ''
+  translationForm.text_ka = ''
+  translationForm.text_ru = ''
+  translationForm.group = 'general'
+  translationForm.active = true
 }
 
 const nextPage = () => {
@@ -348,11 +307,65 @@ const previousPage = () => {
   }
 }
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString()
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    loadTranslations()
+  }
 }
 
 onMounted(() => {
   loadTranslations()
 })
 </script>
+
+<style scoped>
+.container {
+  max-width: 1200px;
+}
+
+/* Custom scrollbar for light theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.8);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
+}
+
+/* Gradient text animation */
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.bg-gradient-to-r {
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease-in-out infinite;
+}
+
+/* Button hover effects */
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.2s ease-in-out;
+}
+</style>

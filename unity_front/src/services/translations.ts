@@ -9,3 +9,5 @@ export const updateTranslation = async (id: number, data: any) =>
 export const addTranslation = async (data: any) => api.post(`/translations/create`, { ...data })
 
 export const deleteTranslation = async (id: number) => api.delete(`/translations/${id}`)
+
+export const getTranslation = async (id: number) => api.get(`/translations/${id}`)

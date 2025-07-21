@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{vue,js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -23,11 +20,11 @@ export default {
           400: '#fbbf24',
           500: '#f59e0b',
           600: '#d97706',
-        }
+        },
       },
       fontFamily: {
-        'sans': ['Inter', 'system-ui', 'sans-serif'],
-      }
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
     },
   },
   plugins: [],

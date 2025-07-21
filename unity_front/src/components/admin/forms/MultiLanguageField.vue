@@ -3,14 +3,14 @@
     <div v-for="lang in langs" :key="`${fieldName}-${lang}`">
       <label
         :for="`${fieldName}-${lang}`"
-        class="flex items-center justify-between text-sm font-medium text-slate-700 mb-3"
+        class="flex items-center justify-between text-sm font-semibold text-slate-800 mb-3"
       >
         <span>{{ getLanguageLabel(lang) }}</span>
         <button
           v-if="lang !== 'ka' && formData.ka && showTranslateButton"
           @click="handleTranslate(lang)"
           type="button"
-          class="inline-flex items-center gap-2 text-xs bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 px-3 py-2 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md transform hover:scale-105 font-medium"
+          class="relative z-10 inline-flex items-center gap-2 text-xs bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 px-3 py-2 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md transform hover:scale-105 font-medium"
           :disabled="translating"
         >
           <svg
@@ -59,7 +59,7 @@
         :type="inputType"
         :rows="rows"
         :required="required"
-        :class="inputClasses"
+        :class="`relative z-0 ${inputClasses}`"
         :placeholder="getPlaceholder(lang)"
         @input="handleInput(lang, $event)"
       />
@@ -115,7 +115,7 @@ const inputClasses = computed(() => {
   }
 
   const baseClasses =
-    'w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-2xl focus:ring-2 transition-all duration-300 text-slate-900 placeholder-slate-500'
+    'w-full px-6 py-4 bg-white border-2 border-slate-300 rounded-2xl focus:ring-2 transition-all duration-300 text-slate-900 placeholder-slate-500 font-medium shadow-sm'
   const resizeClass = props.fieldType === 'textarea' ? 'resize-none' : ''
 
   return `${baseClasses} ${focusColors[props.variant]} ${resizeClass}`

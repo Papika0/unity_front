@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label :for="fieldId" class="block text-sm font-medium text-slate-700 mb-3">
+    <label :for="fieldId" class="block text-sm font-semibold text-slate-800 mb-3">
       {{ label }}
     </label>
     <div class="flex items-center space-x-3">
@@ -11,7 +11,7 @@
         type="checkbox"
         :class="checkboxClasses"
       />
-      <label :for="fieldId" class="text-sm font-medium text-slate-700">
+      <label :for="fieldId" class="text-sm font-semibold text-slate-800">
         {{ label }}
       </label>
     </div>

@@ -1,0 +1,336 @@
+<template>
+  <div
+    v-if="isOpen"
+    class="fixed inset-0 bg-black/60 backdrop-blur-md overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    @click="$emit('close')"
+  >
+    <div
+      @click.stop
+      class="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto border border-white/20 ring-1 ring-slate-200/50"
+    >
+      <!-- Modal Header -->
+      <div
+        class="sticky top-0 z-20 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-t-3xl border-b border-slate-200/60 px-8 py-6 backdrop-blur-xl"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center"
+            >
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                ></path>
+              </svg>
+            </div>
+            <div>
+              <h3
+                class="text-3xl font-light bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"
+              >
+                {{ isEdit ? 'თარგმანის რედაქტირება' : 'ახალი თარგმანის შექმნა' }}
+              </h3>
+              <p class="text-slate-500 text-sm mt-1">
+                {{
+                  isEdit ? 'განაახლეთ არსებული თარგმანი' : 'დაამატეთ ახალი მრავალენოვანი თარგმანი'
+                }}
+              </p>
+            </div>
+          </div>
+          <button
+            @click="$emit('close')"
+            class="text-slate-400 hover:text-slate-600 transition-all duration-200 p-3 hover:bg-white/60 rounded-2xl group"
+          >
+            <svg
+              class="w-6 h-6 group-hover:rotate-90 transition-transform duration-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="relative z-10 px-8 py-8">
+        <form @submit.prevent="$emit('submit')" class="space-y-8">
+          <!-- Key & Group Row -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Key Field -->
+            <div class="space-y-2">
+              <label
+                for="key"
+                class="flex items-center space-x-2 text-sm font-semibold text-slate-800"
+              >
+                <div
+                  class="w-8 h-8 bg-gradient-to-br from-violet-100 to-purple-100 rounded-lg flex items-center justify-center"
+                >
+                  <svg
+                    class="w-4 h-4 text-violet-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 7a2 2 0 012 2m0 0a2 2 0 01-2 2m2-2h3m-3 0h-3m-2-5a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V9a2 2 0 00-2-2H9z"
+                    ></path>
+                  </svg>
+                </div>
+                <span>იდენტიფიკატორი (Key)</span>
+              </label>
+              <input
+                v-model="form.key"
+                type="text"
+                id="key"
+                required
+                :disabled="isEdit"
+                class="block w-full px-4 py-4 text-base text-slate-900 border-2 border-slate-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:bg-slate-50 disabled:text-slate-600 disabled:border-slate-200 transition-all duration-300 placeholder:text-slate-500 bg-white"
+                placeholder="მაგ. home.welcome_message"
+              />
+            </div>
+
+            <!-- Group Field -->
+            <div class="space-y-2">
+              <label
+                for="group"
+                class="flex items-center space-x-2 text-sm font-semibold text-slate-800"
+              >
+                <div
+                  class="w-8 h-8 bg-gradient-to-br from-emerald-100 to-green-100 rounded-lg flex items-center justify-center"
+                >
+                  <svg
+                    class="w-4 h-4 text-emerald-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    ></path>
+                  </svg>
+                </div>
+                <span>ჯგუფი</span>
+              </label>
+              <select
+                v-model="form.group"
+                id="group"
+                required
+                class="block w-full px-4 py-4 text-base text-slate-900 border-2 border-slate-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 bg-white"
+              >
+                <option value="general">🏠 ზოგადი</option>
+                <option value="navigation">🧭 ნავიგაცია</option>
+                <option value="forms">📝 ფორმები</option>
+                <option value="buttons">🔘 ღილაკები</option>
+                <option value="messages">💬 შეტყობინებები</option>
+                <option value="errors">⚠️ შეცდომები</option>
+                <option value="admin">👨‍💼 ადმინისტრაცია</option>
+                <option value="projects">🏗️ პროექტები</option>
+                <option value="auth">🔐 ავთენტიფიკაცია</option>
+                <option value="testimonials">💭 რეკომენდაციები</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Language Fields -->
+          <div
+            class="bg-gradient-to-br from-slate-50/50 to-white rounded-3xl p-8 border border-slate-200/60 space-y-8"
+          >
+            <div class="text-center mb-8">
+              <h4
+                class="text-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2"
+              >
+                მრავალენოვანი თარგმანი
+              </h4>
+              <p class="text-slate-600 text-sm">შეავსეთ თარგმანი სამივე ენაზე</p>
+            </div>
+
+            <!-- Georgian -->
+            <LanguageField
+              v-model="form.text_ka"
+              language="ka"
+              label="🇬🇪 ქართული"
+              placeholder="ქართული თარგმანი"
+              :required="true"
+            />
+
+            <!-- English -->
+            <LanguageField
+              v-model="form.text_en"
+              language="en"
+              label="🇬🇧 English"
+              placeholder="English translation"
+              :required="true"
+              :can-translate="!!form.text_ka"
+              :translating="translating"
+              @translate="$emit('translate', 'ka', 'en')"
+            />
+
+            <!-- Russian -->
+            <LanguageField
+              v-model="form.text_ru"
+              language="ru"
+              label="🇷🇺 русский"
+              placeholder="русский перевод"
+              :required="false"
+              :can-translate="!!form.text_ka"
+              :translating="translating"
+              @translate="$emit('translate', 'ka', 'ru')"
+            />
+          </div>
+
+          <!-- Active Status -->
+          <div
+            class="bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl p-6 border border-slate-200/60"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center"
+                >
+                  <svg
+                    class="w-5 h-5 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-sm font-semibold text-slate-900">სტატუსი</h4>
+                  <p class="text-xs text-slate-600">თარგმანის გამოყენება</p>
+                </div>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input id="active" v-model="form.active" type="checkbox" class="sr-only peer" />
+                <div
+                  class="w-12 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-indigo-500 peer-checked:to-purple-500 shadow-inner"
+                ></div>
+                <span class="ml-3 text-sm font-medium text-slate-800">
+                  {{ form.active ? 'აქტიური' : 'არააქტიური' }}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Submit Buttons -->
+          <div
+            class="flex flex-col sm:flex-row justify-end gap-4 pt-8 border-t-2 border-gradient-to-r from-indigo-100 via-purple-100 to-pink-100"
+          >
+            <button
+              type="button"
+              @click="$emit('close')"
+              class="order-2 sm:order-1 px-8 py-4 text-base font-semibold text-slate-800 bg-white/80 backdrop-blur-sm border-2 border-slate-300 rounded-2xl hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-500/20 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+            >
+              🚫 გაუქმება
+            </button>
+            <button
+              type="submit"
+              :disabled="saving"
+              class="order-1 sm:order-2 inline-flex items-center justify-center gap-3 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300 min-w-[140px]"
+            >
+              <svg v-if="saving" class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                ></path>
+              </svg>
+              {{ saving ? '🔄 შენახვა...' : '✅ შენახვა' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import LanguageField from '../forms/LanguageField.vue'
+
+interface TranslationForm {
+  key: string
+  text_en: string
+  text_ka: string
+  text_ru: string
+  group: string
+  active: boolean
+}
+
+interface Props {
+  isOpen: boolean
+  isEdit: boolean
+  form: TranslationForm
+  saving: boolean
+  translating: boolean
+}
+
+interface Emits {
+  (e: 'close'): void
+  (e: 'submit'): void
+  (e: 'translate', fromLang: string, toLang: string): void
+}
+
+defineProps<Props>()
+defineEmits<Emits>()
+</script>
+
+<style scoped>
+/* Modal backdrop blur */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+/* Enhanced focus styles */
+input:focus,
+textarea:focus,
+select:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+/* Custom select arrow */
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 3rem;
+}
+</style>

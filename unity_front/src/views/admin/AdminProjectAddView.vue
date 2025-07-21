@@ -56,7 +56,7 @@ import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminProjectsStore } from '@/stores/adminProjects'
 import { useProjectForm } from '@/composables/useProjectForm'
-import ProjectForm from '@/components/admin/ProjectForm.vue'
+import { ProjectForm } from '@/components/admin'
 
 const router = useRouter()
 const adminProjectsStore = useAdminProjectsStore()

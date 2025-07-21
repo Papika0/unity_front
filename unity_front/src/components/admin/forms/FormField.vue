@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label :for="fieldId" class="block text-sm font-medium text-slate-700 mb-3">
+    <label :for="fieldId" class="block text-sm font-semibold text-slate-800 mb-3">
       {{ label }}
     </label>
     <component
@@ -53,7 +53,7 @@ const inputClasses = computed(() => {
   }
 
   const baseClasses =
-    'w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-2xl focus:ring-2 transition-all duration-300 text-slate-900'
+    'w-full px-6 py-4 bg-white border-2 border-slate-300 rounded-2xl focus:ring-2 transition-all duration-300 text-slate-900 font-medium shadow-sm'
   const selectClass = props.fieldType === 'select' ? 'appearance-none' : 'placeholder-slate-500'
 
   return `${baseClasses} ${focusColors[props.variant]} ${selectClass}`

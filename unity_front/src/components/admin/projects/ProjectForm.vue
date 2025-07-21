@@ -204,12 +204,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { ProjectFormData, ProjectPreviews } from '@/composables/useProjectForm'
-import FormCard from '@/components/admin/FormCard.vue'
-import FormSection from '@/components/admin/FormSection.vue'
-import MultiLanguageField from '@/components/admin/MultiLanguageField.vue'
-import FormField from '@/components/admin/FormField.vue'
-import CheckboxField from '@/components/admin/CheckboxField.vue'
-import FileUpload from '@/components/admin/FileUpload.vue'
+import FormCard from '../forms/FormCard.vue'
+import FormSection from '../forms/FormSection.vue'
+import MultiLanguageField from '../forms/MultiLanguageField.vue'
+import FormField from '../forms/FormField.vue'
+import CheckboxField from '../forms/CheckboxField.vue'
+import FileUpload from '../forms/FileUpload.vue'
 
 interface Props {
   form: ProjectFormData

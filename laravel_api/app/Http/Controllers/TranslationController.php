@@ -21,7 +21,8 @@ class TranslationController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('text->en', 'LIKE', "%$search%")
                     ->orWhere('text->ka', 'LIKE', "%$search%")
-                    ->orWhere('text->ru', 'LIKE', "%$search%");
+                    ->orWhere('text->ru', 'LIKE', "%$search%")
+                    ->orWhere('key', 'LIKE', "%$search%");
             });
         }
 

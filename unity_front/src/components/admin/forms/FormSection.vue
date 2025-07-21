@@ -1,7 +1,7 @@
 <template>
   <div>
     <h3
-      class="text-2xl font-medium text-slate-800 mb-8 pb-3 border-b-2 flex items-center"
+      class="text-2xl font-semibold text-slate-900 mb-8 pb-3 border-b-2 flex items-center"
       :class="borderColor"
     >
       <span class="w-1 h-6 rounded-full mr-3" :class="accentColor"></span>

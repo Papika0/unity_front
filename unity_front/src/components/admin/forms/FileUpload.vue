@@ -1,6 +1,6 @@
 <template>
   <div
-    class="border-2 border-dashed border-slate-300 rounded-2xl p-8 transition-all duration-300 bg-slate-50/50"
+    class="border-2 border-dashed border-slate-300 rounded-2xl p-8 transition-all duration-300 bg-white/90"
     :class="hoverBorderColor"
   >
     <input
@@ -87,7 +87,7 @@ const inputClasses = computed(() => {
   }
 
   const baseClasses =
-    'w-full px-6 py-4 bg-slate-50 border border-slate-300 rounded-2xl focus:ring-2 transition-all duration-300 text-slate-900 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:transition-all file:duration-300'
+    'w-full px-6 py-4 bg-white border-2 border-slate-300 rounded-2xl focus:ring-2 transition-all duration-300 text-slate-900 font-medium file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:transition-all file:duration-300 shadow-sm'
 
   return `${baseClasses} ${focusColors[props.variant]}`
 })
