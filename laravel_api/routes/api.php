@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\ProjectsController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\TranslationController;
 
 
@@ -24,9 +25,17 @@ Route::prefix('auth')->group(function () {
     Route::post('logout', LogoutController::class)->middleware('auth:api');
 });
 
+// Public news routes
+Route::prefix('news')->controller(NewsController::class)->group(function () {
+    Route::get('/', 'index');
+    Route::get('/recent', 'recent');
+    Route::get('/featured', 'featured');
+    Route::get('/category/{category}', 'byCategory');
+    Route::get('/{id}', 'show');
+});
+
 Route::middleware('auth:api')->group(function () {
     Route::get('/user', [UserController::class, 'getUser']);
-
 
     Route::prefix('translations')->controller(TranslationController::class)->group(function () {
         Route::post('/', 'getTranslations');
@@ -41,5 +50,12 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/{id}','show');
         Route::post('/',  'store');
         Route::put('/{id}','update');
+    });
+
+    // Protected news routes (admin only)
+    Route::prefix('admin/news')->controller(NewsController::class)->group(function () {
+        Route::post('/', 'store');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
     });
 });
