@@ -2,8 +2,8 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTranslations } from '../composables/useTranslations'
-import { useNewsStore } from '../stores/news'
-import type { NewsArticle } from '../stores/news'
+import { useNewsStore } from '@/stores/public/news'
+import type { NewsArticle } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,10 +17,8 @@ const error = ref<string | null>(null)
 const relatedArticles = computed(() => {
   if (!article.value) return []
 
-  return newsStore
-    .getArticlesByCategory(article.value.category)
-    .filter((a) => a.id !== article.value?.id)
-    .slice(0, 3)
+  const categoryArticles = newsStore.categorizedArticles[article.value.category] || []
+  return categoryArticles.filter((a: NewsArticle) => a.id !== article.value?.id).slice(0, 3)
 })
 
 const formattedDate = computed(() => {
@@ -34,7 +32,7 @@ const formattedDate = computed(() => {
   })
 })
 
-const categoryLabels = {
+const categoryLabels: Record<string, { ka: string; en: string }> = {
   company: { ka: 'კომპანია', en: 'Company' },
   project: { ka: 'პროექტი', en: 'Project' },
   industry: { ka: 'ინდუსტრია', en: 'Industry' },
@@ -60,7 +58,7 @@ const fetchArticle = async () => {
     isLoading.value = true
     error.value = null
 
-    const fetchedArticle = await newsStore.fetchArticleById(articleId)
+    const fetchedArticle = await newsStore.loadArticle(articleId)
 
     if (!fetchedArticle) {
       error.value = 'Article not found'

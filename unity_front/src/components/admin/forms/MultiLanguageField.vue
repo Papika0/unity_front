@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick } from 'vue'
 
 interface Props {
   fieldName: string
@@ -135,6 +135,22 @@ function getPlaceholder(lang: string): string {
 }
 
 function handleTranslate(toLang: string) {
-  emit('translate', 'ka', toLang)
+  // Get the current value directly from the Georgian input field
+  const kaInput = document.getElementById(`${props.fieldName}-ka`) as
+    | HTMLInputElement
+    | HTMLTextAreaElement
+  const currentKaValue = kaInput ? kaInput.value : props.formData.ka
+
+  // Update form data with current input value first
+  if (kaInput && kaInput.value !== props.formData.ka) {
+    const newFormData = { ...props.formData }
+    newFormData.ka = kaInput.value
+    emit('update:formData', newFormData)
+  }
+
+  // Emit translate with a small delay to ensure update propagation
+  nextTick(() => {
+    emit('translate', 'ka', toLang)
+  })
 }
 </script>

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use App\Http\Requests\LoginRequest;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiErrorResponse;
 use App\Http\Responses\ApiSuccessResponse;

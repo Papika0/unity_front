@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth/auth'
 
 export const requireAuth = (to: any, from: any, next: any) => {
   const authStore = useAuthStore()

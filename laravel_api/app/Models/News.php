@@ -86,6 +86,22 @@ class News extends Model
     }
 
     /**
+     * Scope to get draft news (unpublished)
+     */
+    public function scopeDraft($query)
+    {
+        return $query->where('publish_date', '>', now());
+    }
+
+    /**
+     * Scope to get inactive news
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', false);
+    }
+
+    /**
      * Scope to order by publish date
      */
     public function scopeLatest($query)

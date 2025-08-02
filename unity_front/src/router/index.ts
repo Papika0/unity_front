@@ -13,12 +13,8 @@ import PublicLayout from '../layouts/PublicLayout.vue'
 import AdminRootLayout from '../layouts/AdminRootLayout.vue'
 
 // Admin imports
-import AdminLoginView from '../views/admin/AdminLoginView.vue'
 import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminDashboardView from '../views/admin/AdminDashboardView.vue'
-import AdminProjectsView from '../views/admin/AdminProjectsView.vue'
-import AdminProjectDetailView from '../views/admin/AdminProjectDetailView.vue'
-import AdminTranslationsView from '../views/admin/AdminTranslationsView.vue'
 
 // Guards
 import { requireAuth, redirectIfAuthenticated } from './guards'
@@ -81,7 +77,7 @@ const router = createRouter({
         {
           path: 'login',
           name: 'admin-login',
-          component: AdminLoginView,
+          component: () => import('@/views/admin/auth/LoginView.vue'),
           meta: { requiresGuest: true },
         },
         {
@@ -99,29 +95,49 @@ const router = createRouter({
               component: AdminDashboardView,
             },
             {
+              path: 'news',
+              name: 'admin-news',
+              component: () => import('@/views/admin/news/ListView.vue'),
+            },
+            {
+              path: 'news/add',
+              name: 'admin-news-add',
+              component: () => import('@/views/admin/news/AddView.vue'),
+            },
+            {
+              path: 'news/:id',
+              name: 'admin-news-detail',
+              component: () => import('@/views/admin/news/DetailView.vue'),
+            },
+            {
+              path: 'news/:id/edit',
+              name: 'admin-news-edit',
+              component: () => import('@/views/admin/news/EditView.vue'),
+            },
+            {
               path: 'projects',
               name: 'admin-projects',
-              component: AdminProjectsView,
+              component: () => import('@/views/admin/projects/ListView.vue'),
             },
             {
               path: 'projects/add',
               name: 'admin-project-add',
-              component: () => import('@/views/admin/AdminProjectAddView.vue'),
+              component: () => import('@/views/admin/projects/AddView.vue'),
             },
             {
               path: 'projects/:id',
               name: 'admin-project-detail',
-              component: AdminProjectDetailView,
+              component: () => import('@/views/admin/projects/DetailView.vue'),
             },
             {
               path: 'projects/:id/edit',
               name: 'admin-project-edit',
-              component: () => import('@/views/admin/AdminProjectEditView.vue'),
+              component: () => import('@/views/admin/projects/EditView.vue'),
             },
             {
               path: 'translations',
               name: 'admin-translations',
-              component: AdminTranslationsView,
+              component: () => import('@/views/admin/translations/ListView.vue'),
             },
           ],
         },
@@ -133,7 +149,7 @@ const router = createRouter({
 // Initialize auth on app start
 router.beforeEach(async (to, from, next) => {
   // Initialize auth store if needed
-  const { useAuthStore } = await import('@/stores/auth')
+  const { useAuthStore } = await import('@/stores/auth/auth')
   const authStore = useAuthStore()
 
   // Initialize auth if token exists but user is not loaded

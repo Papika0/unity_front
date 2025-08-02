@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTranslations } from '../composables/useTranslations'
-import { useProjectsStore } from '../stores/projects'
+import { useProjectsStore } from '@/stores/public/projects'
 
 const { t } = useTranslations()
 const router = useRouter()

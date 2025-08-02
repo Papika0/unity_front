@@ -4,9 +4,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
-use App\Http\Controllers\ProjectsController;
-use App\Http\Controllers\NewsController;
-use App\Http\Controllers\TranslationController;
+use App\Http\Controllers\Api\ProjectsController;
+use App\Http\Controllers\Api\NewsController;
+use App\Http\Controllers\Api\TranslationController;
+use App\Http\Controllers\Admin\NewsController as AdminNewsController;
+use App\Http\Controllers\Admin\ProjectsController as AdminProjectsController;
+use App\Http\Controllers\Admin\TranslationController as AdminTranslationController;
 
 
 /*
@@ -28,16 +31,21 @@ Route::prefix('auth')->group(function () {
 // Public news routes
 Route::prefix('news')->controller(NewsController::class)->group(function () {
     Route::get('/', 'index');
-    Route::get('/recent', 'recent');
     Route::get('/featured', 'featured');
-    Route::get('/category/{category}', 'byCategory');
+    Route::get('/latest', 'latest');
+    Route::get('/{id}', 'show');
+});
+
+// Public projects routes
+Route::prefix('projects')->controller(ProjectsController::class)->group(function () {
+    Route::get('/', 'index');
     Route::get('/{id}', 'show');
 });
 
 Route::middleware('auth:api')->group(function () {
     Route::get('/user', [UserController::class, 'getUser']);
 
-    Route::prefix('translations')->controller(TranslationController::class)->group(function () {
+    Route::prefix('translations')->controller(AdminTranslationController::class)->group(function () {
         Route::post('/', 'getTranslations');
         Route::post('/create', 'createTranslation');
         Route::post('/{id}', 'updateTranslation');
@@ -45,17 +53,20 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/group/{group}', 'getTranslationsByGroup');
     });
 
-    Route::prefix('projects')->controller(ProjectsController::class)->group(function () {
-        Route::get('/',   'index');
-        Route::get('/{id}','show');
-        Route::post('/',  'store');
-        Route::put('/{id}','update');
+    Route::prefix('admin/projects')->controller(AdminProjectsController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::post('/', 'store');
+        Route::put('/{id}', 'update');
     });
 
     // Protected news routes (admin only)
-    Route::prefix('admin/news')->controller(NewsController::class)->group(function () {
+    Route::prefix('admin/news')->controller(AdminNewsController::class)->group(function () {
+        Route::get('/', 'adminIndex');
+        Route::get('/{id}', 'adminShow');
         Route::post('/', 'store');
         Route::put('/{id}', 'update');
+        Route::post('/{id}', 'update'); // Allow POST for multipart updates
         Route::delete('/{id}', 'destroy');
     });
 });

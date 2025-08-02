@@ -77,3 +77,29 @@ export interface LoginRequest {
   password: string
   rememberMe: boolean
 }
+
+export interface NewsTranslation {
+  ka: string
+  en: string
+  ru: string
+}
+
+export interface NewsArticle {
+  id: number
+  is_active: boolean
+  is_featured: boolean
+  title: NewsTranslation
+  content: NewsTranslation
+  excerpt: NewsTranslation
+  main_image: string | null
+  gallery_images: string[]
+  publish_date: string
+  formatted_publish_date: string
+  category: 'company' | 'project' | 'industry' | 'event'
+  tags: string[]
+  views: number
+  meta_title: string | null
+  meta_description: string | null
+  created_at: string
+  updated_at: string
+}

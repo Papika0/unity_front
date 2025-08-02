@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useTranslations } from '../../composables/useTranslations'
-import { useProjectsStore } from '../../stores/projects'
+import { useProjectsStore } from '@/stores/public/projects'
 
 const { t } = useTranslations()
 const projectsStore = useProjectsStore()

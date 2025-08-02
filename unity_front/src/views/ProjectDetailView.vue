@@ -2,8 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTranslations } from '../composables/useTranslations'
-import { useProjectsStore } from '../stores/projects'
-import type { Project } from '../stores/projects'
+import { useProjectsStore } from '@/stores/public/projects'
+import type { Project } from '@/stores/public/projects'
 
 const { t } = useTranslations()
 const route = useRoute()
