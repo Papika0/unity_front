@@ -101,7 +101,7 @@ onUnmounted(() => {
         :class="[
           'h-12 w-auto transition-all duration-200',
           'lg:h-14',
-          'lg:mr-20 xl:mr-32 2xl:mr-40 lg:flex-shrink-0',
+          'lg:mr-32 xl:mr-40 2xl:mr-48 lg:flex-shrink-0',
           'flex-1 flex justify-center lg:flex-none lg:justify-start items-center',
         ]"
       >
