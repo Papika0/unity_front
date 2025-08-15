@@ -39,6 +39,7 @@ Route::prefix('news')->controller(NewsController::class)->group(function () {
 // Public projects routes
 Route::prefix('projects')->controller(ProjectsController::class)->group(function () {
     Route::get('/', 'index');
+    Route::get('/featured', 'featured');
     Route::get('/{id}', 'show');
 });
 
