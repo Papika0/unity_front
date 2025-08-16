@@ -1,18 +1,24 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useTranslations } from '../../composables/useTranslations'
 import { useNewsStore } from '@/stores/public/news'
 
 const { t } = useTranslations()
 const newsStore = useNewsStore()
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
+// Load recent articles when component mounts
+onMounted(async () => {
+  await newsStore.loadRecentArticles(2) // Load only 2 articles for homepage
+})
 
 // Get first 2 recent articles for homepage display
 const displayArticles = computed(() =>
   newsStore.recentArticles.slice(0, 2).map((article) => ({
     id: article.id,
-    title: article.title.ka,
-    excerpt: article.excerpt.ka,
-    image: article.main_image || 'https://placehold.co/1400x525',
+    title: article.title?.ka || 'სიახლე',
+    excerpt: article.excerpt?.ka || '',
+    image: backendUrl + article.main_image,
     publishDate: article.publish_date,
   })),
 )
@@ -39,7 +45,23 @@ const formatDate = (dateString: string) => {
       <img src="../../assets/Vector_10.png" alt="" class="mb-12" />
 
       <div class="space-y-16">
-        <div v-for="article in displayArticles" :key="article.id" class="space-y-8">
+        <!-- Loading State -->
+        <div v-if="newsStore.loading" class="text-center py-8">
+          <div class="text-zinc-600">იტვირთება...</div>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="newsStore.error" class="text-center py-8">
+          <div class="text-red-600">{{ newsStore.error }}</div>
+        </div>
+
+        <!-- No Articles State -->
+        <div v-else-if="displayArticles.length === 0" class="text-center py-8">
+          <div class="text-zinc-600">სიახლეები არ არის</div>
+        </div>
+
+        <!-- Articles -->
+        <div v-else v-for="article in displayArticles" :key="article.id" class="space-y-8">
           <img
             :src="article.image"
             :alt="article.title"

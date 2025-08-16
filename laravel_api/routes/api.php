@@ -33,6 +33,7 @@ Route::prefix('news')->controller(NewsController::class)->group(function () {
     Route::get('/', 'index');
     Route::get('/featured', 'featured');
     Route::get('/latest', 'latest');
+    Route::get('/recent', 'latest'); // Alias for latest
     Route::get('/{id}', 'show');
 });
 

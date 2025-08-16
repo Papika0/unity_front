@@ -76,13 +76,15 @@ class NewsController extends Controller
     /**
      * Get latest news for public API.
      */
-    public function latest()
+    public function latest(Request $request)
     {
         try {
+            $limit = $request->input('limit', 10);
+            
             $news = News::where('is_active', true)
                        ->where('publish_date', '<=', now())
                        ->orderBy('publish_date', 'desc')
-                       ->limit(10)
+                       ->limit($limit)
                        ->get();
 
             return $this->success(NewsResource::collection($news));
