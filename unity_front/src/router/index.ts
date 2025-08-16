@@ -21,6 +21,14 @@ import { requireAuth, redirectIfAuthenticated } from './guards'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    // Always scroll to top when navigating to a new route
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0, behavior: 'smooth' }
+    }
+  },
   routes: [
     // Public routes with header/footer
     {
