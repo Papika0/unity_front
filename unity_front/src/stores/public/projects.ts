@@ -13,6 +13,7 @@ export interface Project {
   id: number
   is_active: boolean
   is_featured: boolean
+  is_onHomepage: boolean
   title: ProjectTranslation
   description: ProjectTranslation
   location: ProjectTranslation
@@ -35,6 +36,7 @@ export const useProjectsStore = defineStore('projects', () => {
   // State
   const projects = ref<Project[]>([])
   const featuredProjectsData = ref<Project[]>([])
+  const homepageProjectsData = ref<Project[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -48,6 +50,15 @@ export const useProjectsStore = defineStore('projects', () => {
     }
     // Otherwise, filter from all projects
     return projects.value.filter((project) => project.is_featured && project.is_active)
+  })
+
+  const homepageProjects = computed(() => {
+    // If we have specifically fetched homepage projects, use those
+    if (homepageProjectsData.value.length > 0) {
+      return homepageProjectsData.value.filter((project) => project.is_active)
+    }
+    // Otherwise, filter from all projects
+    return projects.value.filter((project) => project.is_onHomepage && project.is_active)
   })
 
   const ongoingProjects = computed(() =>
@@ -132,6 +143,25 @@ export const useProjectsStore = defineStore('projects', () => {
     }
   }
 
+  const fetchHomepageProjects = async (): Promise<void> => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const response = await projectsApi.getHomepage()
+      if (response.success && response.data) {
+        homepageProjectsData.value = response.data.map(transformProject)
+      } else {
+        throw new Error(response.message || 'Failed to fetch homepage projects')
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to fetch homepage projects'
+      console.error('Error fetching homepage projects:', err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const fetchProjectById = async (id: number): Promise<Project | null> => {
     isLoading.value = true
     error.value = null
@@ -166,6 +196,7 @@ export const useProjectsStore = defineStore('projects', () => {
   const clearProjects = () => {
     projects.value = []
     featuredProjectsData.value = []
+    homepageProjectsData.value = []
     error.value = null
   }
 
@@ -173,12 +204,14 @@ export const useProjectsStore = defineStore('projects', () => {
     // State
     projects,
     featuredProjectsData,
+    homepageProjectsData,
     isLoading,
     error,
 
     // Getters
     activeProjects,
     featuredProjects,
+    homepageProjects,
     ongoingProjects,
     completedProjects,
     plannedProjects,
@@ -190,6 +223,7 @@ export const useProjectsStore = defineStore('projects', () => {
     searchProjects,
     fetchProjects,
     fetchFeaturedProjects,
+    fetchHomepageProjects,
     fetchProjectById,
     clearProjects,
   }

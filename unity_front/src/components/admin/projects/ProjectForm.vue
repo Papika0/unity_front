@@ -118,6 +118,12 @@
             v-model:model-value="form.is_featured"
             variant="amber"
           />
+          <CheckboxField
+            field-id="is_onHomepage"
+            label="მთავარ გვერდზე"
+            v-model:model-value="form.is_onHomepage"
+            variant="emerald"
+          />
         </div>
       </div>
     </FormCard>

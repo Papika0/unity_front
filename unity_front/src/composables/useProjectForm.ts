@@ -12,6 +12,7 @@ export interface ProjectFormData {
   completion_date: string
   is_active: boolean
   is_featured: boolean
+  is_onHomepage: boolean
   main_image: File | null
   render_image: File | null
   gallery_images: File[]
@@ -38,6 +39,7 @@ export function useProjectForm() {
     completion_date: '',
     is_active: true,
     is_featured: false,
+    is_onHomepage: false,
     main_image: null,
     render_image: null,
     gallery_images: [],
@@ -159,6 +161,7 @@ export function useProjectForm() {
     formData.append('completion_date', form.completion_date)
     formData.append('is_active', form.is_active ? '1' : '0')
     formData.append('is_featured', form.is_featured ? '1' : '0')
+    formData.append('is_onHomepage', form.is_onHomepage ? '1' : '0')
 
     // Compress and append files
     if (form.main_image instanceof File) {
@@ -226,6 +229,7 @@ export function useProjectForm() {
     form.completion_date = projectData.completion_date
     form.is_active = Boolean(projectData.is_active)
     form.is_featured = Boolean(projectData.is_featured)
+    form.is_onHomepage = Boolean(projectData.is_onHomepage)
 
     // Set image previews
     if (projectData.main_image) {

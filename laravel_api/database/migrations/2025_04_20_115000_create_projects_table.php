@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->boolean('is_active')->default(true);
             $table->boolean('is_featured')->default(false);
+            $table->boolean('is_onHomepage')->default(false);
             $table->json('title');
             $table->json('description');
             $table->json('location');                          // ← was string, now JSON

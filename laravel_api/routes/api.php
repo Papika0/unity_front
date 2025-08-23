@@ -41,6 +41,7 @@ Route::prefix('news')->controller(NewsController::class)->group(function () {
 Route::prefix('projects')->controller(ProjectsController::class)->group(function () {
     Route::get('/', 'index');
     Route::get('/featured', 'featured');
+    Route::get('/homepage', 'homepage');
     Route::get('/{id}', 'show');
 });
 

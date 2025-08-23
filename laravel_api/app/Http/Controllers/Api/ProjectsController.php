@@ -48,6 +48,24 @@ class ProjectsController extends Controller
     }
 
     /**
+     * Display a listing of homepage projects for public API.
+     */
+    public function homepage(Request $request)
+    {
+        try {
+            $projects = Projects::where('is_active', true)
+                               ->where('is_onHomepage', true)
+                               ->orderBy('created_at', 'desc')
+                               ->get();
+
+            $resources = ProjectResource::collection($projects);
+            return $this->success($resources);
+        } catch (\Exception $e) {
+            return $this->error('Failed to fetch homepage projects', 500);
+        }
+    }
+
+    /**
      * Display the specified project for public API.
      */
     public function show($id)

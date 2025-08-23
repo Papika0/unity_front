@@ -26,6 +26,7 @@ export interface ProjectApiResponse {
   year: number
   is_active: boolean
   is_featured: boolean
+  is_onHomepage: boolean
   latitude: number | null
   longitude: number | null
   meta_title: string | null
@@ -39,6 +40,7 @@ export const transformProject = (apiProject: ProjectApiResponse) => ({
   id: apiProject.id,
   is_active: apiProject.is_active,
   is_featured: apiProject.is_featured,
+  is_onHomepage: apiProject.is_onHomepage,
   title: {
     ka: apiProject.title_ka,
     en: apiProject.title_en,
@@ -79,6 +81,12 @@ export const projectsApi = {
   // Get featured projects
   getFeatured: async () => {
     const response = await api.get<ProjectApiResponse[]>('/projects/featured')
+    return response.data
+  },
+
+  // Get homepage projects
+  getHomepage: async () => {
+    const response = await api.get<ProjectApiResponse[]>('/projects/homepage')
     return response.data
   },
 

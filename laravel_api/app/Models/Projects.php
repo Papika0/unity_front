@@ -19,7 +19,7 @@ class Projects extends Model
     protected $fillable = [
         'title','description','location', 'status','start_date','completion_date',
         'main_image','gallery_images','render_image',
-       'year','is_active','is_featured',
+       'year','is_active','is_featured','is_onHomepage',
         'latitude','longitude','meta_title','meta_description',
     ];
 

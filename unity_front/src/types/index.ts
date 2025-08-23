@@ -31,6 +31,7 @@ export interface Project {
   year: number
   is_active: boolean
   is_featured: boolean
+  is_onHomepage: boolean
   latitude: number | null
   longitude: number | null
   meta_title: string | null

@@ -42,6 +42,7 @@ class ProjectResource extends JsonResource
             'year'             => $this->year,
             'is_active'        => (bool) $this->is_active,
             'is_featured'      => (bool) $this->is_featured,
+            'is_onHomepage'    => (bool) $this->is_onHomepage,
             'latitude'         => $this->latitude,
             'longitude'        => $this->longitude,
             'meta_title'       => $this->meta_title,
