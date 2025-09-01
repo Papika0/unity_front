@@ -21,7 +21,13 @@ class LoginController extends Controller
                 ], 401);
             }
 
-            if (!$token = JWTAuth::attempt($request->validated())) {
+            $credentials = [
+                'email' => $request->email,
+                'password' => $request->password,
+            ];
+            $remember = $request->boolean('rememberMe');
+
+            if (!$token = JWTAuth::attempt($credentials, $remember)) {
                 return response()->json([
                     'message' => 'მომხმარებელის პაროლი არასწორია.',
                 ], 401);
