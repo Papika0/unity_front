@@ -6,11 +6,9 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Api\ProjectsController;
 use App\Http\Controllers\Api\NewsController;
-use App\Http\Controllers\Api\TranslationController;
 use App\Http\Controllers\Api\HomePageController;
-use App\Http\Controllers\Api\CacheController;
 use App\Http\Controllers\Api\AboutController;
-use App\Http\Controllers\Admin\NewsController as AdminNewsController;
+use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\ProjectsController as AdminProjectsController;
 use App\Http\Controllers\Admin\TranslationController as AdminTranslationController;
 
@@ -38,8 +36,6 @@ Route::prefix('news')->controller(NewsController::class)->group(function () {
     Route::get('/latest', 'latest');
     Route::get('/recent', 'latest'); // Alias for latest
     Route::get('/{id}', 'show');
-    Route::post('/cache/clear', 'clearCache');
-    Route::post('/cache/refresh', 'refreshCache');
 });
 
 // Public projects routes
@@ -48,33 +44,19 @@ Route::prefix('projects')->controller(ProjectsController::class)->group(function
     Route::get('/featured', 'featured');
     Route::get('/homepage', 'homepage');
     Route::get('/{id}', 'show');
-    Route::post('/cache/clear', 'clearCache');
-    Route::post('/cache/refresh', 'refreshCache');
 });
 
 // Homepage routes
 Route::prefix('homepage')->controller(HomePageController::class)->group(function () {
     Route::get('/', 'index');
     Route::get('/bootstrap', 'index'); // Alias for backward compatibility
-    Route::post('/cache/clear', 'clearCache');
-    Route::post('/cache/refresh', 'refreshCache');
 });
 
 // About page routes
 Route::prefix('about')->controller(AboutController::class)->group(function () {
     Route::get('/', 'index');
-    Route::post('/cache/clear', 'clearCache');
-    Route::post('/cache/refresh', 'refreshCache');
 });
 
-// Cache management routes
-Route::prefix('cache')->controller(CacheController::class)->group(function () {
-    Route::get('/pages', 'pages');
-    Route::get('/status', 'status');
-    Route::post('/clear-all', 'clearAll');
-    Route::post('/clear/{page}', 'clearPage');
-    Route::post('/refresh/{page}', 'refreshPage');
-});
 
 Route::middleware('auth:api')->group(function () {
     Route::get('/user', [UserController::class, 'getUser']);
@@ -96,8 +78,10 @@ Route::middleware('auth:api')->group(function () {
 
     // Protected news routes (admin only)
     Route::prefix('admin/news')->controller(AdminNewsController::class)->group(function () {
-        Route::get('/', 'adminIndex');
-        Route::get('/{id}', 'adminShow');
+        Route::get('/', 'index');
+        Route::get('/for-featured-modal', 'forFeaturedModal'); // Get articles for featured modal
+        Route::post('/set-featured', 'setFeatured'); // Set featured news - MUST be before /{id} routes
+        Route::get('/{id}', 'show');
         Route::post('/', 'store');
         Route::put('/{id}', 'update');
         Route::post('/{id}', 'update'); // Allow POST for multipart updates

@@ -311,7 +311,8 @@
           <div>
             <label class="block text-sm font-semibold text-slate-800 mb-3">აირჩიეთ კატეგორია</label>
             <select
-              v-model="form.category"
+              :value="form.category"
+              @change="updateForm('category', ($event.target as HTMLSelectElement).value)"
               required
               class="w-full px-6 py-4 bg-white border-2 border-slate-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-slate-900 font-medium shadow-sm"
               :class="{
@@ -356,7 +357,8 @@
           <div>
             <label class="block text-sm font-semibold text-slate-800 mb-3">აირჩიეთ თარიღი</label>
             <input
-              v-model="form.publish_date"
+              :value="form.publish_date"
+              @input="updateForm('publish_date', ($event.target as HTMLInputElement).value)"
               type="date"
               class="w-full px-6 py-4 bg-white border-2 border-slate-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-slate-900 font-medium shadow-sm"
             />
@@ -369,19 +371,12 @@
             <div class="space-y-4">
               <label class="flex items-center space-x-3 cursor-pointer">
                 <input
-                  v-model="form.is_active"
+                  :checked="form.is_active"
+                  @change="updateForm('is_active', ($event.target as HTMLInputElement).checked)"
                   type="checkbox"
                   class="w-5 h-5 text-emerald-600 border-2 border-slate-300 rounded focus:ring-emerald-500 focus:ring-2"
                 />
                 <span class="text-sm font-medium text-slate-700">აქტიური</span>
-              </label>
-              <label class="flex items-center space-x-3 cursor-pointer">
-                <input
-                  v-model="form.is_featured"
-                  type="checkbox"
-                  class="w-5 h-5 text-emerald-600 border-2 border-slate-300 rounded focus:ring-emerald-500 focus:ring-2"
-                />
-                <span class="text-sm font-medium text-slate-700">გამორჩეული</span>
               </label>
             </div>
           </FormSection>
@@ -433,7 +428,7 @@
             >
               <div v-for="(preview, index) in galleryPreviews" :key="index" class="relative group">
                 <img
-                  :src="preview"
+                  :src="preview.url"
                   :alt="`Gallery image ${index + 1}`"
                   class="w-full h-28 object-cover rounded-2xl border border-slate-300 shadow-lg group-hover:scale-105 transition-transform duration-300"
                 />
@@ -444,6 +439,13 @@
                 >
                   ×
                 </button>
+                <!-- Badge to show if it's a new or existing image -->
+                <div
+                  class="absolute top-2 left-2 px-2 py-1 text-xs rounded-full text-white font-medium"
+                  :class="preview.type === 'new' ? 'bg-green-500' : 'bg-blue-500'"
+                >
+                  {{ preview.type === 'new' ? 'New' : 'Current' }}
+                </div>
               </div>
             </div>
           </div>
@@ -508,7 +510,8 @@
           <div>
             <label class="block text-sm font-semibold text-slate-800 mb-3">SEO სათაური</label>
             <input
-              v-model="form.meta_title"
+              :value="form.meta_title"
+              @input="updateForm('meta_title', ($event.target as HTMLInputElement).value)"
               type="text"
               placeholder="შეიყვანეთ SEO სათაური"
               class="w-full px-6 py-4 bg-white border-2 border-slate-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-slate-900 font-medium shadow-sm"
@@ -521,7 +524,8 @@
           <div>
             <label class="block text-sm font-semibold text-slate-800 mb-3">SEO აღწერა</label>
             <textarea
-              v-model="form.meta_description"
+              :value="form.meta_description"
+              @input="updateForm('meta_description', ($event.target as HTMLTextAreaElement).value)"
               rows="3"
               placeholder="შეიყვანეთ SEO აღწერა"
               class="w-full px-6 py-4 bg-white border-2 border-slate-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-slate-900 font-medium shadow-sm resize-none"
@@ -559,7 +563,7 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          {{ mode === 'edit' ? 'ნოვნდება...' : 'იქმნება...' }}
+          {{ mode === 'edit' ? 'რედაქტირდება...' : 'იქმნება...' }}
         </span>
         <span v-else>
           {{ mode === 'edit' ? 'განახლება' : 'შექმნა' }}
@@ -587,6 +591,8 @@ interface NewsFormData {
   tags: string[]
   meta_title: string
   meta_description: string
+  // For tracking gallery image changes
+  removed_gallery_images: string[]
 }
 
 interface Props {
@@ -615,13 +621,14 @@ const newTag = ref('')
 const translating = ref(false)
 const mainImageInput = ref<HTMLInputElement>()
 const galleryInput = ref<HTMLInputElement>()
+const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 // Computed
 const mainImagePreview = computed(() => {
   if (props.form.main_image) {
     return URL.createObjectURL(props.form.main_image)
   }
-  return props.currentMainImage || ''
+  return backendUrl + props.currentMainImage || ''
 })
 
 // Helper function to get field errors
@@ -655,25 +662,37 @@ const getFieldDisplayName = (fieldName: string) => {
 }
 
 const galleryPreviews = computed(() => {
-  const previews: string[] = []
+  const previews: Array<{ url: string; type: 'existing' | 'new'; path?: string; file?: File }> = []
 
-  // Add current gallery images
+  // Add current gallery images (filter out removed ones)
   if (props.currentGalleryImages) {
-    previews.push(...props.currentGalleryImages)
+    props.currentGalleryImages
+      .filter((img: string) => !props.form.removed_gallery_images.includes(img))
+      .forEach((img: string) => {
+        previews.push({
+          url: img.startsWith('http') ? img : `${backendUrl}${img}`,
+          type: 'existing',
+          path: img,
+        })
+      })
   }
 
   // Add new gallery images
   props.form.gallery_images.forEach((file) => {
-    previews.push(URL.createObjectURL(file))
+    previews.push({
+      url: URL.createObjectURL(file),
+      type: 'new',
+      file: file,
+    })
   })
 
   return previews
 })
 
 // Helper functions
-function updateForm(key: keyof NewsFormData, value: any) {
+function updateForm<K extends keyof NewsFormData>(key: K, value: NewsFormData[K]) {
   const updatedForm = { ...props.form }
-  ;(updatedForm as any)[key] = value
+  updatedForm[key] = value
   emit('update:form', updatedForm)
 }
 
@@ -702,10 +721,6 @@ async function handleTranslate(
   const fieldData = props.form[field]
   const sourceText = fieldData[fromLang as keyof typeof fieldData]
 
-  console.log(`Translation request - Field: ${field}, From: ${fromLang}, To: ${toLang}`)
-  console.log(`Current form data for ${field}:`, fieldData)
-  console.log(`Source text: "${sourceText}"`)
-
   if (!sourceText || typeof sourceText !== 'string' || sourceText.trim() === '') {
     console.warn(`No source text found for ${field}.${fromLang}`)
     return
@@ -713,10 +728,8 @@ async function handleTranslate(
 
   translating.value = true
   try {
-    console.log(`Translating "${sourceText}" from ${fromLang} to ${toLang}`)
     const translatedText = await Translator.translate(sourceText, fromLang, toLang)
     if (translatedText) {
-      console.log(`Translation result: "${translatedText}"`)
       const updatedForm = { ...props.form }
       updatedForm[field][toLang as keyof (typeof updatedForm)[typeof field]] = translatedText
       emit('update:form', updatedForm)
@@ -743,9 +756,29 @@ function handleGalleryChange(event: Event) {
 }
 
 function removeGalleryImage(index: number) {
-  const updatedFiles = [...props.form.gallery_images]
-  updatedFiles.splice(index, 1)
-  updateForm('gallery_images', updatedFiles)
+  const preview = galleryPreviews.value[index]
+
+  if (preview.type === 'existing') {
+    // Mark existing image for removal
+    const removedImages = props.form.removed_gallery_images
+    if (preview.path && !removedImages.includes(preview.path)) {
+      updateForm('removed_gallery_images', [...removedImages, preview.path])
+    }
+  } else {
+    // Remove new file from the array
+    const existingCount = props.currentGalleryImages
+      ? props.currentGalleryImages.filter(
+          (img: string) => !props.form.removed_gallery_images.includes(img),
+        ).length
+      : 0
+    const newFileIndex = index - existingCount
+
+    if (newFileIndex >= 0) {
+      const updatedFiles = [...props.form.gallery_images]
+      updatedFiles.splice(newFileIndex, 1)
+      updateForm('gallery_images', updatedFiles)
+    }
+  }
 }
 
 // Tag management

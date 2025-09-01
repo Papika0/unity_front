@@ -98,3 +98,29 @@ export interface NewsArticle {
   created_at: string
   updated_at: string
 }
+
+export interface AdminNewsArticle {
+  id: number
+  is_active: boolean
+  is_featured: boolean
+  title: adminNewsTranslation
+  content: adminNewsTranslation
+  excerpt: adminNewsTranslation
+  main_image: string | null
+  gallery_images: string[]
+  publish_date: string
+  formatted_publish_date: string
+  category: 'company' | 'project' | 'industry' | 'event'
+  tags: string[]
+  views: number
+  meta_title: string | null
+  meta_description: string | null
+  created_at: string
+  updated_at: string
+}
+
+interface adminNewsTranslation {
+  en: string
+  ka: string
+  ru: string
+}

@@ -61,7 +61,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAdminNewsStore } from '@/stores/admin/news'
 import { useToastStore } from '@/stores/ui/toast'
 import NewsForm from '@/components/admin/news/NewsForm.vue'
-import type { NewsArticle } from '@/types'
+import type { AdminNewsArticle } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -70,7 +70,7 @@ const toastStore = useToastStore()
 
 // Refs
 const submitting = ref(false)
-const article = ref<NewsArticle | null>(null)
+const article = ref<AdminNewsArticle | null>(null)
 const currentMainImage = ref('')
 const currentGalleryImages = ref<string[]>([])
 
@@ -88,6 +88,7 @@ const form = reactive({
   tags: [] as string[],
   meta_title: '',
   meta_description: '',
+  removed_gallery_images: [] as string[],
 })
 
 // Functions
@@ -98,14 +99,14 @@ function goBack() {
   router.push({ name: 'admin-news' })
 }
 
-function updateForm(updatedForm: any) {
+function updateForm(updatedForm: typeof form) {
   // Clear validation errors when form is updated
   adminNewsStore.clearValidationErrors()
   // Use Object.assign to maintain reactivity
   Object.assign(form, updatedForm)
 }
 
-function populateForm(articleData: NewsArticle) {
+function populateForm(articleData: AdminNewsArticle) {
   // Update form with article data
   Object.assign(form, {
     title: articleData.title || { ka: '', en: '', ru: '' },
@@ -120,6 +121,7 @@ function populateForm(articleData: NewsArticle) {
     tags: articleData.tags || [],
     meta_title: articleData.meta_title || '',
     meta_description: articleData.meta_description || '',
+    removed_gallery_images: [],
   })
 
   // Set current images
@@ -151,8 +153,16 @@ async function onSubmit(formData: FormData) {
     adminNewsStore.clearValidationErrors()
 
     // Add existing gallery images that weren't removed
-    currentGalleryImages.value.forEach((image) => {
+    const imagesToKeep = currentGalleryImages.value.filter(
+      (image) => !form.removed_gallery_images.includes(image),
+    )
+    imagesToKeep.forEach((image) => {
       formData.append('existing_gallery_images[]', image)
+    })
+
+    // Add removed gallery images for backend processing
+    form.removed_gallery_images.forEach((image) => {
+      formData.append('removed_gallery_images[]', image)
     })
 
     const result = await adminNewsStore.editArticle(article.value.id, formData)

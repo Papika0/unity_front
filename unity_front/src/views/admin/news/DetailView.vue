@@ -136,7 +136,7 @@
           </div>
           <div class="p-6">
             <img
-              :src="article.main_image"
+              :src="backendUrl + article.main_image"
               :alt="article.title.ka || article.title.en"
               class="w-full max-h-96 object-cover rounded-xl"
             />
@@ -221,7 +221,7 @@
                 @click="openImageModal(image)"
               >
                 <img
-                  :src="image"
+                  :src="backendUrl + image"
                   :alt="`Gallery image ${index + 1}`"
                   class="w-full h-32 object-cover rounded-lg group-hover:shadow-lg transition-all duration-300"
                 />
@@ -353,7 +353,7 @@
     >
       <div class="max-w-4xl max-h-full">
         <img
-          :src="selectedImage"
+          :src="backendUrl + selectedImage"
           alt="Gallery image"
           class="max-w-full max-h-full object-contain rounded-lg"
           @click.stop
@@ -364,22 +364,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAdminNewsStore } from '@/stores/admin/news'
-import type { NewsArticle } from '@/types'
+import type { AdminNewsArticle } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const adminNewsStore = useAdminNewsStore()
 
 // Data
-const article = ref<NewsArticle | null>(null)
+const article = ref<AdminNewsArticle | null>(null)
 const loading = ref(true)
 const error = ref(false)
 const showDeleteModal = ref(false)
 const deleting = ref(false)
 const selectedImage = ref<string | null>(null)
+const backendUrl = import.meta.env.VITE_BACKEND_URL || ''
 
 // Lifecycle
 onMounted(async () => {

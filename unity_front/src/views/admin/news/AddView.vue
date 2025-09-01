@@ -73,6 +73,7 @@ const form = reactive({
   tags: [] as string[],
   meta_title: '',
   meta_description: '',
+  removed_gallery_images: [] as string[],
 })
 
 // Functions
@@ -83,7 +84,7 @@ function goBack() {
   router.push({ name: 'admin-news' })
 }
 
-function updateForm(updatedForm: any) {
+function updateForm(updatedForm: typeof form) {
   // Clear validation errors when form is updated
   adminNewsStore.clearValidationErrors()
   // Use Object.assign to maintain reactivity

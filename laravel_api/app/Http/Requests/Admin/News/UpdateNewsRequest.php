@@ -37,14 +37,15 @@ class UpdateNewsRequest extends FormRequest
             'category' => 'required|in:company,project,industry,event',
             'publish_date' => 'nullable|date',
             'is_active' => 'required|in:0,1,false,true',
-            'is_featured' => 'required|in:0,1,false,true',
 
             // Images
             'main_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'gallery_images' => 'nullable|array',
             'gallery_images.*' => 'file|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'existing_gallery_images' => 'nullable|array',
-            'existing_gallery_images.*' => 'string|url',
+            'existing_gallery_images.*' => 'string',
+            'removed_gallery_images' => 'nullable|array',
+            'removed_gallery_images.*' => 'string',
 
             // Tags
             'tags' => 'nullable|array',

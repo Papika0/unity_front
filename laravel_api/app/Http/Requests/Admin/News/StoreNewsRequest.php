@@ -37,7 +37,6 @@ class StoreNewsRequest extends FormRequest
             'category' => 'required|in:company,project,industry,event',
             'publish_date' => 'nullable|date',
             'is_active' => 'required|in:0,1,false,true',
-            'is_featured' => 'required|in:0,1,false,true',
 
             // Images
             'main_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp|max:10240',

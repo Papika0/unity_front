@@ -66,3 +66,8 @@ export const updateNews = async (id: number, data: FormData) => {
 }
 
 export const deleteNews = async (id: number) => api.delete(`/admin/news/${id}`)
+
+export const setFeaturedNews = async (newsIds: number[]) =>
+  api.post('/admin/news/set-featured', { news_ids: newsIds })
+
+export const getArticlesForFeaturedModal = async () => api.get('/admin/news/for-featured-modal')
