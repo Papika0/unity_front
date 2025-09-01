@@ -1,18 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useTranslations } from '../../composables/useTranslations'
 import { useProjectsStore } from '@/stores/public/projects'
 
-const { t } = useTranslations()
+const { t, isInitialized } = useTranslations()
 const backendUrl = import.meta.env.VITE_BACKEND_URL
 const projectsStore = useProjectsStore()
-
-// Initialize projects data
-onMounted(async () => {
-  if (projectsStore.activeProjects.length === 0) {
-    await projectsStore.fetchProjects()
-  }
-})
 
 const statusColorMap = {
   ongoing: 'text-amber-300',
@@ -20,21 +13,22 @@ const statusColorMap = {
   planning: 'text-blue-400',
 }
 
-const statusTextMap = {
-  ongoing: 'მიმდინარე',
-  completed: 'დასრულებული',
-  planning: 'დაგეგმილი',
-}
+// Computed to ensure translations are loaded when accessed
+const statusTextMap = computed(() => ({
+  ongoing: t('projects.status1'),
+  completed: t('projects.status2'),
+  planning: t('projects.statusPlanning'),
+}))
 
 // Get first 3 active projects for homepage display
 const displayProjects = computed(() =>
-  projectsStore.activeProjects.slice(0, 3).map((project, index) => ({
+  projectsStore.homepageProjects.slice(0, 3).map((project, index) => ({
     id: project.id,
-    title: project.title.ka,
-    address: project.location.ka,
-    status: statusTextMap[project.status],
+    title: project.title,
+    address: project.location,
+    status: statusTextMap.value[project.status as keyof typeof statusTextMap.value],
     statusColor: statusColorMap[project.status],
-    image: backendUrl + project.main_image,
+    image: backendUrl ? new URL(project.main_image, backendUrl).href : project.main_image,
     overlay: index > 0, // Apply overlay to projects after the first one
   })),
 )
@@ -52,18 +46,24 @@ const displayProjects = computed(() =>
       <img src="../../assets/Vector_10.png" alt="" class="mb-16" />
 
       <!-- Loading State -->
-      <div v-if="projectsStore.isLoading" class="text-center py-16">
-        <p class="text-gray-600 text-lg">იტვირთება...</p>
+      <div v-if="projectsStore.isLoading || !isInitialized" class="text-center py-16">
+        <div v-if="!isInitialized" class="text-gray-600 text-lg">
+          <div
+            class="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"
+          ></div>
+          Loading translations...
+        </div>
+        <p v-else class="text-gray-600 text-lg">{{ t('common.loading') }}</p>
       </div>
 
       <!-- Error State -->
       <div v-else-if="projectsStore.error" class="text-center py-16">
-        <p class="text-red-600 text-lg">შეცდომა: {{ projectsStore.error }}</p>
+        <p class="text-red-600 text-lg">{{ t('common.error') }}: {{ projectsStore.error }}</p>
       </div>
 
       <!-- No Projects State -->
       <div v-else-if="displayProjects.length === 0" class="text-center py-16">
-        <p class="text-gray-600 text-lg">პროექტები ვერ მოიძებნა</p>
+        <p class="text-gray-600 text-lg">{{ t('projects.empty') }}</p>
       </div>
 
       <!-- Projects Grid -->

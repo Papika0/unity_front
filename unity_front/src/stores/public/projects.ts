@@ -1,22 +1,15 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { projectsApi, transformProject } from '@/services/projectsApi'
-import type { ProjectApiResponse } from '@/services/projectsApi'
-
-export interface ProjectTranslation {
-  ka: string
-  en: string
-  ru?: string
-}
+import { projectsApi } from '@/services/projectsApi'
 
 export interface Project {
   id: number
   is_active: boolean
   is_featured: boolean
   is_onHomepage: boolean
-  title: ProjectTranslation
-  description: ProjectTranslation
-  location: ProjectTranslation
+  title: string
+  description: string
+  location: string
   status: 'planning' | 'ongoing' | 'completed'
   start_date: string | null
   completion_date: string | null
@@ -93,17 +86,6 @@ export const useProjectsStore = defineStore('projects', () => {
     return projects.value.filter((project) => project.status === status && project.is_active)
   }
 
-  const searchProjects = (query: string, lang: 'ka' | 'en' = 'ka'): Project[] => {
-    const lowercaseQuery = query.toLowerCase()
-    return projects.value.filter(
-      (project) =>
-        project.is_active &&
-        (project.title[lang].toLowerCase().includes(lowercaseQuery) ||
-          project.description[lang].toLowerCase().includes(lowercaseQuery) ||
-          project.location[lang].toLowerCase().includes(lowercaseQuery)),
-    )
-  }
-
   // API integration methods
   const fetchProjects = async (): Promise<void> => {
     isLoading.value = true
@@ -112,7 +94,7 @@ export const useProjectsStore = defineStore('projects', () => {
     try {
       const response = await projectsApi.getAll()
       if (response.success && response.data) {
-        projects.value = response.data.map(transformProject)
+        projects.value = response.data
       } else {
         throw new Error(response.message || 'Failed to fetch projects')
       }
@@ -131,7 +113,7 @@ export const useProjectsStore = defineStore('projects', () => {
     try {
       const response = await projectsApi.getFeatured()
       if (response.success && response.data) {
-        featuredProjectsData.value = response.data.map(transformProject)
+        featuredProjectsData.value = response.data
       } else {
         throw new Error(response.message || 'Failed to fetch featured projects')
       }
@@ -150,7 +132,7 @@ export const useProjectsStore = defineStore('projects', () => {
     try {
       const response = await projectsApi.getHomepage()
       if (response.success && response.data) {
-        homepageProjectsData.value = response.data.map(transformProject)
+        homepageProjectsData.value = response.data
       } else {
         throw new Error(response.message || 'Failed to fetch homepage projects')
       }
@@ -169,7 +151,7 @@ export const useProjectsStore = defineStore('projects', () => {
     try {
       const response = await projectsApi.getById(id)
       if (response.success && response.data) {
-        const project = transformProject(response.data)
+        const project = response.data
 
         // Update the project in the store if it exists
         const existingIndex = projects.value.findIndex((p) => p.id === id)
@@ -200,6 +182,25 @@ export const useProjectsStore = defineStore('projects', () => {
     error.value = null
   }
 
+  // Custom patch method
+  const $patch = (
+    state: Partial<{
+      projects: Project[]
+      featuredProjectsData: Project[]
+      homepageProjectsData: Project[]
+    }>,
+  ) => {
+    if (state.projects !== undefined) {
+      projects.value = state.projects
+    }
+    if (state.featuredProjectsData !== undefined) {
+      featuredProjectsData.value = state.featuredProjectsData
+    }
+    if (state.homepageProjectsData !== undefined) {
+      homepageProjectsData.value = state.homepageProjectsData
+    }
+  }
+
   return {
     // State
     projects,
@@ -220,11 +221,11 @@ export const useProjectsStore = defineStore('projects', () => {
     // Actions
     getProjectById,
     getProjectsByStatus,
-    searchProjects,
     fetchProjects,
     fetchFeaturedProjects,
     fetchHomepageProjects,
     fetchProjectById,
     clearProjects,
+    $patch,
   }
 })

@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Http\Resources\Api;
+namespace App\Http\Resources\Admin;
 
 use Illuminate\Http\Request;
+use App\Http\Resources\Admin\AdminTranslationResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class TranslationCollection extends ResourceCollection
+class AdminTranslationCollection extends ResourceCollection
 {
     public function toArray(Request $request): array
     {
         return [
-            'data' => TranslationResource::collection($this->collection),
+            'data' => AdminTranslationResource::collection($this->collection),
             'meta' => [
                 'current_page' => $this->resource->currentPage(),
                 'last_page' => $this->resource->lastPage(),

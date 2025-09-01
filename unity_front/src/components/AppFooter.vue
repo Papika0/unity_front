@@ -3,8 +3,11 @@ import { computed, onMounted } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
 import { useProjectsStore } from '@/stores/public/projects'
 
-const { t } = useTranslations()
+const { t, currentLocale } = useTranslations()
 const projectsStore = useProjectsStore()
+
+// Force re-render when locale changes
+const localeKey = computed(() => currentLocale.value)
 
 const businessLinks = [
   { key: 'footer.home', path: '/' },
@@ -43,10 +46,10 @@ const socialLinks = [
         >
           <div class="mb-4 md:mb-0">
             <h2 class="text-2xl font-normal font-roboto leading-loose mb-2">
-              მოვუსმინოთ თქვენს იდეებს
+              {{ t('footer.ctaTitle') }}
             </h2>
             <p class="text-base font-normal font-roboto leading-relaxed text-zinc-600">
-              გვითხარით თქვენი პროექტის შესახებ და ჩვენ დაგეხმარებით მის განხორციელებაში
+              {{ t('footer.ctaSubtitle') }}
             </p>
           </div>
           <div class="flex flex-col sm:flex-row gap-3">
@@ -54,13 +57,13 @@ const socialLinks = [
               to="/contact"
               class="px-6 py-3 bg-zinc-900 text-white text-sm font-normal font-roboto uppercase leading-relaxed tracking-widest hover:bg-zinc-800 transition-colors duration-200 text-center"
             >
-              კონტაქტი
+              {{ t('contact.title') }}
             </router-link>
             <a
               href="tel:995577300333"
               class="px-6 py-3 border border-zinc-900 text-zinc-900 text-sm font-normal font-roboto uppercase leading-relaxed tracking-widest hover:bg-zinc-900 hover:text-white transition-colors duration-200 text-center"
             >
-              ზარის მოთხოვნა
+              {{ t('footer.requestCall') }}
             </a>
           </div>
         </div>
@@ -70,14 +73,16 @@ const socialLinks = [
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16">
         <!-- Business Section -->
         <div>
-          <h3 class="text-lg font-normal font-roboto leading-normal mb-6">ბიზნესი</h3>
+          <h3 class="text-lg font-normal font-roboto leading-normal mb-6">
+            {{ t('footer.business') }}
+          </h3>
           <ul class="space-y-4">
             <li>
               <router-link
                 to="/"
                 class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
               >
-                მთავარი გვერდი
+                {{ t('header.home') }}
               </router-link>
             </li>
             <li>
@@ -85,7 +90,7 @@ const socialLinks = [
                 to="/about"
                 class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
               >
-                ჩვენ შესახებ
+                {{ t('header.about') }}
               </router-link>
             </li>
             <li>
@@ -93,7 +98,7 @@ const socialLinks = [
                 to="/gallery"
                 class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
               >
-                მედია
+                {{ t('header.gallery') }}
               </router-link>
             </li>
             <li>
@@ -101,7 +106,7 @@ const socialLinks = [
                 to="/contact"
                 class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
               >
-                კონტაქტი
+                {{ t('header.contact') }}
               </router-link>
             </li>
             <li>
@@ -109,7 +114,7 @@ const socialLinks = [
                 to="/terms"
                 class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
               >
-                გამოყენების წესები
+                {{ t('footer.terms') }}
               </router-link>
             </li>
             <li>
@@ -117,7 +122,7 @@ const socialLinks = [
                 to="/privacy"
                 class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
               >
-                კონფიდენციალურობის პოლიტიკა
+                {{ t('footer.privacy') }}
               </router-link>
             </li>
             <li>
@@ -125,7 +130,7 @@ const socialLinks = [
                 to="/cookies"
                 class="text-xl font-normal font-roboto leading-relaxed text-zinc-900 hover:text-zinc-600"
               >
-                ქუქიების პოლიტიკა
+                {{ t('footer.cookies') }}
               </router-link>
             </li>
           </ul>
@@ -133,7 +138,9 @@ const socialLinks = [
 
         <!-- Projects Section -->
         <div>
-          <h3 class="text-lg font-normal font-roboto leading-normal mb-6">პროექტები</h3>
+          <h3 class="text-lg font-normal font-roboto leading-normal mb-6">
+            {{ t('projects.title') }}
+          </h3>
           <ul class="space-y-4">
             <li v-for="project in projectLinks" :key="project.id">
               <router-link
@@ -148,7 +155,9 @@ const socialLinks = [
 
         <!-- Social Section -->
         <div>
-          <h3 class="text-lg font-normal font-roboto leading-normal mb-6">და სხვა</h3>
+          <h3 class="text-lg font-normal font-roboto leading-normal mb-6">
+            {{ t('footer.more') }}
+          </h3>
           <ul class="space-y-4">
             <li>
               <a
@@ -157,7 +166,7 @@ const socialLinks = [
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Facebook
+                {{ t('footer.facebook') }}
               </a>
             </li>
             <li>
@@ -167,7 +176,7 @@ const socialLinks = [
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Instagram
+                {{ t('footer.instagram') }}
               </a>
             </li>
             <li>
@@ -177,7 +186,7 @@ const socialLinks = [
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Linkedin
+                {{ t('footer.linkedin') }}
               </a>
             </li>
             <li>
@@ -187,7 +196,7 @@ const socialLinks = [
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Youtube
+                {{ t('footer.youtube') }}
               </a>
             </li>
           </ul>
@@ -195,25 +204,31 @@ const socialLinks = [
 
         <!-- Contact Section -->
         <div>
-          <h3 class="text-lg font-normal font-roboto leading-normal mb-6">კავშირი</h3>
+          <h3 class="text-lg font-normal font-roboto leading-normal mb-6">
+            {{ t('contact.title') }}
+          </h3>
           <div class="space-y-6">
             <!-- Address -->
             <div>
-              <h4 class="text-xl font-normal font-roboto leading-loose mb-2">მისამართი</h4>
+              <h4 class="text-xl font-normal font-roboto leading-loose mb-2">
+                {{ t('footer.address') }}
+              </h4>
               <p class="text-base font-normal font-roboto leading-loose">
-                იუნკერთა ქუჩა №1, კომერციული ფართი №1, Tbilisi, Georgia
+                {{ t('footer.addressValue') }}
               </p>
               <a
                 href="#"
                 class="text-xs font-normal font-roboto leading-3 text-red-700 hover:text-red-800"
               >
-                ლოკაცია
+                {{ t('footer.location') }}
               </a>
             </div>
 
             <!-- Email -->
             <div>
-              <span class="text-xl font-normal font-roboto leading-loose">ელ.ფოსტა: </span>
+              <span class="text-xl font-normal font-roboto leading-loose"
+                >{{ t('footer.email') }}:
+              </span>
               <a
                 href="mailto:info@unitydev.ge"
                 class="text-xl font-normal font-roboto leading-loose text-zinc-900 hover:text-zinc-600"
@@ -224,7 +239,9 @@ const socialLinks = [
 
             <!-- Phone -->
             <div>
-              <span class="text-xl font-normal font-roboto leading-loose">ტელ: </span>
+              <span class="text-xl font-normal font-roboto leading-loose"
+                >{{ t('footer.phone') }}:
+              </span>
               <div class="flex items-center space-x-4">
                 <a
                   href="tel:032300333"
@@ -250,9 +267,9 @@ const socialLinks = [
       <div
         class="flex flex-col md:flex-row justify-between items-center text-base font-normal font-roboto leading-loose"
       >
-        <span>იუნითი ჯგუფი</span>
-        <span>© ყველა უფლება დაცულია</span>
-        <span>შექმნილია Design Sins -ს მიერ</span>
+        <span>{{ t('footer.company') }}</span>
+        <span>© {{ t('footer.rights') }}</span>
+        <span>{{ t('footer.madeBy') }}</span>
       </div>
     </div>
   </footer>

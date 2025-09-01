@@ -6,16 +6,20 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class TranslationResource extends JsonResource
 {
+    protected $locale;
+
+    public function __construct($resource, $locale = 'ka')
+    {
+        parent::__construct($resource);
+        $this->locale = $locale;
+    }
+
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
             'key' => $this->key,
-            'text_en' => $this->getTranslation('text', 'en'),
-            'text_ka' => $this->getTranslation('text', 'ka'),
-            'text_ru' => $this->getTranslation('text', 'ru'),
+            'text' => $this->getTranslation('text', $this->locale),
             'group' => $this->group,
-            'active' => $this->active,
         ];
     }
 }

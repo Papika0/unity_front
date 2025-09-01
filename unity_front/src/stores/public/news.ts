@@ -23,7 +23,7 @@ interface PaginatedResponse {
     from: number
     to: number
   }
-  links?: any
+  links?: Record<string, unknown>
 }
 
 export const useNewsStore = defineStore('news', () => {
@@ -44,28 +44,6 @@ export const useNewsStore = defineStore('news', () => {
   })
 
   // Getters
-  const filteredArticles = computed(() => {
-    let filtered = articles.value
-
-    if (searchQuery.value) {
-      const query = searchQuery.value.toLowerCase()
-      filtered = filtered.filter(
-        (article) =>
-          article.title.ka.toLowerCase().includes(query) ||
-          article.title.en.toLowerCase().includes(query) ||
-          article.title.ru.toLowerCase().includes(query) ||
-          article.excerpt.ka.toLowerCase().includes(query) ||
-          article.excerpt.en.toLowerCase().includes(query) ||
-          article.excerpt.ru.toLowerCase().includes(query),
-      )
-    }
-
-    if (selectedCategory.value) {
-      filtered = filtered.filter((article) => article.category === selectedCategory.value)
-    }
-
-    return filtered
-  })
 
   const activeArticles = computed(() => articles.value.filter((article) => article.is_active))
 
@@ -111,8 +89,9 @@ export const useNewsStore = defineStore('news', () => {
         current_page: data.meta?.current_page || data.current_page || 1,
         last_page: data.meta?.last_page || data.last_page || 1,
       }
-    } catch (err: any) {
-      error.value = err?.response?.data?.message || err?.message || 'Failed to load articles'
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load articles'
+      error.value = errorMessage
       console.error('loadArticles error:', err)
     } finally {
       loading.value = false
@@ -125,7 +104,7 @@ export const useNewsStore = defineStore('news', () => {
       // Handle nested response structure
       const data = response.data.data || response.data
       recentArticles.value = Array.isArray(data) ? data : []
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('loadRecentArticles error:', err)
     }
   }
@@ -136,7 +115,7 @@ export const useNewsStore = defineStore('news', () => {
       // Handle nested response structure
       const data = response.data.data || response.data
       featuredArticles.value = Array.isArray(data) ? data : []
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('loadFeaturedArticles error:', err)
     }
   }
@@ -150,8 +129,9 @@ export const useNewsStore = defineStore('news', () => {
       // Handle nested response structure
       const data = response.data.data || response.data
       articles.value = Array.isArray(data) ? data : []
-    } catch (err: any) {
-      error.value = err?.response?.data?.message || err?.message || 'Failed to load articles'
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load articles'
+      error.value = errorMessage
       console.error('loadArticlesByCategory error:', err)
     } finally {
       loading.value = false
@@ -168,8 +148,9 @@ export const useNewsStore = defineStore('news', () => {
       currentArticle.value = response.data.data || response.data || null
 
       return currentArticle.value
-    } catch (err: any) {
-      error.value = err?.response?.data?.message || err?.message || 'Failed to load article'
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load article'
+      error.value = errorMessage
       console.error('loadArticle error:', err)
       currentArticle.value = null
       return null
@@ -223,6 +204,25 @@ export const useNewsStore = defineStore('news', () => {
     await loadFeaturedArticles()
   }
 
+  // Custom patch method with cache update
+  const $patch = (
+    state: Partial<{
+      recentArticles: NewsArticle[]
+      featuredArticles: NewsArticle[]
+      articles: NewsArticle[]
+    }>,
+  ) => {
+    if (state.recentArticles !== undefined) {
+      recentArticles.value = state.recentArticles
+    }
+    if (state.featuredArticles !== undefined) {
+      featuredArticles.value = state.featuredArticles
+    }
+    if (state.articles !== undefined) {
+      articles.value = state.articles
+    }
+  }
+
   return {
     // State
     articles,
@@ -236,7 +236,6 @@ export const useNewsStore = defineStore('news', () => {
     pagination,
 
     // Getters
-    filteredArticles,
     activeArticles,
     categorizedArticles,
 
@@ -253,5 +252,6 @@ export const useNewsStore = defineStore('news', () => {
     clearError,
     clearCurrentArticle,
     initialize,
+    $patch,
   }
 })

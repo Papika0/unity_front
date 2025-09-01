@@ -79,19 +79,13 @@ export interface LoginRequest {
   rememberMe: boolean
 }
 
-export interface NewsTranslation {
-  ka: string
-  en: string
-  ru: string
-}
-
 export interface NewsArticle {
   id: number
   is_active: boolean
   is_featured: boolean
-  title: NewsTranslation
-  content: NewsTranslation
-  excerpt: NewsTranslation
+  title: string
+  content: string
+  excerpt: string
   main_image: string | null
   gallery_images: string[]
   publish_date: string

@@ -2,6 +2,7 @@
 import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTranslations } from '../composables/useTranslations'
+import { useLocaleStore } from '@/stores/ui/locale'
 
 interface Props {
   transparent?: boolean
@@ -12,6 +13,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useTranslations()
+const localeStore = useLocaleStore()
 const router = useRouter()
 const isMobileMenuOpen = ref(false)
 
@@ -139,6 +141,7 @@ onUnmounted(() => {
               ? 'text-orange-100 hover:text-orange-200 hover:bg-white/10'
               : 'text-zinc-900 hover:text-zinc-600 hover:bg-zinc-100',
           ]"
+          @click="localeStore.setLocale('en')"
         >
           EN
         </button>
@@ -149,6 +152,7 @@ onUnmounted(() => {
               ? 'text-orange-100 hover:text-orange-200 hover:bg-white/10'
               : 'text-zinc-900 hover:text-zinc-600 hover:bg-zinc-100',
           ]"
+          @click="localeStore.setLocale('ka')"
         >
           KA
         </button>
@@ -159,6 +163,7 @@ onUnmounted(() => {
               ? 'text-orange-100 hover:text-orange-200 hover:bg-white/10'
               : 'text-zinc-900 hover:text-zinc-600 hover:bg-zinc-100',
           ]"
+          @click="localeStore.setLocale('ru')"
         >
           RU
         </button>

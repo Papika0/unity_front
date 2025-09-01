@@ -1,16 +1,33 @@
 <script setup lang="ts">
-import { useTranslations } from '../composables/useTranslations'
+import { onMounted, watch } from 'vue'
 import HeroSection from '../components/home/HeroSection.vue'
 import AboutSection from '../components/home/AboutSection.vue'
 import ProjectsSection from '../components/home/ProjectsSection.vue'
 import FeaturedProject from '../components/home/FeaturedProject.vue'
 import NewsSection from '../components/home/NewsSection.vue'
+import { useHomepageStore } from '@/stores/public/homepage'
+import { useLocaleStore } from '@/stores/ui/locale'
 
-const { t } = useTranslations()
+const homepageStore = useHomepageStore()
+const localeStore = useLocaleStore()
+
+onMounted(async () => {
+  await homepageStore.loadHomepageData()
+})
+
+// Watch for locale changes and refetch data
+watch(
+  () => localeStore.currentLocale,
+  async (newLocale, oldLocale) => {
+    if (newLocale !== oldLocale) {
+      await homepageStore.handleLocaleChange()
+    }
+  },
+)
 </script>
 
 <template>
-  <div class="relative">
+  <div>
     <HeroSection />
     <AboutSection />
     <ProjectsSection />
@@ -18,7 +35,3 @@ const { t } = useTranslations()
     <NewsSection />
   </div>
 </template>
-
-<style scoped>
-/* Additional styles if needed */
-</style>

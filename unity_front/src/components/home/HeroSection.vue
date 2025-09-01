@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useTranslations } from '@/composables/useTranslations'
 import { useProjectsStore } from '@/stores/public/projects'
 
@@ -72,16 +72,16 @@ const prevSlide = () => {
   }, 1500)
 }
 
-const goToSlide = (index: number) => {
-  if (isAnimating.value || index === currentSlide.value) return
-  isAnimating.value = true
-  currentSlide.value = index
-  stopAutoScroll()
-  setTimeout(() => {
-    isAnimating.value = false
-    setTimeout(startAutoScroll, 3000)
-  }, 1500)
-}
+// const goToSlide = (index: number) => {
+//   if (isAnimating.value || index === currentSlide.value) return
+//   isAnimating.value = true
+//   currentSlide.value = index
+//   stopAutoScroll()
+//   setTimeout(() => {
+//     isAnimating.value = false
+//     setTimeout(startAutoScroll, 3000)
+//   }, 1500)
+// }
 
 // Pause/resume on hover
 const pauseAutoScroll = () => {
@@ -108,7 +108,11 @@ const handleKeydown = (event: KeyboardEvent) => {
       break
     case ' ':
       event.preventDefault()
-      isPaused.value ? resumeAutoScroll() : pauseAutoScroll()
+      if (isPaused.value) {
+        resumeAutoScroll()
+      } else {
+        pauseAutoScroll()
+      }
       break
   }
 }
@@ -136,24 +140,6 @@ const setupIntersectionObserver = () => {
   return () => observer.disconnect()
 }
 
-// Image loading state
-const imageLoadErrors = ref<Set<string>>(new Set())
-
-// Handle image load error
-const handleImageError = (imagePath: string) => {
-  imageLoadErrors.value.add(imagePath)
-  if (isDevelopment) {
-    console.error('Failed to load image:', getImageUrl(imagePath))
-  }
-}
-
-// Handle successful image load
-const handleImageLoad = (imagePath: string) => {
-  if (isDevelopment) {
-    console.log('Image loaded successfully:', imagePath)
-  }
-}
-
 // Helper function to get full image URL
 const getImageUrl = (imagePath: string) => {
   if (!imagePath) return ''
@@ -177,10 +163,6 @@ const getImageUrl = (imagePath: string) => {
 
   const fullUrl = `${baseUrl}${path}`
 
-  if (isDevelopment) {
-    console.log('Image URL generated:', { baseUrl, imagePath, fullUrl })
-  }
-
   return fullUrl
 }
 
@@ -193,28 +175,7 @@ const preloadImages = () => {
 }
 
 onMounted(async () => {
-  // Debug backend URL in development
-  if (isDevelopment) {
-    console.log('Backend URL:', backendUrl)
-
-    // Test image URL construction
-    if (backendUrl) {
-      const testImagePath = 'storage/projects/main/test.jpg'
-      console.log('Test image URL:', getImageUrl(testImagePath))
-    }
-  }
-
-  try {
-    await projectsStore.fetchFeaturedProjects()
-  } catch (error) {
-    console.error('Failed to fetch featured projects for hero:', error)
-    try {
-      await projectsStore.fetchProjects()
-    } catch (fallbackError) {
-      console.error('Failed to fetch projects:', fallbackError)
-    }
-  }
-
+  // Projects are now loaded via homepage bootstrap, no need to fetch here
   const cleanup = setupIntersectionObserver()
   preloadImages()
   document.addEventListener('keydown', handleKeydown)
@@ -229,35 +190,6 @@ onUnmounted(() => {
   stopAutoScroll()
   document.removeEventListener('keydown', handleKeydown)
 })
-
-// Watch for hero projects changes
-watch(
-  heroProjects,
-  (newProjects) => {
-    if (currentSlide.value >= newProjects.length) {
-      currentSlide.value = 0
-    }
-
-    // Log image URLs for debugging in development
-    if (isDevelopment && newProjects.length > 0) {
-      console.log(
-        'Hero projects loaded:',
-        newProjects.map((p) => ({
-          id: p.id,
-          title: p.title.ka,
-          main_image: p.main_image,
-          imageUrl: getImageUrl(p.main_image),
-        })),
-      )
-    }
-
-    // Preload images when projects change
-    if (newProjects.length > 0) {
-      preloadImages()
-    }
-  },
-  { immediate: true },
-)
 </script>
 
 <template>
@@ -317,7 +249,7 @@ watch(
               >
                 <div class="w-12 h-[1px] bg-white/60"></div>
                 <p class="text-white/80 text-sm font-light tracking-[0.2em] uppercase">
-                  {{ project.location.ka }}
+                  {{ project.location }}
                 </p>
               </div>
 
@@ -330,7 +262,7 @@ watch(
                 }"
               >
                 <span class="text-5xl md:text-7xl lg:text-8xl block leading-none">
-                  {{ project.title.ka }}
+                  {{ project.title }}
                 </span>
               </h1>
 
@@ -419,68 +351,6 @@ watch(
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
         </svg>
       </button>
-    </div>
-
-    <!-- No Backend URL Warning -->
-    <div
-      v-if="!backendUrl && !projectsStore.isLoading"
-      class="absolute inset-0 flex items-center justify-center bg-zinc-900 z-40"
-    >
-      <div class="text-center max-w-lg mx-auto px-8">
-        <div
-          class="w-20 h-20 mx-auto mb-6 border-2 border-yellow-500/50 rounded-full flex items-center justify-center"
-        >
-          <svg
-            class="w-10 h-10 text-yellow-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-        </div>
-        <h3 class="text-white text-xl font-light mb-3">Configuration Required</h3>
-        <p class="text-white/60 text-sm mb-6 leading-relaxed">
-          The
-          <code class="bg-white/10 px-2 py-1 rounded text-yellow-400">VITE_API_BASE_URL</code>
-          environment variable is not configured. Please add it to your
-          <code class="bg-white/10 px-2 py-1 rounded text-yellow-400">.env</code> file.
-        </p>
-        <div class="bg-black/50 rounded-lg p-4 text-left">
-          <p class="text-white/40 text-xs mb-2">Example .env configuration:</p>
-          <code class="text-green-400 text-sm">VITE_API_BASE_URL=https://your-api-domain.com</code>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading State - Luxury Minimal -->
-    <div
-      v-if="backendUrl && (projectsStore.isLoading || heroProjects.length === 0)"
-      class="absolute inset-0 flex items-center justify-center bg-black z-40"
-    >
-      <div class="text-center">
-        <!-- Elegant Loading Animation -->
-        <div class="relative w-24 h-24 mx-auto mb-8">
-          <div class="absolute inset-0 border border-white/10 rounded-full"></div>
-          <div class="absolute inset-0 border border-white/30 rounded-full animate-ping"></div>
-          <div
-            class="absolute inset-2 border border-t-transparent border-white/20 rounded-full animate-spin"
-          ></div>
-        </div>
-
-        <p class="text-white/40 font-thin tracking-[0.3em] uppercase text-sm">
-          {{ projectsStore.isLoading ? 'Loading' : 'No Projects Available' }}
-        </p>
-
-        <p v-if="projectsStore.error" class="text-red-400/60 text-xs mt-4 font-thin tracking-wider">
-          {{ projectsStore.error }}
-        </p>
-      </div>
     </div>
   </section>
 </template>

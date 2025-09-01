@@ -1,21 +1,11 @@
 import { api } from './api'
-import type { ApiResponse } from './api'
 
 // Project interfaces to match the API response
 export interface ProjectApiResponse {
   id: number
   title: string
-  title_en: string
-  title_ru: string
-  title_ka: string
   description: string
-  description_en: string
-  description_ru: string
-  description_ka: string
   location: string
-  location_en: string
-  location_ru: string
-  location_ka: string
   status: 'planning' | 'ongoing' | 'completed'
   status_name: string
   start_date: string
@@ -34,42 +24,6 @@ export interface ProjectApiResponse {
   created_at: string
   updated_at: string
 }
-
-// Convert API response to store format
-export const transformProject = (apiProject: ProjectApiResponse) => ({
-  id: apiProject.id,
-  is_active: apiProject.is_active,
-  is_featured: apiProject.is_featured,
-  is_onHomepage: apiProject.is_onHomepage,
-  title: {
-    ka: apiProject.title_ka,
-    en: apiProject.title_en,
-    ru: apiProject.title_ru,
-  },
-  description: {
-    ka: apiProject.description_ka,
-    en: apiProject.description_en,
-    ru: apiProject.description_ru,
-  },
-  location: {
-    ka: apiProject.location_ka,
-    en: apiProject.location_en,
-    ru: apiProject.location_ru,
-  },
-  status: apiProject.status,
-  start_date: apiProject.start_date,
-  completion_date: apiProject.completion_date,
-  main_image: apiProject.main_image,
-  render_image: apiProject.render_image,
-  gallery_images: apiProject.gallery_images,
-  year: apiProject.year,
-  latitude: apiProject.latitude,
-  longitude: apiProject.longitude,
-  meta_title: apiProject.meta_title,
-  meta_description: apiProject.meta_description,
-  created_at: apiProject.created_at,
-  updated_at: apiProject.updated_at,
-})
 
 export const projectsApi = {
   // Get all active projects
