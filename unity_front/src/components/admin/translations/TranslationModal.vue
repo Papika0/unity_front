@@ -63,105 +63,115 @@
       <!-- Modal Content -->
       <div class="relative z-10 px-8 py-8">
         <form @submit.prevent="$emit('submit')" class="space-y-8">
-          <!-- Key & Group Row -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Key Field -->
-            <div class="space-y-2">
-              <label
-                for="key"
-                class="flex items-center space-x-2 text-sm font-semibold text-slate-800"
+          <!-- Group Selection (First Step) -->
+          <div class="space-y-2">
+            <label
+              for="group"
+              class="flex items-center space-x-2 text-sm font-semibold text-slate-800"
+            >
+              <div
+                class="w-8 h-8 bg-gradient-to-br from-emerald-100 to-green-100 rounded-lg flex items-center justify-center"
               >
-                <div
-                  class="w-8 h-8 bg-gradient-to-br from-violet-100 to-purple-100 rounded-lg flex items-center justify-center"
+                <svg
+                  class="w-4 h-4 text-emerald-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    class="w-4 h-4 text-violet-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 7a2 2 0 012 2m0 0a2 2 0 01-2 2m2-2h3m-3 0h-3m-2-5a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V9a2 2 0 00-2-2H9z"
-                    ></path>
-                  </svg>
-                </div>
-                <span>იდენტიფიკატორი (Key)</span>
-              </label>
-              <input
-                v-model="form.key"
-                type="text"
-                id="key"
-                required
-                :disabled="isEdit"
-                class="block w-full px-4 py-4 text-base text-slate-900 border-2 border-slate-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:bg-slate-50 disabled:text-slate-600 disabled:border-slate-200 transition-all duration-300 placeholder:text-slate-500 bg-white"
-                placeholder="მაგ. home.welcome_message"
-              />
-            </div>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  ></path>
+                </svg>
+              </div>
+              <span>ჯგუფი</span>
+              <span
+                v-if="!isEdit"
+                class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full"
+                >პირველი ნაბიჯი</span
+              >
+            </label>
+            <CustomDropdown
+              v-model="formGroup"
+              :options="groupOptions"
+              placeholder="აირჩიეთ ჯგუფი..."
+            />
+          </div>
 
-            <!-- Group Field -->
-            <div class="space-y-2">
-              <label
-                for="group"
-                class="flex items-center space-x-2 text-sm font-semibold text-slate-800"
+          <!-- Key Field (Second Step - appears after group selection) -->
+          <div v-if="formGroup || isEdit" class="space-y-2">
+            <label
+              for="key"
+              class="flex items-center space-x-2 text-sm font-semibold text-slate-800"
+            >
+              <div
+                class="w-8 h-8 bg-gradient-to-br from-violet-100 to-purple-100 rounded-lg flex items-center justify-center"
               >
-                <div
-                  class="w-8 h-8 bg-gradient-to-br from-emerald-100 to-green-100 rounded-lg flex items-center justify-center"
+                <svg
+                  class="w-4 h-4 text-violet-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    class="w-4 h-4 text-emerald-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    ></path>
-                  </svg>
-                </div>
-                <span>ჯგუფი</span>
-              </label>
-              <select
-                v-model="form.group"
-                id="group"
-                required
-                class="block w-full px-4 py-4 text-base text-slate-900 border-2 border-slate-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 bg-white"
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 7a2 2 0 012 2m0 0a2 2 0 01-2 2m2-2h3m-3 0h-3m-2-5a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V9a2 2 0 00-2-2H9z"
+                  ></path>
+                </svg>
+              </div>
+              <span>იდენტიფიკატორი (Key)</span>
+              <span
+                v-if="!isEdit"
+                class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full"
+                >მეორე ნაბიჯი</span
               >
-                <option value="general">🏠 ზოგადი</option>
-                <option value="navigation">🧭 ნავიგაცია</option>
-                <option value="forms">📝 ფორმები</option>
-                <option value="buttons">🔘 ღილაკები</option>
-                <option value="messages">💬 შეტყობინებები</option>
-                <option value="errors">⚠️ შეცდომები</option>
-                <option value="admin">👨‍💼 ადმინისტრაცია</option>
-                <option value="projects">🏗️ პროექტები</option>
-                <option value="auth">🔐 ავთენტიფიკაცია</option>
-                <option value="testimonials">💭 რეკომენდაციები</option>
-              </select>
+            </label>
+            <div class="relative">
+              <div class="flex">
+                <span
+                  class="inline-flex items-center px-4 py-4 text-sm text-slate-600 bg-slate-100 border-2 border-r-0 border-slate-200 rounded-l-2xl"
+                >
+                  {{ formGroup }}.
+                </span>
+                <input
+                  v-model="keyWithoutPrefix"
+                  type="text"
+                  id="key"
+                  required
+                  :disabled="isEdit"
+                  class="block w-full px-4 py-4 text-base text-slate-900 border-2 border-slate-200 rounded-r-2xl shadow-sm focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:bg-slate-50 disabled:text-slate-600 disabled:border-slate-200 transition-all duration-300 placeholder:text-slate-500 bg-white"
+                  :placeholder="getKeyPlaceholder()"
+                />
+              </div>
             </div>
           </div>
 
-          <!-- Language Fields -->
+          <!-- Language Fields (Third Step - appears after key is entered) -->
           <div
+            v-if="formGroup || isEdit"
             class="bg-gradient-to-br from-slate-50/50 to-white rounded-3xl p-8 border border-slate-200/60 space-y-8"
           >
             <div class="text-center mb-8">
               <h4
-                class="text-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2"
+                class="text-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2 flex items-center justify-center gap-2"
               >
                 მრავალენოვანი თარგმანი
+                <span
+                  v-if="!isEdit"
+                  class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full"
+                  >მესამე ნაბიჯი</span
+                >
               </h4>
               <p class="text-slate-600 text-sm">შეავსეთ თარგმანი სამივე ენაზე</p>
             </div>
 
             <!-- Georgian -->
             <LanguageField
-              v-model="form.text_ka"
+              v-model="formTextKa"
               language="ka"
               label="🇬🇪 ქართული"
               placeholder="ქართული თარგმანი"
@@ -170,24 +180,24 @@
 
             <!-- English -->
             <LanguageField
-              v-model="form.text_en"
+              v-model="formTextEn"
               language="en"
               label="🇬🇧 English"
               placeholder="English translation"
               :required="true"
-              :can-translate="!!form.text_ka"
+              :can-translate="!!formTextKa"
               :translating="translating"
               @translate="$emit('translate', 'ka', 'en')"
             />
 
             <!-- Russian -->
             <LanguageField
-              v-model="form.text_ru"
+              v-model="formTextRu"
               language="ru"
               label="🇷🇺 русский"
               placeholder="русский перевод"
               :required="false"
-              :can-translate="!!form.text_ka"
+              :can-translate="!!formTextKa"
               :translating="translating"
               @translate="$emit('translate', 'ka', 'ru')"
             />
@@ -222,12 +232,12 @@
                 </div>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
-                <input id="active" v-model="form.active" type="checkbox" class="sr-only peer" />
+                <input id="active" v-model="formActive" type="checkbox" class="sr-only peer" />
                 <div
                   class="w-12 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-indigo-500 peer-checked:to-purple-500 shadow-inner"
                 ></div>
                 <span class="ml-3 text-sm font-medium text-slate-800">
-                  {{ form.active ? 'აქტიური' : 'არააქტიური' }}
+                  {{ formActive ? 'აქტიური' : 'არააქტიური' }}
                 </span>
               </label>
             </div>
@@ -282,7 +292,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import LanguageField from '../forms/LanguageField.vue'
+import { CustomDropdown } from '../ui'
 
 interface TranslationForm {
   key: string
@@ -305,10 +317,89 @@ interface Emits {
   (e: 'close'): void
   (e: 'submit'): void
   (e: 'translate', fromLang: string, toLang: string): void
+  (e: 'update:form', form: TranslationForm): void
 }
 
-defineProps<Props>()
-defineEmits<Emits>()
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+// Computed properties to handle form updates
+const formGroup = computed({
+  get: () => props.form.group,
+  set: (value: string) => {
+    emit('update:form', { ...props.form, group: value })
+  },
+})
+
+// Computed property for key without prefix
+const keyWithoutPrefix = computed({
+  get: () => {
+    if (!props.form.key || !props.form.group) return props.form.key || ''
+    const prefix = `${props.form.group}.`
+    return props.form.key.startsWith(prefix)
+      ? props.form.key.substring(prefix.length)
+      : props.form.key
+  },
+  set: (value: string) => {
+    const newKey = props.form.group && value ? `${props.form.group}.${value}` : value
+    emit('update:form', { ...props.form, key: newKey })
+  },
+})
+
+const formTextKa = computed({
+  get: () => props.form.text_ka,
+  set: (value: string) => emit('update:form', { ...props.form, text_ka: value }),
+})
+
+const formTextEn = computed({
+  get: () => props.form.text_en,
+  set: (value: string) => emit('update:form', { ...props.form, text_en: value }),
+})
+
+const formTextRu = computed({
+  get: () => props.form.text_ru,
+  set: (value: string) => emit('update:form', { ...props.form, text_ru: value }),
+})
+
+const formActive = computed({
+  get: () => props.form.active,
+  set: (value: boolean) => emit('update:form', { ...props.form, active: value }),
+})
+
+// Group options for the dropdown
+const groupOptions = [
+  { value: 'header', label: 'ნავიგაცია(ზედა)', icon: '🧭' },
+  { value: 'footer', label: 'ნავიგაცია(ქვედა)', icon: '🔻' },
+  { value: 'home', label: 'მთავარი გვერდი', icon: '🏠' },
+  { value: 'about', label: 'ჩვენს შესახებ', icon: 'ℹ️' },
+  { value: 'projects', label: 'პროექტები', icon: '🏗️' },
+  { value: 'gallery', label: 'გალერეა', icon: '🖼️' },
+  { value: 'faq', label: 'FAQ', icon: '❓' },
+  { value: 'contact', label: 'კონტაქტი', icon: '📞' },
+  { value: 'buttons', label: 'ღილაკები', icon: '🔘' },
+  { value: 'messages', label: 'შეტყობინებები', icon: '💬' },
+  { value: 'errors', label: 'შეცდომები', icon: '⚠️' },
+  { value: 'admin', label: 'ადმინისტრაცია', icon: '👨‍💼' },
+  { value: 'auth', label: 'ავთენტიფიკაცია', icon: '🔐' },
+  { value: 'testimonials', label: 'რეკომენდაციები', icon: '💭' },
+]
+
+// Method to get placeholder text based on selected group
+const getKeyPlaceholder = () => {
+  const placeholders = {
+    header: 'მაგ. menu_item',
+    footer: 'მაგ. copyright_text',
+    home: 'მაგ. welcome_message',
+    about: 'მაგ. company_description',
+    projects: 'მაგ. project_title',
+    gallery: 'მაგ. image_caption',
+    faq: 'მაგ. question_answer',
+    contact: 'მაგ. contact_form_label',
+    buttons: 'მაგ. submit_button',
+    messages: 'მაგ. success_message',
+  }
+  return placeholders[props.form.group as keyof typeof placeholders] || 'მაგ. unique_identifier'
+}
 </script>
 
 <style scoped>

@@ -29,20 +29,72 @@
         </div>
       </div>
 
-      <!-- Search Bar -->
-      <div class="mb-8">
+      <!-- Search and Filter Bar -->
+      <div class="mb-8 space-y-4">
+        <!-- Search Bar -->
         <SearchBar
           v-model="searchQuery"
           placeholder="ძიება თარგმანებში..."
           @update:model-value="debounceSearch"
         />
+
+        <!-- Group Filter -->
+        <div
+          class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4"
+        >
+          <label class="text-sm font-semibold text-slate-700 whitespace-nowrap"
+            >ჯგუფის ფილტრი:</label
+          >
+          <div class="w-full sm:w-64">
+            <CustomDropdown
+              v-model="selectedGroup"
+              :options="groupOptions"
+              placeholder="ყველა ჯგუფი"
+              @update:model-value="handleGroupFilter"
+            />
+          </div>
+          <button
+            v-if="selectedGroup"
+            @click="clearGroupFilter"
+            class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all duration-200 whitespace-nowrap"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+            გასუფთავება
+          </button>
+        </div>
       </div>
 
       <!-- Translations Table -->
       <div class="mb-4">
-        <div class="text-sm text-slate-700 mb-4 font-medium">
-          <span v-if="totalPages > 1"> გვერდი {{ currentPage }} / {{ totalPages }} სულ </span>
-          <span v-else> სულ {{ translations.length }} თარგმანი </span>
+        <!-- Filter Summary -->
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+          <div class="text-sm text-slate-700 font-medium">
+            <span v-if="totalPages > 1"> გვერდი {{ currentPage }} / {{ totalPages }} </span>
+            <span> სულ {{ translations.length }} თარგმანი </span>
+          </div>
+          <div v-if="searchQuery || selectedGroup" class="flex items-center gap-2">
+            <span class="text-xs text-slate-500">აქტიური ფილტრები:</span>
+            <span
+              v-if="searchQuery"
+              class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+            >
+              🔍 "{{ searchQuery }}"
+            </span>
+            <span
+              v-if="selectedGroup"
+              class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full"
+            >
+              {{ groupOptions.find((g) => g.value === selectedGroup)?.icon }}
+              {{ groupOptions.find((g) => g.value === selectedGroup)?.label }}
+            </span>
+          </div>
         </div>
 
         <!-- Loading State -->
@@ -97,6 +149,7 @@
         @close="closeModal"
         @submit="saveTranslation"
         @translate="translateText"
+        @update:form="updateForm"
       />
     </div>
   </div>
@@ -111,7 +164,14 @@ import {
   deleteTranslation,
 } from '@/services/translations'
 import type { Translation } from '@/types'
-import { TranslationTable, TranslationModal, SearchBar, Pagination } from '@/components/admin'
+import {
+  TranslationTable,
+  TranslationModal,
+  SearchBar,
+  Pagination,
+  CustomDropdown,
+} from '@/components/admin'
+import { Translator } from '@/utils/translator'
 
 const translations = ref<Translation[]>([])
 const showCreateModal = ref(false)
@@ -120,16 +180,36 @@ const saving = ref(false)
 const translating = ref(false)
 const loading = ref(false)
 const searchQuery = ref('')
+const selectedGroup = ref('')
 const currentPage = ref(1)
 const totalPages = ref(1)
 const editingTranslation = ref<Translation | null>(null)
+
+// Group options for the filter dropdown
+const groupOptions = [
+  { value: '', label: 'ყველა ჯგუფი', icon: '📁' },
+  { value: 'header', label: 'ნავიგაცია(ზედა)', icon: '🧭' },
+  { value: 'footer', label: 'ნავიგაცია(ქვედა)', icon: '🔻' },
+  { value: 'home', label: 'მთავარი გვერდი', icon: '🏠' },
+  { value: 'about', label: 'ჩვენს შესახებ', icon: 'ℹ️' },
+  { value: 'projects', label: 'პროექტები', icon: '🏗️' },
+  { value: 'gallery', label: 'გალერეა', icon: '🖼️' },
+  { value: 'faq', label: 'FAQ', icon: '❓' },
+  { value: 'contact', label: 'კონტაქტი', icon: '📞' },
+  { value: 'buttons', label: 'ღილაკები', icon: '🔘' },
+  { value: 'messages', label: 'შეტყობინებები', icon: '💬' },
+  { value: 'errors', label: 'შეცდომები', icon: '⚠️' },
+  { value: 'admin', label: 'ადმინისტრაცია', icon: '👨‍💼' },
+  { value: 'auth', label: 'ავთენტიფიკაცია', icon: '🔐' },
+  { value: 'testimonials', label: 'რეკომენდაციები', icon: '💭' },
+]
 
 const translationForm = reactive({
   key: '',
   text_en: '',
   text_ka: '',
   text_ru: '',
-  group: 'general',
+  group: '',
   active: true,
 })
 
@@ -138,7 +218,11 @@ let searchTimeout: number
 const loadTranslations = async () => {
   try {
     loading.value = true
-    const response = await getTranslations(currentPage.value, searchQuery.value)
+    const response = await getTranslations(
+      currentPage.value,
+      searchQuery.value,
+      selectedGroup.value,
+    )
 
     // Handle different API response structures
     if (response.data.data && Array.isArray(response.data.data)) {
@@ -176,6 +260,17 @@ const debounceSearch = () => {
   }, 300)
 }
 
+const handleGroupFilter = () => {
+  currentPage.value = 1
+  loadTranslations()
+}
+
+const clearGroupFilter = () => {
+  selectedGroup.value = ''
+  currentPage.value = 1
+  loadTranslations()
+}
+
 const translateText = async (fromLang: string, toLang: string) => {
   if (translating.value) return
 
@@ -184,8 +279,8 @@ const translateText = async (fromLang: string, toLang: string) => {
 
   try {
     translating.value = true
-    // Mock translation - replace with real translation service
-    const translatedText = await mockTranslate(sourceText, fromLang, toLang)
+    // Use real translation service
+    const translatedText = await Translator.translate(sourceText, fromLang, toLang)
 
     if (toLang === 'en') {
       translationForm.text_en = translatedText
@@ -194,39 +289,10 @@ const translateText = async (fromLang: string, toLang: string) => {
     }
   } catch (error) {
     console.error('Translation failed:', error)
+    // Show user-friendly error message or keep original text
   } finally {
     translating.value = false
   }
-}
-
-// Mock translation function - replace with real translation service
-const mockTranslate = async (text: string, fromLang: string, toLang: string): Promise<string> => {
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-
-  // Basic mock translations for common phrases
-  const translations: Record<string, Record<string, string>> = {
-    // Common Georgian phrases to English/Russian
-    'მთავარი გვერდი': { en: 'Home Page', ru: 'Главная страница' },
-    კონტაქტი: { en: 'Contact', ru: 'Контакт' },
-    'ჩვენ შესახებ': { en: 'About Us', ru: 'О нас' },
-    პროექტები: { en: 'Projects', ru: 'Проекты' },
-    სერვისები: { en: 'Services', ru: 'Услуги' },
-    გამოცდილება: { en: 'Experience', ru: 'Опыт' },
-    პორტფოლიო: { en: 'Portfolio', ru: 'Портфолио' },
-    თანამშრომლობა: { en: 'Collaboration', ru: 'Сотрудничество' },
-    'ახალი პროექტი': { en: 'New Project', ru: 'Новый проект' },
-    წარმატებული: { en: 'Successful', ru: 'Успешный' },
-  }
-
-  // Check if we have a specific translation
-  if (translations[text] && translations[text][toLang]) {
-    return translations[text][toLang]
-  }
-
-  // For demo purposes, return transliterated or original text
-  // In a real app, this would call a translation service like Google Translate API
-  return text
 }
 
 const saveTranslation = async () => {
@@ -265,7 +331,7 @@ const editTranslation = (translation: Translation) => {
   translationForm.text_en = translation.text_en
   translationForm.text_ka = translation.text_ka
   translationForm.text_ru = translation.text_ru || ''
-  translationForm.group = translation.group || 'general'
+  translationForm.group = translation.group || ''
   translationForm.active = translation.active === 1
   showEditModal.value = true
 }
@@ -289,8 +355,12 @@ const closeModal = () => {
   translationForm.text_en = ''
   translationForm.text_ka = ''
   translationForm.text_ru = ''
-  translationForm.group = 'general'
+  translationForm.group = ''
   translationForm.active = true
+}
+
+const updateForm = (newForm: typeof translationForm) => {
+  Object.assign(translationForm, newForm)
 }
 
 const nextPage = () => {
