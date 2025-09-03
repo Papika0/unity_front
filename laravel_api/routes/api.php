@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\HomePageController;
 use App\Http\Controllers\Api\AboutController;
 use App\Http\Controllers\Admin\AdminNewsController;
-use App\Http\Controllers\Admin\ProjectsController as AdminProjectsController;
+use App\Http\Controllers\Admin\AdminProjectsController;
 use App\Http\Controllers\Admin\TranslationController as AdminTranslationController;
 
 

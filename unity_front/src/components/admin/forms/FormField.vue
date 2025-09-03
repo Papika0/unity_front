@@ -3,8 +3,8 @@
     <label :for="fieldId" class="block text-sm font-semibold text-slate-800 mb-3">
       {{ label }}
     </label>
-    <component
-      :is="fieldType"
+    <input
+      v-if="fieldType === 'input'"
       :id="fieldId"
       :value="modelValue"
       :type="inputType"
@@ -13,9 +13,19 @@
       :max="max"
       :class="inputClasses"
       @input="handleInput"
+    />
+    <select
+      v-else-if="fieldType === 'select'"
+      :id="fieldId"
+      :value="modelValue"
+      :required="required"
+      :min="min"
+      :max="max"
+      :class="inputClasses"
+      @input="handleInput"
     >
       <slot />
-    </component>
+    </select>
   </div>
 </template>
 
@@ -25,7 +35,7 @@ import { computed } from 'vue'
 interface Props {
   fieldId: string
   label: string
-  modelValue: any
+  modelValue: string | number
   fieldType?: 'input' | 'select'
   inputType?: string
   required?: boolean
@@ -42,7 +52,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: any]
+  'update:modelValue': [value: string | number]
 }>()
 
 const inputClasses = computed(() => {

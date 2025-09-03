@@ -5,13 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Projects;
 use App\Traits\ApiResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Resources\Api\ProjectResource;
+use App\Http\Resources\Admin\AdminProjectResource;
 use App\Http\Requests\Admin\Projects\StoreProjectsRequest;
 use App\Http\Requests\Admin\Projects\UpdateProjectsRequest;
 
-class ProjectsController extends Controller
+class AdminProjectsController extends Controller
 {
     use ApiResponse;
 
@@ -20,7 +19,7 @@ class ProjectsController extends Controller
         try {
             $projects = Projects::all();
             // wrap each model in our resource
-            $resources = ProjectResource::collection($projects);
+            $resources = AdminProjectResource::collection($projects);
         
             return $this->success($resources);
         } catch (\Exception $e) {
@@ -32,7 +31,7 @@ class ProjectsController extends Controller
     {
         try {
             $project = Projects::findOrFail($id);
-            return $this->success(new ProjectResource($project));
+            return $this->success(new AdminProjectResource($project));
         } catch (\Exception $e) {
             return $this->error('Project not found', 404);
         }
@@ -66,7 +65,7 @@ class ProjectsController extends Controller
             }
 
             $project = Projects::create($data);
-            return $this->success(new ProjectResource($project), 'Project created', 201);
+            return $this->success(new AdminProjectResource($project), 'Project created', 201);
         } catch (\Exception $e) {
             return $this->error('Failed to create project: ' . $e->getMessage(), 500);
         }
@@ -144,7 +143,7 @@ class ProjectsController extends Controller
 
         $project->refresh();
 
-        return $this->success(new ProjectResource($project), 'Project updated');
+        return $this->success(new AdminProjectResource($project), 'Project updated');
     } catch (\Exception $e) {
         return $this->error('Failed to update project: ' . $e->getMessage(), 500);
     }

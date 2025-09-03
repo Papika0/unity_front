@@ -245,10 +245,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminProjectsStore } from '@/stores/admin/projects'
-import type { Project } from '@/types'
 
 const router = useRouter()
 const adminProjectsStore = useAdminProjectsStore()
@@ -257,20 +256,10 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL
 // Use computed properties from the store
 const projects = computed(() => adminProjectsStore.filteredProjects)
 const loading = computed(() => adminProjectsStore.loading)
-const saving = computed(() => adminProjectsStore.saving)
 const error = computed(() => adminProjectsStore.error)
 
 function goToAddProject() {
   router.push({ name: 'admin-project-add' })
-}
-
-const deleteProjectConfirm = async (project: Project) => {
-  if (confirm(`დარწმუნებული ხართ, რომ გსურთ პროექტის "${project.title}" წაშლა?`)) {
-    const result = await adminProjectsStore.removeProject(project.id)
-    if (!result.success) {
-      console.error('Error deleting project:', result.error)
-    }
-  }
 }
 
 const goToDetail = (id: number) => {
