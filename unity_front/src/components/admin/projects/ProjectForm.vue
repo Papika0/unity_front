@@ -15,7 +15,7 @@
             @translate="
               (fromLang: string, toLang: string) => handleTranslate('title', fromLang, toLang)
             "
-            @update:form-data="form.title = $event"
+            @update:form-data="emit('update:form', { ...form, title: $event })"
           />
         </FormSection>
 
@@ -32,7 +32,7 @@
             @translate="
               (fromLang: string, toLang: string) => handleTranslate('description', fromLang, toLang)
             "
-            @update:form-data="form.description = $event"
+            @update:form-data="emit('update:form', { ...form, description: $event })"
           />
         </FormSection>
 
@@ -47,7 +47,7 @@
             @translate="
               (fromLang: string, toLang: string) => handleTranslate('location', fromLang, toLang)
             "
-            @update:form-data="form.location = $event"
+            @update:form-data="emit('update:form', { ...form, location: $event })"
           />
         </FormSection>
       </div>
@@ -62,7 +62,8 @@
             field-id="status"
             field-type="select"
             label="სტატუსი"
-            v-model:model-value="form.status"
+            :model-value="form.status"
+            @update:model-value="updateStatus"
             :required="true"
             :variant="detailsVariant"
           >
@@ -75,7 +76,8 @@
             field-id="year"
             label="წელი"
             input-type="number"
-            v-model:model-value="form.year"
+            :model-value="form.year"
+            @update:model-value="updateYear"
             :min="1900"
             :max="2100"
             :required="true"
@@ -89,7 +91,8 @@
             field-id="start_date"
             label="დაწყების თარიღი"
             input-type="date"
-            v-model:model-value="form.start_date"
+            :model-value="form.start_date"
+            @update:model-value="updateStartDate"
             :required="true"
             :variant="detailsVariant"
           />
@@ -98,7 +101,8 @@
             field-id="completion_date"
             label="დამთავრების თარიღი"
             input-type="date"
-            v-model:model-value="form.completion_date"
+            :model-value="form.completion_date"
+            @update:model-value="updateCompletionDate"
             :required="true"
             :variant="detailsVariant"
           />
@@ -109,20 +113,9 @@
           <CheckboxField
             field-id="is_active"
             label="აქტიური"
-            v-model:model-value="form.is_active"
+            :model-value="form.is_active"
+            @update:model-value="emit('update:form', { ...form, is_active: $event })"
             :variant="detailsVariant"
-          />
-          <CheckboxField
-            field-id="is_featured"
-            label="რჩეული"
-            v-model:model-value="form.is_featured"
-            variant="amber"
-          />
-          <CheckboxField
-            field-id="is_onHomepage"
-            label="მთავარ გვერდზე"
-            v-model:model-value="form.is_onHomepage"
-            variant="emerald"
           />
         </div>
       </div>
@@ -238,6 +231,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  'update:form': [form: Partial<ProjectFormData>]
   submit: []
   translate: [fieldName: string, fromLang: string, toLang: string]
   fileChange: [fieldName: 'main_image' | 'render_image', files: FileList | null]
@@ -287,5 +281,21 @@ function handleGalleryChange(files: FileList | null) {
 
 function removeGalleryImage(index: number) {
   emit('galleryRemove', index)
+}
+
+function updateStatus(value: string | number) {
+  emit('update:form', { ...props.form, status: String(value) })
+}
+
+function updateYear(value: string | number) {
+  emit('update:form', { ...props.form, year: Number(value) })
+}
+
+function updateStartDate(value: string | number) {
+  emit('update:form', { ...props.form, start_date: String(value) })
+}
+
+function updateCompletionDate(value: string | number) {
+  emit('update:form', { ...props.form, completion_date: String(value) })
 }
 </script>

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\Admin\AdminProjectResource;
 use App\Http\Requests\Admin\Projects\StoreProjectsRequest;
 use App\Http\Requests\Admin\Projects\UpdateProjectsRequest;
+use Illuminate\Http\Request;
 
 class AdminProjectsController extends Controller
 {
@@ -148,5 +149,65 @@ class AdminProjectsController extends Controller
         return $this->error('Failed to update project: ' . $e->getMessage(), 500);
     }
 }
+
+/**
+     * Set featured projects (up to 3)
+     */
+    public function setFeaturedProjects(Request $request)
+    {
+        try {
+            $request->validate([
+                'project_ids' => 'required|array|max:3',
+                'project_ids.*' => 'required|integer|exists:projects,id',
+            ]);
+
+            // Reset all projects' featured status
+            Projects::query()->update(['is_featured' => false]);
+
+            // Set selected projects as featured
+            if (!empty($request->project_ids)) {
+                Projects::whereIn('id', $request->project_ids)->update(['is_featured' => true]);
+            }
+
+            $updatedProjects = Projects::whereIn('id', $request->project_ids)->get();
+
+            return $this->success(
+                AdminProjectResource::collection($updatedProjects),
+                'Featured projects updated successfully'
+            );
+        } catch (\Exception $e) {
+            return $this->error('Failed to update featured projects: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Set homepage projects (up to 3)
+     */
+    public function setHomepageProjects(Request $request)
+    {
+        try {
+            $request->validate([
+                'project_ids' => 'required|array|max:3',
+                'project_ids.*' => 'required|integer|exists:projects,id',
+            ]);
+
+            // Reset all projects' homepage status
+            Projects::query()->update(['is_onHomepage' => false]);
+
+            // Set selected projects as homepage
+            if (!empty($request->project_ids)) {
+                Projects::whereIn('id', $request->project_ids)->update(['is_onHomepage' => true]);
+            }
+
+            $updatedProjects = Projects::whereIn('id', $request->project_ids)->get();
+
+            return $this->success(
+                AdminProjectResource::collection($updatedProjects),
+                'Homepage projects updated successfully'
+            );
+        } catch (\Exception $e) {
+            return $this->error('Failed to update homepage projects: ' . $e->getMessage(), 500);
+        }
+    }
 
 }

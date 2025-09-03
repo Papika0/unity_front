@@ -71,6 +71,8 @@ Route::middleware('auth:api')->group(function () {
 
     Route::prefix('admin/projects')->controller(AdminProjectsController::class)->group(function () {
         Route::get('/', 'index');
+        Route::post('/set-featured', 'setFeaturedProjects'); // Set featured projects
+        Route::post('/set-homepage', 'setHomepageProjects'); // Set homepage projects
         Route::get('/{id}', 'show');
         Route::post('/', 'store');
         Route::put('/{id}', 'update');

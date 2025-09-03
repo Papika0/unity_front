@@ -18,3 +18,9 @@ export const updateProject = (id: number, data: FormData) =>
   })
 
 export const deleteProject = async (id: number) => api.delete(`admin/projects/${id}`)
+
+export const setFeaturedProjects = async (project_ids: number[]) =>
+  api.post(`admin/projects/set-featured`, { project_ids })
+
+export const setHomepageProjects = async (project_ids: number[]) =>
+  api.post(`admin/projects/set-homepage`, { project_ids })

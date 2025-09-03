@@ -14,7 +14,7 @@
           </p>
         </div>
 
-        <div class="flex-shrink-0">
+        <div class="flex-shrink-0 flex flex-col sm:flex-row gap-3 sm:gap-0">
           <button
             @click="goToAddProject"
             class="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-6 py-3 rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 w-full sm:w-auto"
@@ -28,6 +28,19 @@
               ></path>
             </svg>
             ახალი პროექტის დამატება
+          </button>
+
+          <button
+            @click="openFeaturedModal"
+            class="sm:ml-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 w-full sm:w-auto"
+          >
+            სლაიდის პროექტები
+          </button>
+          <button
+            @click="openHomepageModal"
+            class="sm:ml-4 bg-gradient-to-r from-blue-400 to-blue-500 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 w-full sm:w-auto"
+          >
+            რჩეული პროექტები
           </button>
         </div>
       </div>
@@ -240,12 +253,180 @@
           </div>
         </div>
       </div>
+
+      <!-- Featured Projects Modal -->
+      <div
+        v-if="showFeaturedModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        @click.self="cancelFeaturedSelection"
+      >
+        <div
+          class="bg-white/95 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 border border-slate-200/50"
+        >
+          <div class="p-8 border-b border-slate-200/50 flex items-center justify-between">
+            <h2 class="text-xl font-bold text-slate-800">რჩეული პროექტების არჩევა</h2>
+            <button @click="cancelFeaturedSelection" class="text-slate-400 hover:text-slate-600">
+              ✕
+            </button>
+          </div>
+          <div class="p-8">
+            <div class="grid grid-cols-1 gap-4">
+              <div
+                v-for="project in projects"
+                :key="project.id"
+                class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-amber-400 cursor-pointer"
+                :class="
+                  selectedFeaturedIds.includes(project.id) ? 'bg-yellow-50 border-amber-400' : ''
+                "
+                @click="toggleFeaturedSelection(project.id)"
+              >
+                <img
+                  v-if="project.main_image"
+                  :src="backendUrl + project.main_image"
+                  class="w-16 h-16 object-cover rounded-xl"
+                />
+                <div
+                  v-else
+                  class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center"
+                >
+                  <svg
+                    class="w-8 h-8 text-amber-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <div class="font-bold text-slate-800">{{ project.title }}</div>
+                  <div class="text-slate-500 text-sm">{{ truncate(project.description, 60) }}</div>
+                </div>
+                <span
+                  v-if="selectedFeaturedIds.includes(project.id)"
+                  class="px-2 py-1 rounded bg-yellow-200 text-yellow-800 text-xs font-bold"
+                  >{{ selectedFeaturedIds.indexOf(project.id) + 1 }}</span
+                >
+                <input
+                  type="checkbox"
+                  :checked="selectedFeaturedIds.includes(project.id)"
+                  @change.stop="toggleFeaturedSelection(project.id)"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="p-8 border-t border-slate-200/50 flex gap-4 justify-end">
+            <button
+              @click="cancelFeaturedSelection"
+              class="px-6 py-2 rounded-xl bg-slate-100 text-slate-700"
+            >
+              გაუქმება
+            </button>
+            <button
+              @click="saveFeaturedProjects"
+              :disabled="savingFeatured"
+              class="px-6 py-2 rounded-xl bg-yellow-500 text-white font-bold shadow hover:bg-yellow-600"
+            >
+              შენახვა
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Homepage Projects Modal -->
+      <div
+        v-if="showHomepageModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        @click.self="cancelHomepageSelection"
+      >
+        <div
+          class="bg-white/95 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 border border-slate-200/50"
+        >
+          <div class="p-8 border-b border-slate-200/50 flex items-center justify-between">
+            <h2 class="text-xl font-bold text-slate-800">მთავარი პროექტების არჩევა</h2>
+            <button @click="cancelHomepageSelection" class="text-slate-400 hover:text-slate-600">
+              ✕
+            </button>
+          </div>
+          <div class="p-8">
+            <div class="grid grid-cols-1 gap-4">
+              <div
+                v-for="project in projects"
+                :key="project.id"
+                class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-blue-400 cursor-pointer"
+                :class="
+                  selectedHomepageIds.includes(project.id) ? 'bg-blue-50 border-blue-400' : ''
+                "
+                @click="toggleHomepageSelection(project.id)"
+              >
+                <img
+                  v-if="project.main_image"
+                  :src="backendUrl + project.main_image"
+                  class="w-16 h-16 object-cover rounded-xl"
+                />
+                <div
+                  v-else
+                  class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center"
+                >
+                  <svg
+                    class="w-8 h-8 text-blue-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <div class="font-bold text-slate-800">{{ project.title }}</div>
+                  <div class="text-slate-500 text-sm">{{ truncate(project.description, 60) }}</div>
+                </div>
+                <span
+                  v-if="selectedHomepageIds.includes(project.id)"
+                  class="px-2 py-1 rounded bg-blue-200 text-blue-800 text-xs font-bold"
+                  >{{ selectedHomepageIds.indexOf(project.id) + 1 }}</span
+                >
+                <input
+                  type="checkbox"
+                  :checked="selectedHomepageIds.includes(project.id)"
+                  @change.stop="toggleHomepageSelection(project.id)"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="p-8 border-t border-slate-200/50 flex gap-4 justify-end">
+            <button
+              @click="cancelHomepageSelection"
+              class="px-6 py-2 rounded-xl bg-slate-100 text-slate-700"
+            >
+              გაუქმება
+            </button>
+            <button
+              @click="saveHomepageProjects"
+              :disabled="savingHomepage"
+              class="px-6 py-2 rounded-xl bg-blue-500 text-white font-bold shadow hover:bg-blue-600"
+            >
+              შენახვა
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminProjectsStore } from '@/stores/admin/projects'
 
@@ -257,6 +438,79 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL
 const projects = computed(() => adminProjectsStore.filteredProjects)
 const loading = computed(() => adminProjectsStore.loading)
 const error = computed(() => adminProjectsStore.error)
+
+// Featured projects modal state
+const showFeaturedModal = ref(false)
+const showHomepageModal = ref(false)
+const selectedFeaturedIds = ref<number[]>([])
+const selectedHomepageIds = ref<number[]>([])
+const savingFeatured = ref(false)
+const savingHomepage = ref(false)
+
+// Open featured projects modal
+function openFeaturedModal() {
+  showFeaturedModal.value = true
+  selectedFeaturedIds.value = projects.value.filter((p) => p.is_featured).map((p) => p.id)
+}
+
+// Cancel featured projects selection
+function cancelFeaturedSelection() {
+  showFeaturedModal.value = false
+  selectedFeaturedIds.value = []
+}
+
+// Toggle project selection for featured projects
+function toggleFeaturedSelection(id: number) {
+  const idx = selectedFeaturedIds.value.indexOf(id)
+  if (idx > -1) {
+    selectedFeaturedIds.value.splice(idx, 1)
+  } else if (selectedFeaturedIds.value.length < 3) {
+    selectedFeaturedIds.value.push(id)
+  }
+}
+
+// Save featured projects
+async function saveFeaturedProjects() {
+  savingFeatured.value = true
+  try {
+    // Pass the selected IDs to the store method
+    await adminProjectsStore.updateFeaturedProjects(selectedFeaturedIds.value)
+    showFeaturedModal.value = false
+    selectedFeaturedIds.value = []
+  } finally {
+    savingFeatured.value = false
+  }
+}
+
+function openHomepageModal() {
+  showHomepageModal.value = true
+  selectedHomepageIds.value = projects.value.filter((p) => p.is_onHomepage).map((p) => p.id)
+}
+
+function cancelHomepageSelection() {
+  showHomepageModal.value = false
+  selectedHomepageIds.value = []
+}
+
+function toggleHomepageSelection(id: number) {
+  const idx = selectedHomepageIds.value.indexOf(id)
+  if (idx > -1) {
+    selectedHomepageIds.value.splice(idx, 1)
+  } else if (selectedHomepageIds.value.length < 3) {
+    selectedHomepageIds.value.push(id)
+  }
+}
+
+async function saveHomepageProjects() {
+  savingHomepage.value = true
+  try {
+    await adminProjectsStore.updateHomepageProjects(selectedHomepageIds.value)
+    showHomepageModal.value = false
+    selectedHomepageIds.value = []
+  } finally {
+    savingHomepage.value = false
+  }
+}
 
 function goToAddProject() {
   router.push({ name: 'admin-project-add' })

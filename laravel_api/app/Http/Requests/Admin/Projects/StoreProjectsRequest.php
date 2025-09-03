@@ -31,8 +31,7 @@ class StoreProjectsRequest extends FormRequest
             'start_date' => 'required|date',
             'completion_date' => 'required|date|after_or_equal:start_date',
             'is_active' => 'boolean',
-            'is_featured' => 'boolean',
-            'is_onHomepage' => 'boolean',
+            
             
             // Images (made optional for creation)
             'main_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp|max:10240',

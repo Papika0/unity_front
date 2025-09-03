@@ -6,8 +6,23 @@ import {
   createProject,
   updateProject,
   deleteProject,
+  setFeaturedProjects,
+  setHomepageProjects,
 } from '@/services/projects'
-import type { Project, ApiResponse } from '@/types'
+import type { Project } from '@/types'
+
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string
+    }
+  }
+}
+
+const getErrorMessage = (err: unknown, defaultMessage: string): string => {
+  const apiError = err as ApiError
+  return apiError?.response?.data?.message || defaultMessage
+}
 
 export const useAdminProjectsStore = defineStore('adminProjects', () => {
   // State
@@ -17,6 +32,22 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
   const saving = ref(false)
   const error = ref('')
   const searchQuery = ref('')
+
+  // Featured projects modal state
+  const showFeaturedModal = ref(false)
+  const selectedProjects = ref<
+    Array<{ id: number; is_featured: boolean; is_onHomepage: boolean; order: number }>
+  >([])
+  const savingFeatured = ref(false)
+
+  // Homepage projects modal state
+  const showHomepageModal = ref(false)
+  const selectedHomepageIds = ref<number[]>([])
+  const savingHomepage = ref(false)
+
+  // Featured projects computed
+  const canSelectMoreFeatured = computed(() => selectedProjects.value.length < 3)
+  const featuredProjects = computed(() => projects.value.filter((p) => p.is_featured))
 
   // Getters
   const filteredProjects = computed(() => {
@@ -39,8 +70,8 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
 
       const response = await getAdminProjects()
       projects.value = response.data.data || response.data
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'პროექტების ჩატვირთვა ვერ მოხერხდა'
+    } catch (err: unknown) {
+      error.value = getErrorMessage(err, 'პროექტების ჩატვირთვა ვერ მოხერხდა')
       console.error('Error loading projects:', err)
     } finally {
       loading.value = false
@@ -55,8 +86,8 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
       const response = await getAdminProject(id)
       currentProject.value = response.data.data || response.data
       return currentProject.value
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'პროექტის ჩატვირთვა ვერ მოხერხდა'
+    } catch (err: unknown) {
+      error.value = getErrorMessage(err, 'პროექტის ჩატვირთვა ვერ მოხერხდა')
       console.error('Error loading project:', err)
       throw err
     } finally {
@@ -82,8 +113,8 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
       }
 
       return { success: true, data: project }
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'პროექტის ჩატვირთვა ვერ მოხერხდა'
+    } catch (err: unknown) {
+      const errorMessage = getErrorMessage(err, 'პროექტის ჩატვირთვა ვერ მოხერხდა')
       error.value = errorMessage
       console.error('Error loading project:', err)
       return { success: false, error: errorMessage }
@@ -102,8 +133,8 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
 
       projects.value.unshift(newProject)
       return { success: true, project: newProject }
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'პროექტის დამატება ვერ მოხერხდა'
+    } catch (err: unknown) {
+      error.value = getErrorMessage(err, 'პროექტის დამატება ვერ მოხერხდა')
       console.error('Error creating project:', err)
       return { success: false, error: error.value }
     } finally {
@@ -129,8 +160,8 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
       }
 
       return { success: true, project: updatedProject }
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'პროექტის განახლება ვერ მოხერხდა'
+    } catch (err: unknown) {
+      error.value = getErrorMessage(err, 'პროექტის განახლება ვერ მოხერხდა')
       console.error('Error updating project:', err)
       return { success: false, error: error.value }
     } finally {
@@ -152,12 +183,94 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
       }
 
       return { success: true }
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'პროექტის წაშლა ვერ მოხერხდა'
+    } catch (err: unknown) {
+      error.value = getErrorMessage(err, 'პროექტის წაშლა ვერ მოხერხდა')
       console.error('Error deleting project:', err)
       return { success: false, error: error.value }
     } finally {
       saving.value = false
+    }
+  }
+
+  // Featured projects actions
+  const openFeaturedModal = () => {
+    showFeaturedModal.value = true
+    selectedProjects.value = featuredProjects.value.map((p, idx) => ({
+      id: p.id,
+      is_featured: true,
+      is_onHomepage: p.is_onHomepage,
+      order: idx + 1,
+    }))
+  }
+
+  const cancelFeaturedSelection = () => {
+    selectedProjects.value = []
+    showFeaturedModal.value = false
+  }
+
+  const toggleProjectSelection = (project: Project) => {
+    const idx = selectedProjects.value.findIndex((p) => p.id === project.id)
+    if (idx > -1) {
+      selectedProjects.value.splice(idx, 1)
+      // Reorder
+      selectedProjects.value.forEach((p, i) => (p.order = i + 1))
+    } else if (canSelectMoreFeatured.value) {
+      selectedProjects.value.push({
+        id: project.id,
+        is_featured: true,
+        is_onHomepage: false,
+        order: selectedProjects.value.length + 1,
+      })
+    }
+  }
+
+  const saveFeaturedProjects = async () => {
+    if (selectedProjects.value.length === 0) return
+    savingFeatured.value = true
+    try {
+      const projectIds = selectedProjects.value.map((p) => p.id)
+      await setFeaturedProjects(projectIds)
+      await loadProjects()
+      showFeaturedModal.value = false
+      selectedProjects.value = []
+    } catch {
+      error.value = 'Featured projects update failed'
+    } finally {
+      savingFeatured.value = false
+    }
+  }
+
+  // Homepage projects actions
+  const openHomepageModal = () => {
+    showHomepageModal.value = true
+    selectedHomepageIds.value = projects.value.filter((p) => p.is_onHomepage).map((p) => p.id)
+  }
+  const cancelHomepageSelection = () => {
+    showHomepageModal.value = false
+    selectedHomepageIds.value = []
+  }
+  const toggleHomepageSelection = (id: number) => {
+    const idx = selectedHomepageIds.value.indexOf(id)
+    if (idx > -1) {
+      selectedHomepageIds.value.splice(idx, 1)
+    } else if (selectedHomepageIds.value.length < 3) {
+      selectedHomepageIds.value.push(id)
+    }
+  }
+  // Homepage projects actions
+  // Use store's own method, not from outside
+  const saveHomepageProjects = async () => {
+    if (selectedHomepageIds.value.length === 0) return
+    savingHomepage.value = true
+    try {
+      await setHomepageProjects(selectedHomepageIds.value)
+      await loadProjects()
+      showHomepageModal.value = false
+      selectedHomepageIds.value = []
+    } catch {
+      error.value = 'Homepage projects update failed'
+    } finally {
+      savingHomepage.value = false
     }
   }
 
@@ -178,6 +291,31 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
     await loadProjects()
   }
 
+  // Methods that accept IDs as parameters for component use
+  const updateFeaturedProjects = async (projectIds: number[]) => {
+    savingFeatured.value = true
+    try {
+      await setFeaturedProjects(projectIds)
+      await loadProjects()
+    } catch {
+      error.value = 'Featured projects update failed'
+    } finally {
+      savingFeatured.value = false
+    }
+  }
+
+  const updateHomepageProjects = async (projectIds: number[]) => {
+    savingHomepage.value = true
+    try {
+      await setHomepageProjects(projectIds)
+      await loadProjects()
+    } catch {
+      error.value = 'Homepage projects update failed'
+    } finally {
+      savingHomepage.value = false
+    }
+  }
+
   return {
     // State
     projects,
@@ -186,10 +324,18 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
     saving,
     error,
     searchQuery,
+    showFeaturedModal,
+    selectedProjects,
+    savingFeatured,
+    showHomepageModal,
+    selectedHomepageIds,
+    savingHomepage,
 
     // Getters
     filteredProjects,
     projectsCount,
+    canSelectMoreFeatured,
+    featuredProjects,
 
     // Actions
     loadProjects,
@@ -198,6 +344,16 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
     addProject,
     editProject,
     removeProject,
+    openFeaturedModal,
+    cancelFeaturedSelection,
+    toggleProjectSelection,
+    saveFeaturedProjects,
+    openHomepageModal,
+    cancelHomepageSelection,
+    toggleHomepageSelection,
+    saveHomepageProjects,
+    updateFeaturedProjects,
+    updateHomepageProjects,
     setSearchQuery,
     clearError,
     clearCurrentProject,
