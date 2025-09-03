@@ -5,30 +5,50 @@
       <div class="absolute inset-0 bg-gradient-to-br from-amber-50/30 to-slate-50/30"></div>
 
       <div class="relative max-w-7xl mx-auto px-4 md:px-8">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-8">
           <div class="flex-1">
             <div class="mb-4">
               <div
                 class="w-16 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-6"
               ></div>
             </div>
-            <h1 class="text-4xl md:text-6xl font-light text-slate-800 mb-6 tracking-wide">
-              <span class="font-thin">სიახლეების</span>
-              <span class="font-semibold text-amber-600"> ადმინ</span>
-              <span class="font-thin"> პანელი</span>
+            <h1
+              class="text-4xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent break-words leading-tight py-1"
+            >
+              სიახლეები
             </h1>
-            <p class="text-lg md:text-xl text-slate-600 max-w-2xl font-light leading-relaxed">
-              სიახლეების მართვა, შექმნა, რედაქტირება და წაშლა პროფესიონალურ ინტერფეისში
+            <p class="mt-2 text-slate-600 text-lg">
+              სიახლეების მართვა, შექმნა, რედაქტირება და წაშლა.
             </p>
             <div
               class="w-16 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent mt-6"
             ></div>
           </div>
 
-          <div class="flex-shrink-0 flex gap-4">
+          <div class="flex-shrink-0 flex flex-col sm:flex-row gap-3 sm:gap-0">
+            <button
+              @click="goToAddNews"
+              class="group bg-gradient-to-r from-amber-500 to-amber-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 w-full sm:w-auto"
+            >
+              <svg
+                class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              ახალი სიახლის დამატება
+            </button>
+
             <button
               @click="openFeaturedModal"
-              class="group bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-4 rounded-2xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center gap-3"
+              class="group sm:ml-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 w-full sm:w-auto"
             >
               <svg
                 class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
@@ -43,28 +63,7 @@
                   d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                 />
               </svg>
-              <span class="hidden sm:inline">რჩეული სიახლეები</span>
-              <span class="sm:hidden">⭐</span>
-            </button>
-
-            <button
-              @click="goToAddNews"
-              class="group bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-4 rounded-2xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center gap-3 text-lg"
-            >
-              <svg
-                class="w-6 h-6 group-hover:rotate-90 transition-transform duration-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              ახალი სიახლის დამატება
+              <span class="sm:inline">რჩეული სიახლეები</span>
             </button>
           </div>
         </div>
@@ -73,9 +72,10 @@
 
     <div class="max-w-7xl mx-auto px-4 md:px-8 py-16">
       <!-- Search and Filter Section -->
-      <div class="mb-16">
+      <div class="mb-16 relative">
         <div
-          class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-slate-200/50 p-8"
+          class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-slate-200/50 p-8 overflow-visible"
+          style="overflow: visible !important"
         >
           <div class="flex flex-col lg:flex-row gap-8 items-start lg:items-center justify-between">
             <!-- Search Input -->
@@ -104,27 +104,146 @@
               </div>
             </div>
 
-            <!-- Filter Tags -->
-            <div class="flex flex-wrap gap-3">
-              <div
-                class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-100 to-slate-50 rounded-xl border border-slate-200"
-              >
-                <svg
-                  class="w-4 h-4 text-slate-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            <!-- Filter and Info Section -->
+            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <!-- Category Filter -->
+              <div class="flex items-center gap-2 relative z-10">
+                <label
+                  for="category-filter"
+                  class="text-slate-600 font-medium text-sm whitespace-nowrap"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2"
-                  />
-                </svg>
-                <span class="text-slate-600 font-medium text-sm"
-                  >სულ: {{ articlesCount }} სიახლე</span
+                  კატეგორია:
+                </label>
+                <div class="relative custom-dropdown-container">
+                  <!-- Custom Dropdown Button -->
+                  <button
+                    @click="toggleCategoryDropdown"
+                    @blur="handleDropdownBlur"
+                    class="appearance-none px-4 py-2.5 pr-10 bg-white/90 backdrop-blur-sm border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-300 text-slate-800 text-sm min-w-[160px] font-medium shadow-sm hover:shadow-md hover:border-slate-300 cursor-pointer text-left flex items-center justify-between"
+                    :class="{ 'border-amber-400 ring-4 ring-amber-500/20': showCategoryDropdown }"
+                  >
+                    <span>{{ getCategoryDisplayText(adminNewsStore.selectedCategory) }}</span>
+                    <!-- Custom dropdown arrow -->
+                    <svg
+                      class="w-4 h-4 text-slate-400 transition-all duration-200 ml-2"
+                      :class="{
+                        'text-amber-500': adminNewsStore.selectedCategory,
+                        'rotate-180': showCategoryDropdown,
+                      }"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  <!-- Custom Dropdown Options Portal -->
+                  <Teleport to="body">
+                    <div
+                      v-if="showCategoryDropdown"
+                      ref="dropdownOptions"
+                      class="fixed bg-white/95 backdrop-blur-sm border-2 border-slate-200 rounded-xl shadow-2xl z-[99999] min-w-[160px] overflow-hidden"
+                      :style="dropdownPosition"
+                    >
+                      <div class="py-2">
+                        <button
+                          v-for="option in categoryOptions"
+                          :key="option.value"
+                          @click="selectCategory(option.value)"
+                          class="w-full px-4 py-2.5 text-left text-sm font-medium transition-all duration-200 hover:bg-amber-50 hover:text-amber-700 flex items-center gap-2"
+                          :class="{
+                            'text-slate-600': option.value === '',
+                            'text-slate-800': option.value !== '',
+                            'bg-amber-100 text-amber-800':
+                              adminNewsStore.selectedCategory === option.value,
+                          }"
+                        >
+                          <span class="flex-1">{{ option.label }}</span>
+                          <svg
+                            v-if="adminNewsStore.selectedCategory === option.value"
+                            class="w-4 h-4 text-amber-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </Teleport>
+                </div>
+              </div>
+
+              <!-- Filter Tags -->
+              <div class="flex flex-wrap gap-3">
+                <div
+                  class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-100 to-slate-50 rounded-xl border border-slate-200"
                 >
+                  <svg
+                    class="w-4 h-4 text-slate-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2"
+                    />
+                  </svg>
+                  <span class="text-slate-600 font-medium text-sm"
+                    >სულ: {{ articlesCount }} სიახლე</span
+                  >
+                </div>
+
+                <!-- Active Filter Indicator -->
+                <div
+                  v-if="adminNewsStore.selectedCategory"
+                  class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-100 to-amber-50 rounded-xl border border-amber-200"
+                >
+                  <svg
+                    class="w-4 h-4 text-amber-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                    />
+                  </svg>
+                  <span class="text-amber-700 font-medium text-sm">
+                    {{ getCategoryLabel(adminNewsStore.selectedCategory) }}
+                  </span>
+                  <button
+                    @click="clearCategoryFilter"
+                    class="ml-1 text-amber-600 hover:text-amber-800 transition-colors"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -845,7 +964,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminNewsStore } from '@/stores/admin/news'
 import { useToastStore } from '@/stores/ui/toast'
@@ -860,6 +979,20 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL
 const showDeleteModal = ref(false)
 const articleToDelete = ref<AdminNewsArticle | null>(null)
 const searchTimeout = ref<number | null>(null)
+
+// Custom dropdown state
+const showCategoryDropdown = ref(false)
+const dropdownOptions = ref<HTMLElement | null>(null)
+const dropdownPosition = ref({})
+
+// Category dropdown options
+const categoryOptions = [
+  { value: '', label: 'ყველა კატეგორია' },
+  { value: 'company', label: 'კომპანია' },
+  { value: 'project', label: 'პროექტი' },
+  { value: 'industry', label: 'ინდუსტრია' },
+  { value: 'event', label: 'ღონისძიება' },
+]
 
 // Featured news modal state
 const showFeaturedModal = ref(false)
@@ -897,6 +1030,73 @@ const handleSearch = () => {
   searchTimeout.value = setTimeout(() => {
     adminNewsStore.searchArticles(adminNewsStore.searchQuery)
   }, 500)
+}
+
+const clearCategoryFilter = () => {
+  adminNewsStore.selectedCategory = ''
+  adminNewsStore.filterByCategory('')
+}
+
+// Custom dropdown methods
+const toggleCategoryDropdown = (event: Event) => {
+  event.preventDefault()
+  showCategoryDropdown.value = !showCategoryDropdown.value
+
+  if (showCategoryDropdown.value) {
+    // Calculate position for the dropdown
+    const target = event.target as HTMLElement
+    const rect = target.getBoundingClientRect()
+    const viewportHeight = window.innerHeight
+    const dropdownHeight = 200 // Approximate height
+
+    // Determine if dropdown should appear above or below
+    const spaceBelow = viewportHeight - rect.bottom
+    const shouldShowAbove = spaceBelow < dropdownHeight && rect.top > dropdownHeight
+
+    dropdownPosition.value = {
+      left: `${rect.left}px`,
+      top: shouldShowAbove ? `${rect.top - dropdownHeight}px` : `${rect.bottom + 4}px`,
+      width: `${rect.width}px`,
+      maxHeight: shouldShowAbove ? `${rect.top - 10}px` : `${spaceBelow - 10}px`,
+    }
+
+    // Add click outside listener
+    setTimeout(() => {
+      document.addEventListener('click', handleClickOutside)
+    }, 0)
+  } else {
+    document.removeEventListener('click', handleClickOutside)
+  }
+}
+
+const selectCategory = (value: string) => {
+  adminNewsStore.selectedCategory = value
+  adminNewsStore.filterByCategory(value)
+  showCategoryDropdown.value = false
+  document.removeEventListener('click', handleClickOutside)
+}
+
+const handleDropdownBlur = () => {
+  // Only close if focus is not moving to dropdown options
+  setTimeout(() => {
+    if (dropdownOptions.value && !dropdownOptions.value.contains(document.activeElement)) {
+      showCategoryDropdown.value = false
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, 100)
+}
+
+const handleClickOutside = (event: Event) => {
+  const target = event.target as HTMLElement
+  if (dropdownOptions.value && !dropdownOptions.value.contains(target)) {
+    showCategoryDropdown.value = false
+    document.removeEventListener('click', handleClickOutside)
+  }
+}
+
+const getCategoryDisplayText = (value: string) => {
+  const option = categoryOptions.find((opt) => opt.value === value)
+  return option ? option.label : 'ყველა კატეგორია'
 }
 
 const goToView = (id: number) => {
@@ -1059,6 +1259,14 @@ onMounted(() => {
 
   adminNewsStore.loadArticles()
 })
+
+// Cleanup event listeners
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+  }
+})
 </script>
 
 <style scoped>
@@ -1076,5 +1284,59 @@ onMounted(() => {
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Custom dropdown container styling */
+.custom-dropdown-container {
+  position: relative;
+  z-index: 10;
+}
+
+/* Custom dropdown smooth animations */
+.custom-dropdown-container button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-dropdown-container button:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* Dropdown options styling with enhanced animations */
+.custom-dropdown-container div[class*='fixed'] {
+  animation: dropdownFadeIn 0.2s ease-out;
+  transform-origin: top;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Enhanced option hover effects */
+.custom-dropdown-container button[class*='hover:bg-amber-50']:hover {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  transform: translateX(4px);
+}
+
+/* Mobile responsiveness for custom dropdown */
+@media (max-width: 640px) {
+  .custom-dropdown-container {
+    width: 100%;
+    min-width: 160px;
+  }
+
+  .custom-dropdown-container button {
+    width: 100%;
+    min-width: 160px;
+  }
 }
 </style>
