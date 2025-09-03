@@ -211,7 +211,7 @@
           <article
             v-for="article in articles"
             :key="article.id"
-            class="group bg-white/70 backdrop-blur-sm rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-slate-200/50 hover:border-amber-200 transform hover:-translate-y-1"
+            class="group bg-white/70 backdrop-blur-sm rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-slate-200/50 hover:border-amber-200 transform hover:-translate-y-1 flex flex-col h-full"
           >
             <!-- Article Image -->
             <div class="relative overflow-hidden">
@@ -223,14 +223,14 @@
                     : backendUrl + article.main_image
                 "
                 :alt="article.title.ka"
-                class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700"
+                class="w-full h-40 object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div
                 v-else
-                class="w-full h-56 bg-gradient-to-br from-amber-100 via-orange-50 to-amber-50 flex items-center justify-center"
+                class="w-full h-40 bg-gradient-to-br from-amber-100 via-orange-50 to-amber-50 flex items-center justify-center"
               >
                 <svg
-                  class="h-20 w-20 text-amber-300"
+                  class="h-16 w-16 text-amber-300"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -276,9 +276,9 @@
             </div>
 
             <!-- Article Info -->
-            <div class="p-6">
+            <div class="p-4 flex flex-col h-full">
               <!-- Meta info -->
-              <div class="flex items-center justify-between text-sm text-slate-500 mb-4">
+              <div class="flex items-center justify-between text-sm text-slate-500 mb-2">
                 <div class="flex items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -311,18 +311,18 @@
 
               <!-- Title -->
               <h3
-                class="text-lg font-semibold text-slate-900 mb-4 line-clamp-2 group-hover:text-amber-700 transition-colors duration-300 leading-snug"
+                class="text-lg font-semibold text-slate-900 mb-2 line-clamp-2 group-hover:text-amber-700 transition-colors duration-300 leading-snug"
               >
                 {{ article.title.ka }}
               </h3>
 
               <!-- Excerpt -->
-              <p class="text-slate-600 text-sm mb-6 line-clamp-3 leading-relaxed">
+              <p class="text-slate-600 text-sm mb-4 line-clamp-3 leading-relaxed">
                 {{ article.excerpt.ka }}
               </p>
 
               <!-- Tags -->
-              <div v-if="article.tags && article.tags.length > 0" class="flex flex-wrap gap-2 mb-6">
+              <div v-if="article.tags && article.tags.length > 0" class="flex flex-wrap gap-2 mb-4">
                 <span
                   v-for="tag in article.tags.slice(0, 3)"
                   :key="tag"
