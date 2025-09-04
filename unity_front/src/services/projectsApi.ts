@@ -1,4 +1,4 @@
-import { api } from './api'
+import api from '@/plugins/axios/api'
 
 // Project interfaces to match the API response
 export interface ProjectApiResponse {

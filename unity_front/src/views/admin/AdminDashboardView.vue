@@ -131,7 +131,7 @@
     <!-- Quick Actions -->
     <div class="mt-8">
       <h2 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div
           class="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg shadow hover:shadow-lg transition-shadow"
         >
@@ -207,6 +207,54 @@
             </svg>
           </span>
         </div>
+
+        <!-- Clear Cache Action -->
+        <div
+          class="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-red-500 rounded-lg shadow hover:shadow-lg transition-shadow"
+        >
+          <div>
+            <span class="rounded-lg inline-flex p-3 bg-red-50 text-red-600 ring-4 ring-white">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                ></path>
+              </svg>
+            </span>
+          </div>
+          <div class="mt-8">
+            <h3 class="text-lg font-medium">
+              <button
+                @click="handleClearCache"
+                :disabled="isClearing"
+                class="focus:outline-none w-full text-left"
+              >
+                <span class="absolute inset-0" aria-hidden="true"></span>
+                {{ isClearing ? 'Clearing Cache...' : 'Clear All Cache' }}
+              </button>
+            </h3>
+            <p class="mt-2 text-sm text-gray-500">
+              Clear all backend cache including routes, views, and application cache.
+            </p>
+            <div v-if="cacheMessage" class="mt-2">
+              <p class="text-sm" :class="cacheSuccess ? 'text-green-600' : 'text-red-600'">
+                {{ cacheMessage }}
+              </p>
+            </div>
+          </div>
+          <span
+            class="pointer-events-none absolute top-6 right-6 text-gray-300 group-hover:text-gray-400"
+            aria-hidden="true"
+          >
+            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M20 4h1a1 1 0 00-1-1v1zm-1 12a1 1 0 102 0h-2zM8 3a1 1 0 000 2V3zM3.293 19.293a1 1 0 101.414 1.414l-1.414-1.414zM19 4v12h2V4h-2zm1-1H8v2h12V3zm-.707.293l-16 16 1.414 1.414 16-16-1.414-1.414z"
+              ></path>
+            </svg>
+          </span>
+        </div>
       </div>
     </div>
   </div>
@@ -216,12 +264,17 @@
 import { ref, onMounted } from 'vue'
 import { getProjects } from '@/services/projects'
 import { getTranslations } from '@/services/translations'
+import { clearAllCache } from '@/services/cache'
 
 const stats = ref({
   projects: 0,
   translations: 0,
   users: 1, // Static for now
 })
+
+const isClearing = ref(false)
+const cacheMessage = ref('')
+const cacheSuccess = ref(false)
 
 const loadStats = async () => {
   try {
@@ -234,6 +287,34 @@ const loadStats = async () => {
     stats.value.translations = translationsResponse.data.total || 0
   } catch (error) {
     console.error('Error loading stats:', error)
+  }
+}
+
+const handleClearCache = async () => {
+  if (isClearing.value) return
+
+  isClearing.value = true
+  cacheMessage.value = ''
+
+  try {
+    const response = await clearAllCache()
+    cacheSuccess.value = true
+    cacheMessage.value = response.data.data.message || 'Cache cleared successfully!'
+
+    // Hide message after 5 seconds
+    setTimeout(() => {
+      cacheMessage.value = ''
+    }, 5000)
+  } catch (error: any) {
+    cacheSuccess.value = false
+    cacheMessage.value = error.response?.data?.message || 'Failed to clear cache. Please try again.'
+
+    // Hide error message after 5 seconds
+    setTimeout(() => {
+      cacheMessage.value = ''
+    }, 5000)
+  } finally {
+    isClearing.value = false
   }
 }
 

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\AboutController;
 use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\AdminProjectsController;
 use App\Http\Controllers\Admin\AdminTranslationController;
+use App\Http\Controllers\Admin\AdminController;
 
 
 /*
@@ -57,6 +58,8 @@ Route::prefix('about')->controller(AboutController::class)->group(function () {
     Route::get('/', 'index');
 });
 
+// Test cache endpoint (no auth required for testing)
+Route::get('/test-cache', [AdminController::class, 'getCacheStats']);
 
 Route::middleware('auth:api')->group(function () {
     Route::get('/user', [UserController::class, 'getUser']);
@@ -77,6 +80,16 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/', 'store');
         Route::put('/{id}', 'update');
     });
+
+    // Admin cache management routes
+    Route::prefix('admin/cache')->controller(AdminController::class)->group(function () {
+        Route::post('/clear', 'clearCache'); // Clear all cache
+        Route::post('/clear-specific', 'clearSpecificCache'); // Clear specific cache types
+        Route::get('/stats', 'getCacheStats'); // Get cache statistics
+    });
+
+    // Admin test routes
+    Route::get('/admin/test-auth', [AdminController::class, 'testAuth']);
 
     // Protected news routes (admin only)
     Route::prefix('admin/news')->controller(AdminNewsController::class)->group(function () {
