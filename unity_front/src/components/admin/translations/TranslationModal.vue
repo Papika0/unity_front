@@ -167,6 +167,46 @@
                 >
               </h4>
               <p class="text-slate-600 text-sm">შეავსეთ თარგმანი სამივე ენაზე</p>
+
+              <!-- Translate Both Button -->
+              <div v-if="formTextKa && (!formTextEn || !formTextRu)" class="mt-4">
+                <button
+                  @click="translateBoth"
+                  type="button"
+                  :disabled="translating"
+                  class="inline-flex items-center gap-3 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 rounded-xl hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300"
+                >
+                  <svg
+                    v-if="translating"
+                    class="animate-spin w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                    ></path>
+                  </svg>
+                  {{ translating ? '🔄 თარგმნა...' : '🌐 ორივე ენაზე თარგმნა' }}
+                </button>
+              </div>
             </div>
 
             <!-- Georgian -->
@@ -317,6 +357,7 @@ interface Emits {
   (e: 'close'): void
   (e: 'submit'): void
   (e: 'translate', fromLang: string, toLang: string): void
+  (e: 'translateBoth'): void
   (e: 'update:form', form: TranslationForm): void
 }
 
@@ -399,6 +440,11 @@ const getKeyPlaceholder = () => {
     messages: 'მაგ. success_message',
   }
   return placeholders[props.form.group as keyof typeof placeholders] || 'მაგ. unique_identifier'
+}
+
+// Method to translate both English and Russian from Georgian
+const translateBoth = () => {
+  emit('translateBoth')
 }
 </script>
 

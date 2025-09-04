@@ -149,6 +149,7 @@
         @close="closeModal"
         @submit="saveTranslation"
         @translate="translateText"
+        @translateBoth="translateBoth"
         @update:form="updateForm"
       />
     </div>
@@ -287,6 +288,28 @@ const translateText = async (fromLang: string, toLang: string) => {
     } else if (toLang === 'ru') {
       translationForm.text_ru = translatedText
     }
+  } catch (error) {
+    console.error('Translation failed:', error)
+    // Show user-friendly error message or keep original text
+  } finally {
+    translating.value = false
+  }
+}
+
+const translateBoth = async () => {
+  if (translating.value || !translationForm.text_ka) return
+
+  try {
+    translating.value = true
+
+    // Translate to both English and Russian in parallel
+    const [englishTranslation, russianTranslation] = await Promise.all([
+      Translator.translate(translationForm.text_ka, 'ka', 'en'),
+      Translator.translate(translationForm.text_ka, 'ka', 'ru'),
+    ])
+
+    translationForm.text_en = englishTranslation
+    translationForm.text_ru = russianTranslation
   } catch (error) {
     console.error('Translation failed:', error)
     // Show user-friendly error message or keep original text

@@ -20,7 +20,7 @@ watch(
   () => localeStore.currentLocale,
   async (newLocale, oldLocale) => {
     if (newLocale !== oldLocale) {
-      await homepageStore.handleLocaleChange()
+      await homepageStore.loadHomepageData()
     }
   },
 )
