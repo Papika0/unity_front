@@ -47,7 +47,7 @@ function useTranslator() {
 
     // If translations aren't loaded yet, return empty to prevent key flashing
     if (!isInitialized.value || Object.keys(translations.value).length === 0) {
-      return ''
+      return key
     }
 
     return translations.value[key] || key
