@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\InvalidatesHomepageCache;
 
 class Projects extends Model
 {
-    use HasFactory, HasTranslations;
+    use HasFactory, HasTranslations, InvalidatesHomepageCache;
 
     public $translatable = [
         'title',

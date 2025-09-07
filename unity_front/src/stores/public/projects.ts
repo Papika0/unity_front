@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { projectsApi } from '@/services/projectsApi'
+// import { projectsApi } from '@/services/projectsApi'
 
 export interface Project {
   id: number
@@ -86,93 +86,73 @@ export const useProjectsStore = defineStore('projects', () => {
     return projects.value.filter((project) => project.status === status && project.is_active)
   }
 
-  // API integration methods
-  const fetchProjects = async (): Promise<void> => {
-    isLoading.value = true
-    error.value = null
+  // const fetchFeaturedProjects = async (): Promise<void> => {
+  //   isLoading.value = true
+  //   error.value = null
 
-    try {
-      const response = await projectsApi.getAll()
-      if (response.success && response.data) {
-        projects.value = response.data
-      } else {
-        throw new Error(response.message || 'Failed to fetch projects')
-      }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch projects'
-      console.error('Error fetching projects:', err)
-    } finally {
-      isLoading.value = false
-    }
-  }
+  //   try {
+  //     const response = await projectsApi.getFeatured()
+  //     if (response.success && response.data) {
+  //       featuredProjectsData.value = response.data
+  //     } else {
+  //       throw new Error(response.message || 'Failed to fetch featured projects')
+  //     }
+  //   } catch (err) {
+  //     error.value = err instanceof Error ? err.message : 'Failed to fetch featured projects'
+  //     console.error('Error fetching featured projects:', err)
+  //   } finally {
+  //     isLoading.value = false
+  //   }
+  // }
 
-  const fetchFeaturedProjects = async (): Promise<void> => {
-    isLoading.value = true
-    error.value = null
+  // const fetchHomepageProjects = async (): Promise<void> => {
+  //   isLoading.value = true
+  //   error.value = null
 
-    try {
-      const response = await projectsApi.getFeatured()
-      if (response.success && response.data) {
-        featuredProjectsData.value = response.data
-      } else {
-        throw new Error(response.message || 'Failed to fetch featured projects')
-      }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch featured projects'
-      console.error('Error fetching featured projects:', err)
-    } finally {
-      isLoading.value = false
-    }
-  }
+  //   try {
+  //     const response = await projectsApi.getHomepage()
+  //     if (response.success && response.data) {
+  //       homepageProjectsData.value = response.data
+  //     } else {
+  //       throw new Error(response.message || 'Failed to fetch homepage projects')
+  //     }
+  //   } catch (err) {
+  //     error.value = err instanceof Error ? err.message : 'Failed to fetch homepage projects'
+  //     console.error('Error fetching homepage projects:', err)
+  //   } finally {
+  //     isLoading.value = false
+  //   }
+  // }
 
-  const fetchHomepageProjects = async (): Promise<void> => {
-    isLoading.value = true
-    error.value = null
+  // const fetchProjectById = async (id: number): Promise<Project | null> => {
+  //   isLoading.value = true
+  //   error.value = null
 
-    try {
-      const response = await projectsApi.getHomepage()
-      if (response.success && response.data) {
-        homepageProjectsData.value = response.data
-      } else {
-        throw new Error(response.message || 'Failed to fetch homepage projects')
-      }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch homepage projects'
-      console.error('Error fetching homepage projects:', err)
-    } finally {
-      isLoading.value = false
-    }
-  }
+  //   try {
+  //     const response = await projectsApi.getById(id)
+  //     if (response.success && response.data) {
+  //       const project = response.data
 
-  const fetchProjectById = async (id: number): Promise<Project | null> => {
-    isLoading.value = true
-    error.value = null
+  //       // Update the project in the store if it exists
+  //       const existingIndex = projects.value.findIndex((p) => p.id === id)
+  //       if (existingIndex !== -1) {
+  //         projects.value[existingIndex] = project
+  //       } else {
+  //         projects.value.push(project)
+  //       }
 
-    try {
-      const response = await projectsApi.getById(id)
-      if (response.success && response.data) {
-        const project = response.data
-
-        // Update the project in the store if it exists
-        const existingIndex = projects.value.findIndex((p) => p.id === id)
-        if (existingIndex !== -1) {
-          projects.value[existingIndex] = project
-        } else {
-          projects.value.push(project)
-        }
-
-        return project
-      } else {
-        throw new Error(response.message || 'Failed to fetch project')
-      }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch project'
-      console.error('Error fetching project:', err)
-      return null
-    } finally {
-      isLoading.value = false
-    }
-  }
+  //       return project
+  //     } else {
+  //       throw new Error(response.message || 'Failed to fetch project')
+  //     }
+  //   } catch (err) {
+  //     error.value = err instanceof Error ? err.message : 'Failed to fetch project'
+  //     console.error('Error fetching project:', err)
+  //     return null
+  //   } finally {
+  //     isLoading.value = false
+  //   }
+  // }
 
   // Clear data
   const clearProjects = () => {
@@ -221,10 +201,9 @@ export const useProjectsStore = defineStore('projects', () => {
     // Actions
     getProjectById,
     getProjectsByStatus,
-    fetchProjects,
-    fetchFeaturedProjects,
-    fetchHomepageProjects,
-    fetchProjectById,
+    // fetchFeaturedProjects,
+    // fetchHomepageProjects,
+    // fetchProjectById,
     clearProjects,
     $patch,
   }

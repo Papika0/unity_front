@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\InvalidatesHomepageCache;
 
 class News extends Model
 {
-    use HasFactory;
+    use HasFactory, InvalidatesHomepageCache;
 
     protected $fillable = [
         'is_active',

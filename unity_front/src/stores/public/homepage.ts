@@ -45,6 +45,7 @@ export const useHomepageStore = defineStore('homepage', () => {
         mergeTranslations(data.translations)
       }
 
+      projectsStore.projects = data?.projects?.all || []
       projectsStore.featuredProjectsData = data?.projects?.is_featured
       projectsStore.homepageProjectsData = data?.projects?.is_onHomepage
 
