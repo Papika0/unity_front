@@ -15,6 +15,7 @@ class AdminTranslationController extends Controller
     {
         $perPage = $request->input('per_page', 15);
         $search = $request->input('search', '');
+        $group = $request->input('group', '');
 
         $query = Translation::query();
 
@@ -25,6 +26,10 @@ class AdminTranslationController extends Controller
                     ->orWhere('text->ru', 'LIKE', "%$search%")
                     ->orWhere('key', 'LIKE', "%$search%");
             });
+        }
+
+        if ($group) {
+            $query->where('group', $group);
         }
 
         $data = $query->paginate($perPage);

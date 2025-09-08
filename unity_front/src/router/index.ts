@@ -147,6 +147,11 @@ const router = createRouter({
               name: 'admin-translations',
               component: () => import('@/views/admin/translations/ListView.vue'),
             },
+            {
+              path: 'contact-info',
+              name: 'admin-contact-info',
+              component: () => import('@/views/admin/contact-info/ListView.vue'),
+            },
           ],
         },
       ],

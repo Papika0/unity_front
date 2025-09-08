@@ -12,6 +12,7 @@ export const useHomepageStore = defineStore('homepage', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const isFetched = ref(false)
+  const contactInfo = ref(null)
 
   // Composables
   const { startTimer, endTimer } = usePerformance()
@@ -50,6 +51,7 @@ export const useHomepageStore = defineStore('homepage', () => {
       projectsStore.homepageProjectsData = data?.projects?.is_onHomepage
 
       newsStore.recentArticles = data?.news
+      contactInfo.value = data?.contact_info
     } catch (err) {
       console.error('Failed to load homepage data:', err)
       error.value = err instanceof Error ? err.message : 'Failed to load homepage data'
@@ -73,6 +75,7 @@ export const useHomepageStore = defineStore('homepage', () => {
     isLoading,
     error,
     isFetched,
+    contactInfo,
 
     // Actions
     loadHomepageData,

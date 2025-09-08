@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\AboutController;
 use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\AdminProjectsController;
 use App\Http\Controllers\Admin\AdminTranslationController;
+use App\Http\Controllers\Admin\AdminContactInfoController;
 use App\Http\Controllers\Admin\AdminController;
 
 
@@ -58,6 +59,9 @@ Route::prefix('about')->controller(AboutController::class)->group(function () {
     Route::get('/', 'index');
 });
 
+// Contact info routes (public)
+Route::get('/contact-info', [App\Http\Controllers\Api\ContactInfoController::class, 'index']);
+
 // Test cache endpoint (no auth required for testing)
 Route::get('/test-cache', [AdminController::class, 'getCacheStats']);
 
@@ -101,5 +105,12 @@ Route::middleware('auth:api')->group(function () {
         Route::put('/{id}', 'update');
         Route::post('/{id}', 'update'); // Allow POST for multipart updates
         Route::delete('/{id}', 'destroy');
+    });
+
+    // Protected contact info routes (admin only) - Single record
+    Route::prefix('admin/contact-info')->controller(AdminContactInfoController::class)->group(function () {
+        Route::get('/', 'index');           // Get the single contact info record
+        Route::put('/', 'update');          // Update the contact info record
+        Route::post('/', 'update');         // Allow POST for form compatibility
     });
 });

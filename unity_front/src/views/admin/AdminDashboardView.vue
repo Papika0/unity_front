@@ -208,6 +208,45 @@
           </span>
         </div>
 
+        <!-- Contact Info Management -->
+        <div
+          class="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-purple-500 rounded-lg shadow hover:shadow-lg transition-shadow"
+        >
+          <div>
+            <span class="rounded-lg inline-flex p-3 bg-purple-50 text-purple-600 ring-4 ring-white">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 8l7.89 7.89a2 2 0 002.83 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+            </span>
+          </div>
+          <div class="mt-8">
+            <h3 class="text-lg font-medium">
+              <router-link to="/admin/contact-info" class="focus:outline-none">
+                <span class="absolute inset-0" aria-hidden="true"></span>
+                Manage Contact Info
+              </router-link>
+            </h3>
+            <p class="mt-2 text-sm text-gray-500">
+              Manage email, phone numbers, address, and location information.
+            </p>
+          </div>
+          <span
+            class="pointer-events-none absolute top-6 right-6 text-gray-300 group-hover:text-gray-400"
+            aria-hidden="true"
+          >
+            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M20 4h1a1 1 0 00-1-1v1zm-1 12a1 1 0 102 0h-2zM8 3a1 1 0 000 2V3zM3.293 19.293a1 1 0 101.414 1.414l-1.414-1.414zM19 4v12h2V4h-2zm1-1H8v2h12V3zm-.707.293l-16 16 1.414 1.414 16-16-1.414-1.414z"
+              ></path>
+            </svg>
+          </span>
+        </div>
+
         <!-- Clear Cache Action -->
         <div
           class="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-red-500 rounded-lg shadow hover:shadow-lg transition-shadow"

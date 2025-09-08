@@ -16,6 +16,6 @@ class TranslationController extends Controller
     public function getByGroup($group, Request $request)
     {
         $perPage = $request->input('per_page', 50);
-        return new TranslationCollection(Translation::where('group', $group)->paginate($perPage));
+        return new TranslationResource(Translation::where('group', $group)->paginate($perPage));
     }
 }

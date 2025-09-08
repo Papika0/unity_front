@@ -11,14 +11,17 @@ use App\Http\Resources\Api\NewsResource;
 use App\Http\Resources\Api\ProjectResource;
 use App\Http\Resources\Api\TranslationResource;
 use App\Services\PageCacheService;
+use App\Services\SiteSettingsService;
 
 class HomepageController extends Controller
 {
     protected $pageCacheService;
+    protected $siteSettingsService;
 
-    public function __construct(PageCacheService $pageCacheService)
+    public function __construct(PageCacheService $pageCacheService, SiteSettingsService $siteSettingsService)
     {
         $this->pageCacheService = $pageCacheService;
+        $this->siteSettingsService = $siteSettingsService;
     }
 
     /**
@@ -32,7 +35,7 @@ class HomepageController extends Controller
         $locale = $request->input('locale', 'ka');
         
         // Static groups defined in backend
-        $groups = ['home', 'header', 'footer'];
+        $groups = ['messages', 'header', 'footer', 'buttons', 'contact', 'errors'];
         
         // Create cache key based on locale
         $cacheKey = "HomePageCache({$locale})";
@@ -62,11 +65,13 @@ class HomepageController extends Controller
         $translations = $this->getOptimizedTranslations($groups, $locale);
         $projects = $this->getOptimizedProjects($locale);
         $news = $this->getOptimizedNews($locale);
+        $contactInfo = $this->getOptimizedContactInfo($locale);
 
         return [
             'translations' => $translations,
             'projects' => $projects,
             'news' => $news,
+            'contact_info' => $contactInfo,
             'meta' => [
                 'locale' => $locale,
                 'cached_at' => now()->toISOString(),
@@ -144,6 +149,26 @@ class HomepageController extends Controller
                 return $resource->toArray(request());
             })
             ->toArray();
+    }
+
+    /**
+     * Get contact information using config
+     */
+    private function getOptimizedContactInfo(string $locale): array
+    {
+        $contactInfo = $this->siteSettingsService->getContactInfo();
+        
+        // Return empty array if no contact info
+        if (!$contactInfo) {
+            return [];
+        }
+        
+        // Return simplified data structure
+        return [
+            'email' => $contactInfo['email'] ?? '',
+            'phone_numbers' => $contactInfo['phone_numbers'] ?? [],
+            'google_maps_url' => $contactInfo['google_maps_url'] ?? ''
+        ];
     }
 
 }

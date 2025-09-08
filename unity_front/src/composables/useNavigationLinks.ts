@@ -34,10 +34,18 @@ export function useNavigationLinks() {
   )
 
   const socialLinks = computed(() => [
-    { key: 'footer.facebook', href: '#', label: t('footer.facebook'), external: true },
-    { key: 'footer.instagram', href: '#', label: t('footer.instagram'), external: true },
-    { key: 'footer.linkedin', href: '#', label: t('footer.linkedin'), external: true },
-    { key: 'footer.youtube', href: '#', label: t('footer.youtube'), external: true },
+    {
+      key: 'footer.facebook',
+      href: 'https://www.facebook.com/unityd.ge',
+      label: 'Facebook',
+      external: true,
+    },
+    {
+      key: 'footer.instagram',
+      href: 'https://www.instagram.com/unity.ge',
+      label: 'Instagram',
+      external: true,
+    },
   ])
 
   return {

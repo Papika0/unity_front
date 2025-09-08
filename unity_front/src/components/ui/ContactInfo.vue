@@ -1,9 +1,9 @@
 <script setup lang="ts">
 interface Props {
   title: string
-  addressLabel: string
-  addressValue: string
-  locationLabel: string
+  addressLabel?: string
+  addressValue?: string
+  locationLabel?: string
   locationHref?: string
   email: string
   phoneLabel: string
@@ -24,7 +24,7 @@ defineProps<Props>()
     </h3>
     <div class="space-y-6">
       <!-- Address -->
-      <div>
+      <div v-if="addressLabel && addressValue">
         <h4 class="text-xl font-normal font-roboto leading-loose mb-2">
           {{ addressLabel }}
         </h4>
@@ -32,8 +32,9 @@ defineProps<Props>()
           {{ addressValue }}
         </p>
         <a
-          v-if="locationHref"
+          v-if="locationHref && locationLabel"
           :href="locationHref"
+          target="_blank"
           class="text-xs font-normal font-roboto leading-3 text-red-700 hover:text-red-800"
         >
           {{ locationLabel }}

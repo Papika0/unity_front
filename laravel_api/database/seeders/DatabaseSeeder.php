@@ -13,17 +13,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\User::factory(3)->create();
+        // \App\Models\User::factory(3)->create();
 
-        \App\Models\User::factory()->create([
-            'name' => 'Test User',
-            'email' => '1@gmail.com',
-        ]);
+        // \App\Models\User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => '1@gmail.com',
+        // ]);
 
-        $this->call(RoleSeeder::class);
-        $this->call(TranslationSeeder::class);
-        $this->call(NewsSeeder::class);
-        Projects::factory()->count(1)->create();
+        // $this->call(RoleSeeder::class);
+        // $this->call(TranslationSeeder::class);
+        // $this->call(NewsSeeder::class);
+        Projects::factory()->count(5)->create();
 
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',

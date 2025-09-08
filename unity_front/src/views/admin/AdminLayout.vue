@@ -105,6 +105,26 @@
                 </svg>
                 თარგმანები
               </router-link>
+
+              <router-link
+                to="/admin/contact-info"
+                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                :class="
+                  $route.name === 'admin-contact-info'
+                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
+                    : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'
+                "
+              >
+                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 8l7.89 7.89a2 2 0 002.83 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+                კონტაქტის ინფორმაცია
+              </router-link>
             </nav>
           </div>
 

@@ -13,6 +13,14 @@ const props = withDefaults(defineProps<Props>(), {
   external: false,
 })
 
+const emit = defineEmits<{
+  click: [event: MouseEvent]
+}>()
+
+const handleClick = (event: MouseEvent) => {
+  emit('click', event)
+}
+
 const baseClasses =
   'inline-flex items-center justify-center font-normal font-roboto uppercase tracking-widest transition-colors duration-200 text-center'
 
@@ -44,7 +52,7 @@ const classes = [baseClasses, sizeClasses[props.size], variantClasses[props.vari
   >
     <slot />
   </a>
-  <button v-else :class="classes">
+  <button v-else :class="classes" @click="handleClick">
     <slot />
   </button>
 </template>
