@@ -280,7 +280,7 @@ onUnmounted(() => {
                   <span
                     class="relative z-10 text-white text-sm tracking-[0.3em] uppercase font-light"
                   >
-                    {{ t('hero.cta') }}
+                    {{ t('buttons.see_details') }}
                   </span>
                   <div
                     class="absolute inset-0 border border-white/30 transition-all duration-500 group-hover:border-white/60"

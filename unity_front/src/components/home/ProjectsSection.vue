@@ -41,7 +41,7 @@ const displayProjects = computed(() =>
       <h2
         class="text-zinc-900 text-4xl font-normal font-roboto uppercase leading-loose tracking-[3px] mb-8"
       >
-        {{ t('projects.title') }}
+        {{ t('home.projects') }}
       </h2>
       <img src="../../assets/Vector_10.png" alt="" class="mb-16" />
 
@@ -54,16 +54,6 @@ const displayProjects = computed(() =>
           Loading translations...
         </div>
         <p v-else class="text-gray-600 text-lg">{{ t('common.loading') }}</p>
-      </div>
-
-      <!-- Error State -->
-      <div v-else-if="projectsStore.error" class="text-center py-16">
-        <p class="text-red-600 text-lg">{{ t('common.error') }}: {{ projectsStore.error }}</p>
-      </div>
-
-      <!-- No Projects State -->
-      <div v-else-if="displayProjects.length === 0" class="text-center py-16">
-        <p class="text-gray-600 text-lg">{{ t('projects.empty') }}</p>
       </div>
 
       <!-- Projects Grid -->

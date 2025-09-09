@@ -35,7 +35,7 @@ class HomepageController extends Controller
         $locale = $request->input('locale', 'ka');
         
         // Static groups defined in backend
-        $groups = ['messages', 'header', 'footer', 'buttons', 'contact', 'errors'];
+        $groups = ['messages', 'header', 'footer', 'buttons', 'contact', 'errors', 'home'];
         
         // Create cache key based on locale
         $cacheKey = "HomePageCache({$locale})";
