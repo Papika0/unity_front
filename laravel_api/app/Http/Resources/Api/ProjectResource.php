@@ -42,8 +42,8 @@ class ProjectResource extends JsonResource
             'longitude' => $this->longitude,
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
-            'created_at' => $this->created_at->toIso8601String(),
-            'updated_at' => $this->updated_at->toIso8601String(),
+            // 'created_at' => $this->created_at->toIso8601String(),
+            // 'updated_at' => $this->updated_at->toIso8601String(),
         ];
     }
 }

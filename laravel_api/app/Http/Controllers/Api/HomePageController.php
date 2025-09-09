@@ -35,7 +35,7 @@ class HomepageController extends Controller
         $locale = $request->input('locale', 'ka');
         
         // Static groups defined in backend
-        $groups = ['messages', 'header', 'footer', 'buttons', 'contact', 'errors', 'home'];
+        $groups = ['messages', 'header', 'footer', 'buttons', 'contact', 'errors', 'home', 'projects', 'news'];
         
         // Create cache key based on locale
         $cacheKey = "HomePageCache({$locale})";
@@ -104,11 +104,11 @@ class HomepageController extends Controller
     {
         // Select only essential columns to reduce memory usage
         $essentialColumns = [
-            'id', 'title', 'description', 'location', 'status', 
-            'start_date', 'completion_date', 'main_image', 'render_image',
-            'gallery_images', 'year', 'is_active', 'is_featured', 
-            'is_onHomepage', 'latitude', 'longitude', 'meta_title', 
-            'meta_description', 'created_at', 'updated_at'
+            'id', 'title', 'location', 'status', 'description',
+            'main_image', 'render_image',
+            'is_active', 'is_featured', 
+            'is_onHomepage', 'meta_title', 
+            'meta_description',
         ];
 
         // Get all active projects in one query
@@ -126,6 +126,7 @@ class HomepageController extends Controller
             'all' => $allProjects->values()->toArray(),
             'is_featured' => $allProjects->where('is_featured', true)->values()->toArray(),
             'is_onHomepage' => $allProjects->where('is_onHomepage', true)->values()->toArray(),
+            'is_alone' => $allProjects->where('is_onHomepage', false)->where('is_featured', false)->values()->first(),
         ];
     }
 

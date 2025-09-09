@@ -30,6 +30,7 @@ export const useProjectsStore = defineStore('projects', () => {
   const projects = ref<Project[]>([])
   const featuredProjectsData = ref<Project[]>([])
   const homepageProjectsData = ref<Project[]>([])
+  const aloneProjectsData = ref<Project[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -186,6 +187,7 @@ export const useProjectsStore = defineStore('projects', () => {
     projects,
     featuredProjectsData,
     homepageProjectsData,
+    aloneProjectsData,
     isLoading,
     error,
 

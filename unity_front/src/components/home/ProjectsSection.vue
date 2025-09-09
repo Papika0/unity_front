@@ -15,9 +15,9 @@ const statusColorMap = {
 
 // Computed to ensure translations are loaded when accessed
 const statusTextMap = computed(() => ({
-  ongoing: t('projects.status1'),
-  completed: t('projects.status2'),
-  planning: t('projects.statusPlanning'),
+  ongoing: t('projects.ongoing'),
+  completed: t('projects.completed'),
+  planning: t('projects.planning'),
 }))
 
 // Get first 3 active projects for homepage display
@@ -88,7 +88,7 @@ const displayProjects = computed(() =>
               :to="`/projects/${project.id}`"
               class="text-black text-2xl font-normal font-roboto uppercase leading-tight tracking-[3.36px] hover:opacity-80 transition-opacity"
             >
-              {{ t('projects.discover') }} {{ project.title }}
+              {{ t('buttons.discover') }} {{ project.title }}
             </router-link>
           </div>
         </div>
@@ -100,7 +100,7 @@ const displayProjects = computed(() =>
           to="/projects"
           class="inline-block bg-black text-white px-8 py-4 text-lg font-roboto uppercase tracking-[3px] hover:bg-gray-800 transition-colors duration-300"
         >
-          {{ t('projects.viewAll') }}
+          {{ t('buttons.view_all') }}
         </router-link>
       </div>
     </div>

@@ -1,29 +1,42 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useTranslations } from '../../composables/useTranslations'
-import { useProjectsStore } from '@/stores/public/projects'
+import { useProjectsStore, type Project } from '@/stores/public/projects'
 
 const { t } = useTranslations()
 const projectsStore = useProjectsStore()
 
-// Get the first featured project or fallback to first active project
-const featuredProject = computed(() => {
-  const featured = projectsStore.featuredProjects[0]
-  if (featured) return featured
+const backendUrl = import.meta.env.VITE_BACKEND_URL
 
-  // Fallback to first active project if no featured project exists
-  return projectsStore.activeProjects[0] || null
+// Get the first featured project or fallback to first active project
+const featuredProject = computed((): Project | null => {
+  // Handle both array and single object cases
+  const data = projectsStore.aloneProjectsData as Project[] | Project | null | undefined
+
+  // If it's an array, get the first item
+  if (Array.isArray(data) && data.length > 0) {
+    return data[0]
+  }
+
+  // If it's a single object with id property, return it
+  if (data && typeof data === 'object' && 'id' in data) {
+    return data
+  }
+
+  // Otherwise return null
+  return null
 })
 </script>
 
 <template>
   <!-- Featured Project -->
+  {{ featuredProject }}
   <section v-if="featuredProject" class="bg-white">
     <div class="w-full">
       <div class="relative">
         <img
-          :src="featuredProject.main_image || 'https://placehold.co/900x806'"
-          :alt="featuredProject.title.ka"
+          :src="backendUrl + featuredProject.main_image || 'https://placehold.co/900x806'"
+          :alt="featuredProject.title"
           class="w-full h-[800px] object-cover"
         />
         <div class="absolute inset-0 bg-zinc-900/50"></div>
@@ -32,16 +45,16 @@ const featuredProject = computed(() => {
           <h3
             class="text-orange-100 text-4xl font-normal font-roboto uppercase leading-loose tracking-[3px] mb-8"
           >
-            {{ featuredProject.title.ka }}
+            {{ featuredProject.title }}
           </h3>
           <p class="text-orange-100 text-xl font-normal font-roboto leading-loose max-w-2xl mb-12">
-            {{ featuredProject.description.ka }}
+            {{ featuredProject.description }}
           </p>
           <router-link
             :to="`/projects/${featuredProject.id}`"
             class="text-orange-100 text-base font-normal font-roboto uppercase leading-tight tracking-[3.36px] hover:text-amber-300 transition-colors"
           >
-            {{ t('featured.cta') }}
+            {{ t('buttons.see_details') }}
           </router-link>
         </div>
       </div>

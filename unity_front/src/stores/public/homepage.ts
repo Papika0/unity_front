@@ -49,6 +49,7 @@ export const useHomepageStore = defineStore('homepage', () => {
       projectsStore.projects = data?.projects?.all || []
       projectsStore.featuredProjectsData = data?.projects?.is_featured
       projectsStore.homepageProjectsData = data?.projects?.is_onHomepage
+      projectsStore.aloneProjectsData = data?.projects?.is_alone
 
       newsStore.recentArticles = data?.news
       contactInfo.value = data?.contact_info
