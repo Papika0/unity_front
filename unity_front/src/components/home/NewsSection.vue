@@ -61,7 +61,7 @@ const formatDate = (dateString: string) => {
               :to="`/news/${article.id}`"
               class="text-zinc-900 text-base font-normal font-roboto underline uppercase leading-tight tracking-[3.36px] hover:text-zinc-600 transition-colors"
             >
-              {{ t('news.readMore') }}
+              {{ t('buttons.see_details') }}
             </router-link>
           </div>
         </div>
@@ -72,7 +72,7 @@ const formatDate = (dateString: string) => {
             to="/news"
             class="inline-flex items-center px-8 py-3 bg-amber-300 text-zinc-900 font-roboto font-medium uppercase tracking-[2px] hover:bg-amber-400 transition-colors"
           >
-            {{ t('news.viewAll') }}
+            {{ t('buttons.view_all') }}
             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
