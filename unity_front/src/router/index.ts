@@ -165,8 +165,8 @@ router.beforeEach(async (to, from, next) => {
   const { useAuthStore } = await import('@/stores/auth/auth')
   const authStore = useAuthStore()
 
-  // Initialize auth if token exists but user is not loaded
-  if (authStore.token && !authStore.user) {
+  // Only initialize auth if navigating to admin routes and token exists but user is not loaded
+  if (to.path.startsWith('/admin') && authStore.token && !authStore.user) {
     authStore.initAuth()
   }
 
