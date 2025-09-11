@@ -1,34 +1,39 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
+import { useAboutInfo } from '../composables/useAboutInfo'
 
 const { t } = useTranslations()
+const { stats: aboutStats } = useAboutInfo()
 
-const stats = ref([
-  { number: '150+', label: 'წარმატებული პროექტი' },
-  { number: '15+', label: 'წლის გამოცდილება' },
-  { number: '50+', label: 'კმაყოფილი კლიენტი' },
-  { number: '98%', label: 'კლიენტის კმაყოფილება' },
+// // Load about translations
+// onMounted(() => {
+//   loadGroup('about')
+// })
+
+const stats = computed(() => [
+  { number: aboutStats.value.successful_projects, label: t('about.stats.successful_projects') },
+  { number: aboutStats.value.years_experience, label: t('about.stats.years_experience') },
+  { number: aboutStats.value.satisfied_clients, label: t('about.stats.satisfied_clients') },
+  { number: aboutStats.value.client_satisfaction, label: t('about.stats.client_satisfaction') },
 ])
 
-const values = ref([
+const values = computed(() => [
   {
-    title: 'ინოვაცია',
-    description: 'ვიყენებთ ყველაზე თანამედროვე ტექნოლოგიებს და მიდგომებს დიზაინსა და არქიტექტურაში',
+    title: t('about.values.innovation.title'),
+    description: t('about.values.innovation.description'),
   },
   {
-    title: 'ხარისხი',
-    description:
-      'ყოველი პროექტი შესრულებულია უმაღლესი ხარისხის სტანდარტებით და ყურადღებით დეტალებისადმი',
+    title: t('about.values.quality.title'),
+    description: t('about.values.quality.description'),
   },
   {
-    title: 'მდგრადობა',
-    description:
-      'ყველა პროექტი ითვალისწინებს ეკოლოგიურ და ენერგოეფექტურ მიდგომებს მომავალი თაობებისთვის',
+    title: t('about.values.sustainability.title'),
+    description: t('about.values.sustainability.description'),
   },
   {
-    title: 'ექსკლუზივურობა',
-    description: 'ყოველი პროექტი უნიკალურია და ასახავს კლიენტის ინდივიდუალურ ხედვას',
+    title: t('about.values.exclusivity.title'),
+    description: t('about.values.exclusivity.description'),
   },
 ])
 </script>
@@ -47,7 +52,7 @@ const values = ref([
               {{ t('about.title') }}
             </h1>
             <p class="text-xl md:text-2xl text-orange-100 font-light leading-relaxed max-w-3xl">
-              ვქმნით სივრცეებს, რომლებიც აერთიანებენ ხელოვნებას, ფუნქციონალურობას და მდგრადობას
+              {{ t('about.hero.subtitle') }}
             </p>
           </div>
         </div>
@@ -61,24 +66,21 @@ const values = ref([
           <div class="order-2 lg:order-1">
             <div class="space-y-8">
               <div>
-                <h2 class="text-4xl lg:text-5xl font-light mb-8 text-zinc-900">ჩვენი ფილოსოფია</h2>
+                <h2 class="text-4xl lg:text-5xl font-light mb-8 text-zinc-900">
+                  {{ t('about.philosophy.title') }}
+                </h2>
                 <div class="w-24 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600 mb-8"></div>
               </div>
 
               <div class="space-y-6 text-lg text-zinc-600 leading-relaxed font-light">
                 <p>
-                  Unity Architecture დაარსდა 2008 წელს იმ ხედვით, რომ შეექმნა სივრცეები, რომლებიც
-                  არა მხოლოდ ესთეტიკურად სრულყოფილია, არამედ ძირითადად ფუნქციონალური და ეკოლოგიურად
-                  მდგრადი.
+                  {{ t('about.philosophy.paragraph1') }}
                 </p>
                 <p>
-                  ჩვენი მიდგომა ემყარება სიღრმისეულ გაგებას თითოეული კლიენტის უნიკალური
-                  საჭიროებებისა და ხედვისა. ვქმნით არა უბრალოდ შენობებს, არამედ ემოციურ
-                  გამოცდილებებს.
+                  {{ t('about.philosophy.paragraph2') }}
                 </p>
                 <p>
-                  თითოეული პროექტი არის ხელოვნების ნაწარმოები, რომელიც აერთიანებს ტრადიციულ
-                  ღირებულებებს თანამედროვე ინოვაციებთან.
+                  {{ t('about.philosophy.paragraph3') }}
                 </p>
               </div>
             </div>
@@ -107,7 +109,9 @@ const values = ref([
     <section class="py-20 bg-gradient-to-r from-zinc-50 to-orange-50">
       <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
         <div class="text-center mb-16">
-          <h2 class="text-4xl lg:text-5xl font-light mb-4 text-zinc-900">რიცხვები ჩვენს შესახებ</h2>
+          <h2 class="text-4xl lg:text-5xl font-light mb-4 text-zinc-900">
+            {{ t('about.stats.title') }}
+          </h2>
           <div class="w-24 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto"></div>
         </div>
 
@@ -132,11 +136,12 @@ const values = ref([
     <section class="py-20 lg:py-32 bg-white">
       <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
         <div class="text-center mb-20">
-          <h2 class="text-4xl lg:text-5xl font-light mb-8 text-zinc-900">ღირებულებები</h2>
+          <h2 class="text-4xl lg:text-5xl font-light mb-8 text-zinc-900">
+            {{ t('about.values.title') }}
+          </h2>
           <div class="w-24 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto mb-6"></div>
           <p class="text-xl text-zinc-600 font-light max-w-3xl mx-auto leading-relaxed">
-            ეს ღირებულებები წარმართავს ჩვენს ყოველდღიურ მუშაობას და განსაზღვრავს ყოველი პროექტის
-            წარმატების საფუძველს
+            {{ t('about.values.subtitle') }}
           </p>
         </div>
 
@@ -173,11 +178,12 @@ const values = ref([
       class="py-20 lg:py-32 bg-gradient-to-br from-zinc-900 via-zinc-800 to-orange-900 text-white"
     >
       <div class="max-w-5xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 text-center">
-        <h2 class="text-4xl lg:text-5xl font-light mb-12 leading-tight">ჩვენი მისია</h2>
+        <h2 class="text-4xl lg:text-5xl font-light mb-12 leading-tight">
+          {{ t('about.mission.title') }}
+        </h2>
         <div class="w-24 h-0.5 bg-gradient-to-r from-orange-400 to-orange-500 mx-auto mb-12"></div>
         <p class="text-xl lg:text-2xl font-light leading-relaxed text-orange-100 mb-12">
-          ვქმნით არქიტექტურულ ღირსშესანიშნაობებს, რომლებიც გამოირჩევიან ესთეტიკური სრულყოფილებით,
-          ფუნქციონალური ეფექტურობით და ეკოლოგიური პასუხისმგებლობით
+          {{ t('about.mission.description') }}
         </p>
         <div
           class="inline-block px-8 py-1 rounded-full border border-orange-400/30 bg-orange-400/10"
@@ -190,11 +196,12 @@ const values = ref([
     <!-- CTA Section -->
     <section class="bg-white py-20">
       <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 text-center">
-        <h2 class="text-4xl lg:text-5xl font-light mb-8 text-zinc-900">თქვენი ხედვის რეალიზება</h2>
+        <h2 class="text-4xl lg:text-5xl font-light mb-8 text-zinc-900">
+          {{ t('about.cta.title') }}
+        </h2>
         <div class="w-24 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto mb-8"></div>
         <p class="text-xl text-zinc-600 font-light mb-12 max-w-3xl mx-auto leading-relaxed">
-          მზად ხართ გადააქციოთ თქვენი ხედვა არქიტექტურულ რეალობად? დაგვიკავშირდით უფასო
-          კონსულტაციისთვის
+          {{ t('about.cta.description') }}
         </p>
         <router-link
           to="/contact"

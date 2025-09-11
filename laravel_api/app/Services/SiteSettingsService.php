@@ -9,12 +9,12 @@ use Illuminate\Support\Facades\Log;
 class SiteSettingsService
 {
     protected $configPath;
-    
+
     public function __construct()
     {
         $this->configPath = config_path('site_settings.php');
     }
-    
+
     /**
      * Get contact info from config
      */
@@ -22,7 +22,15 @@ class SiteSettingsService
     {
         return config('site_settings.contact_info', []);
     }
-    
+
+    /**
+     * Get about info from config
+     */
+    public function getAboutInfo(): array
+    {
+        return config('site_settings.about_info', []);
+    }
+
     /**
      * Update contact info in config file
      */
@@ -37,13 +45,13 @@ class SiteSettingsService
                     }
                 }
             }
-            
+
             // Get current config
             $config = config('site_settings');
-            
+
             // Update contact info
             $config['contact_info'] = $data;
-            
+
             // Write back to config file
             return $this->writeConfigFile($config);
         } catch (\Exception $e) {
@@ -51,20 +59,40 @@ class SiteSettingsService
             return false;
         }
     }
-    
+
+    /**
+     * Update about info in config file
+     */
+    public function updateAboutInfo(array $data): bool
+    {
+        try {
+            // Get current config
+            $config = config('site_settings');
+
+            // Update about info
+            $config['about_info'] = $data;
+
+            // Write back to config file
+            return $this->writeConfigFile($config);
+        } catch (\Exception $e) {
+            Log::error('Failed to update about info: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     /**
      * Write config array to file
      */
     protected function writeConfigFile(array $config): bool
     {
         $configContent = "<?php\n\nreturn " . var_export($config, true) . ";\n";
-        
+
         // Format the content to be more readable
         $configContent = $this->formatConfigContent($configContent);
-        
+
         return File::put($this->configPath, $configContent) !== false;
     }
-    
+
     /**
      * Format config content for better readability
      */
@@ -74,22 +102,22 @@ class SiteSettingsService
         $content = str_replace('array (', '[', $content);
         $content = str_replace(')', ']', $content);
         $content = str_replace('  ', '    ', $content); // 4-space indentation
-        
+
         return $content;
     }
-    
+
     /**
      * Validate contact info data
      */
     public function validateContactInfo(array $data): array
     {
         $errors = [];
-        
+
         // Validate email
         if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'Valid email is required';
         }
-        
+
         // Validate phone numbers
         if (empty($data['phone_numbers']) || !is_array($data['phone_numbers'])) {
             $errors['phone_numbers'] = 'At least one phone number is required';
@@ -104,12 +132,34 @@ class SiteSettingsService
                 // href is auto-generated, no need to validate
             }
         }
-        
+
         // Validate optional fields
         if (!empty($data['google_maps_url']) && !filter_var($data['google_maps_url'], FILTER_VALIDATE_URL)) {
             $errors['google_maps_url'] = 'Valid URL is required';
         }
-        
+
+        return $errors;
+    }
+
+    /**
+     * Validate about info data
+     */
+    public function validateAboutInfo(array $data): array
+    {
+        $errors = [];
+
+        // Validate stats
+        if (empty($data['stats']) || !is_array($data['stats'])) {
+            $errors['stats'] = 'Stats data is required';
+        } else {
+            $requiredStats = ['successful_projects', 'years_experience', 'satisfied_clients', 'client_satisfaction'];
+            foreach ($requiredStats as $stat) {
+                if (empty($data['stats'][$stat])) {
+                    $errors["stats.{$stat}"] = ucfirst(str_replace('_', ' ', $stat)) . ' is required';
+                }
+            }
+        }
+
         return $errors;
     }
 }

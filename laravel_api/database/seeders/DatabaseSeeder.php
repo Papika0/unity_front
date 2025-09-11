@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         // $this->call(RoleSeeder::class);
         // $this->call(TranslationSeeder::class);
         // $this->call(NewsSeeder::class);
+        $this->call(AboutPageTranslationSeeder::class);
         Projects::factory()->count(5)->create();
 
         // \App\Models\User::factory()->create([

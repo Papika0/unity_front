@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\AdminProjectsController;
 use App\Http\Controllers\Admin\AdminTranslationController;
 use App\Http\Controllers\Admin\AdminContactInfoController;
+use App\Http\Controllers\Admin\AdminAboutController;
 use App\Http\Controllers\Admin\AdminController;
 
 
@@ -111,6 +112,13 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('admin/contact-info')->controller(AdminContactInfoController::class)->group(function () {
         Route::get('/', 'index');           // Get the single contact info record
         Route::put('/', 'update');          // Update the contact info record
+        Route::post('/', 'update');         // Allow POST for form compatibility
+    });
+
+    // Protected about info routes (admin only) - Single record
+    Route::prefix('admin/about-info')->controller(AdminAboutController::class)->group(function () {
+        Route::get('/', 'index');           // Get the single about info record
+        Route::put('/', 'update');          // Update the about info record
         Route::post('/', 'update');         // Allow POST for form compatibility
     });
 });

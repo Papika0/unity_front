@@ -148,9 +148,9 @@ const router = createRouter({
               component: () => import('@/views/admin/translations/ListView.vue'),
             },
             {
-              path: 'contact-info',
-              name: 'admin-contact-info',
-              component: () => import('@/views/admin/contact-info/ListView.vue'),
+              path: 'site-settings',
+              name: 'admin-site-settings',
+              component: () => import('@/views/admin/site-settings/ListView.vue'),
             },
           ],
         },
