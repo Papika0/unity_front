@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useTranslations } from '../../composables/useTranslations'
 import { useProjectsStore } from '@/stores/public/projects'
 
-const { t, isInitialized } = useTranslations()
+const { t } = useTranslations()
 const backendUrl = import.meta.env.VITE_BACKEND_URL
 const projectsStore = useProjectsStore()
 
@@ -45,19 +45,8 @@ const displayProjects = computed(() =>
       </h2>
       <img src="../../assets/Vector_10.png" alt="" class="mb-16" />
 
-      <!-- Loading State -->
-      <div v-if="projectsStore.isLoading || !isInitialized" class="text-center py-16">
-        <div v-if="!isInitialized" class="text-gray-600 text-lg">
-          <div
-            class="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"
-          ></div>
-          Loading translations...
-        </div>
-        <p v-else class="text-gray-600 text-lg">{{ t('common.loading') }}</p>
-      </div>
-
       <!-- Projects Grid -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
         <div v-for="project in displayProjects" :key="project.id" class="relative">
           <div class="relative">
             <img :src="project.image" :alt="project.title" class="w-full h-[507px] object-cover" />

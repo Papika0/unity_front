@@ -1,90 +1,46 @@
-import { ref, computed } from 'vue'
-import { getTranslationsByGroup } from '@/services/translations'
-import { useLocaleStore } from '@/stores/ui/locale'
+import { useTranslationsStore } from '@/stores/ui/translations'
 
-export type TranslationsRecord = Record<string, string> // Single locale: key -> text
-
-const loadedGroups = ref<Set<string>>(new Set())
-const translations = ref<TranslationsRecord>({})
-const isLoading = ref(false)
-const loadError = ref('')
-const isInitialized = ref(false)
-
-async function loadGroup(group: string) {
-  if (loadedGroups.value.has(group)) return
-  try {
-    isLoading.value = true
-    loadError.value = ''
-    const response = await getTranslationsByGroup(group, 1000)
-    const data = response.data.data || response.data
-    const list = data.data ? data.data : data
-
-    for (const item of list) {
-      // item.text is JSON with locales
-      const valueObj = typeof item.text === 'string' ? JSON.parse(item.text) : item.value
-      translations.value[item.key] = valueObj || {}
-    }
-
-    loadedGroups.value.add(group)
-    isInitialized.value = true
-  } catch (err) {
-    const e = err as { response?: { data?: { message?: string } } }
-    loadError.value = e.response?.data?.message || 'Failed to load translations'
-  } finally {
-    isLoading.value = false
-  }
-}
-
-function useTranslator() {
-  const localeStore = useLocaleStore()
-  const currentLocale = computed(() => localeStore.currentLocale)
-
-  function t(key: string): string {
-    // If we're switching languages, return empty to prevent key flashing
-    if (localeStore.isSwitching) {
-      return ''
-    }
-
-    // If translations aren't loaded yet, return empty to prevent key flashing
-    if (!isInitialized.value || Object.keys(translations.value).length === 0) {
-      return key
-    }
-
-    return translations.value[key] || key
-  }
-
-  return { t, currentLocale }
-}
+// Re-export types for backward compatibility
+export type { TranslationsRecord, TranslationGroup, PageGroups } from '@/stores/ui/translations'
 
 export function useTranslations() {
-  const { t, currentLocale } = useTranslator()
-  return { t, loadGroup, isLoading, loadError, currentLocale, isInitialized }
+  const store = useTranslationsStore()
+
+  return {
+    t: store.t,
+    arePageGroupsLoaded: store.arePageGroupsLoaded,
+    getGroupTranslations: store.getGroupTranslations,
+    getLoadedGroups: store.getLoadedGroups,
+    isGroupLoaded: store.isGroupLoaded,
+    setPageGroups: store.setPageGroups,
+    getPageGroups: store.getPageGroups,
+    getMissingGroups: store.getMissingGroups,
+    isLoading: store.isLoading,
+    loadError: store.loadError,
+    currentLocale: store.currentLocale,
+    isInitialized: store.isInitialized,
+  }
 }
 
 export function mergeTranslations(payload: Record<string, string>) {
-  console.log('Merging translations:', payload)
-  for (const [key, value] of Object.entries(payload)) {
-    translations.value[key] = value
-  }
-  console.log('Current translations after merge:', translations.value)
-  isInitialized.value = true
+  const store = useTranslationsStore()
+  return store.mergeTranslations(payload)
 }
 
 // Clear translations when locale changes to force refetch
 export function clearTranslations() {
-  translations.value = {}
-  loadedGroups.value.clear()
-  isInitialized.value = false
+  const store = useTranslationsStore()
+  return store.clearTranslations()
 }
 
 // Check if translations are loaded for current locale
 export function hasTranslations(): boolean {
-  return Object.keys(translations.value).length > 0
+  const store = useTranslationsStore()
+  return store.hasTranslations()
 }
 
 // Get translation with fallback to prevent key flashing
 export function tSafe(key: string): string {
-  const text = translations.value[key]
-  if (!text) return '' // Return empty instead of key to prevent flashing
-  return text
+  const store = useTranslationsStore()
+  return store.tSafe(key)
 }
