@@ -17,7 +17,7 @@ import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminDashboardView from '../views/admin/AdminDashboardView.vue'
 
 // Guards
-import { requireAuth, redirectIfAuthenticated } from './guards'
+import { requireAuth } from './guards'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

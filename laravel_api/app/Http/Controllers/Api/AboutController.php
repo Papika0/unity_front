@@ -2,65 +2,50 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Services\PageCacheService;
-use App\Traits\ApiResponse;
+use Illuminate\Http\Request;
+use App\Services\SiteSettingsService;
+use App\Services\TranslationService;
 
 class AboutController extends Controller
 {
-    use ApiResponse;
-    
-    protected $pageCacheService;
+    protected $siteSettingsService;
+    protected $translationService;
 
-    public function __construct(PageCacheService $pageCacheService)
+    public function __construct(SiteSettingsService $siteSettingsService, TranslationService $translationService)
     {
-        $this->pageCacheService = $pageCacheService;
+        $this->siteSettingsService = $siteSettingsService;
+        $this->translationService = $translationService;
     }
 
     /**
-     * Get about page data with locale support
+     * Get about page data with translations
      */
     public function index(Request $request)
     {
-        try {
-            $locale = $request->input('locale', 'ka');
-            
-            $data = $this->pageCacheService->getPageData('about', $locale);
-            
-            return $this->success($data);
-        } catch (\Exception $e) {
-            return $this->error('Failed to fetch about page data', 500);
-        }
-    }
-
-    /**
-     * Clear about page cache
-     */
-    public function clearCache(Request $request)
-    {
-        $locale = $request->input('locale');
-        
-        $this->pageCacheService->clearPageCache('about', $locale);
-        
-        return $this->success([
-            'message' => 'About page cache cleared successfully',
-            'locale' => $locale ?? 'all locales'
-        ]);
-    }
-
-    /**
-     * Refresh about page cache (clear and regenerate)
-     */
-    public function refreshCache(Request $request)
-    {
         $locale = $request->input('locale', 'ka');
-        
-        $data = $this->pageCacheService->refreshPageCache('about', $locale);
-        
-        return $this->success([
-            'message' => 'About page cache refreshed successfully',
-            'data' => $data
+        $requestGroups = $request->input('groups', []);
+
+        if ($requestGroups) {
+            $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
+        }
+        // Get about info
+        $aboutInfo = $this->siteSettingsService->getAboutInfo();
+
+        return response()->json([
+            'translations' => $translations ?? [],
+            'about_info' => $aboutInfo ?: [
+                'stats' => [
+                    'successful_projects' => '150+',
+                    'years_experience' => '15+',
+                    'satisfied_clients' => '50+',
+                    'client_satisfaction' => '98%',
+                ]
+            ],
+            'meta' => [
+                'locale' => $locale,
+                'cached_at' => now()->toISOString(),
+            ],
         ]);
     }
 }

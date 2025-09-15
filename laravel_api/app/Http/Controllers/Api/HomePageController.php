@@ -12,16 +12,19 @@ use App\Http\Resources\Api\ProjectResource;
 use App\Http\Resources\Api\TranslationResource;
 use App\Services\PageCacheService;
 use App\Services\SiteSettingsService;
+use App\Services\TranslationService;
 
 class HomepageController extends Controller
 {
     protected $pageCacheService;
     protected $siteSettingsService;
+    protected $translationService;
 
-    public function __construct(PageCacheService $pageCacheService, SiteSettingsService $siteSettingsService)
+    public function __construct(PageCacheService $pageCacheService, SiteSettingsService $siteSettingsService, TranslationService $translationService)
     {
         $this->pageCacheService = $pageCacheService;
         $this->siteSettingsService = $siteSettingsService;
+        $this->translationService = $translationService;
     }
 
     /**
@@ -35,7 +38,7 @@ class HomepageController extends Controller
         $locale = $request->input('locale', 'ka');
 
         // Static groups defined in backend
-        $groups = ['messages', 'header', 'footer', 'buttons', 'contact', 'errors', 'home', 'projects', 'news', 'about'];
+        $groups = ['messages', 'header', 'footer', 'buttons', 'contact', 'errors', 'home', 'projects', 'news'];
 
         // Create cache key based on locale
         $cacheKey = "HomePageCache({$locale})";
@@ -62,18 +65,16 @@ class HomepageController extends Controller
     private function buildHomepageData(string $locale, array $groups): array
     {
         // Use parallel execution to minimize total time
-        $translations = $this->getOptimizedTranslations($groups, $locale);
+        $translations = $this->translationService->getOptimizedTranslations($groups, $locale);
         $projects = $this->getOptimizedProjects($locale);
         $news = $this->getOptimizedNews($locale);
         $contactInfo = $this->getOptimizedContactInfo($locale);
-        $aboutInfo = $this->getOptimizedAboutInfo($locale);
 
         return [
             'translations' => $translations,
             'projects' => $projects,
             'news' => $news,
             'contact_info' => $contactInfo,
-            'about_info' => $aboutInfo,
             'meta' => [
                 'locale' => $locale,
                 'cached_at' => now()->toISOString(),
@@ -83,21 +84,6 @@ class HomepageController extends Controller
         ];
     }
 
-    /**
-     * Get translations using resources with optimized queries
-     */
-    private function getOptimizedTranslations(array $groups, string $locale): array
-    {
-        return Translation::whereIn('group', $groups)
-            ->where('active', 1)
-            ->get(['key', 'text', 'group']) // Only select needed columns
-            ->mapWithKeys(function ($translation) use ($locale) {
-                $resource = new TranslationResource($translation, $locale);
-                $translationData = $resource->toArray(request());
-                return [$translationData['key'] => $translationData['text']];
-            })
-            ->toArray();
-    }
 
     /**
      * Get projects with targeted queries using resources
@@ -174,22 +160,5 @@ class HomepageController extends Controller
         ];
     }
 
-    /**
-     * Get about information using config
-     */
-    private function getOptimizedAboutInfo(string $locale): array
-    {
-        $aboutInfo = $this->siteSettingsService->getAboutInfo();
-
-        // Return empty array if no about info
-        if (!$aboutInfo) {
-            return [];
-        }
-
-        // Return simplified data structure
-        return [
-            'stats' => $aboutInfo['stats'] ?? []
-        ];
-    }
 
 }
