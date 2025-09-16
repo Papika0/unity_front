@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use App\Traits\InvalidatesHomepageCache;
 
 class News extends Model
@@ -46,11 +47,11 @@ class News extends Model
     public function getTranslation($field, $language = 'ka')
     {
         $translations = $this->getAttribute($field);
-        
+
         if (!is_array($translations)) {
             return $translations;
         }
-        
+
         return $translations[$language] ?? $translations['ka'] ?? '';
     }
 
@@ -95,18 +96,50 @@ class News extends Model
     }
 
     /**
-     * Scope to get inactive news
+     * Get all images for this news article
      */
-    public function scopeInactive($query)
+    public function images(): MorphToMany
     {
-        return $query->where('is_active', false);
+        return $this->morphToMany(Image::class, 'imageable', 'imageables');
     }
 
     /**
-     * Scope to order by publish date
+     * Get main image for this news article
      */
-    public function scopeLatest($query)
+    public function mainImage(): MorphToMany
     {
-        return $query->orderBy('publish_date', 'desc');
+        return $this->morphToMany(Image::class, 'imageable', 'imageables')
+            ->wherePivot('type', 'main');
+    }
+
+    /**
+     * Get gallery images for this news article
+     */
+    public function galleryImages(): MorphToMany
+    {
+        return $this->morphToMany(Image::class, 'imageable', 'imageables')
+            ->wherePivot('type', 'gallery')
+            ->orderByPivot('sort_order');
+    }
+
+    /**
+     * Get the main image URL (for backward compatibility)
+     */
+    public function getMainImageUrlAttribute()
+    {
+        $mainImage = $this->mainImage()->first();
+        return $mainImage ? $mainImage->full_url : $this->main_image;
+    }
+
+    /**
+     * Get gallery images URLs (for backward compatibility)
+     */
+    public function getGalleryImagesUrlsAttribute()
+    {
+        $galleryImages = $this->galleryImages()->get();
+        if ($galleryImages->isNotEmpty()) {
+            return $galleryImages->pluck('full_url')->toArray();
+        }
+        return $this->gallery_images ?? [];
     }
 }

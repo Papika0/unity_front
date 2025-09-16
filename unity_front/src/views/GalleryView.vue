@@ -1,126 +1,91 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
+import { galleryApi, type GalleryImage } from '../services/galleryApi'
 
 const { t } = useTranslations()
 
 const selectedCategory = ref('all')
 const selectedImage = ref<number | null>(null)
+const galleryItems = ref<GalleryImage[]>([])
+const categories = ref<{ value: string; label: string }[]>([])
+const isLoading = ref(false)
+const error = ref<string | null>(null)
 
-const categories = ref([
-  { value: 'all', label: 'ყველა' },
-  { value: 'exterior', label: 'ფასადები' },
-  { value: 'interior', label: 'ინტერიერი' },
-  { value: 'landscape', label: 'ლანდშაფტი' },
-  { value: 'commercial', label: 'კომერციული' },
-  { value: 'residential', label: 'საცხოვრებელი' }
-])
+// Load gallery data on mount
+onMounted(async () => {
+  await loadGalleryData()
+  await loadCategories()
+})
 
-const galleryItems = ref([
-  {
-    id: 1,
-    title: 'თანამედროვე საცხოვრებელი კომპლექსი - ფასადი',
-    category: 'exterior',
-    project: 'Unity Residence',
-    year: 2023,
-    image: '/api/placeholder/600/400'
-  },
-  {
-    id: 2,
-    title: 'ლუქსი ბინის ინტერიერი',
-    category: 'interior',
-    project: 'Unity Residence',
-    year: 2023,
-    image: '/api/placeholder/600/400'
-  },
-  {
-    id: 3,
-    title: 'ბიზნეს ცენტრის ლობი',
-    category: 'commercial',
-    project: 'Unity Business Center',
-    year: 2024,
-    image: '/api/placeholder/600/400'
-  },
-  {
-    id: 4,
-    title: 'ეკო რეზიდენსის ლანდშაფტი',
-    category: 'landscape',
-    project: 'Eco Residence',
-    year: 2022,
-    image: '/api/placeholder/600/400'
-  },
-  {
-    id: 5,
-    title: 'მოდერნისტული ვილის ფასადი',
-    category: 'exterior',
-    project: 'Modern Villa',
-    year: 2023,
-    image: '/api/placeholder/600/400'
-  },
-  {
-    id: 6,
-    title: 'საოფისე ინტერიერი',
-    category: 'interior',
-    project: 'Unity Business Center',
-    year: 2024,
-    image: '/api/placeholder/600/400'
-  },
-  {
-    id: 7,
-    title: 'კულტურული ცენტრის ფასადი',
-    category: 'exterior',
-    project: 'Cultural Center',
-    year: 2024,
-    image: '/api/placeholder/600/400'
-  },
-  {
-    id: 8,
-    title: 'რეზიდენსის ეზო',
-    category: 'landscape',
-    project: 'Unity Residence',
-    year: 2023,
-    image: '/api/placeholder/600/400'
-  },
-  {
-    id: 9,
-    title: 'ბავშვთა ოთახის დიზაინი',
-    category: 'interior',
-    project: 'Family Villa',
-    year: 2023,
-    image: '/api/placeholder/600/400'
-  },
-  {
-    id: 10,
-    title: 'შოპინგ ცენტრის ატრიუმი',
-    category: 'commercial',
-    project: 'Galaxy Shopping Center',
-    year: 2023,
-    image: '/api/placeholder/600/400'
-  },
-  {
-    id: 11,
-    title: 'ბალკონის ლანდშაფტი',
-    category: 'landscape',
-    project: 'Penthouse',
-    year: 2024,
-    image: '/api/placeholder/600/400'
-  },
-  {
-    id: 12,
-    title: 'ეკო ვილის ღია ეზო',
-    category: 'residential',
-    project: 'Eco Villa',
-    year: 2022,
-    image: '/api/placeholder/600/400'
+const loadGalleryData = async () => {
+  try {
+    isLoading.value = true
+    error.value = null
+
+    const response = await galleryApi.getImages({
+      category: selectedCategory.value === 'all' ? undefined : selectedCategory.value,
+      limit: 50,
+    })
+
+    if (response.success) {
+      galleryItems.value = response.data
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to load gallery images'
+    console.error('Failed to load gallery:', err)
+  } finally {
+    isLoading.value = false
   }
-])
+}
+
+const loadCategories = async () => {
+  try {
+    const response = await galleryApi.getCategories()
+    if (response.success) {
+      // Add "all" option and map categories to display format
+      categories.value = [
+        { value: 'all', label: 'ყველა' },
+        ...response.data.map((cat) => ({
+          value: cat,
+          label: getCategoryLabel(cat),
+        })),
+      ]
+    }
+  } catch (err) {
+    console.error('Failed to load categories:', err)
+  }
+}
+
+const getCategoryLabel = (category: string): string => {
+  const labels: Record<string, string> = {
+    exterior: 'ფასადები',
+    interior: 'ინტერიერი',
+    landscape: 'ლანდშაფტი',
+    commercial: 'კომერციული',
+    residential: 'საცხოვრებელი',
+    about: 'ჩვენ შესახებ',
+    projects: 'პროექტები',
+    news: 'სიახლეები',
+  }
+  return labels[category] || category
+}
 
 const filteredGallery = computed(() => {
   if (selectedCategory.value === 'all') {
     return galleryItems.value
   }
-  return galleryItems.value.filter(item => item.category === selectedCategory.value)
+  return galleryItems.value.filter((item) => item.category === selectedCategory.value)
 })
+
+const handleCategoryChange = async () => {
+  await loadGalleryData()
+}
+
+const selectCategory = async (categoryValue: string) => {
+  selectedCategory.value = categoryValue
+  await handleCategoryChange()
+}
 
 const openLightbox = (id: number) => {
   selectedImage.value = id
@@ -132,19 +97,19 @@ const closeLightbox = () => {
 
 const getSelectedImageData = computed(() => {
   if (selectedImage.value === null) return null
-  return galleryItems.value.find(item => item.id === selectedImage.value)
+  return galleryItems.value.find((item) => item.id === selectedImage.value)
 })
 
 const nextImage = () => {
   if (selectedImage.value === null) return
-  const currentIndex = filteredGallery.value.findIndex(item => item.id === selectedImage.value)
+  const currentIndex = filteredGallery.value.findIndex((item) => item.id === selectedImage.value)
   const nextIndex = (currentIndex + 1) % filteredGallery.value.length
   selectedImage.value = filteredGallery.value[nextIndex].id
 }
 
 const prevImage = () => {
   if (selectedImage.value === null) return
-  const currentIndex = filteredGallery.value.findIndex(item => item.id === selectedImage.value)
+  const currentIndex = filteredGallery.value.findIndex((item) => item.id === selectedImage.value)
   const prevIndex = currentIndex === 0 ? filteredGallery.value.length - 1 : currentIndex - 1
   selectedImage.value = filteredGallery.value[prevIndex].id
 }
@@ -174,11 +139,14 @@ const prevImage = () => {
           <button
             v-for="category in categories"
             :key="category.value"
-            @click="selectedCategory = category.value"
+            @click="selectCategory(category.value)"
             class="px-6 py-2 rounded-full font-medium transition-colors duration-200"
-            :class="selectedCategory === category.value 
-              ? 'bg-yellow-500 text-black' 
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+            :class="
+              selectedCategory === category.value
+                ? 'bg-yellow-500 text-black'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            "
+            :disabled="isLoading"
           >
             {{ category.label }}
           </button>
@@ -189,34 +157,105 @@ const prevImage = () => {
     <!-- Gallery Grid -->
     <section class="py-16 bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Loading State -->
+        <div v-if="isLoading" class="flex justify-center items-center py-16">
+          <div class="text-center">
+            <div
+              class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"
+            ></div>
+            <p class="text-gray-600">Loading gallery images...</p>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="error" class="text-center py-16">
+          <div class="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 class="text-2xl font-semibold text-gray-800 mb-2">Error Loading Gallery</h2>
+          <p class="text-gray-600 mb-4">{{ error }}</p>
+          <button
+            @click="loadGalleryData()"
+            class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+
+        <!-- Gallery Images -->
+        <div
+          v-else-if="filteredGallery.length > 0"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        >
           <div
             v-for="item in filteredGallery"
             :key="item.id"
             @click="openLightbox(item.id)"
             class="group cursor-pointer overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
-            <!-- Image placeholder -->
-            <div class="aspect-square bg-gradient-to-br from-gray-300 to-gray-400 relative overflow-hidden">
-              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                <svg class="w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="currentColor" viewBox="0 0 20 20">
+            <!-- Image -->
+            <div class="aspect-square relative overflow-hidden">
+              <img
+                :src="item.url"
+                :alt="item.alt_text || 'Gallery image'"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div
+                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center"
+              >
+                <svg
+                  class="w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
               </div>
-              
+
               <!-- Image info overlay -->
-              <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                <h3 class="text-white font-semibold text-sm mb-1">{{ item.title }}</h3>
-                <p class="text-gray-300 text-xs">{{ item.project }} • {{ item.year }}</p>
+              <div
+                class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+              >
+                <h3 class="text-white font-semibold text-sm mb-1">
+                  {{ item.title }}
+                </h3>
+                <div class="flex items-center justify-between text-xs text-gray-300">
+                  <span v-if="item.project">{{ item.project }}</span>
+                  <span v-if="item.category">{{ getCategoryLabel(item.category) }}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Empty State -->
+        <div v-else class="text-center py-16">
+          <div class="text-gray-400 text-6xl mb-4">📷</div>
+          <h2 class="text-2xl font-semibold text-gray-800 mb-2">No Images Found</h2>
+          <p class="text-gray-600 mb-4">
+            {{
+              selectedCategory === 'all'
+                ? 'No images available in the gallery yet.'
+                : `No images found in the ${getCategoryLabel(selectedCategory)} category.`
+            }}
+          </p>
+          <button
+            v-if="selectedCategory !== 'all'"
+            @click="selectCategory('all')"
+            class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            View All Images
+          </button>
+        </div>
+
         <!-- Load More Button -->
-        <div class="text-center mt-12">
-          <button class="bg-yellow-500 hover:bg-yellow-600 text-black px-8 py-3 rounded-lg font-semibold transition-colors duration-200">
+        <div v-if="filteredGallery.length > 0" class="text-center mt-12">
+          <button
+            class="bg-yellow-500 hover:bg-yellow-600 text-black px-8 py-3 rounded-lg font-semibold transition-colors duration-200"
+          >
             მეტი ფოტოს ნახვა
           </button>
         </div>
@@ -236,7 +275,11 @@ const prevImage = () => {
           class="absolute top-4 right-4 z-10 text-white hover:text-yellow-500 transition-colors"
         >
           <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            <path
+              fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
           </svg>
         </button>
 
@@ -246,7 +289,11 @@ const prevImage = () => {
           class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-yellow-500 transition-colors z-10"
         >
           <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            <path
+              fill-rule="evenodd"
+              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+              clip-rule="evenodd"
+            />
           </svg>
         </button>
 
@@ -255,25 +302,32 @@ const prevImage = () => {
           class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-yellow-500 transition-colors z-10"
         >
           <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            <path
+              fill-rule="evenodd"
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              clip-rule="evenodd"
+            />
           </svg>
         </button>
 
         <!-- Image Container -->
         <div @click.stop class="bg-white rounded-lg overflow-hidden">
           <!-- Large image placeholder -->
-          <div class="aspect-video bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+          <div
+            class="aspect-video bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center"
+          >
             <svg class="w-24 h-24 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
+              <path
+                d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+              />
             </svg>
           </div>
-          
+
           <!-- Image Info -->
           <div class="p-6">
             <h2 class="text-2xl font-bold mb-2">{{ getSelectedImageData.title }}</h2>
             <div class="flex items-center justify-between text-gray-600">
               <span>{{ getSelectedImageData.project }}</span>
-              <span>{{ getSelectedImageData.year }}</span>
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Projects;
 use App\Traits\ApiResponse;
+use App\Services\ImageService;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\Admin\AdminProjectResource;
 use App\Http\Requests\Admin\Projects\StoreProjectsRequest;
@@ -15,13 +16,20 @@ class AdminProjectsController extends Controller
 {
     use ApiResponse;
 
+    protected $imageService;
+
+    public function __construct(ImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
     public function index()
     {
         try {
             $projects = Projects::all();
             // wrap each model in our resource
             $resources = AdminProjectResource::collection($projects);
-        
+
             return $this->success($resources);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch projects', 500);
@@ -43,29 +51,52 @@ class AdminProjectsController extends Controller
         try {
             $data = [...$request->validated()];
 
+            // Get project title for image records
+            $projectTitle = $data['title']['en'] ?? $data['title']['ka'] ?? 'Project';
+
+            // Create project first
+            $project = Projects::create($data);
+
             // Handle main image upload
             if ($request->hasFile('main_image')) {
-                $path = $request->file('main_image')->store('projects/main', 'public');
-                $data['main_image'] = 'storage/' . $path;
+                $image = $this->imageService->uploadImage(
+                    $request->file('main_image'),
+                    $projectTitle . ' - Main Image',
+                    'projects',
+                    $projectTitle
+                );
+                $this->imageService->attachImage($image, $project, 'main');
+                $project->update(['main_image' => $image->full_url]);
             }
 
             // Handle render image upload
             if ($request->hasFile('render_image')) {
-                $path = $request->file('render_image')->store('projects/render', 'public');
-                $data['render_image'] = 'storage/' . $path;
+                $image = $this->imageService->uploadImage(
+                    $request->file('render_image'),
+                    $projectTitle . ' - Render',
+                    'projects',
+                    $projectTitle
+                );
+                $this->imageService->attachImage($image, $project, 'render');
+                $project->update(['render_image' => $image->full_url]);
             }
 
             // Handle gallery images upload
             if ($request->hasFile('gallery_images')) {
                 $galleryImages = [];
-                foreach ($request->file('gallery_images') as $file) {
-                    $path = $file->store('projects/gallery', 'public');
-                    $galleryImages[] = 'storage/' . $path;
+                foreach ($request->file('gallery_images') as $index => $file) {
+                    $image = $this->imageService->uploadImage(
+                        $file,
+                        $projectTitle . ' - Gallery ' . ($index + 1),
+                        'projects',
+                        $projectTitle
+                    );
+                    $this->imageService->attachImage($image, $project, 'gallery', $index);
+                    $galleryImages[] = $image->full_url;
                 }
-                $data['gallery_images'] = $galleryImages;
+                $project->update(['gallery_images' => $galleryImages]);
             }
 
-            $project = Projects::create($data);
             return $this->success(new AdminProjectResource($project), 'Project created', 201);
         } catch (\Exception $e) {
             return $this->error('Failed to create project: ' . $e->getMessage(), 500);
@@ -79,64 +110,79 @@ class AdminProjectsController extends Controller
 
         $data = [...$request->validated()];
 
+        // Get project title for image records
+        $projectTitle = $data['title']['en'] ?? $data['title']['ka'] ?? $project->getTranslation('title', 'en') ?? 'Project';
+
         if ($request->hasFile('main_image')) {
-            // Delete old main image if exists
-            if ($project->main_image && Storage::disk('public')->exists(str_replace('storage/', '', $project->main_image))) {
-                Storage::disk('public')->delete(str_replace('storage/', '', $project->main_image));
+            // Detach old main image
+            $oldMainImages = $project->mainImage()->get();
+            foreach ($oldMainImages as $oldImage) {
+                $this->imageService->detachImage($oldImage, $project, 'main');
             }
-            
-            $path = $request->file('main_image')->store('projects/main', 'public');
-            $data['main_image'] = 'storage/' . $path;
+
+            $image = $this->imageService->uploadImage(
+                $request->file('main_image'),
+                $projectTitle . ' - Main Image',
+                'projects',
+                $projectTitle
+            );
+            $this->imageService->attachImage($image, $project, 'main');
+            $data['main_image'] = $image->full_url;
         }
 
         if ($request->hasFile('render_image')) {
-            // Delete old render image if exists
-            if ($project->render_image && Storage::disk('public')->exists(str_replace('storage/', '', $project->render_image))) {
-                Storage::disk('public')->delete(str_replace('storage/', '', $project->render_image));
+            // Detach old render image
+            $oldRenderImages = $project->renderImage()->get();
+            foreach ($oldRenderImages as $oldImage) {
+                $this->imageService->detachImage($oldImage, $project, 'render');
             }
-            
-            $path = $request->file('render_image')->store('projects/render', 'public');
-            $data['render_image'] = 'storage/' . $path;
+
+            $image = $this->imageService->uploadImage(
+                $request->file('render_image'),
+                $projectTitle . ' - Render',
+                'projects',
+                $projectTitle
+            );
+            $this->imageService->attachImage($image, $project, 'render');
+            $data['render_image'] = $image->full_url;
         }
 
         // Handle gallery images
         if ($request->hasFile('gallery_images') || $request->has('existing_gallery_images')) {
             $finalGalleryImages = [];
-            
+
             // Get existing gallery images to keep
             if ($request->has('existing_gallery_images')) {
                 $existingToKeep = $request->input('existing_gallery_images', []);
                 $finalGalleryImages = array_merge($finalGalleryImages, $existingToKeep);
             }
-            
+
             // Add new gallery images
             if ($request->hasFile('gallery_images')) {
-                foreach ($request->file('gallery_images') as $file) {
-                    $path = $file->store('projects/gallery', 'public');
-                    $finalGalleryImages[] = 'storage/' . $path;
+                $galleryCount = $project->galleryImages()->count();
+                foreach ($request->file('gallery_images') as $index => $file) {
+                    $image = $this->imageService->uploadImage(
+                        $file,
+                        $projectTitle . ' - Gallery ' . ($galleryCount + $index + 1),
+                        'projects',
+                        $projectTitle
+                    );
+                    $this->imageService->attachImage($image, $project, 'gallery', $galleryCount + $index);
+                    $finalGalleryImages[] = $image->full_url;
                 }
             }
-            
-            // Delete images that are no longer needed
-            $currentGallery = [];
-            if ($project->gallery_images) {
-                if (is_array($project->gallery_images)) {
-                    $currentGallery = $project->gallery_images;
-                } else {
-                    $decoded = json_decode($project->gallery_images, true);
-                    $currentGallery = is_array($decoded) ? $decoded : [];
+
+            // Handle removed images
+            if ($request->has('removed_gallery_images')) {
+                $removedImages = $request->input('removed_gallery_images', []);
+                foreach ($removedImages as $removedImageUrl) {
+                    $image = \App\Models\Image::where('url', $removedImageUrl)->first();
+                    if ($image) {
+                        $this->imageService->detachImage($image, $project, 'gallery');
+                    }
                 }
             }
-            
-            // Find images to delete (those not in finalGalleryImages)
-            $imagesToDelete = array_diff($currentGallery, $finalGalleryImages);
-            foreach ($imagesToDelete as $oldImage) {
-                $cleanPath = str_replace('storage/', '', $oldImage);
-                if (Storage::disk('public')->exists($cleanPath)) {
-                    Storage::disk('public')->delete($cleanPath);
-                }
-            }
-            
+
             $data['gallery_images'] = $finalGalleryImages;
         }
 

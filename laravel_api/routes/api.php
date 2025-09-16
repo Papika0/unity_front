@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\AdminProjectsController;
 use App\Http\Controllers\Admin\AdminTranslationController;
 use App\Http\Controllers\Admin\AdminContactInfoController;
 use App\Http\Controllers\Admin\AdminAboutController;
+use App\Http\Controllers\Admin\AdminImageController;
+use App\Http\Controllers\Api\GalleryController;
 use App\Http\Controllers\Admin\AdminController;
 
 
@@ -62,6 +64,13 @@ Route::prefix('about')->controller(AboutController::class)->group(function () {
 
 // Contact info routes (public)
 Route::get('/contact-info', [App\Http\Controllers\Api\ContactInfoController::class, 'index']);
+
+// Gallery routes (public)
+Route::prefix('gallery')->controller(GalleryController::class)->group(function () {
+    Route::get('/', 'index');
+    Route::get('/categories', 'categories');
+    Route::get('/{id}', 'show');
+});
 
 // Test cache endpoint (no auth required for testing)
 Route::get('/test-cache', [AdminController::class, 'getCacheStats']);
@@ -120,5 +129,19 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', 'index');           // Get the single about info record
         Route::put('/', 'update');          // Update the about info record
         Route::post('/', 'update');         // Allow POST for form compatibility
+    });
+
+    // Protected image management routes (admin only)
+    Route::prefix('admin/images')->controller(AdminImageController::class)->group(function () {
+        Route::get('/', 'index');           // Get all images with pagination and filtering
+        Route::post('/', 'store');          // Upload new image
+        Route::get('/gallery', 'gallery');  // Get gallery images by category
+        Route::get('/categories', 'categories'); // Get available categories
+        Route::get('/projects', 'projects'); // Get available projects
+        Route::get('/{id}', 'show');        // Get single image
+        Route::put('/{id}', 'update');      // Update image metadata
+        Route::delete('/{id}', 'destroy');  // Delete image
+        Route::post('/attach', 'attach');   // Attach image to model
+        Route::post('/detach', 'detach');   // Detach image from model
     });
 });

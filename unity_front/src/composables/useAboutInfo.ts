@@ -9,6 +9,10 @@ export interface AboutInfo {
     satisfied_clients: string
     client_satisfaction: string
   }
+  hero_image_id?: number
+  hero_image_url?: string
+  philosophy_image_id?: number
+  philosophy_image_url?: string
 }
 
 export function useAboutInfo() {

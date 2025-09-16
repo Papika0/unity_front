@@ -70,6 +70,11 @@ const values = computed(() => [
       <!-- Hero Section -->
       <section
         class="relative h-[60vh] min-h-[500px] bg-gradient-to-br from-zinc-900 via-zinc-800 to-orange-900"
+        :style="
+          aboutInfo?.hero_image_url
+            ? `background-image: url(${aboutInfo.hero_image_url}); background-size: cover; background-position: center;`
+            : ''
+        "
       >
         <div class="absolute inset-0 bg-black/30"></div>
         <div class="relative z-10 h-full flex items-center">
@@ -117,7 +122,13 @@ const values = computed(() => [
               <div
                 class="aspect-[4/5] bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl overflow-hidden shadow-2xl"
               >
-                <div class="w-full h-full flex items-center justify-center">
+                <img
+                  v-if="aboutInfo?.philosophy_image_url"
+                  :src="aboutInfo.philosophy_image_url"
+                  :alt="t('about.philosophy.image_alt')"
+                  class="w-full h-full object-cover"
+                />
+                <div v-else class="w-full h-full flex items-center justify-center">
                   <div class="text-6xl text-zinc-400">
                     <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20">
                       <path

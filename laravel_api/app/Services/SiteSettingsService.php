@@ -28,7 +28,20 @@ class SiteSettingsService
      */
     public function getAboutInfo(): array
     {
-        return config('site_settings.about_info', []);
+        $aboutInfo = config('site_settings.about_info', []);
+
+        // Add image URLs if they exist
+        if (isset($aboutInfo['hero_image_id'])) {
+            $heroImage = \App\Models\Image::find($aboutInfo['hero_image_id']);
+            $aboutInfo['hero_image_url'] = $heroImage ? $heroImage->full_url : null;
+        }
+
+        if (isset($aboutInfo['philosophy_image_id'])) {
+            $philosophyImage = \App\Models\Image::find($aboutInfo['philosophy_image_id']);
+            $aboutInfo['philosophy_image_url'] = $philosophyImage ? $philosophyImage->full_url : null;
+        }
+
+        return $aboutInfo;
     }
 
     /**
@@ -157,6 +170,19 @@ class SiteSettingsService
                 if (empty($data['stats'][$stat])) {
                     $errors["stats.{$stat}"] = ucfirst(str_replace('_', ' ', $stat)) . ' is required';
                 }
+            }
+        }
+
+        // Validate image IDs if provided
+        if (isset($data['hero_image_id']) && !empty($data['hero_image_id'])) {
+            if (!\App\Models\Image::where('id', $data['hero_image_id'])->exists()) {
+                $errors['hero_image_id'] = 'Hero image not found';
+            }
+        }
+
+        if (isset($data['philosophy_image_id']) && !empty($data['philosophy_image_id'])) {
+            if (!\App\Models\Image::where('id', $data['philosophy_image_id'])->exists()) {
+                $errors['philosophy_image_id'] = 'Philosophy image not found';
             }
         }
 
