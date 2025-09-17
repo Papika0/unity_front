@@ -41,6 +41,7 @@
             :required="true"
             variant="emerald"
             :translating="translating"
+            :show-translate-button="true"
             @translate="
               (fromLang: string, toLang: string) => handleTranslate('title', fromLang, toLang)
             "
@@ -130,6 +131,7 @@
             variant="emerald"
             :rows="3"
             :translating="translating"
+            :show-translate-button="true"
             @translate="
               (fromLang: string, toLang: string) => handleTranslate('excerpt', fromLang, toLang)
             "
@@ -221,6 +223,7 @@
             variant="emerald"
             :rows="8"
             :translating="translating"
+            :show-translate-button="true"
             @translate="
               (fromLang: string, toLang: string) => handleTranslate('content', fromLang, toLang)
             "

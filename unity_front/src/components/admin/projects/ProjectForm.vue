@@ -12,6 +12,7 @@
             :required="true"
             :variant="basicInfoVariant"
             :translating="translating"
+            :show-translate-button="true"
             @translate="
               (fromLang: string, toLang: string) => handleTranslate('title', fromLang, toLang)
             "
@@ -29,6 +30,7 @@
             :required="true"
             :variant="basicInfoVariant"
             :translating="translating"
+            :show-translate-button="true"
             @translate="
               (fromLang: string, toLang: string) => handleTranslate('description', fromLang, toLang)
             "
@@ -44,6 +46,7 @@
             :form-data="form.location"
             :variant="basicInfoVariant"
             :translating="translating"
+            :show-translate-button="true"
             @translate="
               (fromLang: string, toLang: string) => handleTranslate('location', fromLang, toLang)
             "

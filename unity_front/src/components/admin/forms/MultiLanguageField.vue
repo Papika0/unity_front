@@ -7,11 +7,16 @@
       >
         <span>{{ getLanguageLabel(lang) }}</span>
         <button
-          v-if="lang !== 'ka' && formData.ka && showTranslateButton"
+          v-if="lang !== 'ka' && showTranslateButton"
           @click="handleTranslate(lang)"
           type="button"
-          class="relative z-10 inline-flex items-center gap-2 text-xs bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 px-3 py-2 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md transform hover:scale-105 font-medium"
-          :disabled="translating"
+          :class="[
+            'relative z-10 inline-flex items-center gap-2 text-xs px-3 py-2 rounded-xl transition-all duration-300 font-medium',
+            formData.ka && !translating
+              ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200 hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300 shadow-sm hover:shadow-md transform hover:scale-105'
+              : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed',
+          ]"
+          :disabled="translating || !formData.ka"
         >
           <svg
             v-if="translating"
@@ -49,7 +54,9 @@
               d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
             ></path>
           </svg>
-          {{ translating ? 'თარგმნა...' : 'თარგმნა' }}
+          {{
+            translating ? 'თარგმნა...' : !formData.ka ? 'ჯერ ქართული ტექსტი შეიყვანეთ' : 'თარგმნა'
+          }}
         </button>
       </label>
       <component
@@ -139,7 +146,6 @@ function handleTranslate(toLang: string) {
   const kaInput = document.getElementById(`${props.fieldName}-ka`) as
     | HTMLInputElement
     | HTMLTextAreaElement
-  const currentKaValue = kaInput ? kaInput.value : props.formData.ka
 
   // Update form data with current input value first
   if (kaInput && kaInput.value !== props.formData.ka) {

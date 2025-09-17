@@ -47,6 +47,7 @@
         @file-change="handleFileChange"
         @gallery-change="handleGalleryChange"
         @gallery-remove="removeGalleryImage"
+        @update:form="updateForm"
       />
     </div>
   </div>
@@ -84,6 +85,10 @@ const previews = reactive(createInitialPreviews())
 
 function goBack() {
   router.push({ name: 'admin-project-detail', params: { id } })
+}
+
+function updateForm(updatedForm: Partial<typeof form>) {
+  Object.assign(form, updatedForm)
 }
 
 async function load() {

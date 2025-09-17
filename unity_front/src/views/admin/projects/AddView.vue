@@ -46,6 +46,7 @@
         @file-change="handleFileChange"
         @gallery-change="handleGalleryChange"
         @gallery-remove="removeGalleryImage"
+        @update:form="updateForm"
       />
     </div>
   </div>
@@ -78,6 +79,10 @@ const previews = reactive(createInitialPreviews())
 
 function goBack() {
   router.push({ name: 'admin-projects' })
+}
+
+function updateForm(updatedForm: Partial<typeof form>) {
+  Object.assign(form, updatedForm)
 }
 
 function handleTranslate(fieldName: string, fromLang: string, toLang: string) {
