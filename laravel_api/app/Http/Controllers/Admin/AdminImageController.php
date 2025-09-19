@@ -77,7 +77,7 @@ class AdminImageController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'image' => 'required|file|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'image' => 'required|file|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
             'title' => 'required|string|max:255',
             'project' => 'nullable|string|max:255',
             'category' => 'nullable|string|max:50',

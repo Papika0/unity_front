@@ -1,5 +1,5 @@
 import { ref, reactive } from 'vue'
-import { compressFileIfNeeded } from '@/utils/imageCompression'
+import { compressFileIfNeeded, compressImageForType } from '@/utils/imageCompression'
 import { Translator } from '@/utils/translator'
 
 export interface ProjectFormData {
@@ -163,16 +163,16 @@ export function useProjectForm() {
     formData.append('is_featured', form.is_featured ? '1' : '0')
     formData.append('is_onHomepage', form.is_onHomepage ? '1' : '0')
 
-    // Compress and append files
+    // Compress and append files with specialized compression
     if (form.main_image instanceof File) {
-      const compressedMainImage = await compressFileIfNeeded(form.main_image)
+      const compressedMainImage = await compressImageForType(form.main_image, 'main')
       if (compressedMainImage) {
         formData.append('main_image', compressedMainImage)
       }
     }
 
     if (form.render_image instanceof File) {
-      const compressedRenderImage = await compressFileIfNeeded(form.render_image)
+      const compressedRenderImage = await compressImageForType(form.render_image, 'render')
       if (compressedRenderImage) {
         formData.append('render_image', compressedRenderImage)
       }
@@ -185,11 +185,11 @@ export function useProjectForm() {
       })
     }
 
-    // Compress and append new gallery files
+    // Compress and append new gallery files with gallery-specific compression
     for (let i = 0; i < form.gallery_images.length; i++) {
       const file = form.gallery_images[i]
       if (file instanceof File) {
-        const compressedFile = await compressFileIfNeeded(file)
+        const compressedFile = await compressImageForType(file, 'gallery')
         if (compressedFile) {
           formData.append(`gallery_images[${i}]`, compressedFile)
         }

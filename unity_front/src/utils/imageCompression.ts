@@ -1,7 +1,8 @@
-// Compression settings
-const COMPRESSION_QUALITY = 0.8 // 80% quality
-const MAX_WIDTH = 1920
-const MAX_HEIGHT = 1080
+// Compression settings - optimized for web performance
+const COMPRESSION_QUALITY = 0.75 // 75% quality - good balance
+const MAX_WIDTH = 1600 // Reduced from 1920 for better performance
+const MAX_HEIGHT = 1200 // Reduced from 1080 for better performance
+const MAX_FILE_SIZE = 2 * 1024 * 1024 // 2MB target size
 
 interface CompressionOptions {
   quality?: number
@@ -9,7 +10,7 @@ interface CompressionOptions {
   maxHeight?: number
 }
 
-// File compression utility
+// File compression utility with adaptive quality
 export function compressImage(
   file: File,
   quality: number = COMPRESSION_QUALITY,
@@ -43,6 +44,16 @@ export function compressImage(
         // Draw and compress
         ctx.drawImage(img, 0, 0, width, height)
 
+        // Adaptive quality based on original file size
+        let adaptiveQuality = quality
+        if (file.size > 5 * 1024 * 1024) {
+          // > 5MB
+          adaptiveQuality = 0.6 // More aggressive compression
+        } else if (file.size > 2 * 1024 * 1024) {
+          // > 2MB
+          adaptiveQuality = 0.7
+        }
+
         canvas.toBlob(
           (blob) => {
             if (!blob) {
@@ -55,12 +66,22 @@ export function compressImage(
               lastModified: Date.now(),
             })
 
+            // If still too large, try with even lower quality
+            if (compressedFile.size > MAX_FILE_SIZE && adaptiveQuality > 0.5) {
+              URL.revokeObjectURL(img.src)
+              // Recursively compress with lower quality
+              compressImage(file, adaptiveQuality - 0.1, maxWidth, maxHeight)
+                .then(resolve)
+                .catch(reject)
+              return
+            }
+
             // Clean up the object URL
             URL.revokeObjectURL(img.src)
             resolve(compressedFile)
           },
           file.type || 'image/jpeg',
-          quality,
+          adaptiveQuality,
         )
       } catch (error) {
         URL.revokeObjectURL(img.src)
@@ -89,19 +110,102 @@ export async function compressFileIfNeeded(file: File | null): Promise<File | nu
     return file
   }
 
-  // Skip compression for small files (less than 500KB)
-  if (file.size < 500 * 1024) {
-    console.log('File is small, skipping compression:', file.size)
+  // Skip compression for very small files (less than 200KB)
+  if (file.size < 200 * 1024) {
+    console.log('File is very small, skipping compression:', file.size)
     return file
   }
 
   try {
-    console.log('Compressing file:', file.name, 'Size:', file.size)
+    console.log(
+      'Compressing file:',
+      file.name,
+      'Original size:',
+      (file.size / 1024 / 1024).toFixed(2) + 'MB',
+    )
+
     const compressed = await compressImage(file)
-    console.log('Compression successful. New size:', compressed.size)
+    const compressionRatio = (((file.size - compressed.size) / file.size) * 100).toFixed(1)
+
+    console.log(
+      'Compression successful. New size:',
+      (compressed.size / 1024 / 1024).toFixed(2) + 'MB',
+      `(${compressionRatio}% reduction)`,
+    )
+
     return compressed
   } catch (error) {
     console.warn('Compression failed, using original file:', error)
+    return file
+  }
+}
+
+// Specialized compression for different image types
+export async function compressImageForType(
+  file: File | null,
+  type: 'main' | 'gallery' | 'render' = 'gallery',
+): Promise<File | null> {
+  if (!file || !(file instanceof File)) {
+    return file
+  }
+
+  // Only compress images
+  if (!file.type.startsWith('image/')) {
+    return file
+  }
+
+  // Skip compression for very small files
+  if (file.size < 200 * 1024) {
+    return file
+  }
+
+  try {
+    let quality = COMPRESSION_QUALITY
+    let maxWidth = MAX_WIDTH
+    let maxHeight = MAX_HEIGHT
+
+    // Different settings based on image type
+    switch (type) {
+      case 'main':
+        // Main images can be larger for better quality
+        quality = 0.8
+        maxWidth = 1920
+        maxHeight = 1440
+        break
+      case 'render':
+        // Render images need good quality
+        quality = 0.8
+        maxWidth = 1920
+        maxHeight = 1440
+        break
+      case 'gallery':
+      default:
+        // Gallery images can be more compressed for performance
+        quality = 0.7
+        maxWidth = 1600
+        maxHeight = 1200
+        break
+    }
+
+    console.log(
+      `Compressing ${type} image:`,
+      file.name,
+      'Original size:',
+      (file.size / 1024 / 1024).toFixed(2) + 'MB',
+    )
+
+    const compressed = await compressImage(file, quality, maxWidth, maxHeight)
+    const compressionRatio = (((file.size - compressed.size) / file.size) * 100).toFixed(1)
+
+    console.log(
+      `${type} compression successful. New size:`,
+      (compressed.size / 1024 / 1024).toFixed(2) + 'MB',
+      `(${compressionRatio}% reduction)`,
+    )
+
+    return compressed
+  } catch (error) {
+    console.warn(`${type} compression failed, using original file:`, error)
     return file
   }
 }

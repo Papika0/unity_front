@@ -579,6 +579,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { Translator } from '@/utils/translator'
+import { compressImageForType } from '@/utils/imageCompression'
 import { FormCard, FormSection, MultiLanguageField } from '@/components/admin/forms'
 
 interface NewsFormData {
@@ -800,7 +801,7 @@ function removeTag(index: number) {
 }
 
 // Form submission
-function onSubmit() {
+async function onSubmit() {
   const formData = new FormData()
 
   // Add multilingual fields
@@ -827,13 +828,23 @@ function onSubmit() {
   formData.append('is_active', props.form.is_active ? '1' : '0')
   formData.append('is_featured', props.form.is_featured ? '1' : '0')
 
-  // Add files
+  // Add files with compression
   if (props.form.main_image) {
-    formData.append('main_image', props.form.main_image)
+    const compressedMainImage = await compressImageForType(props.form.main_image, 'main')
+    if (compressedMainImage) {
+      formData.append('main_image', compressedMainImage)
+    }
   }
-  props.form.gallery_images.forEach((file) => {
-    formData.append('gallery_images[]', file)
-  })
+
+  // Compress and add gallery images
+  for (const file of props.form.gallery_images) {
+    if (file instanceof File) {
+      const compressedFile = await compressImageForType(file, 'gallery')
+      if (compressedFile) {
+        formData.append('gallery_images[]', compressedFile)
+      }
+    }
+  }
 
   // Add tags
   props.form.tags.forEach((tag) => {

@@ -24,20 +24,20 @@ class StoreProjectsRequest extends FormRequest
             'location.ka' => 'required|string|max:255',
             'location.en' => 'nullable|string|max:255',
             'location.ru' => 'nullable|string|max:255',
-            
+
             // Project details
             'status' => 'required|in:planning,ongoing,completed',
             'year' => 'required|integer|min:1900|max:2100',
             'start_date' => 'required|date',
             'completion_date' => 'required|date|after_or_equal:start_date',
             'is_active' => 'boolean',
-            
-            
+
+
             // Images (made optional for creation)
-            'main_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-            'render_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-            'gallery_images' => 'nullable|array',
-            'gallery_images.*' => 'file|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'main_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
+            'render_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
+            'gallery_images' => 'nullable|array|max:10',
+            'gallery_images.*' => 'file|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
         ];
     }
 

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Image;
 use App\Models\Imageable;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image as InterventionImage;
@@ -16,24 +17,50 @@ class ImageService
      */
     public function uploadImage(UploadedFile $file, string $title, string $category = null, string $project = null, string $altText = null): Image
     {
-        // Generate unique filename
-        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        try {
+            // Validate file
+            if (!$file->isValid()) {
+                throw new \Exception('Invalid file: ' . $file->getErrorMessage());
+            }
 
-        // Create directory structure
-        $directory = 'images/' . ($category ?: 'general') . '/' . date('Y/m');
-        $path = $file->storeAs($directory, $filename, 'public');
+            // Check file size (20MB limit)
+            if ($file->getSize() > 20 * 1024 * 1024) {
+                throw new \Exception('File too large. Maximum size is 20MB.');
+            }
 
-        // Create image record
-        $imageRecord = Image::create([
-            'filename' => $file->getClientOriginalName(),
-            'path' => $path,
-            'title' => $title,
-            'project' => $project,
-            'alt_text' => $altText,
-            'category' => $category,
-        ]);
+            // Generate unique filename
+            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
-        return $imageRecord;
+            // Create directory structure
+            $directory = 'images/' . ($category ?: 'general') . '/' . date('Y/m');
+            $path = $file->storeAs($directory, $filename, 'public');
+
+            if (!$path) {
+                throw new \Exception('Failed to store file.');
+            }
+
+            // Create image record
+            $imageRecord = Image::create([
+                'filename' => $file->getClientOriginalName(),
+                'path' => $path,
+                'title' => $title,
+                'project' => $project,
+                'alt_text' => $altText,
+                'category' => $category,
+            ]);
+
+            return $imageRecord;
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            Log::error('Image upload failed', [
+                'file_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            throw $e;
+        }
     }
 
     /**

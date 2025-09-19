@@ -84,16 +84,38 @@ class AdminProjectsController extends Controller
             // Handle gallery images upload
             if ($request->hasFile('gallery_images')) {
                 $galleryImages = [];
+                $uploadErrors = [];
+
                 foreach ($request->file('gallery_images') as $index => $file) {
-                    $image = $this->imageService->uploadImage(
-                        $file,
-                        $projectTitle . ' - Gallery ' . ($index + 1),
-                        'projects',
-                        $projectTitle
-                    );
-                    $this->imageService->attachImage($image, $project, 'gallery', $index);
-                    $galleryImages[] = $image->full_url;
+                    try {
+                        // Validate individual file
+                        if (!$file->isValid()) {
+                            $uploadErrors["gallery_images.{$index}"] = ["The gallery_images.{$index} file is invalid."];
+                            continue;
+                        }
+
+                        $image = $this->imageService->uploadImage(
+                            $file,
+                            $projectTitle . ' - Gallery ' . ($index + 1),
+                            'projects',
+                            $projectTitle
+                        );
+                        $this->imageService->attachImage($image, $project, 'gallery', $index);
+                        $galleryImages[] = $image->full_url;
+                    } catch (\Exception $e) {
+                        $uploadErrors["gallery_images.{$index}"] = ["The gallery_images.{$index} failed to upload: " . $e->getMessage()];
+                    }
                 }
+
+                // If there were upload errors, return them
+                if (!empty($uploadErrors)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Some gallery images failed to upload',
+                        'errors' => $uploadErrors
+                    ], 422);
+                }
+
                 $project->update(['gallery_images' => $galleryImages]);
             }
 
@@ -160,15 +182,36 @@ class AdminProjectsController extends Controller
             // Add new gallery images
             if ($request->hasFile('gallery_images')) {
                 $galleryCount = $project->galleryImages()->count();
+                $uploadErrors = [];
+
                 foreach ($request->file('gallery_images') as $index => $file) {
-                    $image = $this->imageService->uploadImage(
-                        $file,
-                        $projectTitle . ' - Gallery ' . ($galleryCount + $index + 1),
-                        'projects',
-                        $projectTitle
-                    );
-                    $this->imageService->attachImage($image, $project, 'gallery', $galleryCount + $index);
-                    $finalGalleryImages[] = $image->full_url;
+                    try {
+                        // Validate individual file
+                        if (!$file->isValid()) {
+                            $uploadErrors["gallery_images.{$index}"] = ["The gallery_images.{$index} file is invalid."];
+                            continue;
+                        }
+
+                        $image = $this->imageService->uploadImage(
+                            $file,
+                            $projectTitle . ' - Gallery ' . ($galleryCount + $index + 1),
+                            'projects',
+                            $projectTitle
+                        );
+                        $this->imageService->attachImage($image, $project, 'gallery', $galleryCount + $index);
+                        $finalGalleryImages[] = $image->full_url;
+                    } catch (\Exception $e) {
+                        $uploadErrors["gallery_images.{$index}"] = ["The gallery_images.{$index} failed to upload: " . $e->getMessage()];
+                    }
+                }
+
+                // If there were upload errors, return them
+                if (!empty($uploadErrors)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Some gallery images failed to upload',
+                        'errors' => $uploadErrors
+                    ], 422);
                 }
             }
 
