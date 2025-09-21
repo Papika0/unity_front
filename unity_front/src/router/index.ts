@@ -143,6 +143,26 @@ const router = createRouter({
               component: () => import('@/views/admin/projects/EditView.vue'),
             },
             {
+              path: 'features',
+              name: 'admin-features',
+              component: () => import('@/views/admin/features/ListView.vue'),
+            },
+            {
+              path: 'features/add',
+              name: 'admin-feature-add',
+              component: () => import('@/views/admin/features/AddView.vue'),
+            },
+            {
+              path: 'features/edit/:id',
+              name: 'admin-feature-edit',
+              component: () => import('@/views/admin/features/EditView.vue'),
+            },
+            {
+              path: 'features/assign',
+              name: 'admin-feature-assign',
+              component: () => import('@/views/admin/features/AssignToProject.vue'),
+            },
+            {
               path: 'translations',
               name: 'admin-translations',
               component: () => import('@/views/admin/translations/ListView.vue'),

@@ -42,6 +42,20 @@ class ProjectResource extends JsonResource
             'longitude' => $this->longitude,
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
+            'features' => $this->whenLoaded('features', function () {
+                return $this->features->map(function ($feature) {
+                    return [
+                        'id' => $feature->id,
+                        'name' => $feature->name,
+                        'title' => $feature->getTitleForLocale($this->locale),
+                        'description' => $feature->getDescriptionForLocale($this->locale),
+                        'icon' => $feature->icon,
+                        'color' => $feature->color,
+                        'is_auto_detected' => $feature->pivot->is_auto_detected ?? false,
+                        'sort_order' => $feature->pivot->sort_order ?? 0,
+                    ];
+                });
+            }),
             // 'created_at' => $this->created_at->toIso8601String(),
             // 'updated_at' => $this->updated_at->toIso8601String(),
         ];

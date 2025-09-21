@@ -1,4 +1,5 @@
 import api from '@/plugins/axios/api'
+import type { ProjectFeature } from './featuresApi'
 
 // Project interfaces to match the API response
 export interface ProjectApiResponse {
@@ -6,29 +7,30 @@ export interface ProjectApiResponse {
   title: string
   description: string
   location: string
-  status: 'planning' | 'ongoing' | 'completed'
   status_name: string
-  start_date: string
-  completion_date: string
-  main_image: string
-  render_image: string
+  status: string
+  start_date: string | null
+  completion_date: string | null
+  main_image: string | null
+  render_image: string | null
   gallery_images: string[]
-  year: number
+  year: string
   is_active: boolean
   is_featured: boolean
   is_onHomepage: boolean
-  latitude: number | null
-  longitude: number | null
+  latitude: string | null
+  longitude: string | null
   meta_title: string | null
   meta_description: string | null
-  created_at: string
-  updated_at: string
+  features?: ProjectFeature[] // Add this line
 }
 
 export const projectsApi = {
   // Get all active projects
-  getAll: async () => {
-    const response = await api.get<{ success: boolean; data: ProjectApiResponse[] }>('/projects')
+  getAll: async (locale: string = 'ka') => {
+    const response = await api.get<{ success: boolean; data: ProjectApiResponse[] }>(
+      `/projects?locale=${locale}`,
+    )
     return response.data.data
   },
 
@@ -49,9 +51,9 @@ export const projectsApi = {
   },
 
   // Get single project by ID
-  getById: async (id: number) => {
+  getById: async (id: number, locale: string = 'ka') => {
     const response = await api.get<{ success: boolean; data: ProjectApiResponse }>(
-      `/projects/${id}`,
+      `/projects/${id}?locale=${locale}`,
     )
     return response.data.data
   },

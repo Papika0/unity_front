@@ -3,25 +3,27 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTranslations } from '../composables/useTranslations'
 import { useProjectsPage } from '../composables/useProjectsPage'
-import { useProjectsStore } from '@/stores/public/projects'
+import { useLocaleStore } from '@/stores/ui/locale'
 import { projectsApi } from '@/services/projectsApi'
 import type { ProjectApiResponse } from '@/services/projectsApi'
+import type { ProjectFeature } from '@/services/featuresApi'
 
 const { t } = useTranslations()
 const route = useRoute()
 const router = useRouter()
 
+// Initialize locale store
+const localeStore = useLocaleStore()
+
 // Initialize projects page composable to load translations and projects
 const { loadProjectsPage, allProjects } = useProjectsPage()
-
-// Initialize projects store
-const projectsStore = useProjectsStore()
 
 const project = ref<ProjectApiResponse | null>(null)
 const isLoading = ref(true) // Start with loading true
 const error = ref<string | null>(null)
 const selectedImageIndex = ref(0)
 const isFullscreenGallery = ref(false)
+const projectFeatures = ref<ProjectFeature[]>([])
 
 const relatedProjects = computed((): ProjectApiResponse[] => {
   if (!project.value || !allProjects.value) return []
@@ -146,24 +148,23 @@ const loadProjectData = async (projectId: number) => {
         )
         // Fallback: try to load projects directly
         try {
-          const projectsResponse = await projectsApi.getAll()
+          const projectsResponse = await projectsApi.getAll(localeStore.currentLocale)
           allProjects.value = projectsResponse
         } catch (projectsError) {
           console.error('Failed to load projects directly:', projectsError)
         }
       }
 
-      // Update the projects store with the loaded projects
-      if (allProjects.value.length > 0) {
-        projectsStore.$patch({
-          projects: allProjects.value,
-        })
-      }
+      // Note: Store update removed due to type compatibility issues
+      // The allProjects from useProjectsPage is sufficient for related projects
     }
 
-    // Then load the specific project
-    const projectData = await projectsApi.getById(projectId)
+    // Then load the specific project (now includes features)
+    const projectData = await projectsApi.getById(projectId, localeStore.currentLocale)
     project.value = projectData
+
+    // Set features from project data
+    projectFeatures.value = projectData.features || []
   } catch (err) {
     console.error('Failed to load project:', err)
     error.value = 'Failed to load project'
@@ -343,7 +344,7 @@ const goBack = () => {
         <div class="absolute inset-0">
           <img
             v-if="project.render_image || project.main_image"
-            :src="project.render_image || project.main_image"
+            :src="(project.render_image || project.main_image)!"
             :alt="project.title"
             class="w-full h-full object-cover"
           />
@@ -599,10 +600,7 @@ const goBack = () => {
       </section>
 
       <!-- Features Grid (if bullet points exist in description) -->
-      <section
-        v-if="project.description && project.description.includes('*')"
-        class="py-20 bg-white"
-      >
+      <section v-if="project.description" class="py-20 bg-white">
         <div class="max-w-[1400px] mx-auto px-6 lg:px-12">
           <div class="text-center mb-12">
             <h2 class="text-4xl font-bold text-slate-900 mb-4">
@@ -613,9 +611,58 @@ const goBack = () => {
             ></div>
           </div>
 
-          <!-- Features will be parsed from the description bullets -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Feature cards would go here based on parsed bullet points -->
+          <!-- Dynamic Feature Cards -->
+          <div
+            v-if="projectFeatures.length > 0"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <div
+              v-for="feature in projectFeatures"
+              :key="feature.id"
+              class="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-100 hover:border-slate-200"
+            >
+              <!-- Feature Icon -->
+              <div
+                class="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r mb-4 group-hover:scale-110 transition-transform duration-300"
+                :class="feature.color"
+              >
+                <span class="text-2xl">{{ feature.icon }}</span>
+              </div>
+
+              <!-- Feature Content -->
+              <div>
+                <h3
+                  class="text-xl font-bold text-slate-900 mb-2 group-hover:text-amber-600 transition-colors"
+                >
+                  {{ feature.title }}
+                </h3>
+                <p class="text-slate-600 leading-relaxed">
+                  {{ feature.description }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fallback message if no features detected -->
+          <div v-else class="text-center py-12">
+            <div
+              class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <svg
+                class="w-8 h-8 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <p class="text-slate-500 text-lg">{{ t('projects.features.no_features') }}</p>
           </div>
         </div>
       </section>

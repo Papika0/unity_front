@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Traits\InvalidatesHomepageCache;
 
 class Projects extends Model
@@ -97,5 +98,40 @@ class Projects extends Model
             return $galleryImages->pluck('full_url')->toArray();
         }
         return $this->gallery_images ?? [];
+    }
+
+    /**
+     * Get features for this project
+     */
+    public function features(): BelongsToMany
+    {
+        return $this->belongsToMany(Feature::class, 'project_feature', 'project_id', 'feature_id')
+            ->withPivot(['is_auto_detected', 'sort_order'])
+            ->withTimestamps()
+            ->orderByPivot('sort_order');
+    }
+
+    /**
+     * Auto-detect features based on description
+     */
+    public function autoDetectFeatures(): void
+    {
+        $description = strtolower($this->description);
+        $features = Feature::where('is_active', true)->get();
+
+        foreach ($features as $feature) {
+            $hasKeyword = collect($feature->keywords)->some(function ($keyword) use ($description) {
+                return str_contains($description, strtolower($keyword));
+            });
+
+            if ($hasKeyword) {
+                $this->features()->syncWithoutDetaching([
+                    $feature->id => [
+                        'is_auto_detected' => true,
+                        'sort_order' => $feature->sort_order,
+                    ]
+                ]);
+            }
+        }
     }
 }

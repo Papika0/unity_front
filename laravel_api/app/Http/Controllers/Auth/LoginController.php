@@ -33,6 +33,12 @@ class LoginController extends Controller
                 ], 401);
             }
 
+            // Load the role relationship
+            $user->load('role');
+            
+            // Add role name to the user object for frontend compatibility
+            $user->role = $user->role ? $user->role->name : null;
+
             return new ApiSuccessResponse([
                 'token' => $token,
                 'user' => $user,

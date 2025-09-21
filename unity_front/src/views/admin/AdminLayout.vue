@@ -67,6 +67,26 @@
               </router-link>
 
               <router-link
+                to="/admin/features"
+                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                :class="
+                  typeof $route.name === 'string' && $route.name.startsWith('admin-feature')
+                    ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                    : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700'
+                "
+              >
+                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                ფუნქციები
+              </router-link>
+
+              <router-link
                 to="/admin/news"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                 :class="
@@ -250,6 +270,18 @@
                 პროექტები
               </router-link>
               <router-link
+                to="/admin/features"
+                @click="mobileMenuOpen = false"
+                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                :class="
+                  typeof $route.name === 'string' && $route.name.startsWith('admin-feature')
+                    ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white'
+                    : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700'
+                "
+              >
+                ფუნქციები
+              </router-link>
+              <router-link
                 to="/admin/news"
                 @click="mobileMenuOpen = false"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
@@ -319,11 +351,13 @@
                   ? 'დაშბორდი'
                   : $route.name === 'admin-projects'
                     ? 'პროექტები'
-                    : $route.name === 'admin-translations'
-                      ? 'თარგმანები'
-                      : $route.name === 'admin-site-settings'
-                        ? 'საიტის პარამეტრები'
-                        : 'დაშბორდი'
+                    : typeof $route.name === 'string' && $route.name.startsWith('admin-feature')
+                      ? 'ფუნქციები'
+                      : $route.name === 'admin-translations'
+                        ? 'თარგმანები'
+                        : $route.name === 'admin-site-settings'
+                          ? 'საიტის პარამეტრები'
+                          : 'დაშბორდი'
               }}
             </h2>
           </div>

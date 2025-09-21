@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\HomePageController;
 use App\Http\Controllers\Api\AboutController;
 use App\Http\Controllers\Api\ProjectsPageController;
+use App\Http\Controllers\Api\FeaturesController;
 use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\AdminProjectsController;
 use App\Http\Controllers\Admin\AdminTranslationController;
@@ -50,6 +51,13 @@ Route::prefix('projects')->controller(ProjectsController::class)->group(function
     Route::get('/featured', 'featured');
     Route::get('/homepage', 'homepage');
     Route::get('/{id}', 'show');
+});
+
+// Features routes (public)
+Route::prefix('features')->controller(FeaturesController::class)->group(function () {
+    Route::get('/', 'index');
+    Route::get('/{id}', 'show');
+    Route::get('/project/{projectId}', 'getProjectFeatures');
 });
 
 // Homepage routes
@@ -99,6 +107,16 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/{id}', 'show');
         Route::post('/', 'store');
         Route::put('/{id}', 'update');
+    });
+
+    // Admin features routes
+    Route::prefix('admin/features')->controller(FeaturesController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::post('/', 'store');
+        Route::get('/{id}', 'show');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+        Route::post('/project/{projectId}/assign', 'assignToProject');
     });
 
     // Admin cache management routes

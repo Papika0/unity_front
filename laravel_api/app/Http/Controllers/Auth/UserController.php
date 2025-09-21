@@ -15,10 +15,19 @@ class UserController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
+            
+            if ($user) {
+                // Load the role relationship
+                $user->load('role');
+                
+                // Add role name to the user object for frontend compatibility
+                $user->role = $user->role ? $user->role->name : null;
+            }
         } catch (JWTException $e) {
             Log::error('JWTException occurred while authenticating user', ['error' => $e->getMessage()]);
-            //throw $th;
+            return response()->json(['error' => 'Unauthenticated'], 401);
         }
+        
         return response()->json($user, 200);
     }
 

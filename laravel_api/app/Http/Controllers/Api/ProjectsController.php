@@ -68,11 +68,15 @@ class ProjectsController extends Controller
     /**
      * Display the specified project for public API.
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         try {
-            $project = Projects::where('is_active', true)->findOrFail($id);
-            return $this->success(new ProjectResource($project));
+            $project = Projects::where('is_active', true)
+                              ->with('features')
+                              ->findOrFail($id);
+            
+            $locale = $request->get('locale', 'ka');
+            return $this->success(new ProjectResource($project, $locale));
         } catch (\Exception $e) {
             return $this->error('Project not found', 404);
         }
