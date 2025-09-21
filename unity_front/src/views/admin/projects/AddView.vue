@@ -32,6 +32,26 @@
         </p>
       </div>
 
+      <!-- Upload Progress Indicator -->
+      <div
+        v-if="isUploading"
+        class="mb-8 bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-slate-700">მიმდინარეობს ატვირთვა...</h3>
+          <span class="text-sm text-slate-500">{{ uploadProgress }}%</span>
+        </div>
+        <div class="w-full bg-slate-200 rounded-full h-3">
+          <div
+            class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-300 ease-out"
+            :style="{ width: uploadProgress + '%' }"
+          ></div>
+        </div>
+        <p class="text-sm text-slate-600 mt-2">
+          გთხოვთ, მოიცადოთ. სურათების კომპრესია და ატვირთვა მიმდინარეობს...
+        </p>
+      </div>
+
       <ProjectForm
         :form="form"
         :previews="previews"
@@ -53,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminProjectsStore } from '@/stores/admin/projects'
 import { useProjectForm } from '@/composables/useProjectForm'
@@ -73,6 +93,9 @@ const {
   removeGalleryImage: baseRemoveGalleryImage,
   prepareFormData,
 } = useProjectForm()
+
+const uploadProgress = ref(0)
+const isUploading = ref(false)
 
 const form = reactive(createInitialForm(false))
 const previews = reactive(createInitialPreviews())
@@ -104,18 +127,76 @@ function removeGalleryImage(index: number) {
 async function onSubmit() {
   try {
     submitting.value = true
-    const formData = await prepareFormData(form, false)
+    isUploading.value = true
+    uploadProgress.value = 0
+    console.log('Starting project creation...')
 
-    const result = await adminProjectsStore.addProject(formData)
-    if (result.success) {
-      router.push({ name: 'admin-projects' })
+    // Check if we need sequential upload (large payload)
+    const allImageFiles = [form.main_image, form.render_image, ...form.gallery_images].filter(
+      (file): file is File => file instanceof File,
+    )
+    const totalSize = allImageFiles.reduce((sum, file) => sum + file.size, 0)
+    const totalSizeMB = totalSize / (1024 * 1024)
+
+    console.log(`Total payload size: ${totalSizeMB.toFixed(2)}MB`)
+
+    if (totalSizeMB > 6) {
+      // Use sequential upload for large payloads
+      console.log('Using sequential upload for large payload...')
+
+      const result = await adminProjectsStore.addProjectSequential(form, (progress, message) => {
+        uploadProgress.value = progress
+        console.log(`Upload progress: ${progress}% - ${message}`)
+      })
+
+      console.log('Sequential project creation result:', result)
+
+      if (result.success) {
+        console.log('Project created successfully with sequential upload, redirecting...')
+        uploadProgress.value = 100
+        router.push({ name: 'admin-projects' })
+      } else {
+        console.error('Sequential creation failed:', result.error)
+        alert(`პროექტის შექმნა ვერ მოხერხდა: ${result.error}`)
+      }
     } else {
-      console.error('Creation failed:', result.error)
+      // Use normal upload for small payloads
+      console.log('Using normal upload for small payload...')
+
+      const formData = await prepareFormData(form, false)
+      console.log('Form data prepared:', formData)
+
+      // Log form data contents for debugging
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`)
+        } else {
+          console.log(`${key}: ${value}`)
+        }
+      }
+
+      uploadProgress.value = 50
+      console.log('Starting network upload...')
+      const result = await adminProjectsStore.addProject(formData)
+      console.log('Project creation result:', result)
+
+      if (result.success) {
+        console.log('Project created successfully, redirecting...')
+        uploadProgress.value = 100
+        router.push({ name: 'admin-projects' })
+      } else {
+        console.error('Creation failed:', result.error)
+        alert(`პროექტის შექმნა ვერ მოხერხდა: ${result.error}`)
+      }
     }
   } catch (error) {
-    console.error('Creation failed:', error)
+    console.error('Creation failed with error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'უცნობი შეცდომა'
+    alert(`პროექტის შექმნა ვერ მოხერხდა: ${errorMessage}`)
   } finally {
     submitting.value = false
+    isUploading.value = false
+    uploadProgress.value = 0
   }
 }
 </script>

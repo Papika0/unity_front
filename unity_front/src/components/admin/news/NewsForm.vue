@@ -392,66 +392,34 @@
       <div class="space-y-10">
         <!-- Main Image -->
         <FormSection title="მთავარი სურათი" variant="emerald">
-          <div
-            class="border-2 border-dashed border-slate-300 rounded-2xl p-8 transition-all duration-300 bg-white/90 hover:border-emerald-400"
-          >
-            <input
-              ref="mainImageInput"
-              type="file"
-              accept="image/*"
-              class="w-full px-6 py-4 bg-white border-2 border-slate-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-slate-900 font-medium file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-emerald-100 file:text-emerald-700 hover:file:bg-emerald-200 file:transition-all file:duration-300 shadow-sm"
-              @change="handleMainImageChange"
-            />
-            <div v-if="mainImagePreview" class="mt-6">
-              <img
-                :src="mainImagePreview"
-                alt="Main image preview"
-                class="w-40 h-40 object-cover rounded-2xl border border-slate-300 shadow-lg"
-              />
-            </div>
-          </div>
+          <FileUpload
+            field-id="main_image"
+            :preview="mainImagePreview"
+            alt-text="Main image preview"
+            variant="emerald"
+            :enable-compression="true"
+            image-type="main"
+            @change="handleMainImageChange"
+            @compression-progress="handleCompressionProgress"
+            @compression-complete="handleCompressionComplete"
+          />
         </FormSection>
 
         <!-- Gallery Images -->
         <FormSection title="გალერეის სურათები" variant="emerald">
-          <div
-            class="border-2 border-dashed border-slate-300 rounded-2xl p-8 transition-all duration-300 bg-white/90 hover:border-emerald-400"
-          >
-            <input
-              ref="galleryInput"
-              type="file"
-              accept="image/*"
-              multiple
-              class="w-full px-6 py-4 bg-white border-2 border-slate-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-slate-900 font-medium file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-emerald-100 file:text-emerald-700 hover:file:bg-emerald-200 file:transition-all file:duration-300 shadow-sm"
-              @change="handleGalleryChange"
-            />
-            <div
-              v-if="galleryPreviews.length > 0"
-              class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-6"
-            >
-              <div v-for="(preview, index) in galleryPreviews" :key="index" class="relative group">
-                <img
-                  :src="preview.url"
-                  :alt="`Gallery image ${index + 1}`"
-                  class="w-full h-28 object-cover rounded-2xl border border-slate-300 shadow-lg group-hover:scale-105 transition-transform duration-300"
-                />
-                <button
-                  @click="removeGalleryImage(index)"
-                  type="button"
-                  class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 text-sm hover:bg-red-600 hover:scale-110 shadow-lg"
-                >
-                  ×
-                </button>
-                <!-- Badge to show if it's a new or existing image -->
-                <div
-                  class="absolute top-2 left-2 px-2 py-1 text-xs rounded-full text-white font-medium"
-                  :class="preview.type === 'new' ? 'bg-green-500' : 'bg-blue-500'"
-                >
-                  {{ preview.type === 'new' ? 'New' : 'Current' }}
-                </div>
-              </div>
-            </div>
-          </div>
+          <FileUpload
+            field-id="gallery_images"
+            :multiple="true"
+            :preview="galleryPreviews.map((p) => p.url)"
+            alt-text="Gallery image"
+            variant="emerald"
+            :enable-compression="true"
+            image-type="gallery"
+            @change="handleGalleryChange"
+            @remove="removeGalleryImage"
+            @compression-progress="handleCompressionProgress"
+            @compression-complete="handleCompressionComplete"
+          />
         </FormSection>
       </div>
     </FormCard>
@@ -580,7 +548,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { Translator } from '@/utils/translator'
 import { compressImageForType } from '@/utils/imageCompression'
-import { FormCard, FormSection, MultiLanguageField } from '@/components/admin/forms'
+import { FormCard, FormSection, MultiLanguageField, FileUpload } from '@/components/admin/forms'
 
 interface NewsFormData {
   title: { ka: string; en: string; ru: string }
@@ -618,6 +586,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   submit: [formData: FormData]
   'update:form': [form: NewsFormData]
+  compressionProgress: [progress: number]
+  compressionComplete: [files: File[]]
 }>()
 
 // Local refs
@@ -746,17 +716,25 @@ async function handleTranslate(
 }
 
 // File handling
-function handleMainImageChange(event: Event) {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  updateForm('main_image', file || null)
+function handleMainImageChange(files: FileList | null) {
+  const file = files?.[0] || null
+  updateForm('main_image', file)
 }
 
-function handleGalleryChange(event: Event) {
-  const target = event.target as HTMLInputElement
-  const files = Array.from(target.files || [])
-  const currentFiles = [...props.form.gallery_images]
-  updateForm('gallery_images', [...currentFiles, ...files])
+function handleCompressionProgress(progress: number) {
+  emit('compressionProgress', progress)
+}
+
+function handleCompressionComplete(files: File[]) {
+  emit('compressionComplete', files)
+}
+
+function handleGalleryChange(files: FileList | null) {
+  if (files) {
+    const fileArray = Array.from(files)
+    const currentFiles = [...props.form.gallery_images]
+    updateForm('gallery_images', [...currentFiles, ...fileArray])
+  }
 }
 
 function removeGalleryImage(index: number) {
@@ -828,21 +806,15 @@ async function onSubmit() {
   formData.append('is_active', props.form.is_active ? '1' : '0')
   formData.append('is_featured', props.form.is_featured ? '1' : '0')
 
-  // Add files with compression
+  // Add files (compression is now handled by FileUpload component)
   if (props.form.main_image) {
-    const compressedMainImage = await compressImageForType(props.form.main_image, 'main')
-    if (compressedMainImage) {
-      formData.append('main_image', compressedMainImage)
-    }
+    formData.append('main_image', props.form.main_image)
   }
 
-  // Compress and add gallery images
+  // Add gallery images
   for (const file of props.form.gallery_images) {
     if (file instanceof File) {
-      const compressedFile = await compressImageForType(file, 'gallery')
-      if (compressedFile) {
-        formData.append('gallery_images[]', compressedFile)
-      }
+      formData.append('gallery_images[]', file)
     }
   }
 

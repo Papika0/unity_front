@@ -1,5 +1,4 @@
-import { ref, reactive } from 'vue'
-import { compressFileIfNeeded, compressImageForType } from '@/utils/imageCompression'
+import { ref } from 'vue'
 import { Translator } from '@/utils/translator'
 
 export interface ProjectFormData {
@@ -60,7 +59,7 @@ export function useProjectForm() {
   ) {
     if (translating.value) return
 
-    const field = form[fieldName as keyof ProjectFormData] as any
+    const field = form[fieldName as keyof ProjectFormData] as Record<string, string>
     const sourceText = field[fromLang]
     if (!sourceText) return
 
@@ -163,19 +162,13 @@ export function useProjectForm() {
     formData.append('is_featured', form.is_featured ? '1' : '0')
     formData.append('is_onHomepage', form.is_onHomepage ? '1' : '0')
 
-    // Compress and append files with specialized compression
+    // Append files (compression is handled by FileUpload component)
     if (form.main_image instanceof File) {
-      const compressedMainImage = await compressImageForType(form.main_image, 'main')
-      if (compressedMainImage) {
-        formData.append('main_image', compressedMainImage)
-      }
+      formData.append('main_image', form.main_image)
     }
 
     if (form.render_image instanceof File) {
-      const compressedRenderImage = await compressImageForType(form.render_image, 'render')
-      if (compressedRenderImage) {
-        formData.append('render_image', compressedRenderImage)
-      }
+      formData.append('render_image', form.render_image)
     }
 
     // Handle existing gallery images in edit mode
@@ -185,14 +178,11 @@ export function useProjectForm() {
       })
     }
 
-    // Compress and append new gallery files with gallery-specific compression
+    // Append new gallery files (compression is handled by FileUpload component)
     for (let i = 0; i < form.gallery_images.length; i++) {
       const file = form.gallery_images[i]
       if (file instanceof File) {
-        const compressedFile = await compressImageForType(file, 'gallery')
-        if (compressedFile) {
-          formData.append(`gallery_images[${i}]`, compressedFile)
-        }
+        formData.append(`gallery_images[${i}]`, file)
       }
     }
 
@@ -202,46 +192,63 @@ export function useProjectForm() {
   function loadProjectData(
     form: ProjectFormData,
     previews: ProjectPreviews,
-    projectData: any,
+    projectData: Record<string, unknown>,
     backendUrl: string,
   ) {
     // Translations - ensure all fields have values
     form.title = {
-      ka: projectData.title_ka || '',
-      en: projectData.title_en || '',
-      ru: projectData.title_ru || '',
+      ka: String(projectData.title_ka || ''),
+      en: String(projectData.title_en || ''),
+      ru: String(projectData.title_ru || ''),
     }
     form.description = {
-      ka: projectData.description_ka || '',
-      en: projectData.description_en || '',
-      ru: projectData.description_ru || '',
+      ka: String(projectData.description_ka || ''),
+      en: String(projectData.description_en || ''),
+      ru: String(projectData.description_ru || ''),
     }
     form.location = {
-      ka: projectData.location_ka || '',
-      en: projectData.location_en || '',
-      ru: projectData.location_ru || '',
+      ka: String(projectData.location_ka || ''),
+      en: String(projectData.location_en || ''),
+      ru: String(projectData.location_ru || ''),
     }
 
     // Other fields
-    form.status = projectData.status || 'ongoing'
+    form.status = String(projectData.status || 'ongoing')
     form.year = Number(projectData.year)
-    form.start_date = projectData.start_date
-    form.completion_date = projectData.completion_date
+    form.start_date = String(projectData.start_date || '')
+    form.completion_date = String(projectData.completion_date || '')
     form.is_active = Boolean(projectData.is_active)
     form.is_featured = Boolean(projectData.is_featured)
     form.is_onHomepage = Boolean(projectData.is_onHomepage)
 
     // Set image previews
     if (projectData.main_image) {
-      previews.main_image = backendUrl + projectData.main_image
+      const mainImageStr = String(projectData.main_image)
+      if (typeof mainImageStr === 'string' && mainImageStr.startsWith('http')) {
+        previews.main_image = mainImageStr
+      } else {
+        previews.main_image = backendUrl + mainImageStr
+      }
     }
+
     if (projectData.render_image) {
-      previews.render_image = backendUrl + projectData.render_image
+      if (
+        typeof projectData.render_image === 'string' &&
+        projectData.render_image.startsWith('http')
+      ) {
+        previews.render_image = String(projectData.render_image)
+      } else {
+        previews.render_image = backendUrl + String(projectData.render_image)
+      }
     }
-    if (projectData.gallery_images && projectData.gallery_images.length > 0) {
-      previews.gallery_images = projectData.gallery_images.slice()
+    if (
+      projectData.gallery_images &&
+      Array.isArray(projectData.gallery_images) &&
+      projectData.gallery_images.length > 0
+    ) {
+      previews.gallery_images = (projectData.gallery_images as string[]).slice()
       if (form.existing_gallery_images) {
-        form.existing_gallery_images = projectData.gallery_images.slice()
+        form.existing_gallery_images = (projectData.gallery_images as string[]).slice()
       }
     }
   }

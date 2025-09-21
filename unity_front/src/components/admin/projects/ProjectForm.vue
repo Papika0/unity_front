@@ -134,7 +134,11 @@
             :preview="previews.main_image"
             alt-text="Main image preview"
             :variant="mediaVariant"
+            :enable-compression="true"
+            image-type="main"
             @change="handleFileChange('main_image', $event)"
+            @compression-progress="handleCompressionProgress"
+            @compression-complete="handleCompressionComplete"
           />
         </FormSection>
 
@@ -145,7 +149,11 @@
             :preview="previews.render_image"
             alt-text="Render image preview"
             :variant="mediaVariant"
+            :enable-compression="true"
+            image-type="render"
             @change="handleFileChange('render_image', $event)"
+            @compression-progress="handleCompressionProgress"
+            @compression-complete="handleCompressionComplete"
           />
         </FormSection>
 
@@ -158,8 +166,12 @@
             alt-text="Gallery image"
             :variant="mediaVariant"
             :backend-url="backendUrl"
+            :enable-compression="true"
+            image-type="gallery"
             @change="handleGalleryChange"
             @remove="removeGalleryImage"
+            @compression-progress="handleCompressionProgress"
+            @compression-complete="handleCompressionComplete"
           />
         </FormSection>
       </div>
@@ -240,6 +252,8 @@ const emit = defineEmits<{
   fileChange: [fieldName: 'main_image' | 'render_image', files: FileList | null]
   galleryChange: [files: FileList | null]
   galleryRemove: [index: number]
+  compressionProgress: [progress: number]
+  compressionComplete: [files: File[]]
 }>()
 
 const submitButtonClass = computed(() => {
@@ -300,5 +314,13 @@ function updateStartDate(value: string | number) {
 
 function updateCompletionDate(value: string | number) {
   emit('update:form', { ...props.form, completion_date: String(value) })
+}
+
+function handleCompressionProgress(progress: number) {
+  emit('compressionProgress', progress)
+}
+
+function handleCompressionComplete(files: File[]) {
+  emit('compressionComplete', files)
 }
 </script>

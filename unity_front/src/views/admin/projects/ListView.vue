@@ -101,7 +101,11 @@
           <div class="relative overflow-hidden">
             <img
               v-if="project.main_image"
-              :src="backendUrl + project.main_image"
+              :src="
+                project.main_image.startsWith('http')
+                  ? project.main_image
+                  : backendUrl + project.main_image
+              "
               :alt="project.title"
               class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
             />
@@ -282,7 +286,11 @@
               >
                 <img
                   v-if="project.main_image"
-                  :src="backendUrl + project.main_image"
+                  :src="
+                    project.main_image.startsWith('http')
+                      ? project.main_image
+                      : backendUrl + project.main_image
+                  "
                   class="w-16 h-16 object-cover rounded-xl"
                 />
                 <div
@@ -366,7 +374,11 @@
               >
                 <img
                   v-if="project.main_image"
-                  :src="backendUrl + project.main_image"
+                  :src="
+                    project.main_image.startsWith('http')
+                      ? project.main_image
+                      : backendUrl + project.main_image
+                  "
                   class="w-16 h-16 object-cover rounded-xl"
                 />
                 <div

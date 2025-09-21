@@ -56,7 +56,11 @@
         <div class="relative h-80 overflow-hidden">
           <img
             v-if="project.main_image"
-            :src="backendUrl + project.main_image"
+            :src="
+              project.main_image.startsWith('http')
+                ? project.main_image
+                : backendUrl + project.main_image
+            "
             :alt="project.title"
             class="w-full h-full object-cover"
           />
@@ -163,7 +167,11 @@
             <h2 class="text-2xl font-semibold text-slate-900 mb-4">რენდერი</h2>
             <div class="rounded-2xl overflow-hidden shadow-lg">
               <img
-                :src="backendUrl + project.render_image"
+                :src="
+                  project.render_image.startsWith('http')
+                    ? project.render_image
+                    : backendUrl + project.render_image
+                "
                 :alt="project.title + ' render'"
                 class="w-full h-80 object-cover"
               />
@@ -185,7 +193,7 @@
                 class="relative overflow-hidden rounded-xl shadow-lg transform transition-transform duration-300 hover:scale-105"
               >
                 <img
-                  :src="backendUrl + img"
+                  :src="img.startsWith('http') ? img : backendUrl + img"
                   :alt="`${project.title} gallery ${idx + 1}`"
                   class="object-cover w-full h-64 hover:brightness-110 transition-all duration-300"
                 />
