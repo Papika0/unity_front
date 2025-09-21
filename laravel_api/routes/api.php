@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ProjectsController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\HomePageController;
 use App\Http\Controllers\Api\AboutController;
+use App\Http\Controllers\Api\ProjectsPageController;
 use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\AdminProjectsController;
 use App\Http\Controllers\Admin\AdminTranslationController;
@@ -59,6 +60,11 @@ Route::prefix('homepage')->controller(HomePageController::class)->group(function
 
 // About page routes
 Route::prefix('about')->controller(AboutController::class)->group(function () {
+    Route::get('/', 'index');
+});
+
+// Projects page routes
+Route::prefix('projects-page')->controller(ProjectsPageController::class)->group(function () {
     Route::get('/', 'index');
 });
 

@@ -2,22 +2,21 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTranslations } from '../composables/useTranslations'
-import { useProjectsStore } from '@/stores/public/projects'
-import type { Project } from '@/stores/public/projects'
+import { projectsApi } from '@/services/projectsApi'
+import type { ProjectApiResponse } from '@/services/projectsApi'
 
 const { t } = useTranslations()
 const route = useRoute()
 const router = useRouter()
-const projectsStore = useProjectsStore()
 
-const project = ref<Project | null>(null)
+const project = ref<ProjectApiResponse | null>(null)
+const isLoading = ref(false)
+const error = ref<string | null>(null)
 const selectedImageIndex = ref(0)
 
-const relatedProjects = computed(() => {
-  if (!project.value) return []
-
-  // Get 3 random other active projects as related projects
-  return projectsStore.activeProjects.filter((p) => p.id !== project.value?.id).slice(0, 3)
+const relatedProjects = computed((): ProjectApiResponse[] => {
+  // For now, return empty array - we can implement this later
+  return []
 })
 
 const statusText = computed(() => {
@@ -54,14 +53,18 @@ onMounted(async () => {
     return
   }
 
-  // Try to fetch project from store
-  const foundProject = projectsStore.getProjectById(projectId)
+  // Load project from API
+  isLoading.value = true
+  error.value = null
 
-  if (foundProject) {
-    project.value = foundProject
-  } else {
-    // In future, this could attempt to fetch from API
+  try {
+    const projectData = await projectsApi.getById(projectId)
+    project.value = projectData
+  } catch {
+    error.value = 'Failed to load project'
     router.push('/projects')
+  } finally {
+    isLoading.value = false
   }
 })
 
@@ -73,7 +76,7 @@ const navigateToProject = (projectId: number) => {
   router.push(`/projects/${projectId}`)
 }
 
-const getRelatedProjectStatus = (project: Project) => {
+const getRelatedProjectStatus = (project: ProjectApiResponse) => {
   switch (project.status) {
     case 'completed':
       return 'დასრულებული'
@@ -102,13 +105,13 @@ const goBack = () => {
             ← უკან დაბრუნება
           </button>
           <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
-            {{ project.title.ka }}
+            {{ project.title }}
           </h1>
           <div class="flex flex-wrap gap-4 text-white">
             <span class="bg-yellow-500 text-black px-3 py-1 rounded-full text-sm">
               {{ statusText }}
             </span>
-            <span>📍 {{ project.location.ka }}</span>
+            <span>📍 {{ project.location }}</span>
             <span>📅 {{ project.year }}</span>
           </div>
         </div>
@@ -128,13 +131,13 @@ const goBack = () => {
               <img
                 v-if="project.gallery_images && project.gallery_images[selectedImageIndex]"
                 :src="project.gallery_images[selectedImageIndex]"
-                :alt="project.title.ka"
+                :alt="project.title"
                 class="w-full h-full object-cover"
               />
               <img
                 v-else-if="project.main_image"
                 :src="project.main_image"
-                :alt="project.title.ka"
+                :alt="project.title"
                 class="w-full h-full object-cover"
               />
               <svg v-else class="w-24 h-24 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
@@ -158,7 +161,7 @@ const goBack = () => {
               >
                 <img
                   :src="image"
-                  :alt="`${project.title.ka} ${index + 1}`"
+                  :alt="`${project.title} ${index + 1}`"
                   class="w-full h-full object-cover"
                 />
               </div>
@@ -170,7 +173,7 @@ const goBack = () => {
             <div>
               <h2 class="text-2xl font-bold mb-4">პროექტის აღწერა</h2>
               <div class="prose max-w-none text-gray-600">
-                <p class="mb-4">{{ project.description.ka }}</p>
+                <p class="mb-4">{{ project.description }}</p>
               </div>
             </div>
 
@@ -184,7 +187,7 @@ const goBack = () => {
                 </div>
                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                   <span class="font-medium text-gray-700">მისამართი:</span>
-                  <span class="text-gray-900">{{ project.location.ka }}</span>
+                  <span class="text-gray-900">{{ project.location }}</span>
                 </div>
                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                   <span class="font-medium text-gray-700">წელი:</span>
@@ -245,7 +248,7 @@ const goBack = () => {
               <img
                 v-if="relatedProject.main_image"
                 :src="relatedProject.main_image"
-                :alt="relatedProject.title.ka"
+                :alt="relatedProject.title"
                 class="w-full h-full object-cover"
               />
               <svg v-else class="w-12 h-12 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
@@ -255,7 +258,7 @@ const goBack = () => {
               </svg>
             </div>
             <div class="p-4">
-              <h3 class="font-bold text-lg mb-2">{{ relatedProject.title.ka }}</h3>
+              <h3 class="font-bold text-lg mb-2">{{ relatedProject.title }}</h3>
               <span class="text-sm text-gray-500">{{
                 getRelatedProjectStatus(relatedProject)
               }}</span>

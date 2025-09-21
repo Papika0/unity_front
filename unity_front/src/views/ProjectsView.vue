@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
-import { useProjectsStore } from '@/stores/public/projects'
+import { useProjectsPage } from '../composables/useProjectsPage'
 
 const { t } = useTranslations()
-const router = useRouter()
-const projectsStore = useProjectsStore()
+const {
+  allProjects,
+  totalProjects,
+  hasMorePages,
+  isLoading,
+  error,
+  loadProjectsPage,
+  loadMoreProjects,
+} = useProjectsPage()
 
 const selectedCategory = ref('all')
+
 const categories = ref([
   { value: 'all', label: 'ყველა' },
   { value: 'ongoing', label: 'მშენებარე' },
@@ -18,25 +25,31 @@ const categories = ref([
 
 const filteredProjects = computed(() => {
   if (selectedCategory.value === 'all') {
-    return projectsStore.activeProjects
+    return allProjects.value
   }
-  return projectsStore.getProjectsByStatus(selectedCategory.value as any)
+  return allProjects.value.filter((project) => project.status === selectedCategory.value)
 })
 
-const viewProjectDetails = (projectId: number) => {
-  router.push(`/projects/${projectId}`)
-}
+// Reset and reload projects when category changes
+watch(selectedCategory, async () => {
+  await loadProjectsPage(1, false)
+})
+
+// Load projects page data on component mount
+onMounted(async () => {
+  await loadProjectsPage()
+})
 
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'completed':
-      return 'bg-green-100 text-green-800'
+      return 'bg-green-600 text-white border border-green-300 shadow-lg'
     case 'ongoing':
-      return 'bg-blue-100 text-blue-800'
+      return 'bg-amber-600 text-white border border-amber-300 shadow-lg'
     case 'planning':
-      return 'bg-yellow-100 text-yellow-800'
+      return 'bg-gray-600 text-white border border-gray-300 shadow-lg'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-zinc-600 text-white border border-zinc-300 shadow-lg'
   }
 }
 
@@ -57,105 +70,205 @@ const getStatusText = (status: string) => {
 <template>
   <div class="projects-page">
     <!-- Hero Section -->
-    <section class="bg-gradient-to-r from-gray-900 to-gray-700 text-white py-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <h1 class="text-4xl md:text-5xl font-bold mb-6">
-            {{ t('projects.title') }}
-          </h1>
-          <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-            ჩვენი რეალიზებული და მშენებარე პროექტების კოლექცია
-          </p>
+    <section
+      class="relative h-[40vh] min-h-[300px] bg-gradient-to-br from-zinc-900 via-zinc-800 to-orange-900"
+    >
+      <div class="absolute inset-0 bg-black/20"></div>
+      <div class="relative z-10 h-full flex items-center">
+        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 text-white">
+          <div class="max-w-4xl">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-light mb-6 leading-tight">
+              {{ t('projects.title') }}
+            </h1>
+            <div class="w-24 h-0.5 bg-gradient-to-r from-orange-400 to-orange-500 mb-6"></div>
+            <p class="text-lg md:text-xl text-orange-100 font-light leading-relaxed max-w-3xl">
+              ჩვენი რეალიზებული და მშენებარე პროექტების კოლექცია
+            </p>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Filter Section -->
-    <section class="py-8 bg-white border-b">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="py-12 bg-white">
+      <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl lg:text-4xl font-light mb-4 text-zinc-900">
+            ფილტრი პროექტების მიხედვით
+          </h2>
+          <div class="w-24 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto"></div>
+        </div>
+
         <div class="flex flex-wrap gap-4 justify-center">
           <button
             v-for="category in categories"
             :key="category.value"
             @click="selectedCategory = category.value"
-            class="px-6 py-2 rounded-full font-medium transition-colors duration-200"
+            class="px-8 py-3 rounded-full font-light text-lg transition-all duration-300 group"
             :class="
               selectedCategory === category.value
-                ? 'bg-yellow-500 text-black'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
+                : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 hover:shadow-md'
             "
           >
-            {{ category.label }}
+            <span class="transition-all duration-300 group-hover:scale-105">
+              {{ category.label }}
+            </span>
           </button>
         </div>
       </div>
     </section>
 
     <!-- Projects Grid -->
-    <section class="py-16 bg-gray-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <section class="py-12 lg:py-16 bg-gradient-to-br from-zinc-50 to-orange-50">
+      <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+        <!-- Loading State -->
+        <div v-if="isLoading" class="text-center py-20">
           <div
-            v-for="project in filteredProjects"
-            :key="project.id"
-            class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-            @click="viewProjectDetails(project.id)"
-          >
-            <!-- Project Image -->
-            <div
-              class="h-64 bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center relative overflow-hidden"
-            >
-              <img
-                v-if="project.main_image"
-                :src="project.main_image"
-                :alt="project.title.ka"
-                class="w-full h-full object-cover"
-              />
-              <svg v-else class="w-16 h-16 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                />
-              </svg>
-            </div>
+            class="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mb-6"
+          ></div>
+          <p class="text-xl text-zinc-600 font-light">პროექტების ჩატვირთვა...</p>
+        </div>
 
-            <!-- Project Content -->
-            <div class="p-6">
-              <div class="flex items-center justify-between mb-3">
-                <span
-                  class="px-3 py-1 rounded-full text-xs font-medium"
-                  :class="getStatusColor(project.status)"
-                >
-                  {{ getStatusText(project.status) }}
-                </span>
-                <span class="text-sm text-gray-500">{{ project.year }}</span>
+        <!-- Error State -->
+        <div v-else-if="error" class="text-center py-20">
+          <div class="text-6xl mb-6">⚠️</div>
+          <h2 class="text-2xl font-light text-zinc-800 mb-4">შეცდომა</h2>
+          <p class="text-lg text-zinc-600 mb-8 font-light">{{ error }}</p>
+          <button
+            @click="() => loadProjectsPage(1, false)"
+            class="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-light text-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+          >
+            კვლავ ცდა
+          </button>
+        </div>
+
+        <!-- Projects Grid -->
+        <div v-else>
+          <!-- No Projects Found -->
+          <div v-if="filteredProjects.length === 0" class="text-center py-20">
+            <div class="text-6xl mb-6 text-zinc-400">🏗️</div>
+            <h3 class="text-2xl font-light text-zinc-600 mb-4">
+              ამ კატეგორიაში პროექტები არ მოიძებნა
+            </h3>
+            <p class="text-lg text-zinc-500 font-light">გთხოვთ, სცადოთ სხვა კატეგორია</p>
+          </div>
+
+          <!-- Projects Grid -->
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+            <div
+              v-for="project in filteredProjects"
+              :key="project.id"
+              class="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+            >
+              <!-- Project Image -->
+              <div
+                class="h-80 bg-gradient-to-br from-zinc-100 to-zinc-200 flex items-center justify-center relative overflow-hidden"
+              >
+                <img
+                  v-if="project.main_image"
+                  :src="project.main_image"
+                  :alt="project.title"
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div v-else class="w-full h-full flex items-center justify-center">
+                  <div class="text-6xl text-zinc-400">
+                    <svg class="w-20 h-20" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Overlay on hover -->
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                ></div>
+
+                <!-- Status badge -->
+                <div class="absolute top-6 left-6">
+                  <span
+                    class="px-4 py-2 rounded-full text-sm font-light"
+                    :class="getStatusColor(project.status)"
+                  >
+                    {{ getStatusText(project.status) }}
+                  </span>
+                </div>
+
+                <!-- Year badge -->
+                <div class="absolute top-6 right-6">
+                  <span
+                    class="px-4 py-2 rounded-full text-sm font-light bg-white text-zinc-700 shadow-lg border border-gray-200"
+                  >
+                    {{ project.year }}
+                  </span>
+                </div>
               </div>
 
-              <h3 class="text-xl font-bold text-gray-900 mb-2">
-                {{ project.title.ka }}
-              </h3>
+              <!-- Project Content -->
+              <div class="p-6">
+                <h3
+                  class="text-xl font-light text-zinc-900 mb-3 group-hover:text-orange-600 transition-colors duration-300"
+                >
+                  {{ project.title }}
+                </h3>
 
-              <p class="text-gray-600 mb-4 line-clamp-3">
-                {{ project.description.ka }}
-              </p>
-
-              <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-500">
-                  <span class="font-medium">მისამართი:</span> {{ project.location.ka }}
+                <div class="flex items-center space-x-2 mb-4">
+                  <svg
+                    class="w-4 h-4 text-zinc-400 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  <span class="text-sm text-zinc-600 font-light">{{ project.location }}</span>
                 </div>
-                <button class="text-yellow-500 hover:text-yellow-600 font-medium">
-                  {{ t('projects.details') }} →
-                </button>
+
+                <router-link
+                  :to="{ name: 'project-detail', params: { id: project.id } }"
+                  class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-2 px-4 rounded-lg font-light text-sm hover:from-orange-600 hover:to-orange-700 transition-all duration-300 group-hover:shadow-lg block text-center"
+                >
+                  {{ t('projects.details') }}
+                </router-link>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Pagination Info -->
+        <div v-if="filteredProjects.length > 0" class="text-center mt-12">
+          <p class="text-zinc-600 font-light">
+            ნაჩვენებია {{ filteredProjects.length }}
+            {{ totalProjects > 1 ? 'პროექტიდან' : 'პროექტიდან' }}
+            {{ totalProjects }}
+          </p>
+        </div>
+
         <!-- Load More Button -->
-        <div class="text-center mt-12">
+        <div v-if="hasMorePages" class="text-center mt-8">
           <button
-            class="bg-yellow-500 hover:bg-yellow-600 text-black px-8 py-3 rounded-lg font-semibold transition-colors duration-200"
+            @click="loadMoreProjects"
+            class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-light text-lg transition-all duration-300 hover:shadow-xl hover:scale-105 hover:from-orange-600 hover:to-orange-700 group"
           >
-            მეტი პროექტის ნახვა
+            <span class="mr-2">მეტი პროექტის ნახვა</span>
+            <svg
+              class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              ></path>
+            </svg>
           </button>
         </div>
       </div>
@@ -170,5 +283,31 @@ const getStatusText = (status: string) => {
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Luxury animations - removed conflicting transform */
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Enhanced shadow effects */
+.shadow-luxury {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Custom backdrop blur */
+.backdrop-blur-luxury {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 </style>
