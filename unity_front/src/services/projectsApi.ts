@@ -28,25 +28,31 @@ export interface ProjectApiResponse {
 export const projectsApi = {
   // Get all active projects
   getAll: async () => {
-    const response = await api.get<ProjectApiResponse[]>('/projects')
-    return response.data
+    const response = await api.get<{ success: boolean; data: ProjectApiResponse[] }>('/projects')
+    return response.data.data
   },
 
   // Get featured projects
   getFeatured: async () => {
-    const response = await api.get<ProjectApiResponse[]>('/projects/featured')
-    return response.data
+    const response = await api.get<{ success: boolean; data: ProjectApiResponse[] }>(
+      '/projects/featured',
+    )
+    return response.data.data
   },
 
   // Get homepage projects
   getHomepage: async () => {
-    const response = await api.get<ProjectApiResponse[]>('/projects/homepage')
-    return response.data
+    const response = await api.get<{ success: boolean; data: ProjectApiResponse[] }>(
+      '/projects/homepage',
+    )
+    return response.data.data
   },
 
   // Get single project by ID
   getById: async (id: number) => {
-    const response = await api.get<ProjectApiResponse>(`/projects/${id}`)
-    return response.data
+    const response = await api.get<{ success: boolean; data: ProjectApiResponse }>(
+      `/projects/${id}`,
+    )
+    return response.data.data
   },
 }

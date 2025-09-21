@@ -2,17 +2,21 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
 import { useProjectsPage } from '../composables/useProjectsPage'
+import { useProjectsStore } from '@/stores/public/projects'
 
 const { t } = useTranslations()
 const {
   allProjects,
   totalProjects,
   hasMorePages,
+  currentPage,
   isLoading,
   error,
   loadProjectsPage,
-  loadMoreProjects,
 } = useProjectsPage()
+
+// Initialize projects store
+const projectsStore = useProjectsStore()
 
 const selectedCategory = ref('all')
 
@@ -30,14 +34,26 @@ const filteredProjects = computed(() => {
   return allProjects.value.filter((project) => project.status === selectedCategory.value)
 })
 
+// Function to load projects and update store
+const loadProjectsAndUpdateStore = async (page: number = 1, loadMore: boolean = false) => {
+  await loadProjectsPage(page, loadMore)
+
+  // Update the projects store with the loaded projects
+  if (allProjects.value.length > 0) {
+    projectsStore.$patch({
+      projects: allProjects.value,
+    })
+  }
+}
+
 // Reset and reload projects when category changes
 watch(selectedCategory, async () => {
-  await loadProjectsPage(1, false)
+  await loadProjectsAndUpdateStore(1, false)
 })
 
 // Load projects page data on component mount
 onMounted(async () => {
-  await loadProjectsPage()
+  await loadProjectsAndUpdateStore()
 })
 
 const getStatusColor = (status: string) => {
@@ -136,7 +152,7 @@ const getStatusText = (status: string) => {
           <h2 class="text-2xl font-light text-zinc-800 mb-4">შეცდომა</h2>
           <p class="text-lg text-zinc-600 mb-8 font-light">{{ error }}</p>
           <button
-            @click="() => loadProjectsPage(1, false)"
+            @click="() => loadProjectsAndUpdateStore(1, false)"
             class="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-light text-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
           >
             კვლავ ცდა
@@ -252,7 +268,7 @@ const getStatusText = (status: string) => {
         <!-- Load More Button -->
         <div v-if="hasMorePages" class="text-center mt-8">
           <button
-            @click="loadMoreProjects"
+            @click="() => loadProjectsAndUpdateStore(currentPage + 1, true)"
             class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-light text-lg transition-all duration-300 hover:shadow-xl hover:scale-105 hover:from-orange-600 hover:to-orange-700 group"
           >
             <span class="mr-2">მეტი პროექტის ნახვა</span>
