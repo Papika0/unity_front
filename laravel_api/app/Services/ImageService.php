@@ -138,23 +138,41 @@ class ImageService
     /**
      * Get gallery images by category
      */
-    public function getGalleryImages(string $category = null, int $limit = null): \Illuminate\Database\Eloquent\Collection
+    public function getGalleryImages(string $category = null, int $limit = null, int $page = 1): \Illuminate\Database\Eloquent\Collection
     {
         $query = Image::active()
-            ->whereHas('imageables', function ($q) {
-                $q->where('type', 'gallery');
-            })
-            ->orderBy('sort_order');
+            ->join('imageables', 'images.id', '=', 'imageables.image_id')
+            ->where('imageables.type', 'gallery')
+            ->orderBy('imageables.sort_order');
 
         if ($category) {
-            $query->where('category', $category);
+            $query->where('images.category', $category);
         }
+
+        if ($limit) {
+            $offset = ($page - 1) * $limit;
+            $query->limit($limit)->offset($offset);
+        }
+
+        return $query->select('images.*')->get();
+    }
+
+    /**
+     * Get featured images
+     */
+    public function getFeaturedImages(int $limit = null): \Illuminate\Database\Eloquent\Collection
+    {
+        $query = Image::active()
+            ->join('imageables', 'images.id', '=', 'imageables.image_id')
+            ->where('imageables.type', 'gallery')
+            ->where('images.category', 'featured')
+            ->orderBy('imageables.sort_order');
 
         if ($limit) {
             $query->limit($limit);
         }
 
-        return $query->get();
+        return $query->select('images.*')->get();
     }
 
     /**
@@ -169,5 +187,21 @@ class ImageService
         }
 
         return $query->get();
+    }
+
+    /**
+     * Get gallery categories
+     */
+    public function getGalleryCategories(): array
+    {
+        return Image::active()
+            ->join('imageables', 'images.id', '=', 'imageables.image_id')
+            ->where('imageables.type', 'gallery')
+            ->select('images.category')
+            ->distinct()
+            ->pluck('images.category')
+            ->filter()
+            ->values()
+            ->toArray();
     }
 }

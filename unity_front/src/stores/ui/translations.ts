@@ -26,6 +26,7 @@ export const useTranslationsStore = defineStore('translations', () => {
     about: ['messages', 'header', 'footer', 'contact', 'errors', 'about', 'buttons'],
     projects: ['messages', 'header', 'footer', 'contact', 'errors', 'projects', 'buttons'],
     news: ['messages', 'header', 'footer', 'contact', 'errors', 'news', 'buttons'],
+    gallery: ['messages', 'header', 'footer', 'contact', 'errors', 'gallery', 'buttons'],
     contact: ['common', 'contact'],
     services: ['common', 'services'],
     portfolio: ['common', 'portfolio'],

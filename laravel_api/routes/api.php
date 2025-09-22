@@ -76,6 +76,11 @@ Route::prefix('projects-page')->controller(ProjectsPageController::class)->group
     Route::get('/', 'index');
 });
 
+// Gallery page routes
+Route::prefix('gallery-page')->controller(App\Http\Controllers\Api\GalleryPageController::class)->group(function () {
+    Route::get('/', 'index');
+});
+
 // Contact info routes (public)
 Route::get('/contact-info', [App\Http\Controllers\Api\ContactInfoController::class, 'index']);
 
