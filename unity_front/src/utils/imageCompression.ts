@@ -1,68 +1,75 @@
-// Improved Image Compression Utility for Construction Company - Fixed Quality Issues
-// Maintains professional image quality while achieving reasonable file sizes
+// Enhanced Image Compression for Construction Company
+// Optimized for better compression while maintaining professional quality
 
-// Browser limits for canvas dimensions
-const CANVAS_MAX_SIZE = 16384 // Most browsers support up to 16384x16384
-const CANVAS_MAX_AREA = 268435456 // Maximum pixel area (16384 * 16384)
+// Browser limits (used in dimension validation)
+const CANVAS_MAX_SIZE = 16384
+const CANVAS_MAX_AREA = 268435456
 
-// Compression settings - optimized for professional quality
-const COMPRESSION_QUALITY = 0.85 // 85% quality - maintain professional appearance
-const MAX_WIDTH = 1920 // Full HD width for excellent quality
-const MAX_HEIGHT = 1440 // High resolution for excellent quality
-const MIN_COMPRESSION_RATIO = 0.95 // Don't compress if minimal gains
-const MAX_TOTAL_SIZE = 25 * 1024 * 1024 // 25MB total - reasonable for modern web
-const MIN_QUALITY = 0.65 // Never go below 65% quality for professional use
+// Balanced compression settings for professional quality
+const COMPRESSION_QUALITY = 0.92 // High base quality for professional appearance
+const MAX_WIDTH = 2400 // Higher resolution for quality
+const MAX_HEIGHT = 1800 // Higher resolution for quality
+// const MIN_COMPRESSION_RATIO = 0.95 // Less aggressive, prioritize quality (now using dynamic ratio)
+const MAX_TOTAL_SIZE = 25 * 1024 * 1024 // 25MB total payload limit
+const MIN_QUALITY = 0.75 // Never go below 75% for professional use
 
-// Construction-specific presets - balanced for quality and performance
+// Professional presets for construction use cases
 const CONSTRUCTION_PRESETS = {
   blueprint: {
-    quality: 0.9, // Very high quality for technical details
+    quality: 0.95, // Very high for technical details
+    maxWidth: 3000, // High res for blueprints
+    maxHeight: 2400,
+    preferWebP: false, // Keep original format for technical drawings
+    minQuality: 0.85,
+    convertPngToJpeg: false, // Keep PNG for technical drawings
+  },
+  sitePhoto: {
+    quality: 0.9, // High quality for portfolio
     maxWidth: 2400,
     maxHeight: 1800,
     preferWebP: true,
-    minQuality: 0.75, // Never go below 75% for blueprints
-  },
-  sitePhoto: {
-    quality: 0.85, // High quality for professional presentation
-    maxWidth: 1920,
-    maxHeight: 1440,
-    preferWebP: true,
-    minQuality: 0.7, // Never go below 70% for site photos
+    minQuality: 0.8,
+    convertPngToJpeg: true, // Photos don't need transparency
   },
   thumbnail: {
-    quality: 0.75, // Good quality for previews
-    maxWidth: 600,
-    maxHeight: 450,
+    quality: 0.85, // Good quality even for thumbnails
+    maxWidth: 800, // Larger thumbnails
+    maxHeight: 600,
     preferWebP: true,
-    minQuality: 0.65, // Thumbnails can be slightly lower
+    minQuality: 0.75,
+    convertPngToJpeg: true,
   },
   document: {
-    quality: 0.88, // High quality for text readability
+    quality: 0.92, // High quality for readability
     maxWidth: 2000,
     maxHeight: 2000,
-    preferWebP: true,
-    minQuality: 0.75, // Keep documents readable
+    preferWebP: false, // Keep original format
+    minQuality: 0.85,
+    convertPngToJpeg: false,
   },
   gallery: {
-    quality: 0.78, // Good balance for gallery images with better compression
-    maxWidth: 1600,
-    maxHeight: 1200,
+    quality: 0.88, // High quality for gallery showcase
+    maxWidth: 2000,
+    maxHeight: 1500,
     preferWebP: true,
-    minQuality: 0.65, // Gallery images need decent quality
+    minQuality: 0.78,
+    convertPngToJpeg: true,
   },
   main: {
-    quality: 0.82, // Good quality for hero/main images with better compression
-    maxWidth: 1920,
-    maxHeight: 1440,
+    quality: 0.9, // Hero images need excellent quality
+    maxWidth: 2400,
+    maxHeight: 1800,
     preferWebP: true,
-    minQuality: 0.7, // Main images should look great
+    minQuality: 0.8,
+    convertPngToJpeg: true,
   },
   render: {
-    quality: 0.85, // High quality for architectural renders
-    maxWidth: 1920,
-    maxHeight: 1440,
-    preferWebP: true,
-    minQuality: 0.72, // Renders need good quality
+    quality: 0.95, // Even higher quality for architectural renders
+    maxWidth: 2400,
+    maxHeight: 1800,
+    preferWebP: true, // Use WebP only when necessary
+    minQuality: 0.85, // Higher minimum quality for renders
+    convertPngToJpeg: false, // Keep original format for renders
   },
 } as const
 
@@ -74,10 +81,11 @@ interface CompressionOptions {
   maxHeight?: number
   preferWebP?: boolean
   onProgress?: (progress: number) => void
-  preserveExif?: boolean
   imageType?: ConstructionImageType
-  minQuality?: number // Minimum quality threshold
-  smartCompression?: boolean // Enable smart compression algorithm
+  minQuality?: number
+  smartCompression?: boolean
+  convertPngToJpeg?: boolean // New option for PNG conversion
+  forceDimensions?: boolean // Force dimension reduction even for small files
 }
 
 interface CompressionResult {
@@ -88,7 +96,8 @@ interface CompressionResult {
   dimensions: { width: number; height: number }
   format: string
   processingTime: number
-  finalQuality: number // Track the actual quality used
+  finalQuality: number
+  wasConverted: boolean // Track if format was changed
 }
 
 // Custom error types for better error handling
@@ -102,178 +111,169 @@ class CompressionError extends Error {
   }
 }
 
-// Check if WebP is supported
+// Validate canvas dimensions against browser limits
+function validateCanvasDimensions(width: number, height: number): void {
+  if (width > CANVAS_MAX_SIZE || height > CANVAS_MAX_SIZE) {
+    throw new CompressionError(
+      `Image dimensions (${width}x${height}) exceed browser limits (${CANVAS_MAX_SIZE}x${CANVAS_MAX_SIZE})`,
+      'SIZE_LIMIT',
+    )
+  }
+  if (width * height > CANVAS_MAX_AREA) {
+    throw new CompressionError(
+      `Image area (${width * height} pixels) exceeds browser limits (${CANVAS_MAX_AREA} pixels)`,
+      'SIZE_LIMIT',
+    )
+  }
+}
+
+// Check WebP support
 function isWebPSupported(): boolean {
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = 1
   return canvas.toDataURL('image/webp').indexOf('image/webp') === 0
 }
 
-// Smart quality calculation based on image characteristics
-function calculateSmartQuality(file: File, baseQuality: number, minQuality: number): number {
-  const fileSizeMB = file.size / (1024 * 1024)
+// Check if PNG has transparency
+async function hasTransparency(file: File): Promise<boolean> {
+  if (file.type !== 'image/png') return false
 
-  // For small files, use slightly reduced quality for better compression
-  if (fileSizeMB < 1) {
-    return Math.max(baseQuality - 0.05, 0.8)
-  }
+  return new Promise((resolve) => {
+    const img = new Image()
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
 
-  // For medium files (1-3MB), use reduced quality for better compression
-  if (fileSizeMB <= 3) {
-    return Math.max(baseQuality - 0.1, minQuality)
-  }
+    img.onload = () => {
+      if (!ctx) {
+        resolve(false)
+        return
+      }
 
-  // For large files, gradually reduce quality but respect minimum
-  if (fileSizeMB <= 5) {
-    return Math.max(baseQuality - 0.05, minQuality)
-  }
+      canvas.width = img.width
+      canvas.height = img.height
+      ctx.drawImage(img, 0, 0)
 
-  if (fileSizeMB <= 10) {
-    return Math.max(baseQuality - 0.1, minQuality)
-  }
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      const data = imageData.data
 
-  // For very large files, reduce more but never go below minimum
-  return Math.max(baseQuality - 0.15, minQuality)
+      // Check for any transparent pixels
+      for (let i = 3; i < data.length; i += 4) {
+        if (data[i] < 255) {
+          URL.revokeObjectURL(img.src)
+          resolve(true)
+          return
+        }
+      }
+
+      URL.revokeObjectURL(img.src)
+      resolve(false)
+    }
+
+    img.onerror = () => {
+      resolve(false)
+    }
+
+    img.src = URL.createObjectURL(file)
+  })
 }
 
-// Calculate optimal dimensions while maintaining aspect ratio
+// Enhanced smart quality calculation
+function calculateSmartQuality(
+  file: File,
+  baseQuality: number,
+  minQuality: number,
+  dimensions: { width: number; height: number },
+): number {
+  const fileSizeMB = file.size / (1024 * 1024)
+  const pixelCount = dimensions.width * dimensions.height
+  const megapixels = pixelCount / 1000000
+
+  let quality = baseQuality
+
+  // Even gentler quality reduction based on file size
+  if (fileSizeMB > 15) {
+    quality -= 0.02 // Only 2% reduction for very large files
+  }
+  if (fileSizeMB > 25) {
+    quality -= 0.02 // Additional 2% for extremely large files
+  }
+
+  // Minimal adjustment based on resolution
+  if (megapixels > 5) {
+    quality -= 0.02 // Only reduce for very high resolution
+  }
+  if (megapixels > 8) {
+    quality -= 0.01
+  }
+
+  // PNG to JPEG conversion gets minimal quality reduction
+  if (file.type === 'image/png' && fileSizeMB > 3) {
+    quality -= 0.02 // Only 2% reduction for PNG conversion
+  }
+
+  return Math.max(quality, minQuality)
+}
+
+// Enhanced dimension calculation with better scaling
 function calculateOptimalDimensions(
   originalWidth: number,
   originalHeight: number,
   maxWidth: number,
   maxHeight: number,
   fileSize: number,
-): { width: number; height: number } {
+  forceDimensions: boolean = false,
+): { width: number; height: number; scaled: boolean } {
   let width = originalWidth
   let height = originalHeight
+  let scaled = false
 
-  // Calculate scale factor based on dimensions
+  // Calculate scale factor
   const scaleFactorWidth = maxWidth / originalWidth
   const scaleFactorHeight = maxHeight / originalHeight
-  const scaleFactor = Math.min(scaleFactorWidth, scaleFactorHeight, 1)
+  let scaleFactor = Math.min(scaleFactorWidth, scaleFactorHeight, 1)
 
-  // Apply scale factor
+  // Only scale down if really necessary
+  const fileSizeMB = fileSize / (1024 * 1024)
+
+  // Much less aggressive scaling - preserve image quality
+  if (fileSizeMB > 15 || forceDimensions) {
+    // For very large files, use the natural scale factor if image exceeds max dimensions
+    // Otherwise don't force scaling
+    if (originalWidth > maxWidth || originalHeight > maxHeight) {
+      // Image exceeds max dimensions, scale to fit
+      scaleFactor = Math.min(scaleFactorWidth, scaleFactorHeight)
+      // But never scale below 60% to preserve quality
+      scaleFactor = Math.max(scaleFactor, 0.6)
+    } else {
+      // Image is within max dimensions, minimal scaling only
+      scaleFactor = Math.min(scaleFactor, 0.95)
+    }
+    scaled = scaleFactor < 1
+  } else if (fileSizeMB > 10) {
+    // For moderately large files, no forced scaling
+    scaled = scaleFactor < 1
+  }
+
+  // For extremely large files, apply very gentle reduction
+  if (fileSizeMB > 30 && scaleFactor > 0.8) {
+    scaleFactor *= 0.95 // Only 5% additional reduction for huge files
+    scaled = true
+  }
+
   width = Math.floor(originalWidth * scaleFactor)
   height = Math.floor(originalHeight * scaleFactor)
 
-  // For very large files, consider additional reduction (but not too aggressive)
-  const fileSizeMB = fileSize / (1024 * 1024)
-  if (fileSizeMB > 10 && scaleFactor === 1) {
-    // Reduce by additional 10% for very large files
-    width = Math.floor(width * 0.9)
-    height = Math.floor(height * 0.9)
-  }
-
-  return { width, height }
+  return { width, height, scaled }
 }
 
-// Get EXIF orientation from image file
-async function getExifOrientation(file: File): Promise<number> {
-  return new Promise((resolve) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const view = new DataView(e.target?.result as ArrayBuffer)
-      if (view.getUint16(0, false) !== 0xffd8) {
-        resolve(1) // Not JPEG, no orientation
-        return
-      }
-
-      const length = view.byteLength
-      let offset = 2
-
-      while (offset < length) {
-        const marker = view.getUint16(offset, false)
-        offset += 2
-
-        if (marker === 0xffe1) {
-          // APP1 marker (EXIF)
-          if (view.getUint32(offset + 2, false) !== 0x45786966) {
-            resolve(1)
-            return
-          }
-
-          const little = view.getUint16(offset + 8, false) === 0x4949
-          offset += 10
-
-          const tags = view.getUint16(offset, little)
-          offset += 2
-
-          for (let i = 0; i < tags; i++) {
-            const tag = view.getUint16(offset + i * 12, little)
-            if (tag === 0x0112) {
-              // Orientation tag
-              resolve(view.getUint16(offset + i * 12 + 8, little))
-              return
-            }
-          }
-        } else if ((marker & 0xff00) !== 0xff00) {
-          break
-        } else {
-          offset += view.getUint16(offset, false)
-        }
-      }
-      resolve(1) // Default orientation
-    }
-    reader.readAsArrayBuffer(file.slice(0, 64 * 1024)) // Read first 64KB only
-  })
-}
-
-// Apply EXIF orientation to canvas
-function applyOrientation(
-  ctx: CanvasRenderingContext2D,
-  orientation: number,
-  width: number,
-  height: number,
-) {
-  switch (orientation) {
-    case 2:
-      ctx.transform(-1, 0, 0, 1, width, 0)
-      break
-    case 3:
-      ctx.transform(-1, 0, 0, -1, width, height)
-      break
-    case 4:
-      ctx.transform(1, 0, 0, -1, 0, height)
-      break
-    case 5:
-      ctx.transform(0, 1, 1, 0, 0, 0)
-      break
-    case 6:
-      ctx.transform(0, 1, -1, 0, height, 0)
-      break
-    case 7:
-      ctx.transform(0, -1, -1, 0, height, width)
-      break
-    case 8:
-      ctx.transform(0, -1, 1, 0, 0, width)
-      break
-  }
-}
-
-// Check if dimensions are within browser limits
-function validateCanvasDimensions(width: number, height: number): void {
-  if (width > CANVAS_MAX_SIZE || height > CANVAS_MAX_SIZE) {
-    throw new CompressionError(
-      `Image dimensions exceed browser limits (${CANVAS_MAX_SIZE}x${CANVAS_MAX_SIZE})`,
-      'SIZE_LIMIT',
-    )
-  }
-  if (width * height > CANVAS_MAX_AREA) {
-    throw new CompressionError(
-      `Image area exceeds browser limits (${CANVAS_MAX_AREA} pixels)`,
-      'SIZE_LIMIT',
-    )
-  }
-}
-
-// Main compression function with smart quality management
+// Main compression function with enhanced features
 export async function compressImage(
   file: File,
   options: CompressionOptions = {},
 ): Promise<CompressionResult> {
   const startTime = performance.now()
 
-  // Apply construction preset if specified
+  // Apply preset if specified
   const preset = options.imageType ? CONSTRUCTION_PRESETS[options.imageType] : undefined
 
   const {
@@ -282,9 +282,10 @@ export async function compressImage(
     maxHeight = preset?.maxHeight || MAX_HEIGHT,
     preferWebP = preset?.preferWebP ?? isWebPSupported(),
     onProgress,
-    preserveExif = false,
     minQuality = preset?.minQuality || MIN_QUALITY,
     smartCompression = true,
+    convertPngToJpeg = preset?.convertPngToJpeg ?? true,
+    forceDimensions = false,
   } = { ...preset, ...options }
 
   // Validate input
@@ -296,11 +297,27 @@ export async function compressImage(
     throw new CompressionError('File is not an image', 'INVALID_FILE')
   }
 
+  // Skip tiny files
+  if (file.size < 50 * 1024) {
+    // Less than 50KB
+    return {
+      file,
+      originalSize: file.size,
+      compressedSize: file.size,
+      compressionRatio: 1,
+      dimensions: { width: 0, height: 0 },
+      format: file.type,
+      processingTime: performance.now() - startTime,
+      finalQuality: 1,
+      wasConverted: false,
+    }
+  }
+
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d', {
       alpha: true,
-      desynchronized: true, // Better performance for large images
+      desynchronized: true,
     })
 
     if (!ctx) {
@@ -310,159 +327,265 @@ export async function compressImage(
 
     const img = new Image()
     let objectUrl: string | null = null
-    let timeoutId: number | null = null
 
-    // Cleanup function
     const cleanup = () => {
       if (objectUrl) {
         URL.revokeObjectURL(objectUrl)
         objectUrl = null
       }
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-        timeoutId = null
-      }
-      // Clear canvas memory
       canvas.width = canvas.height = 0
     }
-
-    // Set timeout based on file size
-    const timeoutMs = Math.min(30000, 10000 + file.size / 1000) // 10s + 1s per MB, max 30s
-    timeoutId = setTimeout(() => {
-      cleanup()
-      reject(new CompressionError('Image compression timeout', 'TIMEOUT'))
-    }, timeoutMs)
 
     img.onload = async () => {
       try {
         onProgress?.(10)
 
-        // Get original dimensions
-        let { width: originalWidth, height: originalHeight } = img
-
-        // Check for EXIF orientation
-        let orientation = 1
-        if (preserveExif && file.type === 'image/jpeg') {
-          orientation = await getExifOrientation(file)
-          onProgress?.(20)
-        }
-
-        // Swap dimensions for 90/270 degree rotations
-        if (orientation >= 5 && orientation <= 8) {
-          ;[originalWidth, originalHeight] = [originalHeight, originalWidth]
-        }
-
-        // Calculate optimal dimensions
-        const { width, height } = calculateOptimalDimensions(
-          originalWidth,
-          originalHeight,
+        const { width, height, scaled } = calculateOptimalDimensions(
+          img.width,
+          img.height,
           maxWidth,
           maxHeight,
           file.size,
+          forceDimensions,
         )
 
         // Validate canvas dimensions
         validateCanvasDimensions(width, height)
 
-        // Set canvas size
         canvas.width = width
         canvas.height = height
 
         onProgress?.(30)
 
-        // Apply EXIF orientation and draw image
-        ctx.save()
-        if (orientation > 1) {
-          applyOrientation(ctx, orientation, width, height)
-        }
-
-        // Use better image smoothing for construction drawings
+        // High quality rendering for construction images
         ctx.imageSmoothingEnabled = true
         ctx.imageSmoothingQuality = 'high'
-
-        // Draw the image
-        ctx.drawImage(img, 0, 0, originalWidth, originalHeight, 0, 0, width, height)
-        ctx.restore()
+        ctx.drawImage(img, 0, 0, width, height)
 
         onProgress?.(50)
 
         // Determine output format
         let outputType = file.type || 'image/jpeg'
+        let wasConverted = false
 
-        // Calculate smart quality if enabled
+        // Smart PNG to JPEG conversion
+        if (file.type === 'image/png' && convertPngToJpeg) {
+          const hasAlpha = await hasTransparency(file)
+          if (!hasAlpha && file.size > 500 * 1024) {
+            outputType = 'image/jpeg'
+            wasConverted = true
+            console.log(`Converting PNG to JPEG (no transparency detected)`)
+          }
+        }
+
+        // Use WebP when beneficial - but be more selective for quality
+        if (preferWebP) {
+          // Only force WebP for files that really need it (over PHP limit) or already non-PNG
+          if (file.size > 2.5 * 1024 * 1024 || outputType !== 'image/png') {
+            outputType = 'image/webp'
+            wasConverted = true
+            console.log(
+              `Converting to WebP for better compression (file size: ${(file.size / 1024 / 1024).toFixed(1)}MB)`,
+            )
+          } else {
+            console.log(
+              `Keeping original format for better quality (file size: ${(file.size / 1024 / 1024).toFixed(1)}MB)`,
+            )
+          }
+        } else {
+          console.log(`WebP conversion disabled - preferWebP: ${preferWebP}`)
+        }
+
+        // Calculate final quality
         let finalQuality = quality
         if (smartCompression) {
-          finalQuality = calculateSmartQuality(file, quality, minQuality)
+          finalQuality = calculateSmartQuality(file, quality, minQuality, { width, height })
         }
 
-        // Use WebP if supported and preferred
-        if (preferWebP && outputType !== 'image/png') {
-          outputType = 'image/webp'
-          // WebP can use slightly higher quality for same file size
-          finalQuality = Math.min(finalQuality + 0.03, 0.95)
+        // Adjust quality for format
+        if (outputType === 'image/webp') {
+          finalQuality = Math.min(finalQuality + 0.05, 0.95) // WebP handles quality better
+        } else if (wasConverted && outputType === 'image/jpeg') {
+          finalQuality = Math.max(finalQuality - 0.03, minQuality) // Slightly lower for PNG->JPEG
         }
 
-        console.log(`Compressing with quality: ${finalQuality.toFixed(2)} (min: ${minQuality})`)
+        console.log(
+          `Compressing: ${(file.size / 1024 / 1024).toFixed(1)}MB`,
+          `${img.width}x${img.height} → ${width}x${height}`,
+          `Quality: ${finalQuality.toFixed(2)}`,
+          wasConverted ? `(${file.type} → ${outputType})` : '',
+        )
 
         onProgress?.(70)
 
-        // Convert to blob with error handling
-        canvas.toBlob(
-          (blob) => {
-            onProgress?.(90)
+        // Try multiple quality levels if needed
+        let blob: Blob | null = null
+        let attempts = 0
+        let currentQuality = finalQuality
 
-            if (!blob) {
-              cleanup()
-              reject(new CompressionError('Failed to create blob', 'CANVAS_ERROR'))
-              return
-            }
+        while (attempts < 3) {
+          blob = await new Promise<Blob | null>((resolveBlob) => {
+            canvas.toBlob(
+              (b: Blob | null) => {
+                resolveBlob(b)
+              },
+              outputType,
+              currentQuality,
+            )
+          })
 
-            // Determine final filename
-            const extension = outputType.split('/')[1]
-            const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
-            const finalName = `${nameWithoutExt}.${extension}`
+          if (blob && blob.size < file.size * 0.9) {
+            break // Good compression achieved
+          }
 
-            const compressedFile = new File([blob], finalName, {
-              type: outputType,
-              lastModified: Date.now(),
+          // Try lower quality
+          currentQuality = Math.max(currentQuality - 0.05, minQuality)
+          attempts++
+
+          if (currentQuality === minQuality) break
+        }
+
+        onProgress?.(90)
+
+        if (!blob) {
+          cleanup()
+          reject(new CompressionError('Failed to create blob', 'CANVAS_ERROR'))
+          return
+        }
+
+        // Force compression for files larger than 2MB (PHP upload limit)
+        const phpUploadLimit = 2 * 1024 * 1024 // 2MB
+        const forceCompression = file.size > phpUploadLimit
+
+        // Only use compressed version if it's actually smaller OR if we need to meet upload limits
+        // But be more lenient with the compression ratio for better quality
+        if (
+          blob.size >= file.size * 0.85 && // More lenient than MIN_COMPRESSION_RATIO
+          !scaled &&
+          !wasConverted &&
+          !forceCompression
+        ) {
+          console.log(`Keeping original (compression not effective)`)
+          cleanup()
+          resolve({
+            file,
+            originalSize: file.size,
+            compressedSize: file.size,
+            compressionRatio: 1,
+            dimensions: { width: img.width, height: img.height },
+            format: file.type,
+            processingTime: performance.now() - startTime,
+            finalQuality: 1,
+            wasConverted: false,
+          })
+          return
+        }
+
+        // If still too large after compression, try more aggressive compression
+        if (blob.size > phpUploadLimit) {
+          console.log(
+            `File still too large (${(blob.size / 1024 / 1024).toFixed(1)}MB), trying more aggressive compression`,
+          )
+
+          // Try multiple approaches to get under the limit
+          let attempts = 0
+          const maxAttempts = 3
+          let testQuality = Math.max(currentQuality - 0.1, minQuality)
+
+          while (
+            blob.size > phpUploadLimit &&
+            attempts < maxAttempts &&
+            testQuality >= minQuality
+          ) {
+            console.log(`Attempt ${attempts + 1}: trying quality ${testQuality.toFixed(2)}`)
+
+            const testBlob = await new Promise<Blob | null>((resolveBlob) => {
+              canvas.toBlob(
+                (b: Blob | null) => {
+                  resolveBlob(b)
+                },
+                outputType,
+                testQuality,
+              )
             })
 
-            const compressionRatio = compressedFile.size / file.size
-
-            // If compression didn't help much and file is already very small, use original
-            // Only skip compression for files under 500KB that don't benefit from compression
-            if (compressionRatio >= MIN_COMPRESSION_RATIO && file.size < 500 * 1024) {
-              cleanup()
-              resolve({
-                file: file,
-                originalSize: file.size,
-                compressedSize: file.size,
-                compressionRatio: 1,
-                dimensions: { width: originalWidth, height: originalHeight },
-                format: file.type,
-                processingTime: performance.now() - startTime,
-                finalQuality: 1, // Original quality
-              })
-              return
+            if (testBlob && testBlob.size < blob.size) {
+              blob = testBlob
+              currentQuality = testQuality
+              console.log(`Better compression achieved: ${(blob.size / 1024 / 1024).toFixed(1)}MB`)
             }
 
-            onProgress?.(100)
-            cleanup()
+            testQuality = Math.max(testQuality - 0.05, minQuality)
+            attempts++
+          }
 
-            resolve({
-              file: compressedFile,
-              originalSize: file.size,
-              compressedSize: compressedFile.size,
-              compressionRatio,
-              dimensions: { width, height },
-              format: outputType,
-              processingTime: performance.now() - startTime,
-              finalQuality,
+          // If still too large, try with even smaller dimensions
+          if (blob.size > phpUploadLimit) {
+            console.log(`Still too large, trying smaller dimensions`)
+
+            const smallerWidth = Math.floor(width * 0.8)
+            const smallerHeight = Math.floor(height * 0.8)
+
+            canvas.width = smallerWidth
+            canvas.height = smallerHeight
+            ctx.drawImage(img, 0, 0, smallerWidth, smallerHeight)
+
+            const smallerBlob = await new Promise<Blob | null>((resolveBlob) => {
+              canvas.toBlob(
+                (b: Blob | null) => {
+                  resolveBlob(b)
+                },
+                outputType,
+                minQuality,
+              )
             })
-          },
-          outputType,
-          finalQuality,
+
+            if (smallerBlob && smallerBlob.size < blob.size) {
+              blob = smallerBlob
+              currentQuality = minQuality
+              console.log(`Smaller dimensions helped: ${(blob.size / 1024 / 1024).toFixed(1)}MB`)
+            }
+          }
+        }
+
+        // Final check - ensure we have a valid blob
+        if (!blob) {
+          cleanup()
+          reject(new CompressionError('Failed to create final blob', 'CANVAS_ERROR'))
+          return
+        }
+
+        // Create final file
+        const extension = outputType.split('/')[1]
+        const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
+        const finalName = `${nameWithoutExt}.${extension}`
+
+        const compressedFile = new File([blob], finalName, {
+          type: outputType,
+          lastModified: Date.now(),
+        })
+
+        onProgress?.(100)
+        cleanup()
+
+        const result: CompressionResult = {
+          file: compressedFile,
+          originalSize: file.size,
+          compressedSize: compressedFile.size,
+          compressionRatio: compressedFile.size / file.size,
+          dimensions: { width, height },
+          format: outputType,
+          processingTime: performance.now() - startTime,
+          finalQuality: currentQuality,
+          wasConverted,
+        }
+
+        console.log(
+          `Result: ${(result.compressedSize / 1024 / 1024).toFixed(1)}MB`,
+          `(${(result.compressionRatio * 100).toFixed(0)}% of original)`,
         )
+
+        resolve(result)
       } catch (error) {
         cleanup()
         if (error instanceof CompressionError) {
@@ -478,14 +601,13 @@ export async function compressImage(
       reject(new CompressionError('Failed to load image', 'INVALID_FILE'))
     }
 
-    // Create object URL and load image
     objectUrl = URL.createObjectURL(file)
     img.src = objectUrl
     onProgress?.(5)
   })
 }
 
-// Batch compression for multiple images
+// Batch compression with optimized settings
 export async function compressBatch(
   files: File[],
   options: CompressionOptions = {},
@@ -494,10 +616,27 @@ export async function compressBatch(
   const results: CompressionResult[] = []
   const total = files.length
 
+  // Check total payload and adjust compression accordingly
+  const totalSize = files.reduce((sum, file) => sum + file.size, 0)
+  const totalSizeMB = totalSize / (1024 * 1024)
+
+  // Much gentler auto-adjustment for large payloads
+  let adjustedOptions = { ...options }
+  if (totalSizeMB > 20) {
+    adjustedOptions = {
+      ...adjustedOptions,
+      quality: Math.max((adjustedOptions.quality || 0.88) - 0.03, 0.75), // Very gentle reduction
+      forceDimensions: false, // Don't force dimension reduction
+    }
+    console.log(
+      `Large payload detected (${totalSizeMB.toFixed(1)}MB), using slightly adjusted compression`,
+    )
+  }
+
   for (let i = 0; i < files.length; i++) {
     try {
       const result = await compressImage(files[i], {
-        ...options,
+        ...adjustedOptions,
         onProgress: (progress) => {
           const overallProgress = (i / total) * 100 + progress / total
           options.onProgress?.(overallProgress)
@@ -507,7 +646,7 @@ export async function compressBatch(
       onBatchProgress?.(i + 1, total)
     } catch (error) {
       console.error(`Failed to compress ${files[i].name}:`, error)
-      // Add original file as fallback
+      // Add original as fallback
       results.push({
         file: files[i],
         originalSize: files[i].size,
@@ -517,6 +656,7 @@ export async function compressBatch(
         format: files[i].type,
         processingTime: 0,
         finalQuality: 1,
+        wasConverted: false,
       })
     }
   }
@@ -524,168 +664,175 @@ export async function compressBatch(
   return results
 }
 
-// Check if total payload size exceeds limits
-export function checkTotalPayloadSize(files: File[]): {
+// Utility function for automatic compression based on use case
+export async function autoCompressForUpload(
+  file: File,
+  targetType?: 'main' | 'gallery' | 'render' | 'blueprint' | 'document',
+): Promise<File> {
+  // Skip non-images
+  if (!file.type.startsWith('image/')) {
+    return file
+  }
+
+  // Determine image type based on filename and target
+  let imageType: ConstructionImageType = 'gallery'
+
+  if (targetType === 'main') {
+    imageType = 'main'
+  } else if (targetType === 'render' || file.name.toLowerCase().includes('render')) {
+    imageType = 'render'
+  } else if (
+    targetType === 'blueprint' ||
+    file.name.toLowerCase().includes('blueprint') ||
+    file.name.toLowerCase().includes('plan')
+  ) {
+    imageType = 'blueprint'
+  } else if (
+    targetType === 'document' ||
+    file.name.toLowerCase().includes('document') ||
+    file.name.toLowerCase().includes('pdf')
+  ) {
+    imageType = 'document'
+  } else if (
+    file.name.toLowerCase().includes('site') ||
+    file.name.toLowerCase().includes('photo')
+  ) {
+    imageType = 'sitePhoto'
+  }
+
+  try {
+    const result = await compressImage(file, { imageType })
+    return result.file
+  } catch (error) {
+    console.error('Auto-compression failed, using original:', error)
+    return file
+  }
+}
+
+// Helper to compress all project images
+export async function compressProjectImages(
+  mainImage: File | null,
+  renderImage: File | null,
+  galleryImages: File[],
+  onProgress?: (message: string, progress: number) => void,
+): Promise<{
+  mainImage: File | null
+  renderImage: File | null
+  galleryImages: File[]
+  totalSaved: number
+}> {
+  let totalOriginal = 0
+  let totalCompressed = 0
+
+  // Compress main image
+  if (mainImage) {
+    onProgress?.('Compressing main image...', 10)
+    const result = await compressImage(mainImage, { imageType: 'main' })
+    totalOriginal += result.originalSize
+    totalCompressed += result.compressedSize
+    mainImage = result.file
+  }
+
+  // Compress render image
+  if (renderImage) {
+    onProgress?.('Compressing render image...', 30)
+    const result = await compressImage(renderImage, { imageType: 'render' })
+    totalOriginal += result.originalSize
+    totalCompressed += result.compressedSize
+    renderImage = result.file
+  }
+
+  // Compress gallery images
+  if (galleryImages.length > 0) {
+    onProgress?.('Compressing gallery images...', 50)
+    const results = await compressBatch(
+      galleryImages,
+      { imageType: 'gallery' },
+      (completed, total) => {
+        const progress = 50 + (completed / total) * 40
+        onProgress?.(`Compressing gallery image ${completed}/${total}...`, progress)
+      },
+    )
+
+    galleryImages = results.map((r) => {
+      totalOriginal += r.originalSize
+      totalCompressed += r.compressedSize
+      return r.file
+    })
+  }
+
+  onProgress?.('Compression complete!', 100)
+
+  return {
+    mainImage,
+    renderImage,
+    galleryImages,
+    totalSaved: totalOriginal - totalCompressed,
+  }
+}
+
+// Utility to check if total payload exceeds limits
+export function checkTotalPayloadSize(files: (File | null)[]): {
   totalSize: number
   exceedsLimit: boolean
-  compressionStrategy: 'none' | 'standard' | 'moderate' | 'aggressive'
+  requiresCompression: boolean
 } {
-  const totalSize = files.reduce((sum, file) => sum + file.size, 0)
-  const totalSizeMB = totalSize / (1024 * 1024)
-
-  let compressionStrategy: 'none' | 'standard' | 'moderate' | 'aggressive' = 'none'
-
-  if (totalSizeMB <= 5) {
-    compressionStrategy = 'none'
-  } else if (totalSizeMB <= 10) {
-    compressionStrategy = 'standard'
-  } else if (totalSizeMB <= 20) {
-    compressionStrategy = 'moderate'
-  } else {
-    compressionStrategy = 'aggressive'
-  }
+  // Filter out null values and ensure we have File objects
+  const validFiles = files.filter((f): f is File => f !== null && f instanceof File)
+  const totalSize = validFiles.reduce((sum, file) => sum + file.size, 0)
 
   return {
     totalSize,
     exceedsLimit: totalSize > MAX_TOTAL_SIZE,
-    compressionStrategy,
+    requiresCompression: totalSize > 5 * 1024 * 1024, // Compress if > 5MB
   }
 }
 
-// Get compression options based on payload size
-export function getAdaptiveCompressionOptions(
-  totalSizeMB: number,
-  baseOptions: CompressionOptions = {},
-): CompressionOptions {
-  // For small payloads, maintain high quality
-  if (totalSizeMB <= 5) {
-    return {
-      ...baseOptions,
-      quality: 0.85,
-      maxWidth: 1920,
-      maxHeight: 1440,
-      minQuality: 0.75,
-      smartCompression: true,
-    }
-  }
+// Utility to get compression statistics
+export function getCompressionStats(results: CompressionResult[]): {
+  totalOriginal: number
+  totalCompressed: number
+  totalSaved: number
+  averageRatio: number
+  filesConverted: number
+} {
+  const stats = results.reduce(
+    (acc, result) => ({
+      totalOriginal: acc.totalOriginal + result.originalSize,
+      totalCompressed: acc.totalCompressed + result.compressedSize,
+      filesConverted: acc.filesConverted + (result.wasConverted ? 1 : 0),
+    }),
+    { totalOriginal: 0, totalCompressed: 0, filesConverted: 0 },
+  )
 
-  // For medium payloads, use standard compression
-  if (totalSizeMB <= 10) {
-    return {
-      ...baseOptions,
-      quality: 0.8,
-      maxWidth: 1600,
-      maxHeight: 1200,
-      minQuality: 0.7,
-      smartCompression: true,
-    }
-  }
-
-  // For large payloads, use moderate compression
-  if (totalSizeMB <= 20) {
-    return {
-      ...baseOptions,
-      quality: 0.75,
-      maxWidth: 1400,
-      maxHeight: 1050,
-      minQuality: 0.65,
-      smartCompression: true,
-    }
-  }
-
-  // For very large payloads, use aggressive but not extreme compression
   return {
-    ...baseOptions,
-    quality: 0.7, // Never go below 70% base quality
-    maxWidth: 1200,
-    maxHeight: 900,
-    minQuality: 0.65, // Never go below 65% minimum
-    smartCompression: true,
-    preferWebP: true, // Force WebP for better compression
+    ...stats,
+    totalSaved: stats.totalOriginal - stats.totalCompressed,
+    averageRatio: stats.totalCompressed / stats.totalOriginal,
   }
 }
 
-// DEPRECATED - Use getAdaptiveCompressionOptions instead
-export function getAggressiveCompressionOptions(
-  baseOptions: CompressionOptions = {},
-): CompressionOptions {
-  console.warn(
-    'getAggressiveCompressionOptions is deprecated. Use getAdaptiveCompressionOptions instead.',
-  )
-  return getAdaptiveCompressionOptions(25, baseOptions)
-}
-
-// DEPRECATED - Use getAdaptiveCompressionOptions instead
-export function getUltraAggressiveCompressionOptions(
-  baseOptions: CompressionOptions = {},
-): CompressionOptions {
-  console.warn(
-    'getUltraAggressiveCompressionOptions is deprecated. Use getAdaptiveCompressionOptions instead.',
-  )
-  return getAdaptiveCompressionOptions(30, baseOptions)
-}
-
-// Simplified helper function for common use cases
+// Legacy function for backward compatibility
 export async function compressFileIfNeeded(
   file: File | null,
   imageType?: ConstructionImageType,
 ): Promise<File | null> {
   if (!file || !(file instanceof File)) {
-    console.warn('Invalid file provided:', file)
     return file
   }
 
-  // Only compress images
+  // Skip non-images
   if (!file.type.startsWith('image/')) {
-    console.log('File is not an image, skipping compression:', file.type)
-    return file
-  }
-
-  // Skip compression for very small files (less than 200KB)
-  if (file.size < 200 * 1024) {
-    console.log('File is already small, skipping compression:', file.size)
     return file
   }
 
   try {
-    console.log(
-      `Compressing ${imageType || 'image'}:`,
-      file.name,
-      'Size:',
-      (file.size / 1024 / 1024).toFixed(2) + 'MB',
-    )
-
     const result = await compressImage(file, { imageType })
-
-    console.log(
-      'Compression complete:',
-      `${(result.compressionRatio * 100).toFixed(1)}% of original`,
-      `Quality: ${result.finalQuality.toFixed(2)}`,
-      `Time: ${result.processingTime.toFixed(0)}ms`,
-    )
-
     return result.file
   } catch (error) {
     console.error('Compression failed, using original:', error)
     return file
   }
-}
-
-// Construction-specific compression helpers
-export async function compressBlueprintImage(file: File): Promise<File | null> {
-  return compressFileIfNeeded(file, 'blueprint')
-}
-
-export async function compressSitePhoto(file: File): Promise<File | null> {
-  return compressFileIfNeeded(file, 'sitePhoto')
-}
-
-export async function compressDocumentScan(file: File): Promise<File | null> {
-  return compressFileIfNeeded(file, 'document')
-}
-
-export async function createThumbnail(file: File): Promise<File | null> {
-  return compressFileIfNeeded(file, 'thumbnail')
 }
 
 // Legacy function for backward compatibility
@@ -702,29 +849,6 @@ export async function compressImageForType(
   return compressFileIfNeeded(file, imageType)
 }
 
-// Utility to estimate compression results
-export function estimateCompressionSize(
-  fileSize: number,
-  fileType: string,
-  imageType?: ConstructionImageType,
-): number {
-  const preset = imageType ? CONSTRUCTION_PRESETS[imageType] : undefined
-  const quality = preset?.quality || COMPRESSION_QUALITY
-
-  // More realistic estimates based on typical compression ratios
-  const estimatedRatios: Record<string, number> = {
-    'image/jpeg': 0.85 * quality,
-    'image/png': 0.9 * quality,
-    'image/webp': 0.75 * quality,
-    'image/bmp': 0.4 * quality,
-    'image/tiff': 0.5 * quality,
-  }
-
-  const ratio = estimatedRatios[fileType] || 0.8
-  return Math.floor(fileSize * ratio)
-}
-
-// Export types and constants for external use
 export {
   type CompressionOptions,
   type CompressionResult,
@@ -732,6 +856,5 @@ export {
   CompressionError,
   CONSTRUCTION_PRESETS,
   isWebPSupported,
-  MIN_QUALITY,
   MAX_TOTAL_SIZE,
 }
