@@ -56,7 +56,7 @@
               </div>
               <button
                 type="button"
-                @click="$refs.fileInput.click()"
+                @click="() => ($refs.fileInput as HTMLInputElement)?.click()"
                 class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
               >
                 ფაილის არჩევა
@@ -65,7 +65,7 @@
 
             <div v-else class="space-y-4">
               <img
-                :src="previewUrl"
+                :src="previewUrl || ''"
                 :alt="selectedFile.name"
                 class="mx-auto h-32 w-32 object-cover rounded-lg"
               />

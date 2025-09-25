@@ -412,7 +412,7 @@
           <template v-for="page in visiblePages" :key="page">
             <button
               v-if="page !== '...'"
-              @click="currentPage = page"
+              @click="currentPage = Number(page)"
               :class="[
                 'px-3 py-2 text-sm font-medium rounded-lg',
                 currentPage === page
@@ -479,6 +479,7 @@ interface GalleryImage {
   category: string | null
   is_active: boolean
   created_at: string
+  updated_at: string
 }
 
 const router = useRouter()

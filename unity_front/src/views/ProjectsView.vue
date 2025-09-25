@@ -40,8 +40,22 @@ const loadProjectsAndUpdateStore = async (page: number = 1, loadMore: boolean = 
 
   // Update the projects store with the loaded projects
   if (allProjects.value.length > 0) {
+    // Transform ProjectApiResponse to Project interface
+    const transformedProjects = allProjects.value.map((project) => ({
+      ...project,
+      status: project.status as 'planning' | 'ongoing' | 'completed',
+      year: parseInt(project.year as string),
+      main_image: project.main_image || '',
+      render_image: project.render_image || '',
+      gallery_images: project.gallery_images || [],
+      latitude: project.latitude ? parseFloat(project.latitude) : null,
+      longitude: project.longitude ? parseFloat(project.longitude) : null,
+      created_at: new Date().toISOString(), // Fallback
+      updated_at: new Date().toISOString(), // Fallback
+    }))
+
     projectsStore.$patch({
-      projects: allProjects.value,
+      projects: transformedProjects,
     })
   }
 }

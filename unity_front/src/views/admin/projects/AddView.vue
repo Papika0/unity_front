@@ -144,10 +144,8 @@ async function onSubmit() {
       // Use sequential upload for large payloads
       console.log('Using sequential upload for large payload...')
 
-      const result = await adminProjectsStore.addProjectSequential(form, (progress, message) => {
-        uploadProgress.value = progress
-        console.log(`Upload progress: ${progress}% - ${message}`)
-      })
+      const formData = await prepareFormData(form, false)
+      const result = await adminProjectsStore.addProject(formData)
 
       console.log('Sequential project creation result:', result)
 

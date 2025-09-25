@@ -160,14 +160,14 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { featuresApi } from '@/services/featuresApi'
-import { projectsApi } from '@/services/projectsApi'
+import { featuresApi, type Feature } from '@/services/featuresApi'
+import { projectsApi, type ProjectApiResponse } from '@/services/projectsApi'
 
 const router = useRouter()
-const features = ref([])
-const projects = ref([])
+const features = ref<Feature[]>([])
+const projects = ref<ProjectApiResponse[]>([])
 const selectedProjectId = ref('')
-const selectedFeatures = ref([])
+const selectedFeatures = ref<number[]>([])
 const autoDetect = ref(false)
 const isSubmitting = ref(false)
 const isLoadingProjectFeatures = ref(false)
@@ -235,7 +235,7 @@ const assignFeatures = async () => {
 
     console.log('Features assigned successfully')
     router.push('/admin/features')
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to assign features:', error)
     console.error('Error details:', {
       status: error.response?.status,

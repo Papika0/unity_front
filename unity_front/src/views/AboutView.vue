@@ -4,7 +4,7 @@ import { useTranslations } from '../composables/useTranslations'
 import { useAboutInfo } from '../composables/useAboutInfo'
 
 const { t } = useTranslations()
-const { stats: aboutStats, loadAboutInfo, isLoading, error } = useAboutInfo()
+const { aboutInfo, stats: aboutStats, loadAboutInfo, isLoading, error } = useAboutInfo()
 
 // Load about info and translations on mount
 onMounted(() => {

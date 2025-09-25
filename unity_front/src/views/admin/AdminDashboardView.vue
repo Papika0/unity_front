@@ -338,7 +338,7 @@ const handleClearCache = async () => {
   try {
     const response = await clearAllCache()
     cacheSuccess.value = true
-    cacheMessage.value = response.data.data.message || 'Cache cleared successfully!'
+    cacheMessage.value = response.data.message || 'Cache cleared successfully!'
 
     // Hide message after 5 seconds
     setTimeout(() => {

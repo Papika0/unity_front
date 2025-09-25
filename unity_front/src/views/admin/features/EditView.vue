@@ -390,8 +390,16 @@ const loadFeature = async () => {
 
     // Populate form
     form.name = feature.name
-    form.title = { ...feature.title }
-    form.description = { ...feature.description }
+    form.title = {
+      ka: feature.title.ka || '',
+      en: feature.title.en || '',
+      ru: feature.title.ru || '',
+    }
+    form.description = {
+      ka: feature.description.ka || '',
+      en: feature.description.en || '',
+      ru: feature.description.ru || '',
+    }
     form.icon = feature.icon
     form.color = feature.color
     form.keywords = [...feature.keywords]

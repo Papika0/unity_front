@@ -112,7 +112,7 @@ onMounted(() => {
             <router-link to="/news" class="hover:text-amber-600">სიახლეები</router-link>
           </li>
           <li>/</li>
-          <li class="text-zinc-900">{{ article.title.ka }}</li>
+          <li class="text-zinc-900">{{ article.title }}</li>
         </ol>
       </nav>
 
@@ -129,12 +129,12 @@ onMounted(() => {
 
         <!-- Title -->
         <h1 class="text-4xl md:text-5xl font-normal font-roboto text-zinc-900 leading-tight mb-6">
-          {{ article.title.ka }}
+          {{ article.title }}
         </h1>
 
         <!-- Excerpt -->
         <p class="text-xl text-zinc-700 leading-relaxed mb-8">
-          {{ article.excerpt.ka }}
+          {{ article.excerpt }}
         </p>
 
         <!-- Tags -->
@@ -153,7 +153,7 @@ onMounted(() => {
       <div class="mb-12">
         <img
           :src="article.main_image || 'https://placehold.co/800x400'"
-          :alt="article.title.ka"
+          :alt="article.title"
           class="w-full h-[400px] md:h-[500px] object-cover rounded-lg"
         />
       </div>
@@ -162,7 +162,7 @@ onMounted(() => {
       <div class="prose prose-lg max-w-none">
         <div
           class="text-zinc-800 leading-relaxed whitespace-pre-line"
-          v-html="article.content.ka.replace(/\n/g, '<br>')"
+          v-html="article.content.replace(/\n/g, '<br>')"
         ></div>
       </div>
 
@@ -174,7 +174,7 @@ onMounted(() => {
             v-for="(image, index) in article.gallery_images"
             :key="index"
             :src="image"
-            :alt="`${article.title.ka} - სურათი ${index + 1}`"
+            :alt="`${article.title} - სურათი ${index + 1}`"
             class="w-full h-64 object-cover rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
           />
         </div>
@@ -238,7 +238,7 @@ onMounted(() => {
           >
             <img
               :src="relatedArticle.main_image || 'https://placehold.co/400x250'"
-              :alt="relatedArticle.title.ka"
+              :alt="relatedArticle.title"
               class="w-full h-48 object-cover"
             />
             <div class="p-6">
@@ -254,11 +254,11 @@ onMounted(() => {
               </div>
 
               <h3 class="text-lg font-medium text-zinc-900 mb-2 line-clamp-2">
-                {{ relatedArticle.title.ka }}
+                {{ relatedArticle.title }}
               </h3>
 
               <p class="text-zinc-600 text-sm mb-4 line-clamp-3">
-                {{ relatedArticle.excerpt.ka }}
+                {{ relatedArticle.excerpt }}
               </p>
 
               <router-link

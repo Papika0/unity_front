@@ -232,7 +232,7 @@ onMounted(async () => {
               <div class="lg:w-3/5 relative group overflow-hidden">
                 <img
                   :src="featuredArticle.main_image || 'https://placehold.co/800x500'"
-                  :alt="featuredArticle.title.ka"
+                  :alt="featuredArticle.title"
                   class="w-full h-64 lg:h-96 object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -250,11 +250,11 @@ onMounted(async () => {
                 </div>
 
                 <h3 class="text-2xl lg:text-3xl font-light text-slate-800 mb-6 leading-tight">
-                  {{ featuredArticle.title.ka }}
+                  {{ featuredArticle.title }}
                 </h3>
 
                 <p class="text-slate-600 leading-relaxed mb-8 text-lg">
-                  {{ featuredArticle.excerpt.ka }}
+                  {{ featuredArticle.excerpt }}
                 </p>
 
                 <router-link
@@ -321,7 +321,7 @@ onMounted(async () => {
             <div class="relative overflow-hidden">
               <img
                 :src="article.main_image || 'https://placehold.co/400x280'"
-                :alt="article.title.ka"
+                :alt="article.title"
                 class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div
@@ -355,11 +355,11 @@ onMounted(async () => {
               <h3
                 class="text-lg font-medium text-slate-800 mb-4 line-clamp-2 group-hover:text-amber-700 transition-colors duration-300 leading-snug"
               >
-                {{ article.title.ka }}
+                {{ article.title }}
               </h3>
 
               <p class="text-slate-600 text-sm mb-6 line-clamp-3 leading-relaxed">
-                {{ article.excerpt.ka }}
+                {{ article.excerpt }}
               </p>
 
               <router-link

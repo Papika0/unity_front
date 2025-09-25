@@ -95,7 +95,7 @@ async function load() {
   try {
     const result = await adminProjectsStore.fetchProject(id)
     if (result.success && result.data) {
-      loadProjectData(form, previews, result.data, backendUrl)
+      loadProjectData(form, previews, result.data as unknown as Record<string, unknown>, backendUrl)
     }
   } catch (error) {
     console.error('Failed to load project:', error)
