@@ -98,7 +98,8 @@ Route::middleware(['auth:api', 'jwt.auth'])->group(function () {
     Route::get('/user', [UserController::class, 'getUser']);
 
     Route::prefix('translations')->controller(AdminTranslationController::class)->group(function () {
-        Route::post('/', 'getTranslations');
+        Route::get('/', 'getTranslations');    // Support GET for listing
+        Route::post('/', 'getTranslations');   // Keep POST for backwards compatibility
         Route::post('/create', 'createTranslation');
         Route::post('/{id}', 'updateTranslation');
         Route::get('/{id}', 'getTranslation');

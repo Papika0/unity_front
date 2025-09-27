@@ -1,7 +1,7 @@
 import api from '@/plugins/axios/api'
 
 export const getTranslations = async (page: number, search: string = '', group?: string) =>
-  api.post(`/translations/`, { page, search, group })
+  api.post(`/translations`, { page, search, group })
 
 export const updateTranslation = async (id: number, data: any) =>
   api.post(`/translations/${id}`, { ...data })
