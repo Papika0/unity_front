@@ -29,6 +29,16 @@ api.interceptors.request.use(
       // Attach the token to the Authorization header
       config.headers = config.headers || {}
       config.headers['Authorization'] = `Bearer ${token}`
+
+      // For cPanel/shared hosting environments, also add fallback headers
+      config.headers['X-Authorization'] = `Bearer ${token}`
+
+      // Add token as query parameter as ultimate fallback for problematic hosting
+      if (config.method !== 'get') {
+        config.params = config.params || {}
+        // Only add as param if absolutely necessary (uncomment if other methods fail)
+        // config.params.token = token.replace('Bearer ', '')
+      }
     }
 
     return config

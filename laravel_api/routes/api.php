@@ -94,7 +94,7 @@ Route::prefix('gallery')->controller(GalleryController::class)->group(function (
 // Test cache endpoint (no auth required for testing)
 Route::get('/test-cache', [AdminController::class, 'getCacheStats']);
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware(['auth:api', 'jwt.auth'])->group(function () {
     Route::get('/user', [UserController::class, 'getUser']);
 
     Route::prefix('translations')->controller(AdminTranslationController::class)->group(function () {
@@ -174,3 +174,6 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/detach', 'detach');   // Detach image from model
     });
 });
+
+// Debug route for checking authorization headers (remove in production)
+Route::get('debug/auth-headers', [\App\Http\Controllers\Debug\AuthDebugController::class, 'checkHeaders']);

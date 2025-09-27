@@ -5,9 +5,18 @@
 
     RewriteEngine On
 
-    # Handle Authorization Header
-    RewriteCond %{HTTP:Authorization} .
+    # Handle Authorization Header for shared hosting/cPanel environments
+    # Method 1: Force Authorization header through HTTP_AUTHORIZATION
+    RewriteCond %{HTTP:Authorization} ^(.+)$
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    
+    # Method 2: Handle CGI environments
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    
+    # Method 3: Handle FastCGI environments
+    RewriteCond %{REQUEST_METHOD} ^(GET|POST|PUT|DELETE|PATCH|OPTIONS)$
+    RewriteRule ^(.*)$ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
@@ -18,4 +27,15 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+# Additional environment variables for Authorization in different hosting environments
+<IfModule mod_env.c>
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+    SetEnvIf Authorization "(.*)" REDIRECT_HTTP_AUTHORIZATION=$1
+</IfModule>
+
+# Handle Authorization header in CGI mode
+<IfModule mod_setenvif.c>
+    SetEnvIf Authorization "(.+)" HTTP_AUTHORIZATION=$1
 </IfModule>
