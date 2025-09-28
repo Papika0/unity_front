@@ -83,6 +83,8 @@ Route::prefix('gallery-page')->controller(App\Http\Controllers\Api\GalleryPageCo
 
 // Contact info routes (public)
 Route::get('/contact-info', [App\Http\Controllers\Api\ContactInfoController::class, 'index']);
+Route::get('/contact-info/settings', [App\Http\Controllers\Api\ContactInfoController::class, 'settings']);
+Route::get('/contact/settings', [App\Http\Controllers\Api\ContactInfoController::class, 'settings']);
 
 // Gallery routes (public)
 Route::prefix('gallery')->controller(GalleryController::class)->group(function () {
@@ -149,9 +151,14 @@ Route::middleware(['auth:api', 'jwt.auth'])->group(function () {
 
     // Protected contact info routes (admin only) - Single record
     Route::prefix('admin/contact-info')->controller(AdminContactInfoController::class)->group(function () {
-        Route::get('/', 'index');           // Get the single contact info record
-        Route::put('/', 'update');          // Update the contact info record
-        Route::post('/', 'update');         // Allow POST for form compatibility
+        Route::get('/', 'index');           // Get the single contact info record (legacy)
+        Route::put('/', 'update');          // Update the contact info record (legacy)
+        Route::post('/', 'update');         // Allow POST for form compatibility (legacy)
+        
+        // New contact settings endpoints
+        Route::get('/settings', 'settings');        // Get complete contact settings
+        Route::put('/settings', 'updateSettings');  // Update complete contact settings
+        Route::post('/settings', 'updateSettings'); // Allow POST for form compatibility
     });
 
     // Protected about info routes (admin only) - Single record
@@ -178,3 +185,18 @@ Route::middleware(['auth:api', 'jwt.auth'])->group(function () {
 
 // Debug route for checking authorization headers (remove in production)
 Route::get('debug/auth-headers', [\App\Http\Controllers\Debug\AuthDebugController::class, 'checkHeaders']);
+
+// Temporary debug route to check form_subjects data
+Route::get('/debug/form-subjects', function () {
+    $setting = \App\Models\SiteSetting::where('key', 'form_subjects')->where('group', 'contact')->first();
+    
+    if (!$setting) {
+        return response()->json(['error' => 'form_subjects setting not found']);
+    }
+    
+    return response()->json([
+        'raw_original' => $setting->getRawOriginal('value'),
+        'processed_value' => $setting->value,
+        'json_decoded' => json_decode($setting->getRawOriginal('value'), true),
+    ]);
+});
