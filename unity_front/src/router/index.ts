@@ -177,6 +177,11 @@ const router = createRouter({
               name: 'admin-gallery',
               component: () => import('@/views/admin/gallery/ListView.vue'),
             },
+            {
+              path: 'about-settings',
+              name: 'admin-about-settings',
+              component: () => import('@/views/admin/about/SettingsView.vue'),
+            },
           ],
         },
       ],

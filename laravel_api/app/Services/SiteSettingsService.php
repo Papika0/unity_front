@@ -64,14 +64,16 @@ class SiteSettingsService
             ]
         ];
 
-        // Add image URLs if they exist
+        // Add image URLs and IDs if they exist
         if (isset($aboutSettings['hero_image_id'])) {
             $heroImage = \App\Models\Image::find($aboutSettings['hero_image_id']);
+            $aboutInfo['hero_image_id'] = (int) $aboutSettings['hero_image_id'];
             $aboutInfo['hero_image_url'] = $heroImage ? $heroImage->full_url : null;
         }
 
         if (isset($aboutSettings['philosophy_image_id'])) {
             $philosophyImage = \App\Models\Image::find($aboutSettings['philosophy_image_id']);
+            $aboutInfo['philosophy_image_id'] = (int) $aboutSettings['philosophy_image_id'];
             $aboutInfo['philosophy_image_url'] = $philosophyImage ? $philosophyImage->full_url : null;
         }
 

@@ -14,13 +14,15 @@ interface ContactInfoFormData {
   google_maps_url: string
 }
 
-interface AboutInfoFormData {
+export interface AboutInfoFormData {
   stats: {
     successful_projects: string
     years_experience: string
     satisfied_clients: string
     client_satisfaction: string
   }
+  hero_image_id?: number | null
+  philosophy_image_id?: number | null
 }
 
 export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => {
@@ -33,7 +35,6 @@ export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => 
 
   // Form state
   const showContactEditModal = ref(false)
-  const showAboutEditModal = ref(false)
 
   // Getters
   const hasContactInfo = computed(() => contactInfo.value !== null)
@@ -128,7 +129,6 @@ export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => 
       const result = response.data
       aboutInfo.value = result.data
 
-      showAboutEditModal.value = false
       toastStore.success('წარმატება', 'სტატისტიკის მონაცემები წარმატებით განახლდა')
 
       // Reload data to show updated values
@@ -151,14 +151,8 @@ export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => 
     error.value = ''
   }
 
-  const openAboutEditModal = () => {
-    showAboutEditModal.value = true
-    error.value = ''
-  }
-
   const closeModals = () => {
     showContactEditModal.value = false
-    showAboutEditModal.value = false
     error.value = ''
   }
 
@@ -170,7 +164,6 @@ export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => 
     saving,
     error,
     showContactEditModal,
-    showAboutEditModal,
 
     // Getters
     hasContactInfo,
@@ -183,9 +176,8 @@ export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => 
     updateContactInfo,
     updateAboutInfo,
     openContactEditModal,
-    openAboutEditModal,
     closeModals,
   }
 })
 
-export type { ContactInfoFormData, AboutInfoFormData }
+export type { ContactInfoFormData }

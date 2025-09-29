@@ -165,6 +165,26 @@
                 </svg>
                 კონტაქტის ინფორმაცია
               </router-link>
+
+              <router-link
+                to="/admin/about-settings"
+                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                :class="
+                  $route.name === 'admin-about-settings'
+                    ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                    : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700'
+                "
+              >
+                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+                "ჩვენს შესახებ" პარამეტრები
+              </router-link>
             </nav>
           </div>
 
@@ -349,8 +369,8 @@
                       ? 'ფუნქციები'
                       : $route.name === 'admin-translations'
                         ? 'თარგმანები'
-                        : $route.name === 'admin-site-settings'
-                          ? 'საიტის პარამეტრები'
+                        : $route.name === 'admin-about-settings'
+                          ? '"ჩვენს შესახებ" პარამეტრები'
                           : 'დაშბორდი'
               }}
             </h2>
