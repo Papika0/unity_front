@@ -50,7 +50,22 @@ class SiteSetting extends Model
      */
     public static function getSettingsForGroup(string $group, string $locale = 'ka'): array
     {
-        $settings = self::byGroup($group)->active()->get();
+        // Since all settings are stored with empty group, we need to filter by key patterns instead
+        if ($group === 'contact') {
+            $contactKeys = [
+                'contact_address', 'contact_address_subtitle', 'contact_phone', 'contact_phone_subtitle',
+                'contact_email', 'contact_email_subtitle', 'contact_hours', 'contact_hours_subtitle',
+                'contact_phone2', 'contact_phone2_subtitle', 'map_latitude', 'map_longitude', 'map_zoom',
+                'form_subjects', 'office_working_days', 'office_weekend_days', 'faqs'
+            ];
+            $settings = self::whereIn('key', $contactKeys)->active()->get();
+        } elseif ($group === 'social') {
+            $socialKeys = ['facebook_url', 'instagram_url'];
+            $settings = self::whereIn('key', $socialKeys)->active()->get();
+        } else {
+            $settings = self::byGroup($group)->active()->get();
+        }
+        
         $result = [];
 
         foreach ($settings as $setting) {

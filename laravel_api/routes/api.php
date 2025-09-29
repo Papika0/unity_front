@@ -7,6 +7,8 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Api\ProjectsController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\HomePageController;
+use App\Http\Controllers\Api\FooterController;
+use App\Http\Controllers\Api\DebugController;
 use App\Http\Controllers\Api\AboutController;
 use App\Http\Controllers\Api\ProjectsPageController;
 use App\Http\Controllers\Api\FeaturesController;
@@ -65,6 +67,15 @@ Route::prefix('homepage')->controller(HomePageController::class)->group(function
     Route::get('/', 'index');
     Route::get('/bootstrap', 'index'); // Alias for backward compatibility
 });
+
+// Footer routes
+Route::prefix('footer')->controller(FooterController::class)->group(function () {
+    Route::get('/', 'index'); // Get all footer data (projects + contact)
+    Route::get('/projects', 'projects'); // Get only footer projects
+    Route::get('/contact', 'contact'); // Get only footer contact info
+});
+
+
 
 // About page routes
 Route::prefix('about')->controller(AboutController::class)->group(function () {

@@ -12,7 +12,7 @@ import IconPhone from './icons/IconPhone.vue'
 
 const { t } = useTranslations()
 const { mainNavigation, projectLinks, socialLinks } = useNavigationLinks()
-const { email, phoneNumbers, googleMapsUrl } = useContactInfo()
+const { email, phoneNumbers, googleMapsUrl, address } = useContactInfo()
 const toastStore = useToastStore()
 
 const isPhoneModalOpen = ref(false)
@@ -82,7 +82,7 @@ const handlePhoneSubmit = (phoneNumber: string) => {
         <ContactInfo
           :title="t('footer.contact')"
           :address-label="t('footer.address')"
-          :address-value="t('footer.addressValue')"
+          :address-value="address"
           :location-label="t('footer.location')"
           :location-href="googleMapsUrl"
           :email="email"

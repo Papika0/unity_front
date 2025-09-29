@@ -12,8 +12,13 @@ export const useHomepageStore = defineStore('homepage', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const isFetched = ref(false)
-  const contactInfo = ref(null)
+  const contactInfo = ref(null) // Keep for backward compatibility
   const aboutInfo = ref(null)
+
+  // Footer data storage
+  const footerContact = ref(null)
+  const footerSocialLinks = ref(null)
+  const footerProjects = ref([])
 
   // Composables
   const { startTimer, endTimer } = usePerformance()
@@ -53,7 +58,23 @@ export const useHomepageStore = defineStore('homepage', () => {
       projectsStore.aloneProjectsData = data?.projects?.is_alone
 
       newsStore.recentArticles = data?.news
-      contactInfo.value = data?.contact_info
+
+      // Store footer data in homepage store for sharing
+      footerContact.value = data?.contact
+      footerSocialLinks.value = data?.social_links
+      footerProjects.value = data?.projects?.all || []
+
+      // Populate footer store with homepage data
+      const { useFooterStore } = await import('./footer')
+      const footerStore = useFooterStore()
+      footerStore.setDataFromHomepage({
+        contact: data?.contact,
+        social_links: data?.social_links,
+        projects: data?.projects?.all || [],
+      })
+
+      // Keep backward compatibility for contact_info
+      contactInfo.value = data?.contact_info || data?.contact
       aboutInfo.value = data?.about_info
     } catch (err) {
       console.error('Failed to load homepage data:', err)
@@ -80,6 +101,11 @@ export const useHomepageStore = defineStore('homepage', () => {
     isFetched,
     contactInfo,
     aboutInfo,
+
+    // Footer data
+    footerContact,
+    footerSocialLinks,
+    footerProjects,
 
     // Actions
     loadHomepageData,

@@ -94,11 +94,11 @@ class SiteSettingsService
         }
 
         // Add additional phone numbers if they exist
-        if (!empty($settings['contact_phone_2'])) {
+        if (!empty($settings['contact_phone2'])) {
             $phoneNumbers[] = [
-                'number' => $settings['contact_phone_2'],
-                'display' => $settings['contact_phone_2'],
-                'href' => 'tel:' . $settings['contact_phone_2'],
+                'number' => $settings['contact_phone2'],
+                'display' => $settings['contact_phone2'],
+                'href' => 'tel:' . $settings['contact_phone2'],
             ];
         }
 
@@ -431,5 +431,77 @@ class SiteSettingsService
         }
 
         return $errors;
+    }
+
+    /**
+     * Get footer-specific contact information
+     * 
+     * @param string $locale
+     * @return array
+     */
+    public function getFooterContactInfo(string $locale = 'ka'): array
+    {
+        $cacheKey = "footer_contact_info_{$locale}";
+        
+        return Cache::remember($cacheKey, 3600, function () use ($locale) {
+            $settings = $this->getContactSettings($locale);
+            
+            // Also try getting settings directly from contact group
+            $contactGroupSettings = SiteSetting::getSettingsForGroup('contact');
+
+            
+            return [
+                'phone' => $settings['contact_info']['phone']['value'] ?? $contactGroupSettings['contact_phone'] ?? '',
+                'phone2' => $settings['contact_info']['phone2']['value'] ?? $contactGroupSettings['contact_phone2'] ?? '',
+                'email' => $settings['contact_info']['email']['value'] ?? $contactGroupSettings['contact_email'] ?? '',
+                'address' => $settings['contact_info']['address']['value'] ?? $contactGroupSettings['contact_address'] ?? '',
+                'google_maps_url' => $this->formatGoogleMapsUrl(array_merge($settings, $contactGroupSettings)),
+                'phone_numbers' => $this->formatPhoneNumbers(array_merge($settings, $contactGroupSettings)),
+            ];
+        });
+    }
+
+    /**
+     * Get complete footer data (contact info + social links)
+     * 
+     * @param string $locale
+     * @return array
+     */
+    public function getFooterData(string $locale = 'ka'): array
+    {
+        $cacheKey = "footer_data_{$locale}";
+        
+        return Cache::remember($cacheKey, 3600, function () use ($locale) {
+            $contactInfo = $this->getFooterContactInfo($locale);
+            $socialSettings = SiteSetting::getSettingsForGroup('social');
+
+            return [
+                'contact' => $contactInfo,
+                'social_links' => [
+                    'facebook' => $socialSettings['facebook_url'] ?? '',
+                    'instagram' => $socialSettings['instagram_url'] ?? '',
+                ],
+            ];
+        });
+    }
+
+    /**
+     * Clear footer-related cache
+     * 
+     * @param string|null $locale If null, clears all locales
+     */
+    public function clearFooterCache(?string $locale = null): void
+    {
+        if ($locale) {
+            Cache::forget("footer_contact_info_{$locale}");
+            Cache::forget("footer_data_{$locale}");
+        } else {
+            // Clear all footer caches
+            $locales = ['ka', 'en', 'ru']; // Add more locales as needed
+            foreach ($locales as $loc) {
+                Cache::forget("footer_contact_info_{$loc}");
+                Cache::forget("footer_data_{$loc}");
+            }
+        }
     }
 }

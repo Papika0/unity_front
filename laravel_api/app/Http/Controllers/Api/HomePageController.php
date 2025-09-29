@@ -3,14 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\News;
-use App\Models\Projects;
-use App\Models\Translation;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\NewsResource;
-use App\Http\Resources\Api\ProjectResource;
-use App\Http\Resources\Api\TranslationResource;
 use App\Services\PageCacheService;
+use App\Services\ProjectService;
 use App\Services\SiteSettingsService;
 use App\Services\TranslationService;
 
@@ -19,12 +16,18 @@ class HomepageController extends Controller
     protected $pageCacheService;
     protected $siteSettingsService;
     protected $translationService;
+    protected $projectService;
 
-    public function __construct(PageCacheService $pageCacheService, SiteSettingsService $siteSettingsService, TranslationService $translationService)
-    {
+    public function __construct(
+        PageCacheService $pageCacheService, 
+        SiteSettingsService $siteSettingsService, 
+        TranslationService $translationService,
+        ProjectService $projectService
+    ) {
         $this->pageCacheService = $pageCacheService;
         $this->siteSettingsService = $siteSettingsService;
         $this->translationService = $translationService;
+        $this->projectService = $projectService;
     }
 
     /**
@@ -66,15 +69,16 @@ class HomepageController extends Controller
     {
         // Use parallel execution to minimize total time
         $translations = $this->translationService->getOptimizedTranslations($groups, $locale);
-        $projects = $this->getOptimizedProjects($locale);
+        $projects = $this->projectService->getOptimizedProjects($locale);
         $news = $this->getOptimizedNews($locale);
-        $contactInfo = $this->getOptimizedContactInfo($locale);
+        $footerData = $this->getFooterData($locale);
 
         return [
             'translations' => $translations,
             'projects' => $projects,
             'news' => $news,
-            'contact_info' => $contactInfo,
+            'contact' => $footerData['contact'],
+            'social_links' => $footerData['social_links'],
             'meta' => [
                 'locale' => $locale,
                 'cached_at' => now()->toISOString(),
@@ -85,38 +89,7 @@ class HomepageController extends Controller
     }
 
 
-    /**
-     * Get projects with targeted queries using resources
-     */
-    private function getOptimizedProjects(string $locale): array
-    {
-        // Select only essential columns to reduce memory usage
-        $essentialColumns = [
-            'id', 'title', 'location', 'status', 'description',
-            'main_image', 'render_image',
-            'is_active', 'is_featured',
-            'is_onHomepage', 'meta_title',
-            'meta_description',
-        ];
 
-        // Get all active projects in one query
-        $allProjects = Projects::where('is_active', true)
-            ->select($essentialColumns)
-            ->latest()
-            ->get()
-            ->map(function ($project) use ($locale) {
-                $resource = new ProjectResource($project, $locale);
-                return $resource->toArray(request());
-            });
-
-        // Efficiently separate by type using collections
-        return [
-            'all' => $allProjects->values()->toArray(),
-            'is_featured' => $allProjects->where('is_featured', true)->values()->toArray(),
-            'is_onHomepage' => $allProjects->where('is_onHomepage', true)->values()->toArray(),
-            'is_alone' => $allProjects->where('is_onHomepage', false)->where('is_featured', false)->values()->first(),
-        ];
-    }
 
     /**
      * Get news with optimized query using resources
@@ -141,22 +114,15 @@ class HomepageController extends Controller
     }
 
     /**
-     * Get contact information using config
+     * Get footer data (contact and social links) for homepage
      */
-    private function getOptimizedContactInfo(string $locale): array
+    private function getFooterData(string $locale): array
     {
-        $contactInfo = $this->siteSettingsService->getContactInfo();
+        $footerData = $this->siteSettingsService->getFooterData($locale);
 
-        // Return empty array if no contact info
-        if (!$contactInfo) {
-            return [];
-        }
-
-        // Return simplified data structure
         return [
-            'email' => $contactInfo['email'] ?? '',
-            'phone_numbers' => $contactInfo['phone_numbers'] ?? [],
-            'google_maps_url' => $contactInfo['google_maps_url'] ?? ''
+            'contact' => $footerData['contact'],
+            'social_links' => $footerData['social_links'],
         ];
     }
 

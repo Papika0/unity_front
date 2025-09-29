@@ -21,16 +21,19 @@ withDefaults(defineProps<Props>(), {
 
 <template>
   <div>
-    <h3 class="text-lg font-normal font-roboto leading-normal mb-6">
+    <h3
+      class="text-lg font-semibold font-roboto leading-normal mb-6 text-zinc-900 uppercase tracking-wide"
+    >
       {{ title }}
     </h3>
-    <ul class="space-y-4">
+    <ul class="space-y-3">
       <li v-for="(link, index) in links" :key="link.key || index">
         <BaseLink
           :variant="variant"
           :to="link.to || link.path"
           :href="link.href"
           :external="link.external"
+          class="text-base font-normal font-roboto leading-relaxed text-zinc-900 hover:text-red-600 transition-colors duration-200"
         >
           {{ link.label }}
         </BaseLink>

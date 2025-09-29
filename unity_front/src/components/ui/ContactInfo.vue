@@ -19,51 +19,62 @@ defineProps<Props>()
 
 <template>
   <div>
-    <h3 class="text-lg font-normal font-roboto leading-normal mb-6">
+    <h3
+      class="text-lg font-semibold font-roboto leading-normal mb-6 text-zinc-900 uppercase tracking-wide"
+    >
       {{ title }}
     </h3>
-    <div class="space-y-6">
+    <div class="space-y-5">
       <!-- Address -->
-      <div v-if="addressLabel && addressValue">
-        <h4 class="text-xl font-normal font-roboto leading-loose mb-2">
+      <div v-if="addressLabel && addressValue" class="space-y-2">
+        <h4 class="text-base font-medium font-roboto leading-relaxed text-zinc-700">
           {{ addressLabel }}
         </h4>
-        <p class="text-base font-normal font-roboto leading-loose">
+        <p class="text-base font-normal font-roboto leading-relaxed text-zinc-900 pl-1">
           {{ addressValue }}
         </p>
         <a
           v-if="locationHref && locationLabel"
           :href="locationHref"
           target="_blank"
-          class="text-xs font-normal font-roboto leading-3 text-red-700 hover:text-red-800"
+          class="inline-block text-sm font-normal font-roboto leading-relaxed text-red-600 hover:text-red-700 transition-colors duration-200 pl-1"
         >
           {{ locationLabel }}
         </a>
       </div>
 
       <!-- Email -->
-      <div>
-        <span class="text-xl font-normal font-roboto leading-loose">Email: </span>
+      <div class="space-y-1">
+        <span class="block text-base font-medium font-roboto leading-relaxed text-zinc-700"
+          >Email</span
+        >
         <a
           :href="`mailto:${email}`"
-          class="text-xl font-normal font-roboto leading-loose text-zinc-900 hover:text-zinc-600"
+          class="block text-base font-normal font-roboto leading-relaxed text-zinc-900 hover:text-red-600 transition-colors duration-200 pl-1"
         >
           {{ email }}
         </a>
       </div>
 
       <!-- Phone -->
-      <div>
-        <span class="text-xl font-normal font-roboto leading-loose">{{ phoneLabel }}: </span>
-        <div class="flex items-center space-x-4">
+      <div class="space-y-2">
+        <span class="block text-base font-medium font-roboto leading-relaxed text-zinc-700">{{
+          phoneLabel
+        }}</span>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pl-1">
           <template v-for="(phone, index) in phones" :key="phone.number">
-            <a
-              :href="phone.href"
-              class="text-lg font-normal font-roboto leading-loose text-zinc-900 hover:text-zinc-600"
-            >
-              {{ phone.display }}
-            </a>
-            <span v-if="index < phones.length - 1" class="w-px h-5 bg-zinc-900"></span>
+            <div class="flex items-center gap-4">
+              <a
+                :href="phone.href"
+                class="text-base font-normal font-roboto leading-relaxed text-zinc-900 hover:text-red-600 transition-colors duration-200"
+              >
+                {{ phone.display }}
+              </a>
+              <span
+                v-if="index < phones.length - 1"
+                class="hidden sm:block w-px h-4 bg-zinc-300"
+              ></span>
+            </div>
           </template>
         </div>
       </div>

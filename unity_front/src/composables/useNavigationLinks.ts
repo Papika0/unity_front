@@ -1,10 +1,39 @@
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useTranslations } from './useTranslations'
-import { useProjectsStore } from '@/stores/public/projects'
+import { useFooterStore } from '@/stores/public/footer'
+
+// Simple type for navigation project data
+interface NavigationProject {
+  id: number
+  title: string
+}
 
 export function useNavigationLinks() {
   const { t } = useTranslations()
-  const projectsStore = useProjectsStore()
+  const footerStore = useFooterStore()
+  const loadingProjects = ref(false)
+
+  // Function to ensure footer data (including projects) is loaded
+  const ensureFooterDataLoaded = async () => {
+    if (loadingProjects.value) return // Prevent multiple simultaneous loads
+
+    // Always try to load if we don't have data, regardless of loading state
+    if (!footerStore.isFetched || footerStore.isDataEmpty) {
+      loadingProjects.value = true
+      try {
+        await footerStore.loadFooterData()
+      } catch (error) {
+        console.error('Failed to load footer data in navigation:', error)
+      } finally {
+        loadingProjects.value = false
+      }
+    }
+  }
+
+  // Load footer data when composable is initialized
+  onMounted(async () => {
+    await ensureFooterDataLoaded()
+  })
 
   const mainNavigation = computed(() => [
     { key: 'header.home', path: '/', label: t('header.home') },
@@ -24,29 +53,49 @@ export function useNavigationLinks() {
     { key: 'footer.cookies', path: '/cookies', label: t('footer.cookies') },
   ])
 
-  const projectLinks = computed(() =>
-    projectsStore.activeProjects.slice(0, 6).map((project) => ({
+  const projectLinks = computed(() => {
+    // Return empty array if no projects data yet
+    if (!footerStore.projects || footerStore.projects.length === 0) {
+      return []
+    }
+
+    return footerStore.projects.slice(0, 6).map((project: NavigationProject) => ({
       key: `project-${project.id}`,
       id: project.id,
       label: project.title,
       path: `/projects/${project.id}`,
-    })),
-  )
+    }))
+  })
 
-  const socialLinks = computed(() => [
-    {
-      key: 'footer.facebook',
-      href: 'https://www.facebook.com/unityd.ge',
-      label: 'Facebook',
-      external: true,
-    },
-    {
-      key: 'footer.instagram',
-      href: 'https://www.instagram.com/unity.ge',
-      label: 'Instagram',
-      external: true,
-    },
-  ])
+  const socialLinks = computed(() => {
+    const social = footerStore.socialLinks
+    const links = []
+
+    // Return empty array if no social data yet
+    if (!social) {
+      return []
+    }
+
+    // Add null check to prevent accessing properties of null
+    if (social.facebook) {
+      links.push({
+        key: 'footer.facebook',
+        href: social.facebook,
+        label: 'Facebook',
+        external: true,
+      })
+    }
+
+    if (social.instagram) {
+      links.push({
+        key: 'footer.instagram',
+        href: social.instagram,
+        label: 'Instagram',
+        external: true,
+      })
+    }
+    return links
+  })
 
   return {
     mainNavigation,
