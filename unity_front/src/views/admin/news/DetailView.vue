@@ -136,7 +136,7 @@
           </div>
           <div class="p-6">
             <img
-              :src="backendUrl + article.main_image"
+              :src="getImageUrl(article.main_image)"
               :alt="article.title.ka || article.title.en"
               class="w-full max-h-96 object-cover rounded-xl"
             />
@@ -221,7 +221,7 @@
                 @click="openImageModal(image)"
               >
                 <img
-                  :src="backendUrl + image"
+                  :src="getImageUrl(image)"
                   :alt="`Gallery image ${index + 1}`"
                   class="w-full h-32 object-cover rounded-lg group-hover:shadow-lg transition-all duration-300"
                 />
@@ -353,7 +353,7 @@
     >
       <div class="max-w-4xl max-h-full">
         <img
-          :src="backendUrl + selectedImage"
+          :src="getImageUrl(selectedImage)"
           alt="Gallery image"
           class="max-w-full max-h-full object-contain rounded-lg"
           @click.stop
@@ -466,6 +466,12 @@ function formatDate(dateString: string): string {
 
 function openImageModal(image: string) {
   selectedImage.value = image
+}
+
+function getImageUrl(imagePath: string): string {
+  if (!imagePath) return ''
+  // Check if the URL already includes the backend URL
+  return imagePath.startsWith('http') ? imagePath : backendUrl + imagePath
 }
 </script>
 

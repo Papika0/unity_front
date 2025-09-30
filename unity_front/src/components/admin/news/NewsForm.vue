@@ -547,7 +547,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { Translator } from '@/utils/translator'
-import { compressImageForType } from '@/utils/imageCompression'
 import { FormCard, FormSection, MultiLanguageField, FileUpload } from '@/components/admin/forms'
 
 interface NewsFormData {
@@ -593,8 +592,6 @@ const emit = defineEmits<{
 // Local refs
 const newTag = ref('')
 const translating = ref(false)
-const mainImageInput = ref<HTMLInputElement>()
-const galleryInput = ref<HTMLInputElement>()
 const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 // Computed
@@ -602,7 +599,11 @@ const mainImagePreview = computed(() => {
   if (props.form.main_image) {
     return URL.createObjectURL(props.form.main_image)
   }
-  return backendUrl + props.currentMainImage || ''
+  if (!props.currentMainImage) return ''
+  // Check if the URL already includes the backend URL
+  return props.currentMainImage.startsWith('http')
+    ? props.currentMainImage
+    : backendUrl + props.currentMainImage
 })
 
 // Helper function to get field errors
@@ -643,8 +644,10 @@ const galleryPreviews = computed(() => {
     props.currentGalleryImages
       .filter((img: string) => !props.form.removed_gallery_images.includes(img))
       .forEach((img: string) => {
+        // Check if the URL already includes the backend URL
+        const imageUrl = img.startsWith('http') ? img : `${backendUrl}${img}`
         previews.push({
-          url: img.startsWith('http') ? img : `${backendUrl}${img}`,
+          url: imageUrl,
           type: 'existing',
           path: img,
         })
