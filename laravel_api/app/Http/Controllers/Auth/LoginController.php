@@ -27,7 +27,13 @@ class LoginController extends Controller
             ];
             $remember = $request->boolean('rememberMe');
 
-            if (!$token = JWTAuth::attempt($credentials, $remember)) {
+            // Set TTL based on remember me option
+            // Default: 60 minutes, Remember me: 20160 minutes (2 weeks)
+            if ($remember) {
+                JWTAuth::factory()->setTTL(20160); // 2 weeks in minutes
+            }
+
+            if (!$token = JWTAuth::attempt($credentials)) {
                 return response()->json([
                     'message' => 'მომხმარებელის პაროლი არასწორია.',
                 ], 401);
