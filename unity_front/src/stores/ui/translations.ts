@@ -28,11 +28,6 @@ export const useTranslationsStore = defineStore('translations', () => {
     news: ['messages', 'header', 'footer', 'contact', 'errors', 'news', 'buttons'],
     gallery: ['messages', 'header', 'footer', 'contact', 'errors', 'gallery', 'buttons'],
     contact: ['messages', 'header', 'footer', 'contact', 'buttons', 'errors', 'forms', 'common'],
-    services: ['common', 'services'],
-    portfolio: ['common', 'portfolio'],
-    blog: ['common', 'blog'],
-    auth: ['common', 'auth'],
-    profile: ['common', 'profile', 'user'],
   }
   const isLoading = ref(false)
   const loadError = ref('')
@@ -119,10 +114,14 @@ export const useTranslationsStore = defineStore('translations', () => {
     const requiredGroups = getPageGroups(pageName)
     const loadedGroups = getLoadedGroups()
 
-    return requiredGroups.filter((group) => !loadedGroups.includes(group))
-  }
+    // If we have no translations or are switching languages, request all groups
+    if (!isInitialized.value || Object.keys(translations.value).length === 0) {
+      return requiredGroups
+    }
 
-  // Translation function
+    const missing = requiredGroups.filter((group) => !loadedGroups.includes(group))
+    return missing
+  } // Translation function
   function t(key: string): string {
     const localeStore = useLocaleStore()
 
@@ -136,20 +135,25 @@ export const useTranslationsStore = defineStore('translations', () => {
       return key
     }
 
-    return translations.value[key] || key
+    const result = translations.value[key] || key
+    return result
   }
 
   // Merge translations (for backward compatibility)
   function mergeTranslations(payload: Record<string, string>) {
-    console.log('Merging translations:', payload)
     for (const [key, value] of Object.entries(payload)) {
       translations.value[key] = value
     }
-    console.log('Current translations after merge:', translations.value)
-    isInitialized.value = true
-  }
 
-  // Clear translations when locale changes to force refetch
+    // Extract and track groups from the merged translations
+    const detectedGroups = extractGroupsFromTranslations(payload)
+
+    for (const group of detectedGroups) {
+      loadedGroups.value.add(group)
+    }
+
+    isInitialized.value = true
+  } // Clear translations when locale changes to force refetch
   function clearTranslations() {
     translations.value = {}
     translationGroups.value = {}

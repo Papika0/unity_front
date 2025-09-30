@@ -1,24 +1,32 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
+import { useTranslationsStore } from '@/stores/ui/translations'
 import { useNewsStore } from '@/stores/public/news'
-import type { NewsArticle } from '@/types'
 
 const { t } = useTranslations()
 const newsStore = useNewsStore()
+const translationsStore = useTranslationsStore()
+
+// Check if translations are loaded by checking the store directly
+const hasTranslations = computed(() => {
+  // Check if we have any translations loaded
+  return Object.keys(translationsStore.translations).length > 0
+})
 
 const selectedCategory = ref<string>('all')
 const searchQuery = ref('')
 const isLoading = ref(true)
+const isLoadingCategories = ref(false)
 const currentPage = ref(1)
 
-const categoryLabels = {
-  all: { ka: 'ყველა', en: 'All' },
-  company: { ka: 'კომპანია', en: 'Company' },
-  project: { ka: 'პროექტი', en: 'Project' },
-  industry: { ka: 'ინდუსტრია', en: 'Industry' },
-  event: { ka: 'ღონისძიება', en: 'Event' },
-}
+const categoryLabels = computed(() => ({
+  all: t('news.categories.all'),
+  company: t('news.categories.company'),
+  project: t('news.categories.project'),
+  industry: t('news.categories.industry'),
+  event: t('news.categories.event'),
+}))
 
 const featuredArticle = computed(() => {
   return newsStore.featuredArticles.find((article) => article.is_featured) || null
@@ -33,9 +41,16 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const loadArticles = async (page = 1, resetPagination = false) => {
+const loadArticles = async (page = 1, resetPagination = false, isCategoryChange = false) => {
   try {
-    isLoading.value = true
+    console.log('📰 loadArticles START:', { page, resetPagination, isCategoryChange })
+
+    // Only show main loading for initial load, not for category/search changes
+    if (!isCategoryChange && page === 1 && !resetPagination) {
+      isLoading.value = true
+    } else if (isCategoryChange) {
+      isLoadingCategories.value = true
+    }
 
     const params = {
       page,
@@ -44,7 +59,9 @@ const loadArticles = async (page = 1, resetPagination = false) => {
       ...(searchQuery.value.trim() && { search: searchQuery.value.trim() }),
     }
 
+    console.log('📰 Calling newsStore.loadArticles with params:', params)
     await newsStore.loadArticles(params)
+    console.log('📰 loadArticles DONE, translations count:', Object.keys(translationsStore.translations).length)
 
     if (resetPagination) {
       currentPage.value = 1
@@ -55,6 +72,7 @@ const loadArticles = async (page = 1, resetPagination = false) => {
     console.error('Failed to load articles:', error)
   } finally {
     isLoading.value = false
+    isLoadingCategories.value = false
   }
 }
 
@@ -68,11 +86,11 @@ const loadFeaturedArticle = async () => {
 
 const handleCategoryChange = (category: string) => {
   selectedCategory.value = category
-  loadArticles(1, true)
+  loadArticles(1, true, true)
 }
 
 const handleSearch = () => {
-  loadArticles(1, true)
+  loadArticles(1, true, true)
 }
 
 const handlePageChange = (page: number) => {
@@ -120,7 +138,10 @@ watch(searchQuery, () => {
 })
 
 onMounted(async () => {
-  await Promise.all([loadFeaturedArticle(), loadArticles(1)])
+  // Load regular articles first (this will load translations)
+  await loadArticles(1)
+  // Then load featured articles (translations should already be loaded)
+  await loadFeaturedArticle()
 })
 </script>
 
@@ -140,11 +161,12 @@ onMounted(async () => {
           ></div>
         </div>
         <h1 class="text-5xl md:text-7xl font-light text-white mb-8 tracking-wide">
-          <span class="font-thin">სია</span><span class="font-normal text-amber-400">ხლე</span
-          ><span class="font-thin">ები</span>
+          <span v-if="hasTranslations">{{ t('news.title') }}</span>
+          <span v-else class="inline-block h-12 w-48 bg-white/10 rounded animate-pulse"></span>
         </h1>
         <p class="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto font-light leading-relaxed">
-          იყავით ინფორმირებული უნიტის უახლეს პროექტებზე, მიღწევებზე და ინდუსტრიის სიახლეებზე
+          <span v-if="hasTranslations">{{ t('news.description') }}</span>
+          <span v-else class="inline-block h-8 w-96 bg-white/10 rounded animate-pulse"></span>
         </p>
         <div
           class="w-20 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-8"
@@ -158,11 +180,11 @@ onMounted(async () => {
         <div class="flex flex-col lg:flex-row gap-8 items-start lg:items-center justify-between">
           <!-- Search Input -->
           <div class="flex-1 max-w-2xl">
-            <div class="relative group">
+            <div v-if="hasTranslations" class="relative group">
               <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="ძებნა სიახლეებში..."
+                :placeholder="t('news.search.placeholder')"
                 class="w-full px-6 py-4 pl-14 bg-white/80 backdrop-blur-sm border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-300 text-slate-800 placeholder-slate-500 shadow-sm hover:shadow-md"
               />
               <svg
@@ -179,38 +201,107 @@ onMounted(async () => {
                 />
               </svg>
             </div>
+            <div v-else class="h-14 bg-slate-200 rounded-2xl animate-pulse"></div>
           </div>
 
           <!-- Category Filter -->
-          <div class="flex flex-wrap gap-3">
+          <div v-if="hasTranslations" class="flex flex-wrap gap-3">
             <button
               v-for="(label, category) in categoryLabels"
               :key="category"
               @click="handleCategoryChange(category)"
+              :disabled="isLoadingCategories"
               :class="[
-                'px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 border-2 backdrop-blur-sm',
+                'px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 border-2 backdrop-blur-sm flex items-center gap-2',
                 selectedCategory === category
                   ? 'bg-amber-400 text-slate-900 border-amber-400 shadow-lg transform scale-105'
                   : 'bg-white/60 text-slate-700 border-slate-200 hover:bg-white/80 hover:border-amber-300 hover:text-amber-700 shadow-sm',
+                isLoadingCategories && 'opacity-60 cursor-not-allowed',
               ]"
             >
-              {{ label.ka }}
+              <span
+                v-if="isLoadingCategories"
+                class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-pulse"
+              ></span>
+              {{ label }}
             </button>
+          </div>
+          <div v-else class="flex flex-wrap gap-3">
+            <div v-for="n in 5" :key="n" class="h-11 w-24 bg-slate-200 rounded-xl animate-pulse"></div>
           </div>
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="isLoading" class="flex items-center justify-center py-32">
-        <div class="relative">
-          <div class="animate-spin rounded-full h-16 w-16 border-4 border-slate-200"></div>
+      <!-- Loading State with Skeleton Cards (only show after brief delay to allow translations to load) -->
+      <div v-if="isLoading && !newsStore.articles.length">
+        <!-- Skeleton Featured Article -->
+        <div class="mb-20">
+          <div class="text-center mb-12">
+            <div class="h-10 w-64 bg-slate-200 rounded-lg mx-auto mb-4 animate-pulse"></div>
+            <div
+              class="w-16 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent mx-auto"
+            ></div>
+          </div>
           <div
-            class="animate-spin rounded-full h-16 w-16 border-4 border-amber-400 border-t-transparent absolute top-0 left-0"
+            class="bg-white/70 backdrop-blur-sm rounded-3xl overflow-hidden shadow-xl border border-slate-200/50"
+          >
+            <div class="lg:flex">
+              <div class="lg:w-3/5 bg-slate-200 animate-pulse h-64 lg:h-96"></div>
+              <div class="lg:w-2/5 p-8 lg:p-12 space-y-4">
+                <div class="flex items-center gap-4">
+                  <div class="h-6 w-24 bg-slate-200 rounded-full animate-pulse"></div>
+                  <div class="h-4 w-32 bg-slate-200 rounded animate-pulse"></div>
+                </div>
+                <div class="h-8 w-full bg-slate-200 rounded animate-pulse"></div>
+                <div class="h-8 w-4/5 bg-slate-200 rounded animate-pulse"></div>
+                <div class="space-y-2">
+                  <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+                  <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+                  <div class="h-4 w-3/4 bg-slate-200 rounded animate-pulse"></div>
+                </div>
+                <div class="h-10 w-32 bg-slate-200 rounded-lg animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skeleton Articles Header -->
+        <div class="text-center mb-12">
+          <div class="h-10 w-48 bg-slate-200 rounded-lg mx-auto mb-4 animate-pulse"></div>
+          <div
+            class="w-16 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent mx-auto mb-6"
           ></div>
+          <div class="h-4 w-64 bg-slate-200 rounded mx-auto animate-pulse"></div>
+        </div>
+
+        <!-- Skeleton Articles Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          <div
+            v-for="n in 9"
+            :key="n"
+            class="bg-white/60 backdrop-blur-sm rounded-2xl overflow-hidden shadow-sm border border-slate-200/50"
+          >
+            <div class="bg-slate-200 h-56 animate-pulse"></div>
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2">
+                <div class="h-6 w-20 bg-slate-200 rounded-full animate-pulse"></div>
+                <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
+              </div>
+              <div class="h-6 w-full bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-6 w-4/5 bg-slate-200 rounded animate-pulse"></div>
+              <div class="space-y-2">
+                <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+                <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+                <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
+              </div>
+              <div class="h-8 w-28 bg-slate-200 rounded-lg animate-pulse"></div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div v-else>
+      <!-- Content (show even while loading if we have data from cache/previous load) -->
+      <div v-if="!isLoading || newsStore.articles.length">
         <!-- Featured Article -->
         <div
           v-if="featuredArticle && selectedCategory === 'all' && !searchQuery.trim()"
@@ -218,7 +309,7 @@ onMounted(async () => {
         >
           <div class="text-center mb-12">
             <h2 class="text-3xl md:text-4xl font-light text-slate-800 mb-4">
-              გამო<span class="text-amber-600">რჩეული</span> სიახლე
+              {{ t('news.featured.title') }}
             </h2>
             <div
               class="w-16 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto"
@@ -242,7 +333,7 @@ onMounted(async () => {
                   <span
                     class="px-4 py-2 bg-gradient-to-r from-amber-100 to-amber-50 text-amber-800 text-sm font-medium rounded-full border border-amber-200"
                   >
-                    {{ categoryLabels[featuredArticle.category].ka }}
+                    {{ categoryLabels[featuredArticle.category] }}
                   </span>
                   <time class="text-slate-500 text-sm font-medium">
                     {{ formatDate(featuredArticle.publish_date) }}
@@ -261,7 +352,7 @@ onMounted(async () => {
                   :to="`/news/${featuredArticle.id}`"
                   class="inline-flex items-center text-amber-600 hover:text-amber-700 font-medium text-lg group/link"
                 >
-                  სრულად წაკითხვა
+                  {{ t('news.readMore') }}
                   <svg
                     class="ml-3 w-5 h-5 group-hover/link:translate-x-1 transition-transform duration-300"
                     fill="none"
@@ -284,14 +375,15 @@ onMounted(async () => {
         <!-- Articles Header -->
         <div class="text-center mb-12">
           <h2 class="text-3xl md:text-4xl font-light text-slate-800 mb-4">
-            {{ searchQuery.trim() ? 'ძებნის შედეგები' : 'ყველა სიახლე' }}
+            {{ searchQuery.trim() ? t('news.searchResults') : t('news.allNews') }}
           </h2>
           <div
             class="w-16 h-px bg-gradient-to-r from-transparent via-slate-400 to-transparent mx-auto mb-6"
           ></div>
           <p class="text-slate-600">
-            {{ newsStore.pagination.total }} სტატია, გვერდი
-            {{ newsStore.pagination.current_page }} / {{ newsStore.pagination.last_page }}
+            {{ newsStore.pagination.total }} {{ t('news.pagination.articles') }},
+            {{ t('news.pagination.page') }} {{ newsStore.pagination.current_page }} /
+            {{ newsStore.pagination.last_page }}
           </p>
         </div>
 
@@ -307,8 +399,8 @@ onMounted(async () => {
               />
             </svg>
           </div>
-          <h3 class="text-2xl font-light text-slate-700 mb-3">სიახლეები ვერ მოიძებნა</h3>
-          <p class="text-slate-500 text-lg">სცადეთ სხვა საძიებო სიტყვები ან კატეგორია</p>
+          <h3 class="text-2xl font-light text-slate-700 mb-3">{{ t('news.noResults.title') }}</h3>
+          <p class="text-slate-500 text-lg">{{ t('news.noResults.description') }}</p>
         </div>
 
         <!-- Articles Grid -->
@@ -331,14 +423,14 @@ onMounted(async () => {
                 <span
                   class="px-3 py-1 bg-white/95 backdrop-blur-sm text-slate-800 text-xs font-medium rounded-full border border-slate-200"
                 >
-                  {{ categoryLabels[article.category].ka }}
+                  {{ categoryLabels[article.category] }}
                 </span>
               </div>
               <div v-if="article.is_featured" class="absolute top-4 right-4">
                 <span
                   class="px-3 py-1 bg-gradient-to-r from-amber-400 to-amber-500 text-white text-xs font-medium rounded-full"
                 >
-                  ⭐ რჩეული
+                  {{ t('news.featured.badge') }}
                 </span>
               </div>
             </div>
@@ -349,7 +441,9 @@ onMounted(async () => {
                   {{ formatDate(article.publish_date) }}
                 </time>
                 <span class="text-slate-300">•</span>
-                <span class="text-slate-500 text-sm">{{ article.views }} ნახვა</span>
+                <span class="text-slate-500 text-sm"
+                  >{{ article.views }} {{ t('news.views') }}</span
+                >
               </div>
 
               <h3
@@ -366,7 +460,7 @@ onMounted(async () => {
                 :to="`/news/${article.id}`"
                 class="inline-flex items-center text-amber-600 hover:text-amber-700 text-sm font-medium group/link"
               >
-                სრულად წაკითხვა
+                {{ t('news.readMore') }}
                 <svg
                   class="ml-2 w-4 h-4 group-hover/link:translate-x-1 transition-transform duration-300"
                   fill="none"

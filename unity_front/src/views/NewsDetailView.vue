@@ -1,18 +1,22 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTranslations } from '../composables/useTranslations'
 import { useNewsStore } from '@/stores/public/news'
+import { useLocaleStore } from '@/stores/ui/locale'
 import type { NewsArticle } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useTranslations()
 const newsStore = useNewsStore()
+const localeStore = useLocaleStore()
 
-const article = ref<NewsArticle | null>(null)
-const isLoading = ref(true)
+const article = computed(() => newsStore.currentArticle)
+const isLoading = computed(() => newsStore.loading)
 const error = ref<string | null>(null)
+const showGalleryModal = ref(false)
+const currentGalleryIndex = ref(0)
 
 const relatedArticles = computed(() => {
   if (!article.value) return []
@@ -25,23 +29,62 @@ const formattedDate = computed(() => {
   if (!article.value) return ''
 
   const date = new Date(article.value.publish_date)
-  return date.toLocaleDateString('ka-GE', {
+  const localeMap = {
+    ka: 'ka-GE',
+    en: 'en-US',
+    ru: 'ru-RU',
+  }
+  const locale = localeMap[localeStore.currentLocale] || 'ka-GE'
+
+  return date.toLocaleDateString(locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
 })
 
-const categoryLabels: Record<string, { ka: string; en: string }> = {
-  company: { ka: 'კომპანია', en: 'Company' },
-  project: { ka: 'პროექტი', en: 'Project' },
-  industry: { ka: 'ინდუსტრია', en: 'Industry' },
-  event: { ka: 'ღონისძიება', en: 'Event' },
+const categoryLabels = computed(() => ({
+  all: t('news.categories.all'),
+  company: t('news.categories.company'),
+  project: t('news.categories.project'),
+  industry: t('news.categories.industry'),
+  event: t('news.categories.event'),
+}))
+
+const openGallery = (index: number) => {
+  currentGalleryIndex.value = index
+  showGalleryModal.value = true
 }
 
-const copyToClipboard = () => {
-  if (typeof window !== 'undefined' && window.navigator?.clipboard) {
-    window.navigator.clipboard.writeText(window.location.href)
+const closeGallery = () => {
+  showGalleryModal.value = false
+}
+
+const nextImage = () => {
+  if (!article.value?.gallery_images) return
+  currentGalleryIndex.value = (currentGalleryIndex.value + 1) % article.value.gallery_images.length
+}
+
+const prevImage = () => {
+  if (!article.value?.gallery_images) return
+  currentGalleryIndex.value =
+    (currentGalleryIndex.value - 1 + article.value.gallery_images.length) %
+    article.value.gallery_images.length
+}
+
+const handleKeydown = (e: KeyboardEvent) => {
+  if (!showGalleryModal.value) return
+
+  switch (e.key) {
+    case 'Escape':
+      closeGallery()
+      break
+    case 'ArrowRight':
+      nextImage()
+      break
+    case 'ArrowLeft':
+      prevImage()
+      break
   }
 }
 
@@ -49,29 +92,23 @@ const fetchArticle = async () => {
   const articleId = parseInt(route.params.id as string)
 
   if (isNaN(articleId)) {
-    error.value = 'Invalid article ID'
-    isLoading.value = false
+    error.value = t('errors.invalidId') || 'Invalid article ID'
     return
   }
 
   try {
-    isLoading.value = true
     error.value = null
 
     const fetchedArticle = await newsStore.loadArticle(articleId)
 
     if (!fetchedArticle) {
-      error.value = 'Article not found'
+      error.value = t('errors.notFound') || 'Article not found'
       router.push('/news')
       return
     }
-
-    article.value = fetchedArticle
   } catch (err) {
-    error.value = 'Failed to load article'
+    error.value = t('errors.loadFailed') || 'Failed to load article'
     console.error('Error fetching article:', err)
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -81,6 +118,12 @@ watch(() => route.params.id, fetchArticle, { immediate: true })
 onMounted(() => {
   // Scroll to top when component mounts
   window.scrollTo(0, 0)
+  // Add keyboard event listener
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -95,21 +138,21 @@ onMounted(() => {
     <div v-else-if="error" class="flex flex-col items-center justify-center min-h-screen">
       <h1 class="text-2xl font-bold text-red-600 mb-4">{{ error }}</h1>
       <router-link to="/news" class="text-amber-600 hover:text-amber-700 underline">
-        უკან სიახლეებზე
+        {{ t('buttons.back') }}
       </router-link>
     </div>
 
     <!-- Article Content -->
-    <div v-else-if="article" class="max-w-4xl mx-auto px-4 md:px-8 py-16">
+    <div v-else-if="article && article.id" class="max-w-4xl mx-auto px-4 md:px-8 py-16">
       <!-- Breadcrumb -->
       <nav class="mb-8">
         <ol class="flex items-center space-x-2 text-sm text-zinc-600">
           <li>
-            <router-link to="/" class="hover:text-amber-600">მთავარი</router-link>
+            <router-link to="/" class="hover:text-amber-600">{{ t('header.home') }}</router-link>
           </li>
           <li>/</li>
           <li>
-            <router-link to="/news" class="hover:text-amber-600">სიახლეები</router-link>
+            <router-link to="/news" class="hover:text-amber-600">{{ t('news.title') }}</router-link>
           </li>
           <li>/</li>
           <li class="text-zinc-900">{{ article.title }}</li>
@@ -121,10 +164,10 @@ onMounted(() => {
         <!-- Category & Date -->
         <div class="flex items-center gap-4 mb-6">
           <span class="px-3 py-1 bg-amber-100 text-amber-800 text-sm font-medium rounded-full">
-            {{ categoryLabels[article.category].ka }}
+            {{ categoryLabels[article.category] || article.category }}
           </span>
           <time class="text-zinc-600 text-sm">{{ formattedDate }}</time>
-          <span class="text-zinc-400 text-sm">{{ article.views }} ნახვა</span>
+          <span class="text-zinc-400 text-sm">{{ article.views }} {{ t('news.views') }}</span>
         </div>
 
         <!-- Title -->
@@ -138,7 +181,7 @@ onMounted(() => {
         </p>
 
         <!-- Tags -->
-        <div v-if="article.tags.length > 0" class="flex flex-wrap gap-2">
+        <!-- <div v-if="article.tags && article.tags.length > 0" class="flex flex-wrap gap-2">
           <span
             v-for="tag in article.tags"
             :key="tag"
@@ -146,7 +189,7 @@ onMounted(() => {
           >
             #{{ tag }}
           </span>
-        </div>
+        </div> -->
       </header>
 
       <!-- Main Image -->
@@ -162,72 +205,106 @@ onMounted(() => {
       <div class="prose prose-lg max-w-none">
         <div
           class="text-zinc-800 leading-relaxed whitespace-pre-line"
-          v-html="article.content.replace(/\n/g, '<br>')"
+          v-html="(article.content || '').replace(/\n/g, '<br>')"
         ></div>
       </div>
 
       <!-- Gallery Images -->
-      <div v-if="article.gallery_images.length > 0" class="mt-12">
-        <h3 class="text-2xl font-normal font-roboto text-zinc-900 mb-6">ფოტო გალერეა</h3>
+      <div v-if="article.gallery_images && article.gallery_images.length > 0" class="mt-12">
+        <h3 class="text-2xl font-normal font-roboto text-zinc-900 mb-6">
+          {{ t('news.gallery.title') }}
+        </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <img
             v-for="(image, index) in article.gallery_images"
             :key="index"
             :src="image"
-            :alt="`${article.title} - სურათი ${index + 1}`"
+            :alt="`${article.title || ''} - ${t('news.gallery.image')} ${index + 1}`"
             class="w-full h-64 object-cover rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
+            @click="openGallery(index)"
           />
         </div>
       </div>
 
+      <!-- Gallery Modal -->
+      <Teleport to="body">
+        <Transition name="modal">
+          <div
+            v-if="showGalleryModal && article && article.gallery_images"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
+            @click="closeGallery"
+          >
+            <!-- Close Button -->
+            <button
+              class="absolute top-4 right-4 text-white hover:text-amber-300 transition-colors z-10"
+              @click="closeGallery"
+            >
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            <!-- Previous Button -->
+            <button
+              v-if="article.gallery_images.length > 1"
+              class="absolute left-4 text-white hover:text-amber-300 transition-colors z-10"
+              @click.stop="prevImage"
+            >
+              <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+
+            <!-- Image -->
+            <div class="max-w-7xl max-h-[90vh] px-16" @click.stop>
+              <img
+                :src="article.gallery_images[currentGalleryIndex]"
+                :alt="`${article.title} - ${t('news.gallery.image')} ${currentGalleryIndex + 1}`"
+                class="max-w-full max-h-[90vh] object-contain rounded-lg"
+              />
+              <p class="text-white text-center mt-4">
+                {{ currentGalleryIndex + 1 }} / {{ article.gallery_images.length }}
+              </p>
+            </div>
+
+            <!-- Next Button -->
+            <button
+              v-if="article.gallery_images.length > 1"
+              class="absolute right-4 text-white hover:text-amber-300 transition-colors z-10"
+              @click.stop="nextImage"
+            >
+              <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
+        </Transition>
+      </Teleport>
+
       <!-- Share Section -->
-      <div class="mt-12 pt-8 border-t border-zinc-200">
-        <h3 class="text-lg font-medium text-zinc-900 mb-4">გაუზიარე სტატია</h3>
-        <div class="flex gap-4">
-          <button
-            @click="() => {}"
-            class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"
-              />
-            </svg>
-            Twitter
-          </button>
-          <button
-            @click="() => {}"
-            class="flex items-center gap-2 px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors"
-          >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-              />
-            </svg>
-            Facebook
-          </button>
-          <button
-            @click="copyToClipboard"
-            class="flex items-center gap-2 px-4 py-2 bg-zinc-600 text-white rounded-lg hover:bg-zinc-700 transition-colors"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-              />
-            </svg>
-            კოპირება
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Related Articles -->
     <section v-if="relatedArticles.length > 0" class="bg-zinc-50 py-16">
       <div class="max-w-7xl mx-auto px-4 md:px-8">
-        <h2 class="text-3xl font-normal font-roboto text-zinc-900 mb-8">მსგავსი სტატიები</h2>
+        <h2 class="text-3xl font-normal font-roboto text-zinc-900 mb-8">
+          {{ t('news.related.title') }}
+        </h2>
         <img src="../assets/Vector_10.png" alt="" class="mb-12" />
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -246,10 +323,15 @@ onMounted(() => {
                 <span
                   class="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full"
                 >
-                  {{ categoryLabels[relatedArticle.category].ka }}
+                  {{ categoryLabels[relatedArticle.category] || relatedArticle.category }}
                 </span>
                 <time class="text-zinc-500 text-xs">
-                  {{ new Date(relatedArticle.publish_date).toLocaleDateString('ka-GE') }}
+                  {{
+                    new Date(relatedArticle.publish_date).toLocaleDateString(
+                      { ka: 'ka-GE', en: 'en-US', ru: 'ru-RU' }[localeStore.currentLocale] ||
+                        'ka-GE',
+                    )
+                  }}
                 </time>
               </div>
 
@@ -265,7 +347,7 @@ onMounted(() => {
                 :to="`/news/${relatedArticle.id}`"
                 class="text-amber-600 hover:text-amber-700 text-sm font-medium"
               >
-                სრულად წაკითხვა →
+                {{ t('news.readMore') }} →
               </router-link>
             </div>
           </article>
@@ -290,5 +372,15 @@ onMounted(() => {
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
 }
 </style>

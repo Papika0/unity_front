@@ -8,6 +8,7 @@ import {
   getNewsByCategory,
 } from '@/services/news'
 import type { NewsArticle } from '@/types'
+import { useTranslationsStore } from '@/stores/ui/translations'
 
 interface PaginatedResponse {
   data: NewsArticle[]
@@ -78,9 +79,21 @@ export const useNewsStore = defineStore('news', () => {
       error.value = ''
 
       const response = await getNews(params)
+      const responseData = response.data
+
+      console.log('🗞️ loadArticles: response.data:', responseData)
+      console.log('🗞️ loadArticles: responseData.data:', responseData.data)
+      console.log('🗞️ loadArticles: responseData.data.translations:', responseData.data?.translations)
+
+      // Handle translations if present - they are at responseData.data.translations
+      if (responseData.data?.translations) {
+        const translationsStore = useTranslationsStore()
+        console.log('🗞️ Merging translations:', Object.keys(responseData.data.translations).length, 'keys')
+        translationsStore.mergeTranslations(responseData.data.translations)
+      }
+
       // Handle nested response structure: response.data.data
-      const outerData = response.data
-      const data: PaginatedResponse = outerData.data || outerData
+      const data: PaginatedResponse = responseData.data || responseData
 
       articles.value = data.data || []
       pagination.value = {
@@ -101,8 +114,16 @@ export const useNewsStore = defineStore('news', () => {
   const loadRecentArticles = async (limit: number = 4) => {
     try {
       const response = await getRecentNews({ limit })
+      const responseData = response.data
+
+      // Handle translations if present
+      if (responseData.translations) {
+        const translationsStore = useTranslationsStore()
+        translationsStore.mergeTranslations(responseData.translations)
+      }
+
       // Handle nested response structure
-      const data = response.data.data || response.data
+      const data = responseData.data || responseData
       recentArticles.value = Array.isArray(data) ? data : []
     } catch (err: unknown) {
       console.error('loadRecentArticles error:', err)
@@ -112,8 +133,16 @@ export const useNewsStore = defineStore('news', () => {
   const loadFeaturedArticles = async () => {
     try {
       const response = await getFeaturedNews()
+      const responseData = response.data
+
+      // Handle translations if present
+      if (responseData.translations) {
+        const translationsStore = useTranslationsStore()
+        translationsStore.mergeTranslations(responseData.translations)
+      }
+
       // Handle nested response structure
-      const data = response.data.data || response.data
+      const data = responseData.data || responseData
       featuredArticles.value = Array.isArray(data) ? data : []
     } catch (err: unknown) {
       console.error('loadFeaturedArticles error:', err)
@@ -144,8 +173,27 @@ export const useNewsStore = defineStore('news', () => {
       error.value = ''
 
       const response = await getNewsArticle(id)
-      // Handle nested response structure
-      currentArticle.value = response.data.data || response.data || null
+      const responseData = response.data
+
+      console.log('loadArticle: Full response:', response)
+      console.log('loadArticle: responseData:', responseData)
+      console.log('loadArticle: responseData.data:', responseData.data)
+      console.log(
+        'loadArticle: responseData.data.translations keys:',
+        responseData.data?.translations ? Object.keys(responseData.data.translations).length : 'none',
+      )
+
+      // Handle translations if present - they are at responseData.data.translations
+      if (responseData.data?.translations) {
+        const translationsStore = useTranslationsStore()
+        translationsStore.mergeTranslations(responseData.data.translations)
+        console.log('loadArticle: Merged translations')
+      }
+
+      // Extract the actual article data from responseData.data.data
+      const articleData = responseData.data?.data || responseData.data
+      console.log('loadArticle: Setting currentArticle to:', articleData)
+      currentArticle.value = articleData || null
 
       return currentArticle.value
     } catch (err: unknown) {

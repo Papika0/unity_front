@@ -5,15 +5,13 @@ import { useNewsStore } from '@/stores/public/news'
 
 const { t } = useTranslations()
 const newsStore = useNewsStore()
-const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 // Get first 2 recent articles for homepage display
 const displayArticles = computed(() =>
   newsStore.recentArticles.slice(0, 2).map((article) => ({
     id: article.id,
     title: article.title,
-    excerpt: article.excerpt,
-    image: backendUrl + article.main_image,
+    image: article.main_image,
     publishDate: article.publish_date,
   })),
 )

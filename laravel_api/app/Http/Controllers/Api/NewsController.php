@@ -7,10 +7,18 @@ use App\Models\News;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use App\Http\Resources\Api\NewsResource;
+use App\Services\TranslationService;
 
 class NewsController extends Controller
 {
     use ApiResponse;
+
+    protected $translationService;
+
+    public function __construct(TranslationService $translationService)
+    {
+        $this->translationService = $translationService;
+    }
 
     /**
      * Display a listing of published news for public API.
@@ -18,8 +26,17 @@ class NewsController extends Controller
     public function index(Request $request)
     {
         try {
+            $locale = $request->input('locale', 'ka');
+            $requestGroups = $request->input('groups', []);
             $perPage = $request->input('per_page', 10);
             $category = $request->input('category');
+            $search = $request->input('search');
+
+            // Get translations if groups are requested
+            $translations = [];
+            if ($requestGroups) {
+                $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
+            }
 
             $query = News::where('is_active', true)
                         ->where('publish_date', '<=', now())
@@ -30,9 +47,28 @@ class NewsController extends Controller
                 $query->where('category', $category);
             }
 
-            $news = $query->paginate($perPage);
+            if ($search) {
+                $query->where(function($q) use ($search, $locale) {
+                    $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(title, '$.\"{$locale}\"')) LIKE ?", ["%{$search}%"])
+                      ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(excerpt, '$.\"{$locale}\"')) LIKE ?", ["%{$search}%"])
+                      ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(content, '$.\"{$locale}\"')) LIKE ?", ["%{$search}%"]);
+                });
+            }
 
-            return $this->success(NewsResource::collection($news)->response()->getData(true));
+            $news = $query->paginate($perPage);
+            
+            // Transform news items with locale
+            $newsCollection = $news->getCollection()->map(function ($item) use ($locale) {
+                return new NewsResource($item, $locale);
+            });
+            $news->setCollection($newsCollection);
+
+            $response = $news->toArray();
+            $response['translations'] = $translations;
+            $response['meta']['locale'] = $locale;
+            $response['meta']['cached_at'] = now()->toISOString();
+
+            return $this->success($response);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch news', 500);
         }
@@ -41,14 +77,33 @@ class NewsController extends Controller
     /**
      * Display the specified news article for public API.
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         try {
+            $locale = $request->input('locale', 'ka');
+            $requestGroups = $request->input('groups', []);
+
+            // Get translations if groups are requested
+            $translations = [];
+            if ($requestGroups) {
+                $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
+            }
+
             $news = News::where('is_active', true)
                        ->where('publish_date', '<=', now())
                        ->findOrFail($id);
 
-            return $this->success(new NewsResource($news));
+            // Increment view count
+            $news->increment('views');
+
+            return $this->success([
+                'data' => new NewsResource($news, $locale),
+                'translations' => $translations,
+                'meta' => [
+                    'locale' => $locale,
+                    'cached_at' => now()->toISOString(),
+                ]
+            ]);
         } catch (\Exception $e) {
             return $this->error('News article not found', 404);
         }
@@ -57,9 +112,18 @@ class NewsController extends Controller
     /**
      * Get featured news for public API.
      */
-    public function featured()
+    public function featured(Request $request)
     {
         try {
+            $locale = $request->input('locale', 'ka');
+            $requestGroups = $request->input('groups', []);
+
+            // Get translations if groups are requested
+            $translations = [];
+            if ($requestGroups) {
+                $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
+            }
+
             $news = News::where('is_active', true)
                        ->where('is_featured', true)
                        ->where('publish_date', '<=', now())
@@ -67,7 +131,18 @@ class NewsController extends Controller
                        ->limit(5)
                        ->get();
 
-            return $this->success(NewsResource::collection($news));
+            $newsCollection = $news->map(function ($item) use ($locale) {
+                return new NewsResource($item, $locale);
+            });
+
+            return $this->success([
+                'data' => $newsCollection,
+                'translations' => $translations,
+                'meta' => [
+                    'locale' => $locale,
+                    'cached_at' => now()->toISOString(),
+                ]
+            ]);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch featured news', 500);
         }
@@ -79,7 +154,15 @@ class NewsController extends Controller
     public function latest(Request $request)
     {
         try {
+            $locale = $request->input('locale', 'ka');
+            $requestGroups = $request->input('groups', []);
             $limit = $request->input('limit', 10);
+
+            // Get translations if groups are requested
+            $translations = [];
+            if ($requestGroups) {
+                $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
+            }
             
             $news = News::where('is_active', true)
                        ->where('publish_date', '<=', now())
@@ -87,7 +170,18 @@ class NewsController extends Controller
                        ->limit($limit)
                        ->get();
 
-            return $this->success(NewsResource::collection($news));
+            $newsCollection = $news->map(function ($item) use ($locale) {
+                return new NewsResource($item, $locale);
+            });
+
+            return $this->success([
+                'data' => $newsCollection,
+                'translations' => $translations,
+                'meta' => [
+                    'locale' => $locale,
+                    'cached_at' => now()->toISOString(),
+                ]
+            ]);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch latest news', 500);
         }

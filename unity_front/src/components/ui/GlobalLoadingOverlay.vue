@@ -58,10 +58,13 @@ const isAnyLoading = computed(() => {
     return localeStore.isSwitching // Only show for active language switching
   }
 
+  // COMMENTED OUT: Global loading overlay is too aggressive for quick operations
+  // Better to use per-page loading indicators (spinners, skeleton screens, etc.)
+  // Keep only for language switching which requires full page reload
   return (
-    homepageStore.isLoading ||
-    projectsStore.isLoading ||
-    newsStore.loading ||
+    // homepageStore.isLoading ||
+    // projectsStore.isLoading ||
+    // newsStore.loading ||
     localeStore.isSwitching
   )
 })
