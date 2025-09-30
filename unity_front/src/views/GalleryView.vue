@@ -182,8 +182,8 @@ const prevImage = () => {
               />
             </svg>
           </div>
-          <h2 class="text-3xl font-light text-slate-800 mb-4">No Images Found</h2>
-          <p class="text-slate-600 mb-8 text-lg">No gallery images are available at the moment.</p>
+          <h2 class="text-3xl font-light text-slate-800 mb-4">{{ t('gallery.no_images_found') }}</h2>
+          <p class="text-slate-600 mb-8 text-lg">{{ t('gallery.no_images_available') }}</p>
         </div>
 
         <!-- Gallery Images -->
@@ -309,7 +309,7 @@ const prevImage = () => {
               <div
                 class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"
               ></div>
-              Loading...
+              {{ t('buttons.loading') }}
             </span>
             <span v-else>{{ t('gallery.load_more') }}</span>
           </button>

@@ -69,7 +69,7 @@ const displayProjects = computed(() =>
                 ]"
               >
                 <svg
-                  v-if="project.status === 'დასრულებული'"
+                  v-if="project.status === t('projects.completed')"
                   class="w-3 h-3"
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -81,7 +81,7 @@ const displayProjects = computed(() =>
                   />
                 </svg>
                 <svg
-                  v-else-if="project.status === 'მშენებარე'"
+                  v-else-if="project.status === t('projects.ongoing')"
                   class="w-3 h-3"
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -93,7 +93,7 @@ const displayProjects = computed(() =>
                   />
                 </svg>
                 <svg
-                  v-else-if="project.status === 'დაგეგმილი'"
+                  v-else-if="project.status === t('projects.planning')"
                   class="w-3 h-3"
                   fill="currentColor"
                   viewBox="0 0 20 20"
