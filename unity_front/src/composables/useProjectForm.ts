@@ -215,8 +215,22 @@ export function useProjectForm() {
     // Other fields
     form.status = String(projectData.status || 'ongoing')
     form.year = Number(projectData.year)
-    form.start_date = String(projectData.start_date || '')
-    form.completion_date = String(projectData.completion_date || '')
+
+    // Convert dates to YYYY-MM format for month input
+    if (projectData.start_date) {
+      const startDate = new Date(String(projectData.start_date))
+      form.start_date = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`
+    } else {
+      form.start_date = ''
+    }
+
+    if (projectData.completion_date) {
+      const completionDate = new Date(String(projectData.completion_date))
+      form.completion_date = `${completionDate.getFullYear()}-${String(completionDate.getMonth() + 1).padStart(2, '0')}`
+    } else {
+      form.completion_date = ''
+    }
+
     form.is_active = Boolean(projectData.is_active)
     form.is_featured = Boolean(projectData.is_featured)
     form.is_onHomepage = Boolean(projectData.is_onHomepage)

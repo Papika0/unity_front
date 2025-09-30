@@ -136,7 +136,7 @@ const prevImage = () => {
                 class="animate-spin rounded-full h-20 w-20 border-4 border-orange-200 border-t-orange-500 mx-auto"
               ></div>
             </div>
-            <p class="text-slate-600 text-xl font-light">გალერეის სურათები იტვირთება...</p>
+            <p class="text-slate-600 text-xl font-light">{{ t('gallery.loading') }}</p>
           </div>
         </div>
 

@@ -319,7 +319,7 @@ function formatDate(dateStr: string) {
     'ნოემბერი',
     'დეკემბერი',
   ]
-  return `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`
+  return `${months[dt.getMonth()]} ${dt.getFullYear()}`
 }
 
 onMounted(fetchProject)

@@ -20,11 +20,11 @@ const projectsStore = useProjectsStore()
 
 const selectedCategory = ref('all')
 
-const categories = ref([
-  { value: 'all', label: 'ყველა' },
-  { value: 'ongoing', label: 'მშენებარე' },
-  { value: 'completed', label: 'დასრულებული' },
-  { value: 'planning', label: 'დაგეგმილი' },
+const categories = computed(() => [
+  { value: 'all', label: t('projects.categories.all') },
+  { value: 'ongoing', label: t('projects.categories.ongoing') },
+  { value: 'completed', label: t('projects.categories.completed') },
+  { value: 'planning', label: t('projects.categories.planning') },
 ])
 
 const filteredProjects = computed(() => {
@@ -86,11 +86,11 @@ const getStatusColor = (status: string) => {
 const getStatusText = (status: string) => {
   switch (status) {
     case 'completed':
-      return 'დასრულებული'
+      return t('projects.status.completed')
     case 'ongoing':
-      return 'მშენებარე'
+      return t('projects.status.ongoing')
     case 'planning':
-      return 'დაგეგმილი'
+      return t('projects.status.planning')
     default:
       return status
   }
@@ -112,7 +112,7 @@ const getStatusText = (status: string) => {
             </h1>
             <div class="w-24 h-0.5 bg-gradient-to-r from-orange-400 to-orange-500 mb-6"></div>
             <p class="text-lg md:text-xl text-orange-100 font-light leading-relaxed max-w-3xl">
-              ჩვენი რეალიზებული და მშენებარე პროექტების კოლექცია
+              {{ t('projects.subtitle') }}
             </p>
           </div>
         </div>
@@ -124,7 +124,7 @@ const getStatusText = (status: string) => {
       <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
         <div class="text-center mb-8">
           <h2 class="text-3xl lg:text-4xl font-light mb-4 text-zinc-900">
-            ფილტრი პროექტების მიხედვით
+            {{ t('projects.filter_title') }}
           </h2>
           <div class="w-24 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto"></div>
         </div>
@@ -157,19 +157,19 @@ const getStatusText = (status: string) => {
           <div
             class="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mb-6"
           ></div>
-          <p class="text-xl text-zinc-600 font-light">პროექტების ჩატვირთვა...</p>
+          <p class="text-xl text-zinc-600 font-light">{{ t('projects.loading') }}</p>
         </div>
 
         <!-- Error State -->
         <div v-else-if="error" class="text-center py-20">
           <div class="text-6xl mb-6">⚠️</div>
-          <h2 class="text-2xl font-light text-zinc-800 mb-4">შეცდომა</h2>
+          <h2 class="text-2xl font-light text-zinc-800 mb-4">{{ t('projects.error_title') }}</h2>
           <p class="text-lg text-zinc-600 mb-8 font-light">{{ error }}</p>
           <button
             @click="() => loadProjectsAndUpdateStore(1, false)"
             class="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-light text-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
           >
-            კვლავ ცდა
+            {{ t('buttons.retry') }}
           </button>
         </div>
 
@@ -179,9 +179,9 @@ const getStatusText = (status: string) => {
           <div v-if="filteredProjects.length === 0" class="text-center py-20">
             <div class="text-6xl mb-6 text-zinc-400">🏗️</div>
             <h3 class="text-2xl font-light text-zinc-600 mb-4">
-              ამ კატეგორიაში პროექტები არ მოიძებნა
+              {{ t('projects.no_projects_title') }}
             </h3>
-            <p class="text-lg text-zinc-500 font-light">გთხოვთ, სცადოთ სხვა კატეგორია</p>
+            <p class="text-lg text-zinc-500 font-light">{{ t('projects.no_projects_text') }}</p>
           </div>
 
           <!-- Projects Grid -->
@@ -273,8 +273,7 @@ const getStatusText = (status: string) => {
         <!-- Pagination Info -->
         <div v-if="filteredProjects.length > 0" class="text-center mt-12">
           <p class="text-zinc-600 font-light">
-            ნაჩვენებია {{ filteredProjects.length }}
-            {{ totalProjects > 1 ? 'პროექტიდან' : 'პროექტიდან' }}
+            {{ t('projects.showing') }} {{ filteredProjects.length }} {{ t('projects.of') }}
             {{ totalProjects }}
           </p>
         </div>
@@ -285,7 +284,7 @@ const getStatusText = (status: string) => {
             @click="() => loadProjectsAndUpdateStore(currentPage + 1, true)"
             class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-light text-lg transition-all duration-300 hover:shadow-xl hover:scale-105 hover:from-orange-600 hover:to-orange-700 group"
           >
-            <span class="mr-2">მეტი პროექტის ნახვა</span>
+            <span class="mr-2">{{ t('projects.load_more') }}</span>
             <svg
               class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
               fill="none"

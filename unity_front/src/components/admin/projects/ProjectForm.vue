@@ -93,7 +93,7 @@
           <FormField
             field-id="start_date"
             label="დაწყების თარიღი"
-            input-type="date"
+            input-type="month"
             :model-value="form.start_date"
             @update:model-value="updateStartDate"
             :required="true"
@@ -103,7 +103,7 @@
           <FormField
             field-id="completion_date"
             label="დამთავრების თარიღი"
-            input-type="date"
+            input-type="month"
             :model-value="form.completion_date"
             @update:model-value="updateCompletionDate"
             :required="true"

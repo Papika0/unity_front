@@ -90,7 +90,6 @@ const formatDate = (dateString: string | null) => {
   return date.toLocaleDateString('ka-GE', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric',
   })
 }
 
@@ -289,7 +288,7 @@ const goBack = () => {
             />
           </svg>
         </div>
-        <h2 class="text-3xl font-semibold text-slate-800 mb-4">შეცდომა</h2>
+        <h2 class="text-3xl font-semibold text-slate-800 mb-4">{{ t('projects.error_title') }}</h2>
         <p class="text-lg text-slate-600 mb-8">{{ error }}</p>
         <button
           @click="() => loadProjectData(parseInt(route.params.id as string))"
@@ -546,7 +545,7 @@ const goBack = () => {
                     v-if="project.start_date"
                     class="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-colors"
                   >
-                    <span class="font-medium text-slate-700">დაწყება</span>
+                    <span class="font-medium text-slate-700">{{ t('projects.details.start_date') }}</span>
                     <span class="text-slate-900 font-medium">{{
                       formatDate(project.start_date)
                     }}</span>
@@ -557,18 +556,10 @@ const goBack = () => {
                     v-if="project.completion_date"
                     class="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-colors"
                   >
-                    <span class="font-medium text-slate-700">დასრულება</span>
+                    <span class="font-medium text-slate-700">{{ t('projects.details.completion_date') }}</span>
                     <span class="text-slate-900 font-medium">{{
                       formatDate(project.completion_date)
                     }}</span>
-                  </div>
-
-                  <!-- Year -->
-                  <div
-                    class="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-colors"
-                  >
-                    <span class="font-medium text-slate-700">წელი</span>
-                    <span class="text-slate-900 font-medium">{{ project.year }}</span>
                   </div>
                 </div>
               </div>
@@ -663,6 +654,127 @@ const goBack = () => {
               </svg>
             </div>
             <p class="text-slate-500 text-lg">{{ t('projects.features.no_features') }}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Apartment Selection - Coming Soon -->
+      <section class="py-20 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50">
+        <div class="max-w-[1400px] mx-auto px-6 lg:px-12">
+          <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2">
+              <!-- Left side - Content -->
+              <div class="p-12 lg:p-16 flex flex-col justify-center">
+                <div class="inline-flex items-center gap-2 bg-amber-100 text-amber-700 px-4 py-2 rounded-full text-sm font-semibold mb-6 w-fit">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                  </svg>
+                  {{
+                    localeStore.currentLocale === 'ka'
+                      ? 'მალე გამოჩნდება'
+                      : localeStore.currentLocale === 'en'
+                        ? 'Coming Soon'
+                        : 'Скоро'
+                  }}
+                </div>
+
+                <h2 class="text-4xl md:text-5xl font-bold text-slate-900 mb-6 leading-tight">
+                  {{
+                    localeStore.currentLocale === 'ka'
+                      ? 'ბინის არჩევა'
+                      : localeStore.currentLocale === 'en'
+                        ? 'Apartment Selection'
+                        : 'Выбор квартиры'
+                  }}
+                </h2>
+
+                <p class="text-lg text-slate-600 mb-8 leading-relaxed">
+                  {{
+                    localeStore.currentLocale === 'ka'
+                      ? 'მალე შეძლებთ ინტერაქტიულად აირჩიოთ თქვენთვის სასურველი ბინა პროექტში. დაათვალიერეთ ხელმისაწვდომი ბინები, შეადარეთ განლაგება და მიიღეთ დეტალური ინფორმაცია.'
+                      : localeStore.currentLocale === 'en'
+                        ? 'Soon you will be able to interactively select your desired apartment in the project. Browse available apartments, compare layouts, and get detailed information.'
+                        : 'Скоро вы сможете интерактивно выбрать желаемую квартиру в проекте. Просмотрите доступные квартиры, сравните планировки и получите подробную информацию.'
+                  }}
+                </p>
+
+                <div class="space-y-4">
+                  <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mt-1">
+                      <svg class="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                      </svg>
+                    </div>
+                    <p class="text-slate-700 flex-1">
+                      {{
+                        localeStore.currentLocale === 'ka'
+                          ? 'ინტერაქტიული სართულების გეგმა'
+                          : localeStore.currentLocale === 'en'
+                            ? 'Interactive floor plans'
+                            : 'Интерактивные поэтажные планы'
+                      }}
+                    </p>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mt-1">
+                      <svg class="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                      </svg>
+                    </div>
+                    <p class="text-slate-700 flex-1">
+                      {{
+                        localeStore.currentLocale === 'ka'
+                          ? 'რეალურ დროში ხელმისაწვდომობის ინფორმაცია'
+                          : localeStore.currentLocale === 'en'
+                            ? 'Real-time availability information'
+                            : 'Информация о доступности в реальном времени'
+                      }}
+                    </p>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mt-1">
+                      <svg class="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                      </svg>
+                    </div>
+                    <p class="text-slate-700 flex-1">
+                      {{
+                        localeStore.currentLocale === 'ka'
+                          ? 'დეტალური ფასები და მახასიათებლები'
+                          : localeStore.currentLocale === 'en'
+                            ? 'Detailed prices and specifications'
+                            : 'Подробные цены и характеристики'
+                      }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right side - Visual placeholder -->
+              <div class="relative bg-gradient-to-br from-amber-400 to-orange-500 p-12 lg:p-16 flex items-center justify-center overflow-hidden">
+                <!-- Background pattern -->
+                <div class="absolute inset-0 opacity-10">
+                  <svg class="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                      <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
+                    </pattern>
+                    <rect width="100" height="100" fill="url(#grid)" />
+                  </svg>
+                </div>
+
+                <!-- Building icon illustration -->
+                <div class="relative z-10">
+                  <svg class="w-64 h-64 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                  </svg>
+                  <div class="absolute -top-4 -right-4 w-20 h-20 bg-white/20 rounded-full backdrop-blur-sm flex items-center justify-center">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
