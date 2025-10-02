@@ -29,17 +29,21 @@ class ProjectsPageController extends Controller
         $requestGroups = $request->input('groups', []);
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 6);
+        $status = $request->input('status', null); // Add status filter
 
         if ($requestGroups) {
             $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
         }
 
         // Get paginated projects data
-        $projectsQuery = Projects::where('is_active', true)
-                                ->orderBy('created_at', 'desc');
+        $projectsQuery = Projects::where('is_active', true);
 
-        // Get total count for pagination
-        $totalProjects = $projectsQuery->count();
+        // Apply status filter if provided
+        if ($status && $status !== 'all') {
+            $projectsQuery->where('status', $status);
+        }
+
+        $projectsQuery->orderBy('created_at', 'desc');
 
         // Get paginated results
         $projects = $projectsQuery->paginate($perPage, ['*'], 'page', $page);
@@ -58,6 +62,7 @@ class ProjectsPageController extends Controller
             ],
             'meta' => [
                 'locale' => $locale,
+                'status_filter' => $status,
                 'cached_at' => now()->toISOString(),
             ],
         ]);

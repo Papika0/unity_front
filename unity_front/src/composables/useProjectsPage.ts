@@ -27,7 +27,7 @@ export function useProjectsPage() {
     return pagination.value?.current_page || 1
   })
 
-  const loadProjectsPage = async (page: number = 1, loadMore: boolean = false) => {
+  const loadProjectsPage = async (page: number = 1, loadMore: boolean = false, status?: string) => {
     isLoading.value = true
     error.value = null
 
@@ -43,6 +43,7 @@ export function useProjectsPage() {
         locale: locale,
         page: page,
         per_page: 6,
+        status: status,
       })
 
       const data: ProjectsPageResponse = response.data

@@ -2,9 +2,9 @@
 import { computed } from 'vue'
 import { useTranslations } from '../../composables/useTranslations'
 import { useProjectsStore } from '@/stores/public/projects'
+import { getImageUrl } from '@/utils/imageUrl'
 
 const { t } = useTranslations()
-const backendUrl = import.meta.env.VITE_BACKEND_URL
 const projectsStore = useProjectsStore()
 
 const statusColorMap = {
@@ -31,27 +31,33 @@ const displayProjects = computed(() =>
     address: project.location,
     status: statusTextMap.value[project.status as keyof typeof statusTextMap.value],
     statusColor: statusColorMap[project.status],
-    image: backendUrl ? new URL(project.main_image, backendUrl).href : project.main_image,
+    image: getImageUrl(project.main_image),
   })),
 )
 </script>
 
 <template>
   <!-- Projects Section -->
-  <section class="bg-white py-16">
+  <section class="bg-zinc-50 py-24">
     <div class="max-w-7xl mx-auto px-4 md:px-8">
-      <h2
-        class="text-zinc-900 text-4xl font-normal font-roboto uppercase leading-loose tracking-[3px] mb-8"
-      >
+      <h2 class="text-zinc-900 text-4xl font-light uppercase tracking-wider mb-4">
         {{ t('home.projects') }}
       </h2>
-      <img src="../../assets/Vector_10.png" alt="" class="mb-16" />
+      <div class="w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mb-16"></div>
 
       <!-- Projects Grid -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-        <div v-for="project in displayProjects" :key="project.id" class="relative">
-          <div class="relative">
-            <img :src="project.image" :alt="project.title" class="w-full h-[507px] object-cover" />
+        <div
+          v-for="project in displayProjects"
+          :key="project.id"
+          class="group relative bg-white border border-zinc-100 hover:border-[#FFCD4B]/30 transition-all duration-500 hover:shadow-2xl overflow-hidden"
+        >
+          <div class="relative overflow-hidden">
+            <img
+              :src="project.image"
+              :alt="project.title"
+              class="w-full h-[507px] object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
+            />
             <!-- Apply overlay to all projects for consistent text visibility -->
             <div class="absolute inset-0 bg-zinc-900/50"></div>
 
@@ -124,15 +130,18 @@ const displayProjects = computed(() =>
             </div>
           </div>
 
-          <!-- CTA Button -->
+          <!-- Golden Accent Line -->
           <div
-            class="h-20 bg-gradient-to-b from-amber-300 via-amber-400 to-yellow-600 flex items-center px-6"
-          >
+            class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"
+          ></div>
+
+          <!-- CTA Button -->
+          <div class="relative bg-black px-6 py-6 group-hover:bg-zinc-900 transition-colors">
             <router-link
               :to="`/projects/${project.id}`"
-              class="text-black text-lg font-normal font-roboto uppercase leading-tight tracking-[2px] hover:opacity-80 transition-opacity flex items-center gap-2"
+              class="text-[#FFCD4B] text-sm font-light uppercase tracking-[2px] hover:text-[#EBB738] transition-colors flex items-center gap-2"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -146,7 +155,7 @@ const displayProjects = computed(() =>
                   d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                 />
               </svg>
-              {{ t('buttons.discover') }} {{ project.title }}
+              <span>{{ t('buttons.discover') }}</span>
             </router-link>
           </div>
         </div>
@@ -156,17 +165,9 @@ const displayProjects = computed(() =>
       <div class="text-center">
         <router-link
           to="/projects"
-          class="inline-flex items-center gap-3 bg-black text-white px-8 py-4 text-base font-roboto uppercase tracking-[2px] hover:bg-gray-800 transition-colors duration-300"
+          class="inline-flex items-center gap-3 px-10 py-4 bg-black hover:bg-zinc-900 text-[#FFCD4B] border border-[#FFCD4B]/30 font-light tracking-wider uppercase text-sm transition-all duration-300"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-            />
-          </svg>
-          {{ t('buttons.view_all') }}
+          <span>{{ t('buttons.view_all') }}</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"

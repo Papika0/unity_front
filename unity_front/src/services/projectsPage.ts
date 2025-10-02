@@ -6,6 +6,7 @@ export type ProjectsPageParams = {
   groups?: string[]
   page?: number
   per_page?: number
+  status?: string
 }
 
 export interface PaginationInfo {

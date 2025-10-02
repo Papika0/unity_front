@@ -22,9 +22,14 @@ class DatabaseSeeder extends Seeder
 
         // $this->call(RoleSeeder::class);
         // $this->call(TranslationSeeder::class);
-        // $this->call(NewsSeeder::class);
+        
+        // Seed Projects and News with placeholder images
+        $this->call([
+            ProjectsSeeder::class,
+            NewsSeeder::class,
+        ]);
+        
         // $this->call(AboutPageTranslationSeeder::class);
-        Projects::factory()->count(5)->create();
 
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',

@@ -43,16 +43,16 @@ const categories = computed(() => [
   { value: 'planning', label: t('projects.categories.planning') },
 ])
 
+// No longer need client-side filtering - we fetch filtered data from server
 const filteredProjects = computed(() => {
-  if (selectedCategory.value === 'all') {
-    return allProjects.value
-  }
-  return allProjects.value.filter((project) => project.status === selectedCategory.value)
+  return allProjects.value
 })
 
 // Function to load projects and update store
 const loadProjectsAndUpdateStore = async (page: number = 1, loadMore: boolean = false) => {
-  await loadProjectsPage(page, loadMore)
+  // Pass the selected category as status filter to the API
+  const statusFilter = selectedCategory.value === 'all' ? undefined : selectedCategory.value
+  await loadProjectsPage(page, loadMore, statusFilter)
 
   // Update the projects store with the loaded projects
   if (allProjects.value.length > 0) {
@@ -124,38 +124,38 @@ const getStatusText = (status: string) => {
     </div>
 
     <!-- Hero Section -->
-    <section class="relative bg-black overflow-hidden py-20 md:py-24">
-      <!-- Subtle geometric pattern with parallax effect -->
-      <div class="absolute inset-0 opacity-5">
+    <section class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
+      <!-- Diagonal overlay accent -->
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent"
+      ></div>
+
+      <!-- Decorative corner elements -->
+      <div class="absolute top-0 right-0 w-64 h-64 opacity-20">
         <div
-          class="absolute top-0 right-0 w-96 h-96 bg-[#FFCD4B] rounded-full blur-3xl animate-float"
+          class="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-[#FFCD4B]"
         ></div>
+      </div>
+      <div class="absolute bottom-0 left-0 w-64 h-64 opacity-20">
         <div
-          class="absolute bottom-0 left-0 w-96 h-96 bg-[#FFCD4B] rounded-full blur-3xl animate-float-delayed"
+          class="absolute bottom-0 left-0 w-24 h-24 border-b-2 border-l-2 border-[#FFCD4B]"
         ></div>
       </div>
 
-      <!-- Decorative lines -->
-      <div class="absolute inset-0 overflow-hidden">
-        <div
-          class="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#FFCD4B]/20 to-transparent"
-        ></div>
-        <div
-          class="absolute bottom-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#FFCD4B]/20 to-transparent"
-        ></div>
-      </div>
-
-      <div class="relative z-10 max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-        <div class="max-w-3xl fade-in-up">
-          <h1
-            class="text-4xl md:text-5xl lg:text-6xl font-light mb-6 leading-tight text-white tracking-wide"
-          >
-            {{ t('projects.title') }}
-          </h1>
-          <div class="w-20 h-0.5 bg-[#FFCD4B] mb-6 animate-expand"></div>
-          <p class="text-lg md:text-xl font-light leading-relaxed text-[#FFCD4B]">
-            {{ t('projects.subtitle') }}
-          </p>
+      <!-- Content -->
+      <div class="relative z-10 h-full flex flex-col justify-center">
+        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 w-full">
+          <div class="max-w-3xl fade-in-up">
+            <h1
+              class="text-4xl md:text-5xl lg:text-6xl font-light mb-6 leading-tight text-white"
+            >
+              {{ t('projects.title') }}
+            </h1>
+            <div class="w-20 h-1 bg-gradient-to-r from-[#FFCD4B] to-transparent mb-6"></div>
+            <p class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl">
+              {{ t('projects.subtitle') }}
+            </p>
+          </div>
         </div>
       </div>
     </section>

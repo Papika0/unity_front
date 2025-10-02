@@ -2,26 +2,21 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useTranslations } from '@/composables/useTranslations'
 import { useProjectsStore } from '@/stores/public/projects'
+import { getImageUrl, preloadImages } from '@/utils/imageUrl'
 
 const { t } = useTranslations()
 const projectsStore = useProjectsStore()
-const backendUrl = import.meta.env.VITE_BACKEND_URL
-const isDevelopment = true
 
-// Get featured projects for hero
+// Get featured projects for hero - show all featured projects
 const heroProjects = computed(() => {
   const featured = projectsStore.featuredProjects
 
-  if (featured.length >= 2) {
-    return featured.slice(0, 2)
+  if (featured.length > 0) {
+    return featured
   }
 
-  if (featured.length === 1) {
-    const nonFeatured = projectsStore.activeProjects.filter((p) => !p.is_featured).slice(0, 1)
-    return [...featured, ...nonFeatured]
-  }
-
-  return projectsStore.activeProjects.slice(0, 2)
+  // Fallback to active projects if no featured projects
+  return projectsStore.activeProjects.slice(0, 3)
 })
 
 // Current slide index
@@ -140,44 +135,16 @@ const setupIntersectionObserver = () => {
   return () => observer.disconnect()
 }
 
-// Helper function to get full image URL
-const getImageUrl = (imagePath: string) => {
-  if (!imagePath) return ''
-
-  // If backendUrl is not defined, use a placeholder for testing
-  if (!backendUrl) {
-    if (isDevelopment) {
-      console.warn('Backend URL not defined, using placeholder')
-    }
-    return `https://via.placeholder.com/1920x1080/1a1a1a/666666?text=${encodeURIComponent('Configure VITE_API_BASE_URL')}`
-  }
-
-  // If it's already a full URL, return as is
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    return imagePath
-  }
-
-  // Ensure no double slashes
-  const baseUrl = backendUrl.endsWith('/') ? backendUrl.slice(0, -1) : backendUrl
-  const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`
-
-  const fullUrl = `${baseUrl}${path}`
-
-  return fullUrl
-}
-
-// Preload images
-const preloadImages = () => {
-  heroProjects.value.forEach((project) => {
-    const img = new Image()
-    img.src = getImageUrl(project.main_image)
-  })
+// Preload hero images
+const preloadHeroImages = () => {
+  const imageUrls = heroProjects.value.map((project) => getImageUrl(project.main_image))
+  preloadImages(imageUrls)
 }
 
 onMounted(async () => {
   // Projects are now loaded via homepage bootstrap, no need to fetch here
   const cleanup = setupIntersectionObserver()
-  preloadImages()
+  preloadHeroImages()
   document.addEventListener('keydown', handleKeydown)
 
   return () => {
@@ -239,7 +206,7 @@ onUnmounted(() => {
                 'translate-y-8 opacity-0': index !== currentSlide,
               }"
             >
-              <!-- Location with Minimal Style -->
+              <!-- Location with Golden Accent -->
               <div
                 class="flex items-center space-x-2 transition-all duration-[2000ms] delay-300"
                 :class="{
@@ -247,8 +214,8 @@ onUnmounted(() => {
                   'translate-x-[-20px] opacity-0': index !== currentSlide,
                 }"
               >
-                <div class="w-12 h-[1px] bg-white/60"></div>
-                <p class="text-white/80 text-sm font-light tracking-[0.2em] uppercase">
+                <div class="w-12 h-[1px] bg-gradient-to-r from-[#FFCD4B] to-[#EBB738]"></div>
+                <p class="text-[#FFCD4B] text-sm font-light tracking-[0.2em] uppercase">
                   {{ project.location }}
                 </p>
               </div>
@@ -274,21 +241,22 @@ onUnmounted(() => {
                   'translate-y-4 opacity-0': index !== currentSlide,
                 }"
               >
-                <button
-                  class="group relative px-12 py-4 overflow-hidden transition-all duration-500"
+                <router-link
+                  :to="`/projects/${project.id}`"
+                  class="group relative inline-block px-12 py-4 overflow-hidden transition-all duration-500"
                 >
                   <span
-                    class="relative z-10 text-white text-sm tracking-[0.3em] uppercase font-light"
+                    class="relative z-10 text-[#FFCD4B] text-sm tracking-[0.3em] uppercase font-light"
                   >
                     {{ t('buttons.see_details') }}
                   </span>
                   <div
-                    class="absolute inset-0 border border-white/30 transition-all duration-500 group-hover:border-white/60"
+                    class="absolute inset-0 border border-[#FFCD4B]/30 transition-all duration-500 group-hover:border-[#FFCD4B]/60"
                   ></div>
                   <div
-                    class="absolute inset-0 bg-white/0 transition-all duration-500 group-hover:bg-white/10"
+                    class="absolute inset-0 bg-[#FFCD4B]/0 transition-all duration-500 group-hover:bg-[#FFCD4B]/10"
                   ></div>
-                </button>
+                </router-link>
               </div>
             </div>
           </div>
@@ -296,19 +264,19 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Minimalist Navigation -->
+    <!-- Navigation with Golden Accent -->
     <div class="absolute bottom-8 left-8 md:left-16 lg:left-24 flex items-center space-x-8 z-30">
       <!-- Slide Counter -->
       <div class="text-white/60 font-thin tracking-[0.2em]">
-        <span class="text-2xl text-white">{{ String(currentSlide + 1).padStart(2, '0') }}</span>
+        <span class="text-2xl text-[#FFCD4B]">{{ String(currentSlide + 1).padStart(2, '0') }}</span>
         <span class="text-sm mx-2">/</span>
         <span class="text-sm">{{ String(heroProjects.length).padStart(2, '0') }}</span>
       </div>
 
-      <!-- Progress Line -->
+      <!-- Progress Line with Golden Gradient -->
       <div class="relative w-32 h-[1px] bg-white/20 overflow-hidden">
         <div
-          class="absolute left-0 top-0 h-full bg-white transition-all duration-[1500ms] ease-out"
+          class="absolute left-0 top-0 h-full bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] transition-all duration-[1500ms] ease-out"
           :style="`width: ${((currentSlide + 1) / heroProjects.length) * 100}%`"
         ></div>
       </div>
@@ -325,7 +293,7 @@ onUnmounted(() => {
         aria-label="Previous slide"
       >
         <svg
-          class="w-12 h-12 text-white/40 group-hover:text-white/80 transition-all duration-300 group-hover:scale-110"
+          class="w-12 h-12 text-white/40 group-hover:text-[#FFCD4B] transition-all duration-300 group-hover:scale-110"
           fill="none"
           stroke="currentColor"
           stroke-width="0.5"
@@ -342,7 +310,7 @@ onUnmounted(() => {
         aria-label="Next slide"
       >
         <svg
-          class="w-12 h-12 text-white/40 group-hover:text-white/80 transition-all duration-300 group-hover:scale-110"
+          class="w-12 h-12 text-white/40 group-hover:text-[#FFCD4B] transition-all duration-300 group-hover:scale-110"
           fill="none"
           stroke="currentColor"
           stroke-width="0.5"

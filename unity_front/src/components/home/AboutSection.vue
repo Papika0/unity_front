@@ -14,45 +14,54 @@ const companyNameParts = computed(() => {
 
 <template>
   <!-- About Section -->
-  <section class="bg-yellow-50 py-16">
-    <div class="max-w-3xl mx-auto px-8">
+  <section class="bg-white py-24 lg:py-32">
+    <div class="max-w-4xl mx-auto px-8">
       <!-- Company Name -->
-      <div class="mb-12">
-        <h1 class="text-[#1A1120] text-4xl md:text-5xl font-bold font-serif leading-tight mb-1">
+      <div class="mb-16">
+        <div class="w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mb-8"></div>
+        <h1 class="text-zinc-900 text-5xl md:text-6xl font-extralight leading-tight mb-2">
           {{ companyNameParts[0] }}
         </h1>
-        <h2 class="text-[#1A1120] text-3xl md:text-4xl font-bold font-serif mb-6">
+        <h2 class="text-[#FFCD4B] text-4xl md:text-5xl font-extralight mb-8">
           {{ companyNameParts[1] }}
         </h2>
-        <p
-          class="text-[#1A1120] text-base md:text-lg font-normal font-serif leading-relaxed max-w-2xl mb-4"
-        >
+        <p class="text-zinc-600 text-lg md:text-xl font-light leading-relaxed max-w-2xl mb-6">
           {{ t('home.small_desc') }}
         </p>
         <RouterLink
           to="/about"
-          class="text-[#1A1120] text-sm font-serif cursor-pointer hover:text-[#333] transition-colors tracking-[3px]"
+          class="inline-flex items-center gap-2 text-[#C89116] text-sm font-light uppercase tracking-[3px] hover:text-[#FFCD4B] transition-colors"
         >
-          {{ t('buttons.see_details') }}
+          <span>{{ t('buttons.see_details') }}</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 8l4 4m0 0l-4 4m4-4H3"
+            />
+          </svg>
         </RouterLink>
       </div>
 
       <!-- Who We Are Section -->
-      <div class="mb-12">
-        <h3 class="text-[#1A1120] text-3xl font-bold font-roboto uppercase mb-8">
+      <div class="mb-16">
+        <h3 class="text-zinc-900 text-3xl font-light uppercase tracking-wider mb-6">
           {{ t('home.whoarewe') }}
         </h3>
-        <p class="text-[#1A1120] text-xl font-normal font-roboto leading-relaxed mb-8 max-w-2xl">
+        <div class="w-16 h-0.5 bg-[#FFCD4B] mb-6"></div>
+        <p class="text-zinc-700 text-lg font-light leading-relaxed max-w-2xl">
           {{ t('home.description') }}
         </p>
       </div>
 
       <!-- History Section -->
       <div>
-        <h4 class="text-[#1A1120] text-3xl font-bold font-roboto uppercase mb-8">
+        <h4 class="text-zinc-900 text-3xl font-light uppercase tracking-wider mb-6">
           {{ t('home.history') }}
         </h4>
-        <p class="text-[#1A1120] text-xl font-normal font-roboto leading-relaxed max-w-2xl">
+        <div class="w-16 h-0.5 bg-[#FFCD4B] mb-6"></div>
+        <p class="text-zinc-700 text-lg font-light leading-relaxed max-w-2xl">
           {{ t('home.history_text') }}
         </p>
       </div>

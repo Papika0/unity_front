@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
 import { useGalleryPage } from '../composables/useGalleryPage'
 
@@ -18,10 +18,23 @@ const {
 
 const selectedCategory = ref('all')
 const selectedImage = ref<number | null>(null)
+const scrollProgress = ref(0)
+
+// Scroll progress tracking
+const handleScroll = () => {
+  const scrollTop = window.scrollY
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight
+  scrollProgress.value = (scrollTop / docHeight) * 100
+}
 
 // Load gallery data on mount
 onMounted(async () => {
   await loadGalleryPage()
+  window.addEventListener('scroll', handleScroll)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 
 // Gallery data is loaded once on mount via loadGalleryPage()
@@ -65,22 +78,44 @@ const prevImage = () => {
 
 <template>
   <div class="gallery-page">
-    <!-- Hero Section -->
-    <section
-      class="relative h-[50vh] min-h-[400px] bg-gradient-to-br from-zinc-900 via-zinc-800 to-orange-900"
-    >
-      <div class="absolute inset-0 bg-black/20"></div>
+    <!-- Scroll Progress Bar -->
+    <div class="fixed top-0 left-0 right-0 h-1 bg-black/10 z-50">
       <div
-        class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out"
+        :style="{ width: scrollProgress + '%' }"
       ></div>
-      <div class="relative z-10 h-full flex items-center">
-        <div class="max-w-7xl mx-auto px-6 lg:px-12 xl:px-16 text-white">
-          <div class="max-w-4xl">
-            <h1 class="text-5xl md:text-6xl lg:text-7xl font-light mb-8 leading-tight">
+    </div>
+
+    <!-- Hero Section -->
+    <section class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
+      <!-- Diagonal overlay accent -->
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent"
+      ></div>
+
+      <!-- Decorative corner elements -->
+      <div class="absolute top-0 right-0 w-64 h-64 opacity-20">
+        <div
+          class="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-[#FFCD4B]"
+        ></div>
+      </div>
+      <div class="absolute bottom-0 left-0 w-64 h-64 opacity-20">
+        <div
+          class="absolute bottom-0 left-0 w-24 h-24 border-b-2 border-l-2 border-[#FFCD4B]"
+        ></div>
+      </div>
+
+      <!-- Content -->
+      <div class="relative z-10 h-full flex flex-col justify-center">
+        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 w-full">
+          <div class="max-w-3xl fade-in-up">
+            <h1
+              class="text-4xl md:text-5xl lg:text-6xl font-light mb-6 leading-tight text-white"
+            >
               {{ t('gallery.title') }}
             </h1>
-            <div class="w-24 h-0.5 bg-gradient-to-r from-orange-400 to-orange-500 mb-8"></div>
-            <p class="text-lg md:text-xl text-orange-100 font-light leading-relaxed max-w-3xl">
+            <div class="w-20 h-1 bg-gradient-to-r from-[#FFCD4B] to-transparent mb-6"></div>
+            <p class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl">
               {{ t('gallery.subtitle') }}
             </p>
           </div>
@@ -89,25 +124,20 @@ const prevImage = () => {
     </section>
 
     <!-- Filter Section -->
-    <section class="py-16 bg-gradient-to-b from-white to-slate-50">
-      <div class="max-w-7xl mx-auto px-6 lg:px-12 xl:px-16">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl md:text-4xl font-light text-slate-800 mb-4">
-            {{ t('gallery.filter_title') }}
-          </h2>
-          <div class="w-24 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto"></div>
-        </div>
-        <div class="flex flex-wrap gap-4 justify-center">
+    <section class="py-16 bg-zinc-50 border-b border-zinc-100 fade-in">
+      <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+        <div class="flex flex-wrap gap-3 justify-center">
           <button
-            v-for="category in categories"
+            v-for="(category, index) in categories"
             :key="category.value"
             @click="selectCategory(category.value)"
-            class="px-8 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+            class="px-6 py-2.5 text-sm uppercase tracking-wider font-light transition-all duration-300 transform hover:scale-105"
             :class="
               selectedCategory === category.value
-                ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
-                : 'bg-white text-slate-700 hover:bg-orange-50 border border-slate-200 hover:border-orange-200'
+                ? 'bg-black text-[#FFCD4B] shadow-lg'
+                : 'bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-200 hover:border-zinc-300'
             "
+            :style="{ animationDelay: `${index * 100}ms` }"
             :disabled="isLoading"
           >
             <span
@@ -115,7 +145,7 @@ const prevImage = () => {
               class="flex items-center gap-2"
             >
               <div
-                class="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"
+                class="animate-spin rounded-full h-4 w-4 border-2 border-transparent border-t-[#FFCD4B]"
               ></div>
               {{ category.label }}
             </span>
@@ -126,38 +156,26 @@ const prevImage = () => {
     </section>
 
     <!-- Gallery Grid -->
-    <section class="py-20 bg-gradient-to-br from-zinc-50 to-orange-50">
-      <div class="max-w-7xl mx-auto px-6 lg:px-12 xl:px-16">
+    <section class="py-16 lg:py-20 bg-white">
+      <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
         <!-- Loading State -->
-        <div v-if="isLoading" class="flex justify-center items-center py-20 min-h-[400px]">
-          <div class="text-center">
-            <div class="relative mb-8">
-              <div
-                class="animate-spin rounded-full h-20 w-20 border-4 border-orange-200 border-t-orange-500 mx-auto"
-              ></div>
-            </div>
-            <p class="text-slate-600 text-xl font-light">{{ t('gallery.loading') }}</p>
-          </div>
+        <div v-if="isLoading" class="text-center py-20">
+          <div
+            class="inline-block animate-spin rounded-full h-12 w-12 border-2 border-transparent border-t-[#FFCD4B] mb-6"
+          ></div>
+          <p class="text-lg text-zinc-500 font-light uppercase tracking-wider">
+            {{ t('gallery.loading') }}
+          </p>
         </div>
 
         <!-- Error State -->
         <div v-else-if="error" class="text-center py-20">
-          <div
-            class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center"
-          >
-            <svg class="w-10 h-10 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fill-rule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </div>
-          <h2 class="text-3xl font-light text-slate-800 mb-4">{{ t('gallery.error_title') }}</h2>
-          <p class="text-slate-600 mb-8 text-lg">{{ error }}</p>
+          <div class="text-5xl mb-6">⚠️</div>
+          <h2 class="text-xl font-light text-zinc-800 mb-3">{{ t('gallery.error_title') }}</h2>
+          <p class="text-base text-zinc-600 mb-8 font-light">{{ error }}</p>
           <button
             @click="loadGalleryPage()"
-            class="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full font-medium text-lg transition-all duration-300 hover:shadow-xl hover:scale-105 transform"
+            class="px-8 py-3 bg-black text-[#FFCD4B] font-light text-sm uppercase tracking-wider transition-all duration-300 hover:bg-zinc-900"
           >
             {{ t('buttons.retry') }}
           </button>
@@ -165,47 +183,39 @@ const prevImage = () => {
 
         <!-- Empty State (shouldn't happen since we only show categories with images) -->
         <div v-else-if="filteredGallery.length === 0 && !isLoading" class="text-center py-20">
-          <div
-            class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center"
-          >
-            <svg
-              class="w-10 h-10 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-          <h2 class="text-3xl font-light text-slate-800 mb-4">{{ t('gallery.no_images_found') }}</h2>
-          <p class="text-slate-600 mb-8 text-lg">{{ t('gallery.no_images_available') }}</p>
+          <div class="text-5xl mb-6 text-zinc-300">🏗️</div>
+          <h3 class="text-xl font-light text-zinc-600 mb-3">{{ t('gallery.no_images_found') }}</h3>
+          <p class="text-base text-zinc-500 font-light">{{ t('gallery.no_images_available') }}</p>
         </div>
 
         <!-- Gallery Images -->
         <div
           v-else-if="filteredGallery.length > 0"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           <div
-            v-for="item in filteredGallery"
+            v-for="(item, index) in filteredGallery"
             :key="item.id"
             @click="openLightbox(item.id)"
-            class="gallery-item group cursor-pointer overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 animate-fade-in-up"
+            class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 cursor-pointer fade-in-up"
+            :style="{ animationDelay: `${index * 100}ms` }"
           >
             <!-- Image -->
-            <div class="aspect-square relative overflow-hidden">
+            <div class="relative h-72 bg-zinc-100 overflow-hidden">
               <img
                 :src="item.url"
                 :alt="item.alt_text || 'Gallery image'"
-                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
               />
+
+              <!-- Gradient overlay on hover -->
               <div
-                class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              ></div>
+
+              <!-- Golden accent line on hover -->
+              <div
+                class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"
               ></div>
 
               <!-- Zoom Icon -->
@@ -213,7 +223,7 @@ const prevImage = () => {
                 class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-75 group-hover:scale-100"
               >
                 <div
-                  class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center"
+                  class="w-16 h-16 bg-[#FFCD4B]/20 backdrop-blur-sm rounded-full flex items-center justify-center"
                 >
                   <svg
                     class="w-8 h-8 text-white"
@@ -234,27 +244,33 @@ const prevImage = () => {
               <!-- Category Badge -->
               <div
                 v-if="item.category"
-                class="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                class="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm text-xs font-light uppercase tracking-wider"
               >
                 {{ getCategoryLabel(item.category) }}
               </div>
             </div>
 
             <!-- Content -->
-            <div class="p-6">
-              <h3 class="text-lg font-medium text-slate-800 mb-2 line-clamp-2">
+            <div class="p-6 bg-white relative overflow-hidden">
+              <!-- Subtle background accent -->
+              <div
+                class="absolute top-0 right-0 w-32 h-32 bg-[#FFCD4B]/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              ></div>
+
+              <h3
+                class="text-lg font-light text-zinc-900 mb-3 line-clamp-1 relative z-10 group-hover:text-[#C89116] transition-colors duration-300"
+              >
                 {{ item.title }}
               </h3>
-              <p v-if="item.project" class="text-sm text-slate-500 mb-3 line-clamp-1">
+
+              <p v-if="item.project" class="text-sm text-zinc-500 mb-3 line-clamp-1 relative z-10">
                 {{ item.project }}
               </p>
-              <div class="flex items-center justify-between">
-                <span class="text-xs text-slate-400">
+
+              <div class="flex items-center justify-between relative z-10">
+                <span class="text-xs text-zinc-400 font-light">
                   {{ new Date(item.created_at).toLocaleDateString('ka-GE') }}
                 </span>
-                <div
-                  class="w-2 h-2 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full"
-                ></div>
               </div>
             </div>
           </div>
@@ -262,27 +278,9 @@ const prevImage = () => {
 
         <!-- Empty State -->
         <div v-else class="text-center py-20">
-          <div
-            class="w-24 h-24 mx-auto mb-8 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center"
-          >
-            <svg
-              class="w-12 h-12 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-          <h2 class="text-3xl font-light text-slate-800 mb-4">
-            {{ t('gallery.no_images_title') }}
-          </h2>
-          <p class="text-slate-600 mb-8 text-lg max-w-md mx-auto">
+          <div class="text-5xl mb-6 text-zinc-300">📷</div>
+          <h2 class="text-xl font-light text-zinc-800 mb-3">{{ t('gallery.no_images_title') }}</h2>
+          <p class="text-base text-zinc-600 mb-8 font-light max-w-md mx-auto">
             {{
               selectedCategory === 'all'
                 ? t('gallery.no_images_all')
@@ -292,188 +290,206 @@ const prevImage = () => {
           <button
             v-if="selectedCategory !== 'all'"
             @click="selectCategory('all')"
-            class="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full font-medium text-lg transition-all duration-300 hover:shadow-xl hover:scale-105 transform"
+            class="px-8 py-3 bg-black text-[#FFCD4B] font-light text-sm uppercase tracking-wider transition-all duration-300 hover:bg-zinc-900"
           >
             {{ t('gallery.view_all') }}
           </button>
         </div>
 
         <!-- Load More Button -->
-        <div v-if="filteredGallery.length > 0 && hasMorePages" class="text-center mt-16">
+        <div v-if="filteredGallery.length > 0 && hasMorePages" class="text-center mt-10">
           <button
             @click="loadMore(selectedCategory === 'all' ? undefined : selectedCategory)"
             :disabled="isLoadingMore"
-            class="px-12 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full font-medium text-lg transition-all duration-300 hover:shadow-xl hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed"
+            class="inline-flex items-center gap-3 px-10 py-4 bg-black text-[#FFCD4B] text-sm uppercase tracking-wider font-light transition-all duration-300 hover:bg-zinc-900 group disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span v-if="isLoadingMore" class="flex items-center gap-2">
               <div
-                class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"
+                class="animate-spin rounded-full h-4 w-4 border-2 border-transparent border-t-[#FFCD4B]"
               ></div>
               {{ t('buttons.loading') }}
             </span>
-            <span v-else>{{ t('gallery.load_more') }}</span>
+            <span v-else class="flex items-center gap-3">
+              {{ t('gallery.load_more') }}
+              <svg
+                class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
+            </span>
           </button>
         </div>
       </div>
     </section>
 
     <!-- Lightbox Modal -->
-    <div
-      v-if="selectedImage && getSelectedImageData"
-      @click="closeLightbox"
-      class="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300"
-    >
-      <div class="relative max-w-6xl w-full max-h-[90vh]">
-        <!-- Close Button -->
-        <button
-          @click="closeLightbox"
-          class="absolute -top-4 -right-4 z-20 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 hover:scale-110"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+    <Teleport to="body">
+      <div
+        v-if="selectedImage && getSelectedImageData"
+        @click="closeLightbox"
+        class="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300"
+      >
+        <div class="relative max-w-6xl w-full max-h-[90vh]">
+          <!-- Close Button -->
+          <button
+            @click="closeLightbox"
+            class="absolute top-6 right-6 z-20 text-white hover:text-[#FFCD4B] transition-colors"
+          >
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
 
-        <!-- Navigation Buttons -->
-        <button
-          @click.stop="prevImage"
-          class="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 hover:scale-110"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
+          <!-- Navigation Buttons -->
+          <button
+            @click.stop="prevImage"
+            class="absolute left-6 top-1/2 -translate-y-1/2 z-20 text-white hover:text-[#FFCD4B] transition-colors"
+          >
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
 
-        <button
-          @click.stop="nextImage"
-          class="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 hover:scale-110"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
+          <button
+            @click.stop="nextImage"
+            class="absolute right-6 top-1/2 -translate-y-1/2 z-20 text-white hover:text-[#FFCD4B] transition-colors"
+          >
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
 
-        <!-- Image Container -->
-        <div
-          @click.stop
-          class="lightbox-content bg-white rounded-2xl overflow-hidden shadow-2xl animate-fade-in-scale"
-        >
-          <!-- Large Image -->
-          <div class="relative aspect-video bg-gradient-to-br from-slate-100 to-slate-200">
-            <img
-              :src="getSelectedImageData.url"
-              :alt="getSelectedImageData.alt_text || 'Gallery image'"
-              class="w-full h-full object-cover"
-            />
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"
-            ></div>
+          <!-- Image Container -->
+          <div @click.stop class="lightbox-content bg-white overflow-hidden shadow-2xl">
+            <!-- Large Image -->
+            <div class="relative aspect-video bg-zinc-100">
+              <img
+                :src="getSelectedImageData.url"
+                :alt="getSelectedImageData.alt_text || 'Gallery image'"
+                class="w-full h-full object-cover"
+              />
 
-            <!-- Image Counter -->
-            <div
-              class="absolute top-4 left-4 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full text-sm font-medium text-slate-700"
-            >
-              {{ filteredGallery.findIndex((item) => item.id === selectedImage) + 1 }} /
-              {{ filteredGallery.length }}
-            </div>
-          </div>
-
-          <!-- Image Info -->
-          <div class="p-8">
-            <div class="flex items-start justify-between mb-6">
-              <div class="flex-1">
-                <h2 class="text-3xl font-light text-slate-800 mb-3">
-                  {{ getSelectedImageData.title }}
-                </h2>
-                <div class="flex items-center gap-4 text-slate-500">
-                  <span v-if="getSelectedImageData.project" class="flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                      />
-                    </svg>
-                    {{ getSelectedImageData.project }}
-                  </span>
-                  <span v-if="getSelectedImageData.category" class="flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                      />
-                    </svg>
-                    {{ getCategoryLabel(getSelectedImageData.category) }}
-                  </span>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-sm text-slate-400 mb-1">{{ t('gallery.created') }}</div>
-                <div class="text-slate-600 font-medium">
-                  {{
-                    new Date(getSelectedImageData.created_at).toLocaleDateString('ka-GE', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })
-                  }}
-                </div>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex items-center gap-4 pt-6 border-t border-slate-200">
-              <button
-                @click="closeLightbox"
-                class="px-6 py-3 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 rounded-full font-medium transition-all duration-300 hover:shadow-lg hover:scale-105"
+              <!-- Image Counter -->
+              <div
+                class="absolute top-4 left-4 px-4 py-2 bg-black/60 backdrop-blur-sm text-white text-sm font-light"
               >
-                {{ t('gallery.close') }}
-              </button>
+                {{ filteredGallery.findIndex((item) => item.id === selectedImage) + 1 }} /
+                {{ filteredGallery.length }}
+              </div>
+            </div>
+
+            <!-- Image Info -->
+            <div class="p-8">
+              <div class="flex items-start justify-between mb-6">
+                <div class="flex-1">
+                  <h2 class="text-3xl font-light text-zinc-900 mb-3">
+                    {{ getSelectedImageData.title }}
+                  </h2>
+                  <div class="flex items-center gap-4 text-zinc-600">
+                    <span v-if="getSelectedImageData.project" class="flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                        />
+                      </svg>
+                      {{ getSelectedImageData.project }}
+                    </span>
+                    <span v-if="getSelectedImageData.category" class="flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                        />
+                      </svg>
+                      {{ getCategoryLabel(getSelectedImageData.category) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-zinc-400 mb-1 font-light">
+                    {{ t('gallery.created') }}
+                  </div>
+                  <div class="text-zinc-700 font-light">
+                    {{
+                      new Date(getSelectedImageData.created_at).toLocaleDateString('ka-GE', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center gap-4 pt-6 border-t border-zinc-200">
+                <button
+                  @click="closeLightbox"
+                  class="px-6 py-3 bg-zinc-100 text-zinc-700 font-light transition-all duration-300 hover:bg-zinc-200"
+                >
+                  {{ t('gallery.close') }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 
 <style scoped>
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Line clamp utilities */
 .line-clamp-1 {
-  overflow: hidden;
   display: -webkit-box;
-  -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
   line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .line-clamp-2 {
-  overflow: hidden;
   display: -webkit-box;
-  -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Custom animations */
+/* Fade in animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -485,50 +501,117 @@ const prevImage = () => {
   }
 }
 
-@keyframes fadeInScale {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: scale(0.9);
   }
   to {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out;
+@keyframes expand {
+  from {
+    width: 0;
+  }
+  to {
+    width: 5rem;
+  }
 }
 
-.animate-fade-in-scale {
-  animation: fadeInScale 0.4s ease-out;
+@keyframes float {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(20px, -20px);
+  }
 }
 
-/* Smooth transitions for gallery items */
-.gallery-item {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+@keyframes floatDelayed {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-20px, 20px);
+  }
 }
 
-.gallery-item:hover {
-  transform: translateY(-8px) scale(1.02);
+.fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
 }
 
-/* Custom scrollbar for lightbox */
-.lightbox-content::-webkit-scrollbar {
-  width: 6px;
+.fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+  opacity: 0;
 }
 
-.lightbox-content::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 3px;
+.animate-expand {
+  animation: expand 1s ease-out forwards;
 }
 
-.lightbox-content::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+.animate-float {
+  animation: float 8s ease-in-out infinite;
 }
 
-.lightbox-content::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+.animate-float-delayed {
+  animation: floatDelayed 10s ease-in-out infinite;
+}
+
+/* Custom gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #ffcd4b, #ebb738);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Enhanced shadow effects */
+.shadow-luxury {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Custom backdrop blur */
+.backdrop-blur-luxury {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #18181b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #ffcd4b, #ebb738, #c89116);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #ebb738, #c89116, #a37814);
+}
+
+/* Selection color */
+::selection {
+  background: #ffcd4b;
+  color: #000;
+}
+
+::-moz-selection {
+  background: #ffcd4b;
+  color: #000;
 }
 </style>

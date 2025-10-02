@@ -16,33 +16,11 @@ class ProjectsFactory extends Factory
 
     private function generatePlaceholderImage($width, $height, $folder, $seed)
     {
-        // Create directories if they don't exist
-        Storage::disk('public')->makeDirectory("projects/{$folder}");
-        
-        $filename = "{$seed}.jpg";
-        $path = "projects/{$folder}/{$filename}";
-        $fullPath = storage_path("app/public/{$path}");
-        
-        // Create image
-        $image = imagecreate($width, $height);
-        
-        // Generate colors based on seed for consistency
-        srand(crc32($seed));
-        $bgColor = imagecolorallocate($image, rand(100, 255), rand(100, 255), rand(100, 255));
-        $textColor = imagecolorallocate($image, rand(0, 100), rand(0, 100), rand(0, 100));
-        
-        // Fill background
-        imagefill($image, 0, 0, $bgColor);
-        
-        // Add text
-        $text = "{$width}x{$height}";
-        imagestring($image, 5, ($width - strlen($text) * 10) / 2, ($height - 15) / 2, $text, $textColor);
-        
-        // Save image
-        imagejpeg($image, $fullPath, 80);
-        imagedestroy($image);
-        
-        return "storage/{$path}";
+        // Use picsum.photos for reliable placeholder images
+        // Generate a deterministic ID based on seed
+        $imageId = abs(crc32($seed . $folder)) % 1000;
+
+        return "https://picsum.photos/seed/{$seed}-{$folder}/{$width}/{$height}";
     }
 
     public function definition()
@@ -53,38 +31,46 @@ class ProjectsFactory extends Factory
         $renderSeed  = $this->faker->unique()->uuid;
         $gallerySeeds= [$this->faker->unique()->uuid, $this->faker->unique()->uuid, $this->faker->unique()->uuid,$this->faker->unique()->uuid,$this->faker->unique()->uuid,$this->faker->unique()->uuid,$this->faker->unique()->uuid,$this->faker->unique()->uuid,$this->faker->unique()->uuid,];
 
+        $projectTitles = [
+            ['en' => 'Modern Residential Complex', 'ka' => 'თანამედროვე საცხოვრებელი კომპლექსი', 'ru' => 'Современный жилой комплекс'],
+            ['en' => 'Luxury Hotel & Spa', 'ka' => 'ლუქს სასტუმრო და სპა', 'ru' => 'Роскошный отель и спа'],
+            ['en' => 'Commercial Business Center', 'ka' => 'კომერციული ბიზნეს ცენტრი', 'ru' => 'Коммерческий бизнес-центр'],
+            ['en' => 'Urban Shopping Mall', 'ka' => 'ურბანული სავაჭრო ცენტრი', 'ru' => 'Городской торговый центр'],
+            ['en' => 'Waterfront Development', 'ka' => 'წყალპირა განვითარება', 'ru' => 'Развитие набережной'],
+            ['en' => 'Green Office Tower', 'ka' => 'მწვანე ოფისის კოშკი', 'ru' => 'Зеленая офисная башня'],
+            ['en' => 'Mixed-Use Development', 'ka' => 'შერეული დანიშნულების განვითარება', 'ru' => 'Многофункциональная застройка'],
+        ];
+
+        $randomTitle = $this->faker->randomElement($projectTitles);
+
         return [
-            'title'           => [
-                'en' => $this->faker->sentence(3),
-                'ka' => $this->faker->sentence(3, true),
-                'ru' => $this->faker->sentence(3, true),
-            ],
+            'title'           => $randomTitle,
             'description'     => [
-                'en' => $this->faker->paragraph(),
-                'ka' => $this->faker->paragraph(2, true),
-                'ru' => $this->faker->paragraph(2, true),
+                'en' => $this->faker->paragraph(4),
+                'ka' => $this->faker->paragraph(3, true),
+                'ru' => $this->faker->paragraph(3, true),
             ],
-            'location'        => [                              // ← new
-                'en' => $this->faker->city,
-                'ka' => $this->faker->city,    // you can swap to more Georgian-specific if you like
-                'ru' => $this->faker->city,
+            'location'        => [
+                'en' => $this->faker->city . ', Georgia',
+                'ka' => $this->faker->city . ', საქართველო',
+                'ru' => $this->faker->city . ', Грузия',
             ],
             'status'          => Arr::random(['planning','ongoing','completed']),
             'start_date'      => $start->format('Y-m-d'),
             'completion_date' => $end->format('Y-m-d'),
 
-            'main_image'      => $this->generatePlaceholderImage(800, 600, 'main', $mainSeed),
-            'render_image'    => $this->generatePlaceholderImage(800, 600, 'render', $renderSeed),
+            'main_image'      => $this->generatePlaceholderImage(1920, 1080, 'main', $mainSeed),
+            'render_image'    => $this->generatePlaceholderImage(1920, 1080, 'render', $renderSeed),
             'gallery_images'  => [
-                $this->generatePlaceholderImage(400, 300, 'gallery', $gallerySeeds[0]),
-                $this->generatePlaceholderImage(400, 300, 'gallery', $gallerySeeds[1]),
-                $this->generatePlaceholderImage(400, 300, 'gallery', $gallerySeeds[2]),
-                $this->generatePlaceholderImage(400, 300, 'gallery', $gallerySeeds[3]),
-                $this->generatePlaceholderImage(400, 300, 'gallery', $gallerySeeds[4]),
-                $this->generatePlaceholderImage(400, 300, 'gallery', $gallerySeeds[5]),
-                $this->generatePlaceholderImage(400, 300, 'gallery', $gallerySeeds[6]),
-                $this->generatePlaceholderImage(400, 300, 'gallery', $gallerySeeds[7]),
-                $this->generatePlaceholderImage(400, 300, 'gallery', $gallerySeeds[8]),
+                $this->generatePlaceholderImage(1200, 800, 'gallery', $gallerySeeds[0]),
+                $this->generatePlaceholderImage(1200, 800, 'gallery', $gallerySeeds[1]),
+                $this->generatePlaceholderImage(1200, 800, 'gallery', $gallerySeeds[2]),
+                $this->generatePlaceholderImage(1200, 800, 'gallery', $gallerySeeds[3]),
+                $this->generatePlaceholderImage(1200, 800, 'gallery', $gallerySeeds[4]),
+                $this->generatePlaceholderImage(1200, 800, 'gallery', $gallerySeeds[5]),
+                $this->generatePlaceholderImage(1200, 800, 'gallery', $gallerySeeds[6]),
+                $this->generatePlaceholderImage(1200, 800, 'gallery', $gallerySeeds[7]),
+                $this->generatePlaceholderImage(1200, 800, 'gallery', $gallerySeeds[8]),
             ],
 
             'year'            => $this->faker->year,

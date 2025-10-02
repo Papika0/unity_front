@@ -27,14 +27,22 @@ class NewsFactory extends Factory
         $categories = ['company', 'project', 'industry', 'event'];
         $tags = ['innovation', 'technology', 'construction', 'architecture', 'development', 'news', 'update'];
 
+        $newsTitles = [
+            ['en' => 'New Sustainable Building Project Launched', 'ka' => 'ახალი მდგრადი შენობის პროექტი გაიხსნა', 'ru' => 'Запущен новый проект устойчивого строительства'],
+            ['en' => 'Award-Winning Architecture Design Revealed', 'ka' => 'ჯილდოს მფლობელი არქიტექტურული დიზაინი გამოვლინდა', 'ru' => 'Представлен архитектурный дизайн, удостоенный награды'],
+            ['en' => 'Unity Architecture Expands to New Markets', 'ka' => 'Unity Architecture ახალ ბაზრებზე ფართოვდება', 'ru' => 'Unity Architecture расширяется на новые рынки'],
+            ['en' => 'Modern Office Complex Completed Ahead of Schedule', 'ka' => 'თანამედროვე ოფისის კომპლექსი ვადაზე ადრე დასრულდა', 'ru' => 'Современный офисный комплекс завершен раньше срока'],
+            ['en' => 'Green Building Initiative Wins Industry Recognition', 'ka' => 'მწვანე შენობის ინიციატივამ მიიღო ინდუსტრიის აღიარება', 'ru' => 'Инициатива зеленого строительства получила отраслевое признание'],
+            ['en' => 'Smart City Development Project Announced', 'ka' => 'გამოცხადდა ჭკვიანი ქალაქის განვითარების პროექტი', 'ru' => 'Объявлен проект развития умного города'],
+        ];
+
+        $randomTitle = $this->faker->randomElement($newsTitles);
+        $randomSeed = $this->faker->numberBetween(1, 1000);
+
         return [
             'is_active' => true,
             'is_featured' => $this->faker->boolean(20), // 20% chance of being featured
-            'title' => [
-                'ka' => $this->faker->sentence(6),
-                'en' => $this->faker->sentence(6),
-                'ru' => $this->faker->sentence(6),
-            ],
+            'title' => $randomTitle,
             'excerpt' => [
                 'ka' => $this->faker->paragraph(2),
                 'en' => $this->faker->paragraph(2),
@@ -46,15 +54,15 @@ class NewsFactory extends Factory
                 'ru' => $this->faker->paragraphs(5, true),
             ],
             'category' => $this->faker->randomElement($categories),
-            'main_image' => 'https://placehold.co/800x400',
+            'main_image' => "https://picsum.photos/seed/news-{$randomSeed}/1200/630",
             'gallery_images' => $this->faker->boolean(70) ? [
-                'https://placehold.co/600x400',
-                'https://placehold.co/600x400',
-                'https://placehold.co/600x400',
+                "https://picsum.photos/seed/news-{$randomSeed}-1/1200/800",
+                "https://picsum.photos/seed/news-{$randomSeed}-2/1200/800",
+                "https://picsum.photos/seed/news-{$randomSeed}-3/1200/800",
             ] : [],
             'tags' => $this->faker->randomElements($tags, $this->faker->numberBetween(1, 4)),
             'publish_date' => $this->faker->dateTimeBetween('-6 months', 'now'),
-            'views' => $this->faker->numberBetween(0, 1000),
+            'views' => $this->faker->numberBetween(100, 5000),
             'meta_title' => $this->faker->sentence(8),
             'meta_description' => $this->faker->paragraph(1),
         ];

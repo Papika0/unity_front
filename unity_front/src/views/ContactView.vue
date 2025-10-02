@@ -24,12 +24,19 @@ const form = reactive({
   subject: 'general',
 })
 
+const scrollProgress = ref(0)
 const isSubmitting = ref(false)
 const isSubmitted = ref(false)
 const openFaq = ref<number | null>(null)
 const mapLoaded = ref(false)
 const isDropdownOpen = ref(false)
 const isValidPhone = ref(false)
+
+const handleScroll = () => {
+  const scrollTop = window.scrollY
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight
+  scrollProgress.value = (scrollTop / docHeight) * 100
+}
 
 const selectedSubject = computed(() => {
   return formSubjects.value.find((subject) => subject.value === form.subject)
@@ -138,48 +145,60 @@ onMounted(async () => {
   setTimeout(() => {
     mapLoaded.value = true
   }, 500)
+
+  // Scroll progress tracking
+  window.addEventListener('scroll', handleScroll)
 })
+
+const onBeforeUnmount = () => {
+  window.removeEventListener('scroll', handleScroll)
+}
 </script>
 
 <template>
   <div class="contact-page">
-    <!-- Hero Section - Warm gradient with orange tones -->
-    <section
-      class="relative h-[60vh] min-h-[500px] bg-gradient-to-br from-zinc-900 via-zinc-800 to-orange-900"
-    >
-      <!-- Subtle pattern overlay -->
-      <div class="absolute inset-0 bg-black/20"></div>
+    <!-- Scroll Progress Bar -->
+    <div class="fixed top-0 left-0 w-full h-1 bg-black/5 z-[100]">
       <div
-        class="absolute inset-0 opacity-[0.03]"
-        style="
-          background-image: url(&quot;data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grid' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 100 0 L 0 0 0 100' fill='none' stroke='white' stroke-width='0.5'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23grid)' /%3E%3C/svg%3E&quot;);
-        "
+        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-300"
+        :style="{ width: scrollProgress + '%' }"
+      ></div>
+    </div>
+
+    <!-- Hero Section - Compact with corner frames -->
+    <section class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
+      <!-- Diagonal gradient overlay -->
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent"
       ></div>
 
-      <div class="relative z-10 h-full flex items-center">
-        <div class="container mx-auto px-6 lg:px-12 xl:px-20">
-          <div class="max-w-5xl">
-            <!-- Elegant accent line -->
-            <div
-              class="w-24 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600 mb-12 animate-expand"
-            ></div>
+      <!-- Decorative corner frames -->
+      <div class="absolute top-0 right-0 w-64 h-64 opacity-20">
+        <div class="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-[#FFCD4B]"></div>
+      </div>
+      <div class="absolute bottom-0 left-0 w-64 h-64 opacity-20">
+        <div
+          class="absolute bottom-0 left-0 w-24 h-24 border-b-2 border-l-2 border-[#FFCD4B]"
+        ></div>
+      </div>
 
+      <div class="relative z-10 h-full flex items-center justify-center">
+        <div class="container mx-auto px-6 lg:px-12 xl:px-20 text-center">
+          <div class="max-w-4xl mx-auto">
             <h1
-              class="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extralight text-white mb-8 tracking-tight"
+              class="text-5xl md:text-6xl lg:text-7xl font-extralight text-white mb-6 tracking-tight animate-fadeInUp"
             >
               {{ t('contact.title') }}
             </h1>
 
-            <p class="text-lg md:text-xl text-orange-100/90 font-light leading-relaxed max-w-2xl">
+            <p
+              class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed animate-fadeInUp"
+              style="animation-delay: 0.1s"
+            >
               {{ t('contact.hero.subtitle') }}
             </p>
           </div>
         </div>
-      </div>
-
-      <!-- Elegant scroll indicator -->
-      <div class="absolute bottom-12 left-1/2 transform -translate-x-1/2">
-        <div class="w-px h-12 bg-gradient-to-b from-orange-400 to-transparent animate-pulse"></div>
       </div>
     </section>
 
@@ -201,11 +220,11 @@ onMounted(async () => {
             <transition name="fade-slide">
               <div
                 v-if="isSubmitted"
-                class="mb-8 p-6 bg-gradient-to-r from-orange-50 to-orange-100/50 border border-orange-200 rounded-lg"
+                class="mb-8 p-6 bg-gradient-to-r from-[#FFCD4B]/10 to-[#EBB738]/10 border border-[#FFCD4B]/30"
               >
                 <div class="flex items-start">
                   <svg
-                    class="w-5 h-5 text-orange-600 mt-0.5 mr-3"
+                    class="w-5 h-5 text-[#C89116] mt-0.5 mr-3"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -216,8 +235,8 @@ onMounted(async () => {
                     />
                   </svg>
                   <div>
-                    <p class="text-orange-800 font-medium">{{ t('contact.form.success.title') }}</p>
-                    <p class="text-orange-600 text-sm mt-1">
+                    <p class="text-[#C89116] font-light">{{ t('contact.form.success.title') }}</p>
+                    <p class="text-[#A37814] text-sm mt-1 font-light">
                       {{ t('contact.form.success.message') }}
                     </p>
                   </div>
@@ -241,7 +260,7 @@ onMounted(async () => {
                     v-model="form.name"
                     type="text"
                     required
-                    class="w-full px-0 py-3 border-0 border-b border-zinc-300 focus:border-orange-500 focus:outline-none transition-colors duration-300 bg-transparent text-zinc-900 placeholder-zinc-400"
+                    class="w-full px-0 py-3 border-0 border-b border-zinc-300 focus:border-[#FFCD4B] focus:outline-none transition-colors duration-300 bg-transparent text-zinc-900 placeholder-zinc-400"
                     :placeholder="t('contact.form.fields.name.placeholder')"
                   />
                 </div>
@@ -258,7 +277,7 @@ onMounted(async () => {
                     v-model="form.email"
                     type="email"
                     required
-                    class="w-full px-0 py-3 border-0 border-b border-zinc-300 focus:border-orange-500 focus:outline-none transition-colors duration-300 bg-transparent text-zinc-900 placeholder-zinc-400"
+                    class="w-full px-0 py-3 border-0 border-b border-zinc-300 focus:border-[#FFCD4B] focus:outline-none transition-colors duration-300 bg-transparent text-zinc-900 placeholder-zinc-400"
                     :placeholder="t('contact.form.fields.email.placeholder')"
                   />
                 </div>
@@ -304,8 +323,8 @@ onMounted(async () => {
                       type="button"
                       @click="toggleDropdown"
                       @blur="closeDropdown"
-                      class="w-full px-0 py-3 border-0 border-b border-zinc-300 focus:border-orange-500 focus:outline-none transition-all duration-300 bg-transparent text-zinc-900 cursor-pointer text-left flex items-center justify-between group"
-                      :class="{ 'border-orange-500': isDropdownOpen }"
+                      class="w-full px-0 py-3 border-0 border-b border-zinc-300 focus:border-[#FFCD4B] focus:outline-none transition-all duration-300 bg-transparent text-zinc-900 cursor-pointer text-left flex items-center justify-between group"
+                      :class="{ 'border-[#FFCD4B]': isDropdownOpen }"
                     >
                       <span class="block truncate">
                         {{ selectedSubject?.label || t('contact.form.fields.subject.placeholder') }}
@@ -313,8 +332,8 @@ onMounted(async () => {
 
                       <!-- Custom Arrow Icon -->
                       <svg
-                        class="w-4 h-4 text-zinc-400 group-hover:text-orange-500 transition-all duration-300 transform"
-                        :class="{ 'rotate-180 text-orange-500': isDropdownOpen }"
+                        class="w-4 h-4 text-zinc-400 group-hover:text-[#FFCD4B] transition-all duration-300 transform"
+                        :class="{ 'rotate-180 text-[#FFCD4B]': isDropdownOpen }"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -347,9 +366,9 @@ onMounted(async () => {
                             :key="subject.value"
                             type="button"
                             @click="selectSubject(subject.value)"
-                            class="w-full px-4 py-3 text-left hover:bg-orange-50 focus:bg-orange-50 focus:outline-none transition-colors duration-200 group"
+                            class="w-full px-4 py-3 text-left hover:bg-[#FFCD4B]/10 focus:bg-[#FFCD4B]/10 focus:outline-none transition-colors duration-200 group"
                             :class="{
-                              'bg-orange-50 text-orange-600': form.subject === subject.value,
+                              'bg-[#FFCD4B]/10 text-[#C89116]': form.subject === subject.value,
                               'text-zinc-700': form.subject !== subject.value,
                             }"
                           >
@@ -357,7 +376,7 @@ onMounted(async () => {
                               <span class="block truncate font-light">{{ subject.label }}</span>
                               <svg
                                 v-if="form.subject === subject.value"
-                                class="w-4 h-4 text-orange-500"
+                                class="w-4 h-4 text-[#FFCD4B]"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                               >
@@ -389,7 +408,7 @@ onMounted(async () => {
                   v-model="form.message"
                   rows="5"
                   required
-                  class="w-full px-0 py-3 border-0 border-b border-zinc-300 focus:border-orange-500 focus:outline-none transition-colors duration-300 bg-transparent text-zinc-900 placeholder-zinc-400 resize-none"
+                  class="w-full px-0 py-3 border-0 border-b border-zinc-300 focus:border-[#FFCD4B] focus:outline-none transition-colors duration-300 bg-transparent text-zinc-900 placeholder-zinc-400 resize-none"
                   :placeholder="t('contact.form.fields.message.placeholder')"
                 ></textarea>
               </div>
@@ -398,7 +417,7 @@ onMounted(async () => {
               <button
                 type="submit"
                 :disabled="!validateForm || isSubmitting"
-                class="relative group px-12 py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-zinc-300 disabled:to-zinc-400 text-white font-light tracking-wider uppercase text-sm transition-all duration-500 overflow-hidden transform hover:scale-[1.02] hover:shadow-lg"
+                class="relative group px-12 py-4 bg-black hover:bg-zinc-900 disabled:bg-zinc-300 disabled:cursor-not-allowed text-[#FFCD4B] disabled:text-zinc-500 font-light tracking-wider uppercase text-sm transition-all duration-500 border border-[#FFCD4B]/30 disabled:border-zinc-300"
               >
                 <span v-if="!isSubmitting" class="relative z-10">{{
                   t('contact.form.submit')
@@ -440,10 +459,10 @@ onMounted(async () => {
                 <div v-for="info in contactInfo" :key="info.title" class="group">
                   <div class="flex items-start space-x-4">
                     <div
-                      class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center group-hover:from-orange-500 group-hover:to-orange-600 transition-all duration-300"
+                      class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#FFCD4B]/20 to-[#EBB738]/20 flex items-center justify-center group-hover:from-[#FFCD4B] group-hover:to-[#EBB738] transition-all duration-300"
                     >
                       <div
-                        class="text-orange-600 group-hover:text-white transition-colors duration-300"
+                        class="text-[#C89116] group-hover:text-white transition-colors duration-300"
                         v-html="info.icon"
                       ></div>
                     </div>
@@ -457,7 +476,7 @@ onMounted(async () => {
                           v-for="phone in info.phones"
                           :key="phone.number"
                           :href="phone.href"
-                          class="block text-zinc-900 font-light hover:text-orange-600 transition-colors duration-200"
+                          class="block text-zinc-900 font-light hover:text-[#C89116] transition-colors duration-200"
                         >
                           {{ phone.number }}
                         </a>
@@ -474,7 +493,7 @@ onMounted(async () => {
             </div>
 
             <!-- Office Hours Visual -->
-            <div class="p-8 bg-gradient-to-br from-zinc-50 to-orange-50 rounded-xl">
+            <div class="p-8 bg-gradient-to-br from-zinc-50 to-[#FFCD4B]/10 border border-[#FFCD4B]/20">
               <h4 class="text-lg font-light text-zinc-900 mb-4">
                 {{ t('contact.office.status') }}
               </h4>
@@ -482,7 +501,7 @@ onMounted(async () => {
                 <div
                   v-for="day in officeDays?.working || []"
                   :key="day"
-                  class="py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs rounded transition-transform duration-200 hover:scale-105"
+                  class="py-2 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] text-white text-xs transition-transform duration-200 hover:scale-105"
                 >
                   {{ day }}
                 </div>
@@ -510,7 +529,7 @@ onMounted(async () => {
                   :href="social.url"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="w-12 h-12 border border-zinc-300 hover:border-transparent text-zinc-600 hover:text-white rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110"
+                  class="w-12 h-12 border border-zinc-300 hover:border-[#FFCD4B]/30 text-zinc-600 hover:text-white rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110"
                   :class="social.color"
                   :aria-label="social.name"
                 >
@@ -578,7 +597,7 @@ onMounted(async () => {
         <div class="container mx-auto px-6 lg:px-12 xl:px-20">
           <div class="text-white">
             <h3 class="text-2xl font-light mb-2">{{ t('contact.map.office.title') }}</h3>
-            <p v-if="contactInfo && contactInfo[0]" class="text-orange-200 font-light">
+            <p v-if="contactInfo && contactInfo[0]" class="text-[#FFCD4B] font-light">
               {{ contactInfo[0].value }}, {{ contactInfo[0].subtitle }}
             </p>
           </div>
@@ -587,7 +606,7 @@ onMounted(async () => {
     </section>
 
     <!-- FAQ Section -->
-    <section class="py-24 lg:py-32 bg-gradient-to-br from-white to-orange-50/30">
+    <section class="py-24 lg:py-32 bg-gradient-to-br from-white to-zinc-50">
       <div class="container mx-auto px-6 lg:px-12 xl:px-20">
         <div class="max-w-4xl mx-auto">
           <!-- Section Header -->
@@ -595,7 +614,7 @@ onMounted(async () => {
             <h2 class="text-3xl lg:text-4xl font-extralight text-zinc-900 mb-4">
               {{ t('contact.faq.title') }}
             </h2>
-            <div class="w-20 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto"></div>
+            <div class="w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mx-auto"></div>
           </div>
 
           <!-- FAQ Items -->
@@ -603,15 +622,15 @@ onMounted(async () => {
             <div
               v-for="(faq, index) in faqs"
               :key="index"
-              class="bg-white border-l-2 border-transparent hover:border-orange-500 transition-all duration-300"
+              class="bg-white border-l-2 border-transparent hover:border-[#FFCD4B] transition-all duration-300"
             >
               <button
                 @click="toggleFaq(index)"
-                class="w-full py-6 px-8 flex items-center justify-between text-left hover:bg-orange-50/50 transition-colors duration-300"
+                class="w-full py-6 px-8 flex items-center justify-between text-left hover:bg-[#FFCD4B]/5 transition-colors duration-300"
               >
                 <span class="text-lg font-light text-zinc-900 pr-4">{{ faq.question }}</span>
                 <svg
-                  class="w-5 h-5 text-orange-500 transition-transform duration-300 flex-shrink-0"
+                  class="w-5 h-5 text-[#FFCD4B] transition-transform duration-300 flex-shrink-0"
                   :class="{ 'rotate-45': openFaq === index }"
                   fill="none"
                   stroke="currentColor"
@@ -638,32 +657,37 @@ onMounted(async () => {
       </div>
     </section>
 
-    <!-- CTA Section - Smaller and refined -->
-    <section class="relative py-20 bg-gradient-to-br from-zinc-900 via-zinc-800 to-orange-900">
-      <!-- Subtle pattern overlay -->
+    <!-- CTA Section -->
+    <section class="relative py-20 bg-black">
+      <!-- Diagonal gradient overlay -->
       <div
-        class="absolute inset-0 opacity-[0.02]"
-        style="
-          background-image: url(&quot;data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='dots' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='20' cy='20' r='0.5' fill='white'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23dots)' /%3E%3C/svg%3E&quot;);
-        "
+        class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent opacity-50"
       ></div>
 
       <div class="relative container mx-auto px-6 lg:px-12 xl:px-20 text-center">
         <div class="max-w-3xl mx-auto">
           <h2 class="text-3xl lg:text-4xl font-extralight text-white mb-6 leading-tight">
             {{ t('contact.cta.title.part1') }}
-            <span class="text-orange-400">{{ t('contact.cta.title.part2') }}</span>
+            <span class="text-[#FFCD4B]">{{ t('contact.cta.title.part2') }}</span>
           </h2>
-          <p class="text-lg text-orange-100/80 font-light leading-relaxed mb-8">
+          <p class="text-lg text-zinc-400 font-light leading-relaxed mb-8">
             {{ t('contact.cta.subtitle') }}
           </p>
 
           <!-- Simple CTA button -->
           <button
             @click="scrollToForm"
-            class="inline-block px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-light tracking-wider uppercase text-sm transition-all duration-300 transform hover:scale-105 cursor-pointer"
+            class="inline-flex items-center gap-3 px-10 py-4 bg-[#FFCD4B]/10 border border-[#FFCD4B]/30 text-[#FFCD4B] hover:bg-[#FFCD4B]/20 font-light tracking-wider uppercase text-sm transition-all duration-300 cursor-pointer"
           >
-            {{ t('contact.cta.button') }}
+            <span>{{ t('contact.cta.button') }}</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
           </button>
         </div>
       </div>
@@ -672,23 +696,45 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* Typography refinements */
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f4f4f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ffcd4b, #ebb738);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ebb738, #c89116);
+}
+
+/* Text selection */
 ::selection {
-  background-color: rgb(251 146 60 / 0.2);
+  background-color: rgba(255, 205, 75, 0.3);
   color: inherit;
 }
 
 /* Smooth animations */
-.animate-expand {
-  animation: expand 1s ease-out;
+.animate-fadeInUp {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
 }
 
-@keyframes expand {
+@keyframes fadeInUp {
   from {
-    width: 0;
+    opacity: 0;
+    transform: translateY(30px);
   }
   to {
-    width: 6rem;
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -724,7 +770,7 @@ onMounted(async () => {
 
 /* Custom select arrow */
 select {
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f97316' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFCD4B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 0 center;
   background-size: 1.5em 1.5em;
@@ -765,7 +811,7 @@ select:-webkit-autofill:focus {
 input:focus,
 textarea:focus,
 select:focus {
-  box-shadow: 0 1px 0 0 rgb(251 146 60);
+  box-shadow: 0 1px 0 0 #ffcd4b;
 }
 
 /* Social icon hover effects */
@@ -787,8 +833,8 @@ select:focus {
 
 .vue-tel-input-contact :deep(.vue-tel-input:focus-within) {
   outline: none !important;
-  border-bottom-color: #f97316 !important;
-  box-shadow: 0 1px 0 0 #f97316 !important;
+  border-bottom-color: #ffcd4b !important;
+  box-shadow: 0 1px 0 0 #ffcd4b !important;
 }
 
 .vue-tel-input-contact :deep(.vue-tel-input:hover) {
@@ -809,7 +855,7 @@ select:focus {
 
 .vue-tel-input-contact :deep(.vti__dropdown:hover) {
   background: transparent !important;
-  border-right-color: #f97316 !important;
+  border-right-color: #ffcd4b !important;
 }
 
 .vue-tel-input-contact :deep(.vti__dropdown .vti__dropdown-arrow) {
@@ -818,16 +864,16 @@ select:focus {
 }
 
 .vue-tel-input-contact :deep(.vti__dropdown:hover .vti__dropdown-arrow) {
-  color: #f97316 !important;
+  color: #ffcd4b !important;
 }
 
 .vue-tel-input-contact :deep(.vti__dropdown[aria-expanded='true']) {
-  border-right-color: #f97316 !important;
+  border-right-color: #ffcd4b !important;
 }
 
 .vue-tel-input-contact :deep(.vti__dropdown[aria-expanded='true'] .vti__dropdown-arrow) {
   transform: rotate(180deg) !important;
-  color: #f97316 !important;
+  color: #ffcd4b !important;
 }
 
 .vue-tel-input-contact :deep(.vti__input) {
@@ -878,8 +924,8 @@ select:focus {
 
 .vue-tel-input-contact :deep(.vti__search_box:focus) {
   background: white !important;
-  border-bottom-color: #f97316 !important;
-  box-shadow: 0 2px 4px rgba(249, 115, 22, 0.1) !important;
+  border-bottom-color: #ffcd4b !important;
+  box-shadow: 0 2px 4px rgba(255, 205, 75, 0.1) !important;
 }
 
 .vue-tel-input-contact :deep(.vti__search_box::placeholder) {
@@ -908,13 +954,13 @@ select:focus {
 
 .vue-tel-input-contact :deep(.vti__dropdown-item:hover),
 .vue-tel-input-contact :deep(.vti__dropdown-item.highlighted) {
-  background-color: #fef3f2 !important;
-  color: #f97316 !important;
+  background-color: rgba(255, 205, 75, 0.1) !important;
+  color: #c89116 !important;
   transform: translateX(2px) !important;
 }
 
 .vue-tel-input-contact :deep(.vti__dropdown-item:active) {
-  background-color: #fed7cc !important;
+  background-color: rgba(255, 205, 75, 0.2) !important;
 }
 
 .vue-tel-input-contact :deep(.vti__selection) {

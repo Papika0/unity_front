@@ -28,59 +28,80 @@ const formatDate = (dateString: string) => {
 
 <template>
   <!-- News Section -->
-  <section class="bg-white py-16">
+  <section class="bg-white py-24">
     <div class="max-w-7xl mx-auto px-4 md:px-8">
-      <h3
-        class="text-zinc-900 text-4xl font-normal font-roboto uppercase leading-loose tracking-[3px] mb-8"
-      >
+      <h3 class="text-zinc-900 text-4xl font-light uppercase tracking-wider mb-4">
         {{ t('news.title') }}
       </h3>
-      <img src="../../assets/Vector_10.png" alt="" class="mb-12" />
+      <div class="w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mb-16"></div>
 
-      <div class="space-y-16">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
         <!-- Articles -->
-        <div v-for="article in displayArticles" :key="article.id" class="space-y-8">
-          <img
-            :src="article.image"
-            :alt="article.title"
-            class="w-full h-[527px] object-cover bg-zinc-300"
-          />
-          <div>
-            <div class="flex items-center gap-2 mb-2">
-              <time class="text-zinc-600 text-sm">{{ formatDate(article.publishDate) }}</time>
+        <div
+          v-for="article in displayArticles"
+          :key="article.id"
+          class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 relative"
+        >
+          <div class="relative overflow-hidden">
+            <img
+              :src="article.image"
+              :alt="article.title"
+              class="w-full h-[400px] object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
+            />
+          </div>
+
+          <div class="p-8">
+            <div class="flex items-center gap-2 mb-4">
+              <time class="text-[#C89116] text-sm font-light uppercase tracking-wider">{{
+                formatDate(article.publishDate)
+              }}</time>
             </div>
-            <h3 class="text-zinc-900 text-xl font-normal font-roboto leading-7 mb-4">
+            <h3 class="text-zinc-900 text-2xl font-light leading-tight mb-4">
               {{ article.title }}
             </h3>
-            <p class="text-zinc-700 text-base leading-relaxed mb-4">
+            <p class="text-zinc-600 text-base font-light leading-relaxed mb-6">
               {{ article.excerpt }}
             </p>
             <router-link
               :to="`/news/${article.id}`"
-              class="text-zinc-900 text-base font-normal font-roboto underline uppercase leading-tight tracking-[3.36px] hover:text-zinc-600 transition-colors"
+              class="inline-flex items-center gap-2 text-[#C89116] text-sm font-light uppercase tracking-wider hover:text-[#FFCD4B] transition-colors"
             >
-              {{ t('buttons.see_details') }}
+              <span>{{ t('buttons.see_details') }}</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
             </router-link>
           </div>
+
+          <!-- Golden Accent Line -->
+          <div
+            class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"
+          ></div>
         </div>
 
-        <!-- View All News Button -->
-        <div class="text-center pt-8">
-          <router-link
-            to="/news"
-            class="inline-flex items-center px-8 py-3 bg-amber-300 text-zinc-900 font-roboto font-medium uppercase tracking-[2px] hover:bg-amber-400 transition-colors"
-          >
-            {{ t('buttons.view_all') }}
-            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </router-link>
-        </div>
+      </div>
+
+      <!-- View All News Button -->
+      <div class="text-center mt-16">
+        <router-link
+          to="/news"
+          class="inline-flex items-center gap-3 px-10 py-4 bg-black hover:bg-zinc-900 text-[#FFCD4B] border border-[#FFCD4B]/30 font-light tracking-wider uppercase text-sm transition-all duration-300"
+        >
+          <span>{{ t('buttons.view_all') }}</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 8l4 4m0 0l-4 4m4-4H3"
+            />
+          </svg>
+        </router-link>
       </div>
     </div>
   </section>

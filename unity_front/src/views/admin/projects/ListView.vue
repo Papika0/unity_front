@@ -101,11 +101,7 @@
           <div class="relative overflow-hidden">
             <img
               v-if="project.main_image"
-              :src="
-                project.main_image.startsWith('http')
-                  ? project.main_image
-                  : backendUrl + project.main_image
-              "
+              :src="getImageUrl(project.main_image)"
               :alt="project.title"
               class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
             />
@@ -265,15 +261,15 @@
         @click.self="cancelFeaturedSelection"
       >
         <div
-          class="bg-white/95 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 border border-slate-200/50"
+          class="bg-white/95 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 border border-slate-200/50 max-h-[90vh] flex flex-col"
         >
-          <div class="p-8 border-b border-slate-200/50 flex items-center justify-between">
+          <div class="p-8 border-b border-slate-200/50 flex items-center justify-between flex-shrink-0">
             <h2 class="text-xl font-bold text-slate-800">რჩეული პროექტების არჩევა</h2>
             <button @click="cancelFeaturedSelection" class="text-slate-400 hover:text-slate-600">
               ✕
             </button>
           </div>
-          <div class="p-8">
+          <div class="p-8 overflow-y-auto flex-1">
             <div class="grid grid-cols-1 gap-4">
               <div
                 v-for="project in projects"
@@ -286,11 +282,7 @@
               >
                 <img
                   v-if="project.main_image"
-                  :src="
-                    project.main_image.startsWith('http')
-                      ? project.main_image
-                      : backendUrl + project.main_image
-                  "
+                  :src="getImageUrl(project.main_image)"
                   class="w-16 h-16 object-cover rounded-xl"
                 />
                 <div
@@ -328,7 +320,7 @@
               </div>
             </div>
           </div>
-          <div class="p-8 border-t border-slate-200/50 flex gap-4 justify-end">
+          <div class="p-8 border-t border-slate-200/50 flex gap-4 justify-end flex-shrink-0">
             <button
               @click="cancelFeaturedSelection"
               class="px-6 py-2 rounded-xl bg-slate-100 text-slate-700"
@@ -353,15 +345,15 @@
         @click.self="cancelHomepageSelection"
       >
         <div
-          class="bg-white/95 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 border border-slate-200/50"
+          class="bg-white/95 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 border border-slate-200/50 max-h-[90vh] flex flex-col"
         >
-          <div class="p-8 border-b border-slate-200/50 flex items-center justify-between">
+          <div class="p-8 border-b border-slate-200/50 flex items-center justify-between flex-shrink-0">
             <h2 class="text-xl font-bold text-slate-800">მთავარი პროექტების არჩევა</h2>
             <button @click="cancelHomepageSelection" class="text-slate-400 hover:text-slate-600">
               ✕
             </button>
           </div>
-          <div class="p-8">
+          <div class="p-8 overflow-y-auto flex-1">
             <div class="grid grid-cols-1 gap-4">
               <div
                 v-for="project in projects"
@@ -374,11 +366,7 @@
               >
                 <img
                   v-if="project.main_image"
-                  :src="
-                    project.main_image.startsWith('http')
-                      ? project.main_image
-                      : backendUrl + project.main_image
-                  "
+                  :src="getImageUrl(project.main_image)"
                   class="w-16 h-16 object-cover rounded-xl"
                 />
                 <div
@@ -416,7 +404,7 @@
               </div>
             </div>
           </div>
-          <div class="p-8 border-t border-slate-200/50 flex gap-4 justify-end">
+          <div class="p-8 border-t border-slate-200/50 flex gap-4 justify-end flex-shrink-0">
             <button
               @click="cancelHomepageSelection"
               class="px-6 py-2 rounded-xl bg-slate-100 text-slate-700"
@@ -441,10 +429,10 @@
 import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminProjectsStore } from '@/stores/admin/projects'
+import { getImageUrl } from '@/utils/imageUrl'
 
 const router = useRouter()
 const adminProjectsStore = useAdminProjectsStore()
-const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 // Use computed properties from the store
 const projects = computed(() => adminProjectsStore.filteredProjects)
