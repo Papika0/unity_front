@@ -96,8 +96,34 @@ class NewsController extends Controller
             // Increment view count
             $news->increment('views');
 
+            // Get related articles (same category, excluding current)
+            $relatedArticles = News::where('is_active', true)
+                ->where('publish_date', '<=', now())
+                ->where('id', '!=', $id)
+                ->where('category', $news->category)
+                ->orderBy('publish_date', 'desc')
+                ->take(3)
+                ->get(['id', 'title', 'excerpt', 'main_image', 'category', 'publish_date', 'views']);
+            
+            // Transform related articles with locale
+            $relatedData = $relatedArticles->map(function($article) use ($locale) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->getTranslation('title', $locale),
+                    'excerpt' => $article->getTranslation('excerpt', $locale),
+                    'main_image' => $article->main_image,
+                    'category' => $article->category,
+                    'publish_date' => $article->publish_date,
+                    'views' => $article->views,
+                ];
+            })->values()->all();
+
+            $resource = new NewsResource($news, $locale);
+            $resourceData = $resource->toArray($request);
+            $resourceData['related_articles'] = $relatedData;
+
             return $this->success([
-                'data' => new NewsResource($news, $locale),
+                'data' => $resourceData,
                 'translations' => $translations,
                 'meta' => [
                     'locale' => $locale,

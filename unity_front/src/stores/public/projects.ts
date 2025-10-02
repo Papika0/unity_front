@@ -30,7 +30,7 @@ export const useProjectsStore = defineStore('projects', () => {
   const projects = ref<Project[]>([])
   const featuredProjectsData = ref<Project[]>([])
   const homepageProjectsData = ref<Project[]>([])
-  const aloneProjectsData = ref<Project[]>([])
+  const aloneProjectsData = ref<Project | null>(null) // Single project or null, not array
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 

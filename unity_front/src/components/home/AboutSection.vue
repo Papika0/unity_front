@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useTranslations } from '../../composables/useTranslations'
 import { RouterLink } from 'vue-router'
+import { useScrollAnimation } from '@/composables/useScrollAnimation'
 
 const { t } = useTranslations()
 
@@ -10,15 +11,35 @@ const companyNameParts = computed(() => {
   // Only split if we have a valid translation (not the key itself)
   return companyName && companyName !== 'home.company_name' ? companyName.split(' ') : []
 })
+
+// Scroll animations for different sections
+const { element: companyElement, isVisible: companyVisible } = useScrollAnimation({
+  threshold: 0.3,
+})
+const { element: whoWeAreElement, isVisible: whoWeAreVisible } = useScrollAnimation({
+  threshold: 0.3,
+  delay: 200,
+})
+const { element: historyElement, isVisible: historyVisible } = useScrollAnimation({
+  threshold: 0.3,
+  delay: 400,
+})
 </script>
 
 <template>
   <!-- About Section -->
   <section class="bg-white py-24 lg:py-32">
     <div class="max-w-4xl mx-auto px-8">
-      <!-- Company Name -->
-      <div class="mb-16">
-        <div class="w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mb-8"></div>
+      <!-- Company Name with fade-in animation -->
+      <div
+        ref="companyElement"
+        class="mb-16 transition-all duration-1000 transform"
+        :class="companyVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'"
+      >
+        <div class="w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mb-8 transition-all duration-1000"
+          :class="companyVisible ? 'scale-x-100' : 'scale-x-0'"
+          style="transform-origin: left"
+        ></div>
         <h1 class="text-zinc-900 text-5xl md:text-6xl font-extralight leading-tight mb-2">
           {{ companyNameParts[0] }}
         </h1>
@@ -44,8 +65,12 @@ const companyNameParts = computed(() => {
         </RouterLink>
       </div>
 
-      <!-- Who We Are Section -->
-      <div class="mb-16">
+      <!-- Who We Are Section with fade-in -->
+      <div
+        ref="whoWeAreElement"
+        class="mb-16 transition-all duration-1000 transform"
+        :class="whoWeAreVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
+      >
         <h3 class="text-zinc-900 text-3xl font-light uppercase tracking-wider mb-6">
           {{ t('home.whoarewe') }}
         </h3>
@@ -55,8 +80,12 @@ const companyNameParts = computed(() => {
         </p>
       </div>
 
-      <!-- History Section -->
-      <div>
+      <!-- History Section with fade-in -->
+      <div
+        ref="historyElement"
+        class="transition-all duration-1000 transform"
+        :class="historyVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
+      >
         <h4 class="text-zinc-900 text-3xl font-light uppercase tracking-wider mb-6">
           {{ t('home.history') }}
         </h4>

@@ -3,9 +3,16 @@ import { computed } from 'vue'
 import { useTranslations } from '../../composables/useTranslations'
 import { useProjectsStore } from '@/stores/public/projects'
 import { getImageUrl } from '@/utils/imageUrl'
+import { useScrollAnimation } from '@/composables/useScrollAnimation'
 
 const { t } = useTranslations()
 const projectsStore = useProjectsStore()
+
+// Scroll animation for section title
+const { element: titleElement, isVisible: titleVisible } = useScrollAnimation({
+  threshold: 0.2,
+  once: true,
+})
 
 const statusColorMap = {
   ongoing:
@@ -34,29 +41,53 @@ const displayProjects = computed(() =>
     image: getImageUrl(project.main_image),
   })),
 )
+
+// Scroll animation for projects grid - use lower threshold so it triggers earlier
+const { element: projectsGridElement, isVisible: projectsGridVisible } = useScrollAnimation({
+  threshold: 0.05,
+  once: true,
+  rootMargin: '100px', // Trigger 100px before element enters viewport
+})
 </script>
 
 <template>
   <!-- Projects Section -->
   <section class="bg-zinc-50 py-24">
     <div class="max-w-7xl mx-auto px-4 md:px-8">
-      <h2 class="text-zinc-900 text-4xl font-light uppercase tracking-wider mb-4">
-        {{ t('home.projects') }}
-      </h2>
-      <div class="w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mb-16"></div>
+      <!-- Animated Title -->
+      <div
+        ref="titleElement"
+        class="transition-all duration-1000 transform"
+        :class="titleVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
+      >
+        <h2 class="text-zinc-900 text-4xl font-light uppercase tracking-wider mb-4">
+          {{ t('home.projects') }}
+        </h2>
+        <div class="w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mb-16"></div>
+      </div>
 
-      <!-- Projects Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+      <!-- Projects Grid with Stagger Animation -->
+      <div ref="projectsGridElement" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
         <div
-          v-for="project in displayProjects"
+          v-for="(project, index) in displayProjects"
           :key="project.id"
-          class="group relative bg-white border border-zinc-100 hover:border-[#FFCD4B]/30 transition-all duration-500 hover:shadow-2xl overflow-hidden"
+          class="group relative bg-white border border-zinc-100 hover:border-[#FFCD4B]/30 transition-all duration-700 hover:shadow-2xl overflow-hidden transform"
+          :class="
+            projectsGridVisible
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 translate-y-12'
+          "
+          :style="{ 
+            transitionDuration: '800ms',
+            transitionDelay: projectsGridVisible ? `${index * 150}ms` : '0ms'
+          }"
         >
           <div class="relative overflow-hidden">
             <img
               :src="project.image"
               :alt="project.title"
-              class="w-full h-[507px] object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
+              class="w-full h-[507px] object-cover transition-all duration-[1200ms] ease-out group-hover:scale-110 group-hover:rotate-1"
+              loading="lazy"
             />
             <!-- Apply overlay to all projects for consistent text visibility -->
             <div class="absolute inset-0 bg-zinc-900/50"></div>

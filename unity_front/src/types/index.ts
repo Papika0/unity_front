@@ -79,6 +79,17 @@ export interface LoginRequest {
   rememberMe: boolean
 }
 
+// Related article minimal data
+export interface RelatedArticle {
+  id: number
+  title: string
+  excerpt: string
+  main_image: string | null
+  category: 'company' | 'project' | 'industry' | 'event'
+  publish_date: string
+  views: number
+}
+
 export interface NewsArticle {
   id: number
   is_active: boolean
@@ -97,6 +108,7 @@ export interface NewsArticle {
   meta_description: string | null
   created_at: string
   updated_at: string
+  related_articles?: RelatedArticle[] // Added related articles
 }
 
 export interface AdminNewsArticle {

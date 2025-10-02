@@ -1,6 +1,14 @@
 import api from '@/plugins/axios/api'
 import type { ProjectFeature } from './featuresApi'
 
+// Related project minimal data
+export interface RelatedProject {
+  id: number
+  title: string
+  main_image: string | null
+  status: string
+}
+
 // Project interfaces to match the API response
 export interface ProjectApiResponse {
   id: number
@@ -22,7 +30,8 @@ export interface ProjectApiResponse {
   longitude: string | null
   meta_title: string | null
   meta_description: string | null
-  features?: ProjectFeature[] // Add this line
+  features?: ProjectFeature[]
+  related_projects?: RelatedProject[] // Added related projects
 }
 
 export const projectsApi = {

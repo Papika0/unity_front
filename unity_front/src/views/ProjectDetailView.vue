@@ -2,11 +2,11 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTranslations } from '../composables/useTranslations'
-import { useProjectsPage } from '../composables/useProjectsPage'
 import { useLocaleStore } from '@/stores/ui/locale'
 import { projectsApi } from '@/services/projectsApi'
 import type { ProjectApiResponse } from '@/services/projectsApi'
 import type { ProjectFeature } from '@/services/featuresApi'
+import { useScrollAnimation } from '@/composables/useScrollAnimation'
 
 const { t } = useTranslations()
 const route = useRoute()
@@ -15,9 +15,6 @@ const router = useRouter()
 // Initialize locale store
 const localeStore = useLocaleStore()
 
-// Initialize projects page composable to load translations and projects
-const { loadProjectsPage, allProjects } = useProjectsPage()
-
 const project = ref<ProjectApiResponse | null>(null)
 const isLoading = ref(true) // Start with loading true
 const error = ref<string | null>(null)
@@ -25,6 +22,16 @@ const selectedImageIndex = ref(0)
 const isFullscreenGallery = ref(false)
 const projectFeatures = ref<ProjectFeature[]>([])
 const scrollProgress = ref(0)
+
+// Scroll animation refs
+const { element: heroElement, isVisible: heroVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: galleryElement, isVisible: galleryVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: detailsElement, isVisible: detailsVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: descriptionElement, isVisible: descriptionVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: featuresElement, isVisible: featuresVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: comingSoonElement, isVisible: comingSoonVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: ctaElement, isVisible: ctaVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: relatedElement, isVisible: relatedVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
 
 // Scroll progress tracking
 const handleScroll = () => {
@@ -41,21 +48,9 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll)
 })
 
-const relatedProjects = computed((): ProjectApiResponse[] => {
-  if (!project.value || !allProjects.value) return []
-
-  // Get projects with the same status, excluding current project
-  const sameStatusProjects = allProjects.value.filter(
-    (p) => p.id !== project.value!.id && p.status === project.value!.status,
-  )
-
-  // If we have same status projects, return up to 3
-  if (sameStatusProjects.length > 0) {
-    return sameStatusProjects.slice(0, 3)
-  }
-
-  // Otherwise, return other projects excluding current one
-  return allProjects.value.filter((p) => p.id !== project.value!.id).slice(0, 3)
+const relatedProjects = computed(() => {
+  // Use related projects from API response
+  return project.value?.related_projects || []
 })
 
 const statusText = computed(() => {
@@ -134,36 +129,18 @@ const loadProjectData = async (projectId: number) => {
   error.value = null
 
   try {
-    // Check if we need to load translations and projects
-    const { arePageGroupsLoaded } = useTranslations()
-    const needsTranslations = !arePageGroupsLoaded('projects')
-    const needsProjects = allProjects.value.length === 0
-
-    // Only load projects page data if we don't have translations or projects
-    if (needsTranslations || needsProjects) {
-      try {
-        await loadProjectsPage()
-      } catch (projectsPageError) {
-        console.warn(
-          'Failed to load projects page, trying to load projects directly:',
-          projectsPageError,
-        )
-        // Fallback: try to load projects directly
-        try {
-          const projectsResponse = await projectsApi.getAll(localeStore.currentLocale)
-          allProjects.value = projectsResponse
-        } catch (projectsError) {
-          console.error('Failed to load projects directly:', projectsError)
-        }
-      }
-    }
-
-    // Then load the specific project (now includes features)
+    // Load the specific project (includes features and related projects from API)
     const projectData = await projectsApi.getById(projectId, localeStore.currentLocale)
     project.value = projectData
 
     // Set features from project data
     projectFeatures.value = projectData.features || []
+    
+    // Scroll to top smoothly to trigger animations properly
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    
+    // Wait for scroll to complete and DOM to update
+    await new Promise(resolve => setTimeout(resolve, 100))
   } catch (err) {
     console.error('Failed to load project:', err)
     error.value = 'Failed to load project'
@@ -176,8 +153,8 @@ const loadProjectData = async (projectId: number) => {
 // Watch for route changes to handle direct URL access
 watch(
   () => route.params.id,
-  async (newId) => {
-    if (newId) {
+  async (newId, oldId) => {
+    if (newId && newId !== oldId) {
       const projectId = parseInt(newId as string)
       if (!isNaN(projectId)) {
         await loadProjectData(projectId)
@@ -234,8 +211,8 @@ const navigateToProject = (projectId: number) => {
   router.push(`/projects/${projectId}`)
 }
 
-const getRelatedProjectStatus = (project: ProjectApiResponse) => {
-  switch (project.status) {
+const getRelatedProjectStatus = (relatedProject: { status: string }) => {
+  switch (relatedProject.status) {
     case 'completed':
       return t('projects.status.completed')
     case 'ongoing':
@@ -243,7 +220,7 @@ const getRelatedProjectStatus = (project: ProjectApiResponse) => {
     case 'planning':
       return t('projects.status.planning')
     default:
-      return project.status
+      return relatedProject.status
   }
 }
 
@@ -257,7 +234,7 @@ const goBack = () => {
     <!-- Scroll Progress Bar -->
     <div class="fixed top-0 left-0 right-0 h-1 bg-black/10 z-50">
       <div
-        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out"
+        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out shadow-[0_0_15px_rgba(255,205,75,0.6)]"
         :style="{ width: scrollProgress + '%' }"
       ></div>
     </div>
@@ -292,7 +269,7 @@ const goBack = () => {
     <!-- Project Content -->
     <div v-else-if="project" class="project-content">
       <!-- Hero Section with Parallax Background -->
-      <section class="relative h-[65vh] min-h-[500px] overflow-hidden bg-black">
+      <section ref="heroElement" class="relative h-[65vh] min-h-[500px] overflow-hidden bg-black">
         <!-- Background Image with Overlay -->
         <div class="absolute inset-0">
           <img
@@ -354,9 +331,19 @@ const goBack = () => {
           <!-- Hero Content -->
           <div class="flex-grow flex items-center">
             <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 w-full">
-              <div class="max-w-4xl fade-in-up">
+              <div class="max-w-4xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                :class="{
+                  'opacity-100 translate-y-0 scale-100 blur-0': heroVisible,
+                  'opacity-0 translate-y-12 scale-95 blur-sm': !heroVisible,
+                }"
+              >
                 <!-- Status Badge -->
-                <div class="mb-6">
+                <div class="mb-6 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
+                  :class="{
+                    'opacity-100 translate-x-0': heroVisible,
+                    'opacity-0 -translate-x-8': !heroVisible,
+                  }"
+                >
                   <span
                     class="px-3 py-1 text-xs font-light uppercase tracking-wider backdrop-blur-sm"
                     :class="getStatusColor(project.status)"
@@ -367,15 +354,29 @@ const goBack = () => {
 
                 <!-- Title -->
                 <h1
-                  class="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-8 tracking-wide leading-tight"
+                  class="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-8 tracking-wide leading-tight transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200"
+                  :class="{
+                    'opacity-100 translate-y-0': heroVisible,
+                    'opacity-0 translate-y-8': !heroVisible,
+                  }"
                 >
                   {{ project.title }}
                 </h1>
 
-                <div class="w-20 h-0.5 bg-[#FFCD4B] mb-6 animate-expand"></div>
+                <div class="w-20 h-0.5 bg-[#FFCD4B] mb-6 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-300 origin-left"
+                  :class="{
+                    'scale-x-100': heroVisible,
+                    'scale-x-0': !heroVisible,
+                  }"
+                ></div>
 
                 <!-- Location and Year -->
-                <div class="flex flex-wrap items-center gap-8 text-white/80">
+                <div class="flex flex-wrap items-center gap-8 text-white/80 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-400"
+                  :class="{
+                    'opacity-100 translate-y-0': heroVisible,
+                    'opacity-0 translate-y-8': !heroVisible,
+                  }"
+                >
                   <div class="flex items-center gap-3">
                     <svg class="w-5 h-5 text-[#FFCD4B]" fill="currentColor" viewBox="0 0 20 20">
                       <path
@@ -411,7 +412,12 @@ const goBack = () => {
             <div class="lg:col-span-5 space-y-8">
               <!-- Image Gallery -->
               <div
-                class="bg-white overflow-hidden hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 fade-in-up"
+                ref="galleryElement"
+                class="bg-white overflow-hidden hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30"
+                :class="{
+                  'opacity-100 translate-y-0 scale-100 blur-0': galleryVisible,
+                  'opacity-0 translate-y-12 scale-95 blur-sm': !galleryVisible,
+                }"
               >
                 <!-- Main Image -->
                 <div
@@ -501,8 +507,13 @@ const goBack = () => {
 
               <!-- Project Details Card -->
               <div
-                class="bg-white p-8 hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 fade-in-up relative overflow-hidden"
-                style="animation-delay: 100ms"
+                ref="detailsElement"
+                class="bg-white p-8 hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30 relative overflow-hidden"
+                :class="{
+                  'opacity-100 translate-y-0 scale-100 blur-0': detailsVisible,
+                  'opacity-0 translate-y-12 scale-95 blur-sm': !detailsVisible,
+                }"
+                style="transition-delay: 100ms"
               >
                 <!-- Subtle background accent -->
                 <div
@@ -569,8 +580,13 @@ const goBack = () => {
             <!-- Right Column - Description -->
             <div class="lg:col-span-7">
               <div
-                class="bg-white p-10 hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 fade-in-up relative overflow-hidden"
-                style="animation-delay: 200ms"
+                ref="descriptionElement"
+                class="bg-white p-10 hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30 relative overflow-hidden"
+                :class="{
+                  'opacity-100 translate-y-0 scale-100 blur-0': descriptionVisible,
+                  'opacity-0 translate-y-12 scale-95 blur-sm': !descriptionVisible,
+                }"
+                style="transition-delay: 200ms"
               >
                 <!-- Subtle background glow on hover -->
                 <div
@@ -599,12 +615,22 @@ const goBack = () => {
 
       <!-- Features Grid -->
       <section v-if="projectFeatures.length > 0" class="py-20 bg-zinc-50">
-        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-          <div class="text-center mb-12 fade-in">
+        <div ref="featuresElement" class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+          <div class="text-center mb-12 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            :class="{
+              'opacity-100 translate-y-0': featuresVisible,
+              'opacity-0 translate-y-8': !featuresVisible,
+            }"
+          >
             <h2 class="text-4xl font-light text-zinc-900 mb-4">
               {{ t('projects.advantages.title') }}
             </h2>
-            <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto animate-expand"></div>
+            <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200 origin-center"
+              :class="{
+                'scale-x-100': featuresVisible,
+                'scale-x-0': !featuresVisible,
+              }"
+            ></div>
           </div>
 
           <!-- Dynamic Feature Cards -->
@@ -612,8 +638,12 @@ const goBack = () => {
             <div
               v-for="(feature, index) in projectFeatures"
               :key="feature.id"
-              class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 p-6 fade-in-up relative"
-              :style="{ animationDelay: `${index * 100}ms` }"
+              class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30 p-6 relative"
+              :class="{
+                'opacity-100 translate-y-0 scale-100 blur-0': featuresVisible,
+                'opacity-0 translate-y-12 scale-95 blur-sm': !featuresVisible,
+              }"
+              :style="{ transitionDelay: `${index * 100}ms` }"
             >
               <!-- Subtle background accent on hover -->
               <div
@@ -652,7 +682,12 @@ const goBack = () => {
       <section class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
           <div
-            class="bg-zinc-50 overflow-hidden hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 fade-in-up"
+            ref="comingSoonElement"
+            class="bg-zinc-50 overflow-hidden hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30"
+            :class="{
+              'opacity-100 translate-y-0 scale-100 blur-0': comingSoonVisible,
+              'opacity-0 translate-y-12 scale-95 blur-sm': !comingSoonVisible,
+            }"
           >
             <div class="grid grid-cols-1 lg:grid-cols-2">
               <!-- Left side - Content -->
@@ -771,16 +806,35 @@ const goBack = () => {
       <!-- CTA Section -->
       <section class="py-20 bg-zinc-50">
         <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-          <div class="text-center fade-in-up">
-            <h2 class="text-3xl md:text-4xl font-light text-zinc-800 mb-4">
+          <div ref="ctaElement" class="text-center transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            :class="{
+              'opacity-100 translate-y-0 scale-100 blur-0': ctaVisible,
+              'opacity-0 translate-y-12 scale-95 blur-sm': !ctaVisible,
+            }"
+          >
+            <h2 class="text-3xl md:text-4xl font-light text-zinc-800 mb-4 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
+              :class="{
+                'opacity-100 translate-y-0': ctaVisible,
+                'opacity-0 translate-y-8': !ctaVisible,
+              }"
+            >
               {{ t('projects.cta.title') }}
             </h2>
-            <p class="text-lg text-zinc-600 mb-8 max-w-2xl mx-auto font-light">
+            <p class="text-lg text-zinc-600 mb-8 max-w-2xl mx-auto font-light transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200"
+              :class="{
+                'opacity-100 translate-y-0': ctaVisible,
+                'opacity-0 translate-y-8': !ctaVisible,
+              }"
+            >
               {{ t('projects.cta.description') }}
             </p>
             <router-link
               to="/contact"
-              class="inline-flex items-center gap-3 px-10 py-4 bg-black text-[#FFCD4B] text-sm uppercase tracking-wider font-light transition-all duration-300 hover:bg-zinc-900 group transform hover:-translate-y-0.5 hover:shadow-lg"
+              class="inline-flex items-center gap-3 px-10 py-4 bg-black text-[#FFCD4B] text-sm uppercase tracking-wider font-light transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-zinc-900 group transform hover:-translate-y-0.5 hover:shadow-lg delay-300"
+              :class="{
+                'opacity-100 scale-100': ctaVisible,
+                'opacity-0 scale-90': !ctaVisible,
+              }"
             >
               <span>{{ t('projects.cta.contact_button') }}</span>
               <svg
@@ -803,12 +857,22 @@ const goBack = () => {
 
       <!-- Related Projects -->
       <section v-if="relatedProjects.length > 0" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-          <div class="text-center mb-12 fade-in">
+        <div ref="relatedElement" class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+          <div class="text-center mb-12 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            :class="{
+              'opacity-100 translate-y-0': relatedVisible,
+              'opacity-0 translate-y-8': !relatedVisible,
+            }"
+          >
             <h2 class="text-4xl font-light text-zinc-900 mb-4">
               {{ t('projects.related.title') }}
             </h2>
-            <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto animate-expand"></div>
+            <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200 origin-center"
+              :class="{
+                'scale-x-100': relatedVisible,
+                'scale-x-0': !relatedVisible,
+              }"
+            ></div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -816,8 +880,12 @@ const goBack = () => {
               v-for="(relatedProject, index) in relatedProjects"
               :key="relatedProject.id"
               @click="navigateToProject(relatedProject.id)"
-              class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 cursor-pointer fade-in-up"
-              :style="{ animationDelay: `${index * 100}ms` }"
+              class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30 cursor-pointer"
+              :class="{
+                'opacity-100 translate-y-0 scale-100 blur-0': relatedVisible,
+                'opacity-0 translate-y-12 scale-95 blur-sm': !relatedVisible,
+              }"
+              :style="{ transitionDelay: `${index * 80}ms` }"
             >
               <div class="relative h-64 bg-zinc-100 overflow-hidden">
                 <img

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { VueTelInput } from 'vue-tel-input'
 import { useTranslations } from '../composables/useTranslations'
 import { useContactPage } from '../composables/useContactPage'
+import { useScrollAnimation } from '@/composables/useScrollAnimation'
 import 'vue-tel-input/vue-tel-input.css'
 
 const { t } = useTranslations()
@@ -15,6 +16,14 @@ const {
   officeDays,
   loadContactPage,
 } = useContactPage()
+
+// Scroll animation refs
+const { element: heroElement, isVisible: heroVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
+const { element: formElement, isVisible: formVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
+const { element: contactInfoElement, isVisible: contactInfoVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
+const { element: mapElement, isVisible: mapVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
+const { element: faqElement, isVisible: faqVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
+const { element: ctaElement, isVisible: ctaVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
 
 const form = reactive({
   name: '',
@@ -150,9 +159,9 @@ onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
 })
 
-const onBeforeUnmount = () => {
+onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll)
-}
+})
 </script>
 
 <template>
@@ -160,23 +169,33 @@ const onBeforeUnmount = () => {
     <!-- Scroll Progress Bar -->
     <div class="fixed top-0 left-0 w-full h-1 bg-black/5 z-[100]">
       <div
-        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-300"
+        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-300 shadow-[0_0_15px_rgba(255,205,75,0.6)]"
         :style="{ width: scrollProgress + '%' }"
       ></div>
     </div>
 
     <!-- Hero Section - Compact with corner frames -->
-    <section class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
+    <section ref="heroElement" class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
       <!-- Diagonal gradient overlay -->
       <div
         class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent"
       ></div>
 
       <!-- Decorative corner frames -->
-      <div class="absolute top-0 right-0 w-64 h-64 opacity-20">
+      <div class="absolute top-0 right-0 w-64 h-64 opacity-20 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        :class="{
+          'translate-x-0 translate-y-0': heroVisible,
+          'translate-x-12 -translate-y-12': !heroVisible,
+        }"
+      >
         <div class="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-[#FFCD4B]"></div>
       </div>
-      <div class="absolute bottom-0 left-0 w-64 h-64 opacity-20">
+      <div class="absolute bottom-0 left-0 w-64 h-64 opacity-20 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        :class="{
+          'translate-x-0 translate-y-0': heroVisible,
+          '-translate-x-12 translate-y-12': !heroVisible,
+        }"
+      >
         <div
           class="absolute bottom-0 left-0 w-24 h-24 border-b-2 border-l-2 border-[#FFCD4B]"
         ></div>
@@ -184,16 +203,28 @@ const onBeforeUnmount = () => {
 
       <div class="relative z-10 h-full flex items-center justify-center">
         <div class="container mx-auto px-6 lg:px-12 xl:px-20 text-center">
-          <div class="max-w-4xl mx-auto">
+          <div class="max-w-4xl mx-auto transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            :class="{
+              'opacity-100 translate-y-0 scale-100 blur-0': heroVisible,
+              'opacity-0 translate-y-12 scale-95 blur-sm': !heroVisible,
+            }"
+          >
             <h1
-              class="text-5xl md:text-6xl lg:text-7xl font-extralight text-white mb-6 tracking-tight animate-fadeInUp"
+              class="text-5xl md:text-6xl lg:text-7xl font-extralight text-white mb-6 tracking-tight transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
+              :class="{
+                'opacity-100 translate-y-0': heroVisible,
+                'opacity-0 translate-y-8': !heroVisible,
+              }"
             >
               {{ t('contact.title') }}
             </h1>
 
             <p
-              class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed animate-fadeInUp"
-              style="animation-delay: 0.1s"
+              class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200"
+              :class="{
+                'opacity-100 translate-y-0': heroVisible,
+                'opacity-0 translate-y-8': !heroVisible,
+              }"
             >
               {{ t('contact.hero.subtitle') }}
             </p>
@@ -207,7 +238,12 @@ const onBeforeUnmount = () => {
       <div class="container mx-auto px-6 lg:px-12 xl:px-20">
         <div class="grid grid-cols-1 xl:grid-cols-5 gap-16 xl:gap-20">
           <!-- Contact Form - 3 columns -->
-          <div class="xl:col-span-3">
+          <div ref="formElement" class="xl:col-span-3 transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            :class="{
+              'opacity-100 translate-y-0 scale-100 blur-0': formVisible,
+              'opacity-0 translate-y-12 scale-95 blur-sm': !formVisible,
+            }"
+          >
             <!-- Form Header -->
             <div class="mb-12">
               <h2 class="text-3xl lg:text-4xl font-extralight text-zinc-900 mb-3">
@@ -449,7 +485,13 @@ const onBeforeUnmount = () => {
           </div>
 
           <!-- Contact Information - 2 columns -->
-          <div class="xl:col-span-2 space-y-12">
+          <div ref="contactInfoElement" class="xl:col-span-2 space-y-12 transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            :class="{
+              'opacity-100 translate-y-0 scale-100 blur-0': contactInfoVisible,
+              'opacity-0 translate-y-12 scale-95 blur-sm': !contactInfoVisible,
+            }"
+            style="transition-delay: 100ms"
+          >
             <!-- Quick Contact -->
             <div>
               <h3 class="text-2xl font-extralight text-zinc-900 mb-8">
@@ -543,7 +585,12 @@ const onBeforeUnmount = () => {
     </section>
 
     <!-- Map Section - Interactive -->
-    <section class="relative h-[500px] bg-zinc-100 overflow-hidden">
+    <section ref="mapElement" class="relative h-[500px] bg-zinc-100 overflow-hidden transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+      :class="{
+        'opacity-100 scale-100': mapVisible,
+        'opacity-0 scale-95': !mapVisible,
+      }"
+    >
       <!-- Map Container -->
       <div class="absolute inset-0">
         <!-- Google Maps iframe with location pin -->
@@ -607,14 +654,24 @@ const onBeforeUnmount = () => {
 
     <!-- FAQ Section -->
     <section class="py-24 lg:py-32 bg-gradient-to-br from-white to-zinc-50">
-      <div class="container mx-auto px-6 lg:px-12 xl:px-20">
+      <div ref="faqElement" class="container mx-auto px-6 lg:px-12 xl:px-20">
         <div class="max-w-4xl mx-auto">
           <!-- Section Header -->
-          <div class="text-center mb-16">
+          <div class="text-center mb-16 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            :class="{
+              'opacity-100 translate-y-0': faqVisible,
+              'opacity-0 translate-y-8': !faqVisible,
+            }"
+          >
             <h2 class="text-3xl lg:text-4xl font-extralight text-zinc-900 mb-4">
               {{ t('contact.faq.title') }}
             </h2>
-            <div class="w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mx-auto"></div>
+            <div class="w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mx-auto transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200 origin-center"
+              :class="{
+                'scale-x-100': faqVisible,
+                'scale-x-0': !faqVisible,
+              }"
+            ></div>
           </div>
 
           <!-- FAQ Items -->
@@ -622,7 +679,12 @@ const onBeforeUnmount = () => {
             <div
               v-for="(faq, index) in faqs"
               :key="index"
-              class="bg-white border-l-2 border-transparent hover:border-[#FFCD4B] transition-all duration-300"
+              class="bg-white border-l-2 border-transparent hover:border-[#FFCD4B] transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+              :class="{
+                'opacity-100 translate-y-0 scale-100 blur-0': faqVisible,
+                'opacity-0 translate-y-8 scale-95 blur-sm': !faqVisible,
+              }"
+              :style="{ transitionDelay: `${index * 100}ms` }"
             >
               <button
                 @click="toggleFaq(index)"
@@ -658,26 +720,45 @@ const onBeforeUnmount = () => {
     </section>
 
     <!-- CTA Section -->
-    <section class="relative py-20 bg-black">
+    <section ref="ctaElement" class="relative py-20 bg-black">
       <!-- Diagonal gradient overlay -->
       <div
         class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent opacity-50"
       ></div>
 
       <div class="relative container mx-auto px-6 lg:px-12 xl:px-20 text-center">
-        <div class="max-w-3xl mx-auto">
-          <h2 class="text-3xl lg:text-4xl font-extralight text-white mb-6 leading-tight">
+        <div class="max-w-3xl mx-auto transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          :class="{
+            'opacity-100 translate-y-0 scale-100 blur-0': ctaVisible,
+            'opacity-0 translate-y-12 scale-95 blur-sm': !ctaVisible,
+          }"
+        >
+          <h2 class="text-3xl lg:text-4xl font-extralight text-white mb-6 leading-tight transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
+            :class="{
+              'opacity-100 translate-y-0': ctaVisible,
+              'opacity-0 translate-y-8': !ctaVisible,
+            }"
+          >
             {{ t('contact.cta.title.part1') }}
             <span class="text-[#FFCD4B]">{{ t('contact.cta.title.part2') }}</span>
           </h2>
-          <p class="text-lg text-zinc-400 font-light leading-relaxed mb-8">
+          <p class="text-lg text-zinc-400 font-light leading-relaxed mb-8 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200"
+            :class="{
+              'opacity-100 translate-y-0': ctaVisible,
+              'opacity-0 translate-y-8': !ctaVisible,
+            }"
+          >
             {{ t('contact.cta.subtitle') }}
           </p>
 
           <!-- Simple CTA button -->
           <button
             @click="scrollToForm"
-            class="inline-flex items-center gap-3 px-10 py-4 bg-[#FFCD4B]/10 border border-[#FFCD4B]/30 text-[#FFCD4B] hover:bg-[#FFCD4B]/20 font-light tracking-wider uppercase text-sm transition-all duration-300 cursor-pointer"
+            class="inline-flex items-center gap-3 px-10 py-4 bg-[#FFCD4B]/10 border border-[#FFCD4B]/30 text-[#FFCD4B] hover:bg-[#FFCD4B]/20 font-light tracking-wider uppercase text-sm transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer delay-300"
+            :class="{
+              'opacity-100 scale-100': ctaVisible,
+              'opacity-0 scale-90': !ctaVisible,
+            }"
           >
             <span>{{ t('contact.cta.button') }}</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -3,12 +3,20 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
 import { useTranslationsStore } from '@/stores/ui/translations'
 import { useNewsStore } from '@/stores/public/news'
+import { useScrollAnimation } from '@/composables/useScrollAnimation'
 
 const { t } = useTranslations()
 const newsStore = useNewsStore()
 const translationsStore = useTranslationsStore()
 
 const scrollProgress = ref(0)
+
+// Scroll animation refs
+const { element: heroElement, isVisible: heroVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
+const { element: searchFilterElement, isVisible: searchFilterVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
+const { element: featuredElement, isVisible: featuredVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
+const { element: articlesHeaderElement, isVisible: articlesHeaderVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
+const { element: articlesGridElement, isVisible: articlesGridVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
 
 // Scroll progress tracking
 const handleScroll = () => {
@@ -27,6 +35,7 @@ const selectedCategory = ref<string>('all')
 const searchQuery = ref('')
 const isLoading = ref(true)
 const isLoadingCategories = ref(false)
+const isTransitioning = ref(false)
 const currentPage = ref(1)
 
 const categoryLabels = computed(() => ({
@@ -93,9 +102,24 @@ const loadFeaturedArticle = async () => {
   }
 }
 
-const handleCategoryChange = (category: string) => {
+const handleCategoryChange = async (category: string) => {
+  if (category === selectedCategory.value || isTransitioning.value) return
+
+  // Start transition
+  isTransitioning.value = true
+
+  // Wait for fade-out animation
+  await new Promise((resolve) => setTimeout(resolve, 300))
+
+  // Update category and load articles
   selectedCategory.value = category
-  loadArticles(1, true, true)
+  await loadArticles(1, true, true)
+
+  // Small delay before fade-in
+  await new Promise((resolve) => setTimeout(resolve, 50))
+
+  // End transition
+  isTransitioning.value = false
 }
 
 const handleSearch = () => {
@@ -164,25 +188,35 @@ onBeforeUnmount(() => {
     <!-- Scroll Progress Bar -->
     <div class="fixed top-0 left-0 right-0 h-1 bg-black/10 z-50">
       <div
-        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out"
+        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out shadow-[0_0_15px_rgba(255,205,75,0.6)]"
         :style="{ width: scrollProgress + '%' }"
       ></div>
     </div>
 
     <!-- Hero Section -->
-    <section class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
+    <section ref="heroElement" class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
       <!-- Diagonal overlay accent -->
       <div
         class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent"
       ></div>
 
       <!-- Decorative corner elements -->
-      <div class="absolute top-0 right-0 w-64 h-64 opacity-20">
+      <div class="absolute top-0 right-0 w-64 h-64 opacity-20 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        :class="{
+          'translate-x-0 translate-y-0': heroVisible,
+          'translate-x-12 -translate-y-12': !heroVisible,
+        }"
+      >
         <div
           class="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-[#FFCD4B]"
         ></div>
       </div>
-      <div class="absolute bottom-0 left-0 w-64 h-64 opacity-20">
+      <div class="absolute bottom-0 left-0 w-64 h-64 opacity-20 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        :class="{
+          'translate-x-0 translate-y-0': heroVisible,
+          '-translate-x-12 translate-y-12': !heroVisible,
+        }"
+      >
         <div
           class="absolute bottom-0 left-0 w-24 h-24 border-b-2 border-l-2 border-[#FFCD4B]"
         ></div>
@@ -191,15 +225,34 @@ onBeforeUnmount(() => {
       <!-- Content -->
       <div class="relative z-10 h-full flex flex-col justify-center">
         <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 w-full">
-          <div class="max-w-3xl fade-in-up">
+          <div class="max-w-3xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            :class="{
+              'opacity-100 translate-y-0 scale-100 blur-0': heroVisible,
+              'opacity-0 translate-y-12 scale-95 blur-sm': !heroVisible,
+            }"
+          >
             <h1
-              class="text-4xl md:text-5xl lg:text-6xl font-light mb-6 leading-tight text-white"
+              class="text-4xl md:text-5xl lg:text-6xl font-light mb-6 leading-tight text-white transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
+              :class="{
+                'opacity-100 translate-y-0': heroVisible,
+                'opacity-0 translate-y-8': !heroVisible,
+              }"
             >
               <span v-if="hasTranslations">{{ t('news.title') }}</span>
               <span v-else class="inline-block h-12 w-48 bg-white/10 rounded animate-pulse"></span>
             </h1>
-            <div class="w-20 h-1 bg-gradient-to-r from-[#FFCD4B] to-transparent mb-6"></div>
-            <p class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl">
+            <div class="w-20 h-1 bg-gradient-to-r from-[#FFCD4B] to-transparent mb-6 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200 origin-left"
+              :class="{
+                'scale-x-100': heroVisible,
+                'scale-x-0': !heroVisible,
+              }"
+            ></div>
+            <p class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-300"
+              :class="{
+                'opacity-100 translate-y-0': heroVisible,
+                'opacity-0 translate-y-8': !heroVisible,
+              }"
+            >
               <span v-if="hasTranslations">{{ t('news.description') }}</span>
               <span v-else class="inline-block h-8 w-96 bg-white/10 rounded animate-pulse"></span>
             </p>
@@ -210,7 +263,12 @@ onBeforeUnmount(() => {
 
     <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 py-16">
       <!-- Search and Filter Section -->
-      <div class="mb-16">
+      <div ref="searchFilterElement" class="mb-16 transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        :class="{
+          'opacity-100 translate-y-0 scale-100 blur-0': searchFilterVisible,
+          'opacity-0 translate-y-12 scale-95 blur-sm': !searchFilterVisible,
+        }"
+      >
         <div class="flex flex-col lg:flex-row gap-8 items-start lg:items-center justify-between">
           <!-- Search Input -->
           <div class="flex-1 max-w-2xl">
@@ -332,14 +390,29 @@ onBeforeUnmount(() => {
       <div v-if="!isLoading || newsStore.articles.length">
         <!-- Featured Article -->
         <div
+          ref="featuredElement"
           v-if="featuredArticle && selectedCategory === 'all' && !searchQuery.trim()"
-          class="mb-20"
+          class="mb-20 transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          :class="{
+            'opacity-100 translate-y-0 scale-100 blur-0': featuredVisible && !isTransitioning,
+            'opacity-0 translate-y-12 scale-95 blur-sm': !featuredVisible || isTransitioning,
+          }"
         >
-          <div class="text-center mb-12">
+          <div class="text-center mb-12 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            :class="{
+              'opacity-100 translate-y-0': featuredVisible,
+              'opacity-0 translate-y-8': !featuredVisible,
+            }"
+          >
             <h2 class="text-3xl md:text-4xl font-light text-zinc-900 mb-4">
               {{ t('news.featured.title') }}
             </h2>
-            <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto"></div>
+            <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200 origin-center"
+              :class="{
+                'scale-x-100': featuredVisible,
+                'scale-x-0': !featuredVisible,
+              }"
+            ></div>
           </div>
 
           <div
@@ -406,11 +479,21 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Articles Header -->
-        <div class="text-center mb-12">
+        <div ref="articlesHeaderElement" class="text-center mb-12 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          :class="{
+            'opacity-100 translate-y-0': articlesHeaderVisible && !isTransitioning,
+            'opacity-0 translate-y-8': !articlesHeaderVisible || isTransitioning,
+          }"
+        >
           <h2 class="text-3xl md:text-4xl font-light text-zinc-900 mb-4">
             {{ searchQuery.trim() ? t('news.searchResults') : t('news.allNews') }}
           </h2>
-          <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto mb-6"></div>
+          <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto mb-6 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200 origin-center"
+            :class="{
+              'scale-x-100': articlesHeaderVisible,
+              'scale-x-0': !articlesHeaderVisible,
+            }"
+          ></div>
           <p class="text-zinc-600 font-light">
             {{ newsStore.pagination.total }} {{ t('news.pagination.articles') }},
             {{ t('news.pagination.page') }} {{ newsStore.pagination.current_page }} /
@@ -426,11 +509,16 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Articles Grid -->
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <div ref="articlesGridElement" v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           <article
-            v-for="article in newsStore.articles"
+            v-for="(article, index) in newsStore.articles"
             :key="article.id"
-            class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 relative"
+            class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30 relative"
+            :class="{
+              'opacity-100 translate-y-0 scale-100 blur-0': articlesGridVisible && !isTransitioning,
+              'opacity-0 translate-y-12 scale-95 blur-sm': !articlesGridVisible || isTransitioning,
+            }"
+            :style="{ transitionDelay: isTransitioning ? '0ms' : `${index * 80}ms` }"
           >
             <div class="relative h-56 bg-zinc-100 overflow-hidden">
               <img

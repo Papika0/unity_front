@@ -4,13 +4,21 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTranslations } from '../composables/useTranslations'
 import { useNewsStore } from '@/stores/public/news'
 import { useLocaleStore } from '@/stores/ui/locale'
-import type { NewsArticle } from '@/types'
+import { useScrollAnimation } from '@/composables/useScrollAnimation'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useTranslations()
 const newsStore = useNewsStore()
 const localeStore = useLocaleStore()
+
+// Scroll animation refs
+const { element: breadcrumbElement, isVisible: breadcrumbVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: headerElement, isVisible: headerVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: mainImageElement, isVisible: mainImageVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: contentElement, isVisible: contentVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: galleryElement, isVisible: galleryVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
+const { element: relatedElement, isVisible: relatedVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
 
 const article = computed(() => newsStore.currentArticle)
 const isLoading = computed(() => newsStore.loading)
@@ -27,10 +35,8 @@ const handleScroll = () => {
 }
 
 const relatedArticles = computed(() => {
-  if (!article.value) return []
-
-  const categoryArticles = newsStore.categorizedArticles[article.value.category] || []
-  return categoryArticles.filter((a: NewsArticle) => a.id !== article.value?.id).slice(0, 3)
+  // Use related articles from API response
+  return article.value?.related_articles || []
 })
 
 const formattedDate = computed(() => {
@@ -114,6 +120,12 @@ const fetchArticle = async () => {
       router.push('/news')
       return
     }
+    
+    // Scroll to top smoothly to trigger animations properly
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    
+    // Wait for scroll to complete and DOM to update
+    await new Promise(resolve => setTimeout(resolve, 100))
   } catch (err) {
     error.value = t('errors.loadFailed') || 'Failed to load article'
     console.error('Error fetching article:', err)
@@ -121,7 +133,11 @@ const fetchArticle = async () => {
 }
 
 // Watch for route changes
-watch(() => route.params.id, fetchArticle, { immediate: true })
+watch(() => route.params.id, async (newId, oldId) => {
+  if (newId !== oldId) {
+    await fetchArticle()
+  }
+}, { immediate: true })
 
 onMounted(() => {
   // Scroll to top when component mounts
@@ -142,7 +158,7 @@ onBeforeUnmount(() => {
     <!-- Scroll Progress Bar -->
     <div class="fixed top-0 left-0 right-0 h-1 bg-black/10 z-50">
       <div
-        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out"
+        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out shadow-[0_0_15px_rgba(255,205,75,0.6)]"
         :style="{ width: scrollProgress + '%' }"
       ></div>
     </div>
@@ -174,7 +190,12 @@ onBeforeUnmount(() => {
     <!-- Article Content -->
     <div v-else-if="article && article.id" class="max-w-4xl mx-auto px-8 lg:px-16 xl:px-20 py-16">
       <!-- Breadcrumb -->
-      <nav class="mb-8">
+      <nav ref="breadcrumbElement" class="mb-8 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        :class="{
+          'opacity-100 translate-y-0': breadcrumbVisible,
+          'opacity-0 translate-y-8': !breadcrumbVisible,
+        }"
+      >
         <ol class="flex items-center space-x-2 text-sm text-zinc-600 font-light">
           <li>
             <router-link to="/" class="hover:text-[#FFCD4B] transition-colors">{{
@@ -193,9 +214,14 @@ onBeforeUnmount(() => {
       </nav>
 
       <!-- Article Header -->
-      <header class="mb-12">
+      <header ref="headerElement" class="mb-12">
         <!-- Category & Date -->
-        <div class="flex items-center gap-4 mb-6">
+        <div class="flex items-center gap-4 mb-6 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          :class="{
+            'opacity-100 translate-x-0': headerVisible,
+            'opacity-0 -translate-x-8': !headerVisible,
+          }"
+        >
           <span
             class="px-4 py-1.5 bg-black/5 text-zinc-800 text-sm font-light uppercase tracking-wider border border-zinc-200"
           >
@@ -209,22 +235,41 @@ onBeforeUnmount(() => {
 
         <!-- Title -->
         <h1
-          class="text-4xl md:text-5xl font-light text-zinc-900 leading-tight mb-6 tracking-tight"
+          class="text-4xl md:text-5xl font-light text-zinc-900 leading-tight mb-6 tracking-tight transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
+          :class="{
+            'opacity-100 translate-y-0': headerVisible,
+            'opacity-0 translate-y-8': !headerVisible,
+          }"
         >
           {{ article.title }}
         </h1>
 
         <!-- Divider -->
-        <div class="w-20 h-0.5 bg-[#FFCD4B] mb-6"></div>
+        <div class="w-20 h-0.5 bg-[#FFCD4B] mb-6 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200 origin-left"
+          :class="{
+            'scale-x-100': headerVisible,
+            'scale-x-0': !headerVisible,
+          }"
+        ></div>
 
         <!-- Excerpt -->
-        <p class="text-xl text-zinc-700 leading-relaxed font-light">
+        <p class="text-xl text-zinc-700 leading-relaxed font-light transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-300"
+          :class="{
+            'opacity-100 translate-y-0': headerVisible,
+            'opacity-0 translate-y-8': !headerVisible,
+          }"
+        >
           {{ article.excerpt }}
         </p>
       </header>
 
       <!-- Main Image -->
-      <div class="mb-12 group">
+      <div ref="mainImageElement" class="mb-12 group transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        :class="{
+          'opacity-100 translate-y-0 scale-100 blur-0': mainImageVisible,
+          'opacity-0 translate-y-12 scale-95 blur-sm': !mainImageVisible,
+        }"
+      >
         <div class="relative overflow-hidden border border-zinc-100">
           <img
             :src="article.main_image || 'https://placehold.co/800x400'"
@@ -239,24 +284,44 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Article Content -->
-      <div class="prose prose-lg max-w-none">
+      <article ref="contentElement" class="mb-20">
         <div
-          class="text-zinc-800 leading-relaxed whitespace-pre-line"
-          v-html="(article.content || '').replace(/\n/g, '<br>')"
+          class="prose prose-lg prose-zinc max-w-none transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          :class="{
+            'opacity-100 translate-y-0 scale-100 blur-0': contentVisible,
+            'opacity-0 translate-y-12 scale-95 blur-sm': !contentVisible,
+          }"
+          style="color: #18181b;"
+          v-html="article.content"
         ></div>
-      </div>
+      </article>
 
       <!-- Gallery Images -->
-      <div v-if="article.gallery_images && article.gallery_images.length > 0" class="mt-12">
-        <h3 class="text-2xl font-light text-zinc-900 mb-4">
+      <div ref="galleryElement" v-if="article.gallery_images && article.gallery_images.length > 0" class="mb-12">
+        <h3 class="text-2xl font-light text-zinc-900 mb-4 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          :class="{
+            'opacity-100 translate-y-0': galleryVisible,
+            'opacity-0 translate-y-8': !galleryVisible,
+          }"
+        >
           {{ t('news.gallery.title') }}
         </h3>
-        <div class="w-20 h-0.5 bg-[#FFCD4B] mb-8"></div>
+        <div class="w-20 h-0.5 bg-[#FFCD4B] mb-8 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100 origin-left"
+          :class="{
+            'scale-x-100': galleryVisible,
+            'scale-x-0': !galleryVisible,
+          }"
+        ></div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
             v-for="(image, index) in article.gallery_images"
             :key="index"
-            class="group relative overflow-hidden border border-zinc-100 hover:border-[#FFCD4B]/30 transition-all duration-500 cursor-pointer"
+            class="group relative overflow-hidden border border-zinc-100 hover:border-[#FFCD4B]/30 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer"
+            :class="{
+              'opacity-100 translate-y-0 scale-100': galleryVisible,
+              'opacity-0 translate-y-12 scale-95': !galleryVisible,
+            }"
+            :style="{ transitionDelay: `${200 + index * 80}ms` }"
             @click="openGallery(index)"
           >
             <img
@@ -350,18 +415,33 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Related Articles -->
-    <section v-if="relatedArticles.length > 0" class="bg-zinc-50 py-16">
+    <section ref="relatedElement" v-if="relatedArticles.length > 0" class="bg-zinc-50 py-16">
       <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-        <h2 class="text-3xl font-light text-zinc-900 mb-4">
+        <h2 class="text-3xl font-light text-zinc-900 mb-4 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          :class="{
+            'opacity-100 translate-y-0': relatedVisible,
+            'opacity-0 translate-y-8': !relatedVisible,
+          }"
+        >
           {{ t('news.related.title') }}
         </h2>
-        <div class="w-20 h-0.5 bg-[#FFCD4B] mb-12"></div>
+        <div class="w-20 h-0.5 bg-[#FFCD4B] mb-12 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100 origin-left"
+          :class="{
+            'scale-x-100': relatedVisible,
+            'scale-x-0': !relatedVisible,
+          }"
+        ></div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <article
-            v-for="relatedArticle in relatedArticles"
+            v-for="(relatedArticle, index) in relatedArticles"
             :key="relatedArticle.id"
-            class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 relative"
+            class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30 relative"
+            :class="{
+              'opacity-100 translate-y-0 scale-100 blur-0': relatedVisible,
+              'opacity-0 translate-y-12 scale-95 blur-sm': !relatedVisible,
+            }"
+            :style="{ transitionDelay: `${200 + index * 80}ms` }"
           >
             <div class="relative h-48 bg-zinc-100 overflow-hidden">
               <img
@@ -458,6 +538,33 @@ onBeforeUnmount(() => {
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Prose content styling - ensure all text is visible and black */
+:deep(.prose) {
+  color: #18181b;
+}
+
+:deep(.prose p),
+:deep(.prose h1),
+:deep(.prose h2),
+:deep(.prose h3),
+:deep(.prose h4),
+:deep(.prose h5),
+:deep(.prose h6),
+:deep(.prose li),
+:deep(.prose span),
+:deep(.prose div) {
+  color: #18181b !important;
+}
+
+:deep(.prose a) {
+  color: #FFCD4B !important;
+  text-decoration: underline;
+}
+
+:deep(.prose a:hover) {
+  color: #C89116 !important;
 }
 
 /* Modal transitions */

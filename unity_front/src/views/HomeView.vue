@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { onMounted, watch, ref, onBeforeUnmount } from 'vue'
 import HeroSection from '../components/home/HeroSection.vue'
 import AboutSection from '../components/home/AboutSection.vue'
 import ProjectsSection from '../components/home/ProjectsSection.vue'
@@ -11,8 +11,28 @@ import { useLocaleStore } from '@/stores/ui/locale'
 const homepageStore = useHomepageStore()
 const localeStore = useLocaleStore()
 
+// Scroll progress indicator
+const scrollProgress = ref(0)
+
+const handleScroll = () => {
+  const scrollTop = window.scrollY
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight
+  scrollProgress.value = (scrollTop / docHeight) * 100
+}
+
 onMounted(async () => {
+  // Force scroll to top on mount/refresh
+  window.scrollTo(0, 0)
+  
   await homepageStore.loadHomepageData()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  
+  // Enable smooth scrolling
+  document.documentElement.style.scrollBehavior = 'smooth'
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 
 // Watch for locale changes and refetch data
@@ -27,7 +47,15 @@ watch(
 </script>
 
 <template>
-  <div>
+  <div class="relative">
+    <!-- Scroll Progress Bar -->
+    <div class="fixed top-0 left-0 right-0 h-1 bg-black/10 z-50">
+      <div
+        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out"
+        :style="{ width: scrollProgress + '%' }"
+      ></div>
+    </div>
+
     <HeroSection />
     <AboutSection />
     <ProjectsSection />
@@ -35,3 +63,17 @@ watch(
     <NewsSection />
   </div>
 </template>
+
+<style scoped>
+/* Smooth scrolling improvements */
+:deep(*) {
+  scroll-behavior: smooth;
+}
+
+/* Hardware acceleration for smoother animations */
+:deep(.group) {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+</style>

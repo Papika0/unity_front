@@ -23,9 +23,17 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior(to, from, savedPosition) {
     // Always scroll to top when navigating to a new route
+    // Don't restore saved position on page refresh/reload
+    if (to.path === from.path) {
+      // Same route (e.g., refresh), always go to top
+      return { top: 0 }
+    }
+    
     if (savedPosition) {
+      // Only restore position when using browser back/forward buttons
       return savedPosition
     } else {
+      // New navigation, scroll to top
       return { top: 0, behavior: 'smooth' }
     }
   },

@@ -75,8 +75,44 @@ class ProjectsController extends Controller
                               ->with('features')
                               ->findOrFail($id);
             
+            // Get related projects (same status, excluding current)
+            $relatedProjects = Projects::where('is_active', true)
+                ->where('id', '!=', $id)
+                ->where('status', $project->status)
+                ->orderBy('created_at', 'desc')
+                ->take(3)
+                ->get(['id', 'title', 'main_image', 'status']);
+            
+            // If less than 3 same-status projects, fill with other projects
+            if ($relatedProjects->count() < 3) {
+                $remainingCount = 3 - $relatedProjects->count();
+                $relatedIds = $relatedProjects->pluck('id')->toArray();
+                $relatedIds[] = $id; // Exclude current project
+                
+                $additionalProjects = Projects::where('is_active', true)
+                    ->whereNotIn('id', $relatedIds)
+                    ->orderBy('created_at', 'desc')
+                    ->take($remainingCount)
+                    ->get(['id', 'title', 'main_image', 'status']);
+                
+                $relatedProjects = $relatedProjects->concat($additionalProjects);
+            }
+            
             $locale = $request->get('locale', 'ka');
-            return $this->success(new ProjectResource($project, $locale));
+            $resource = new ProjectResource($project, $locale);
+            
+            // Add related projects to the resource
+            $resourceData = $resource->toArray($request);
+            $resourceData['related_projects'] = $relatedProjects->map(function($related) use ($locale) {
+                return [
+                    'id' => $related->id,
+                    'title' => $related->getTranslation('title', $locale),
+                    'main_image' => $related->main_image,
+                    'status' => $related->status,
+                ];
+            })->values()->all();
+            
+            return $this->success($resourceData);
         } catch (\Exception $e) {
             return $this->error('Project not found', 404);
         }

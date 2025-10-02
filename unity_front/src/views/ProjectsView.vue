@@ -3,6 +3,7 @@ import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
 import { useProjectsPage } from '../composables/useProjectsPage'
 import { useProjectsStore } from '@/stores/public/projects'
+import { useScrollAnimation } from '@/composables/useScrollAnimation'
 
 const { t } = useTranslations()
 const {
@@ -20,6 +21,21 @@ const projectsStore = useProjectsStore()
 
 const selectedCategory = ref('all')
 const scrollProgress = ref(0)
+const isTransitioning = ref(false)
+
+// Hero is always visible since it's at the top
+const heroVisible = ref(false)
+
+// Scroll animations for sections
+const {
+  element: filterSectionRef,
+  isVisible: filterSectionVisible,
+} = useScrollAnimation({ threshold: 0.05, rootMargin: '200px', once: false })
+
+const {
+  element: projectsGridRef,
+  isVisible: projectsGridVisible,
+} = useScrollAnimation({ threshold: 0.05, rootMargin: '200px', once: false })
 
 // Scroll progress tracking
 const handleScroll = () => {
@@ -30,6 +46,12 @@ const handleScroll = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  // Scroll to top on mount
+  window.scrollTo(0, 0)
+  // Trigger hero animation immediately
+  setTimeout(() => {
+    heroVisible.value = true
+  }, 100)
 })
 
 onBeforeUnmount(() => {
@@ -78,7 +100,18 @@ const loadProjectsAndUpdateStore = async (page: number = 1, loadMore: boolean = 
 
 // Reset and reload projects when category changes
 watch(selectedCategory, async () => {
+  // Start transition
+  isTransitioning.value = true
+  
+  // Wait for fade-out animation
+  await new Promise(resolve => setTimeout(resolve, 300))
+  
+  // Load new projects
   await loadProjectsAndUpdateStore(1, false)
+  
+  // Wait a bit then fade back in
+  await new Promise(resolve => setTimeout(resolve, 50))
+  isTransitioning.value = false
 })
 
 // Load projects page data on component mount
@@ -118,7 +151,7 @@ const getStatusText = (status: string) => {
     <!-- Scroll Progress Bar -->
     <div class="fixed top-0 left-0 right-0 h-1 bg-black/10 z-50">
       <div
-        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out"
+        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out shadow-[0_0_10px_rgba(255,205,75,0.5)]"
         :style="{ width: scrollProgress + '%' }"
       ></div>
     </div>
@@ -127,16 +160,29 @@ const getStatusText = (status: string) => {
     <section class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
       <!-- Diagonal overlay accent -->
       <div
-        class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent"
+        class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent transition-opacity duration-1000 delay-200"
+        :class="{ 'opacity-100': heroVisible, 'opacity-0': !heroVisible }"
       ></div>
 
       <!-- Decorative corner elements -->
-      <div class="absolute top-0 right-0 w-64 h-64 opacity-20">
+      <div
+        class="absolute top-0 right-0 w-64 h-64 opacity-20 transition-all duration-1000 delay-300"
+        :class="{
+          'opacity-20 translate-x-0 translate-y-0': heroVisible,
+          'opacity-0 translate-x-8 -translate-y-8': !heroVisible,
+        }"
+      >
         <div
           class="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-[#FFCD4B]"
         ></div>
       </div>
-      <div class="absolute bottom-0 left-0 w-64 h-64 opacity-20">
+      <div
+        class="absolute bottom-0 left-0 w-64 h-64 opacity-20 transition-all duration-1000 delay-400"
+        :class="{
+          'opacity-20 translate-x-0 translate-y-0': heroVisible,
+          'opacity-0 -translate-x-8 translate-y-8': !heroVisible,
+        }"
+      >
         <div
           class="absolute bottom-0 left-0 w-24 h-24 border-b-2 border-l-2 border-[#FFCD4B]"
         ></div>
@@ -145,13 +191,23 @@ const getStatusText = (status: string) => {
       <!-- Content -->
       <div class="relative z-10 h-full flex flex-col justify-center">
         <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 w-full">
-          <div class="max-w-3xl fade-in-up">
+          <div
+            class="max-w-3xl transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
+            :class="{
+              'opacity-100 translate-y-0 blur-0': heroVisible,
+              'opacity-0 translate-y-12 blur-sm': !heroVisible,
+            }"
+          >
             <h1
               class="text-4xl md:text-5xl lg:text-6xl font-light mb-6 leading-tight text-white"
             >
               {{ t('projects.title') }}
             </h1>
-            <div class="w-20 h-1 bg-gradient-to-r from-[#FFCD4B] to-transparent mb-6"></div>
+            <div
+              class="w-20 h-1 bg-gradient-to-r from-[#FFCD4B] to-transparent mb-6 transition-all duration-1000 delay-300"
+              :class="{ 'scale-x-100': heroVisible, 'scale-x-0': !heroVisible }"
+              style="transform-origin: left"
+            ></div>
             <p class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl">
               {{ t('projects.subtitle') }}
             </p>
@@ -161,20 +217,26 @@ const getStatusText = (status: string) => {
     </section>
 
     <!-- Filter Section -->
-    <section class="py-16 bg-zinc-50 border-b border-zinc-100 fade-in">
+    <section
+      ref="filterSectionRef"
+      class="py-16 bg-zinc-50 border-b border-zinc-100"
+    >
       <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
         <div class="flex flex-wrap gap-3 justify-center">
           <button
             v-for="(category, index) in categories"
             :key="category.value"
             @click="selectedCategory = category.value"
-            class="px-6 py-2.5 text-sm uppercase tracking-wider font-light transition-all duration-300 transform hover:scale-105"
-            :class="
+            class="px-6 py-2.5 text-sm uppercase tracking-wider font-light transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] transform hover:scale-105"
+            :class="[
               selectedCategory === category.value
                 ? 'bg-black text-[#FFCD4B] shadow-lg'
-                : 'bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-200 hover:border-zinc-300'
-            "
-            :style="{ animationDelay: `${index * 100}ms` }"
+                : 'bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-200 hover:border-zinc-300',
+              filterSectionVisible
+                ? 'opacity-100 translate-y-0 scale-100 blur-0'
+                : 'opacity-0 translate-y-8 scale-95 blur-sm',
+            ]"
+            :style="{ transitionDelay: `${index * 100}ms` }"
           >
             {{ category.label }}
           </button>
@@ -183,35 +245,54 @@ const getStatusText = (status: string) => {
     </section>
 
     <!-- Projects Grid -->
-    <section class="py-16 lg:py-20 bg-white">
+    <section ref="projectsGridRef" class="py-16 lg:py-20 bg-white">
       <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-        <!-- Loading State -->
-        <div v-if="isLoading" class="text-center py-20">
-          <div
-            class="inline-block animate-spin rounded-full h-12 w-12 border-2 border-transparent border-t-[#FFCD4B] mb-6"
-          ></div>
-          <p class="text-lg text-zinc-500 font-light uppercase tracking-wider">
-            {{ t('projects.loading') }}
-          </p>
+        <!-- Loading Overlay (non-blocking) -->
+        <div
+          v-if="isLoading && allProjects.length === 0"
+          class="fixed top-16 right-8 z-50 bg-black/80 backdrop-blur-sm px-6 py-3 rounded-full border border-[#FFCD4B]/30"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="animate-spin rounded-full h-4 w-4 border-2 border-transparent border-t-[#FFCD4B]"
+            ></div>
+            <span class="text-sm text-[#FFCD4B] font-light uppercase tracking-wider">
+              {{ t('projects.loading') }}
+            </span>
+          </div>
         </div>
 
-        <!-- Error State -->
-        <div v-else-if="error" class="text-center py-20">
-          <div class="text-5xl mb-6">⚠️</div>
-          <h2 class="text-xl font-light text-zinc-800 mb-3">{{ t('projects.error_title') }}</h2>
-          <p class="text-base text-zinc-600 mb-8 font-light">{{ error }}</p>
-          <button
-            @click="() => loadProjectsAndUpdateStore(1, false)"
-            class="px-8 py-3 bg-black text-[#FFCD4B] font-light text-sm uppercase tracking-wider transition-all duration-300 hover:bg-zinc-900"
-          >
-            {{ t('buttons.retry') }}
-          </button>
+        <!-- Error Toast (non-blocking) -->
+        <div
+          v-if="error"
+          class="fixed top-16 right-8 z-50 bg-red-500/90 backdrop-blur-sm px-6 py-4 rounded border border-red-400 max-w-md"
+        >
+          <div class="flex items-start gap-3">
+            <div class="text-2xl">⚠️</div>
+            <div class="flex-1">
+              <h3 class="text-white font-medium mb-1">{{ t('projects.error_title') }}</h3>
+              <p class="text-white/90 text-sm">{{ error }}</p>
+              <button
+                @click="() => loadProjectsAndUpdateStore(1, false)"
+                class="mt-2 px-4 py-1 bg-white/20 hover:bg-white/30 text-white text-xs uppercase tracking-wider transition-all duration-300 rounded"
+              >
+                {{ t('buttons.retry') }}
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Projects Grid -->
-        <div v-else>
+        <!-- Projects Grid (always visible) -->
+        <div>
           <!-- No Projects Found -->
-          <div v-if="filteredProjects.length === 0" class="text-center py-20">
+          <div
+            v-if="filteredProjects.length === 0 && !isLoading"
+            class="text-center py-20 transition-all duration-1000"
+            :class="{
+              'opacity-100 translate-y-0': projectsGridVisible,
+              'opacity-0 translate-y-12': !projectsGridVisible,
+            }"
+          >
             <div class="text-5xl mb-6 text-zinc-300">🏗️</div>
             <h3 class="text-xl font-light text-zinc-600 mb-3">
               {{ t('projects.no_projects_title') }}
@@ -220,12 +301,21 @@ const getStatusText = (status: string) => {
           </div>
 
           <!-- Projects Grid -->
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-300"
+            :class="{
+              'opacity-0 scale-95': isTransitioning,
+              'opacity-100 scale-100': !isTransitioning,
+            }"
+          >
             <div
               v-for="(project, index) in filteredProjects"
               :key="project.id"
-              class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 fade-in-up"
-              :style="{ animationDelay: `${index * 100}ms` }"
+              class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30"
+              :class="{
+                'opacity-100 translate-y-0 scale-100 blur-0': projectsGridVisible && !isTransitioning,
+                'opacity-0 translate-y-12 scale-95 blur-sm': !projectsGridVisible || isTransitioning,
+              }"
+              :style="{ transitionDelay: isTransitioning ? '0ms' : `${index * 80}ms` }"
             >
               <!-- Project Image -->
               <div class="relative h-72 bg-zinc-100 overflow-hidden">
@@ -364,76 +454,10 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Fade in animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes expand {
-  from {
-    width: 0;
-  }
-  to {
-    width: 5rem;
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(20px, -20px);
-  }
-}
-
-@keyframes floatDelayed {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(-20px, 20px);
-  }
-}
-
-.fade-in-up {
-  animation: fadeInUp 0.8s ease-out forwards;
-  opacity: 0;
-}
-
-.fade-in {
-  animation: fadeIn 0.6s ease-out forwards;
-  opacity: 0;
-}
-
-.animate-expand {
-  animation: expand 1s ease-out forwards;
-}
-
-.animate-float {
-  animation: float 8s ease-in-out infinite;
-}
-
-.animate-float-delayed {
-  animation: floatDelayed 10s ease-in-out infinite;
+/* Smooth animations */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom gradient text */
@@ -488,5 +512,11 @@ html {
 ::-moz-selection {
   background: #ffcd4b;
   color: #000;
+}
+
+/* Smooth image loading */
+img {
+  will-change: transform;
+  transition: opacity 0.5s ease-out, transform 0.7s ease-out;
 }
 </style>

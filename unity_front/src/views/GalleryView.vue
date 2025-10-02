@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
 import { useGalleryPage } from '../composables/useGalleryPage'
+import { useScrollAnimation } from '@/composables/useScrollAnimation'
 
 const { t } = useTranslations()
 const {
@@ -19,6 +20,12 @@ const {
 const selectedCategory = ref('all')
 const selectedImage = ref<number | null>(null)
 const scrollProgress = ref(0)
+const isTransitioning = ref(false)
+
+// Scroll animation refs
+const { element: heroElement, isVisible: heroVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
+const { element: filtersElement, isVisible: filtersVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
+const { element: galleryGridElement, isVisible: galleryGridVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
 
 // Scroll progress tracking
 const handleScroll = () => {
@@ -44,8 +51,19 @@ const filteredGallery = computed(() => galleryImages.value)
 
 const selectCategory = async (categoryValue: string) => {
   selectedCategory.value = categoryValue
+  
+  // Start transition
+  isTransitioning.value = true
+  
+  // Wait for fade-out animation
+  await new Promise(resolve => setTimeout(resolve, 300))
+  
   // Fetch images for the selected category from API
   await loadGalleryPage(categoryValue)
+  
+  // Wait a bit then fade back in
+  await new Promise(resolve => setTimeout(resolve, 50))
+  isTransitioning.value = false
 }
 
 const openLightbox = (id: number) => {
@@ -81,25 +99,35 @@ const prevImage = () => {
     <!-- Scroll Progress Bar -->
     <div class="fixed top-0 left-0 right-0 h-1 bg-black/10 z-50">
       <div
-        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out"
+        class="h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-150 ease-out shadow-[0_0_15px_rgba(255,205,75,0.6)]"
         :style="{ width: scrollProgress + '%' }"
       ></div>
     </div>
 
     <!-- Hero Section -->
-    <section class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
+    <section ref="heroElement" class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
       <!-- Diagonal overlay accent -->
       <div
         class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent"
       ></div>
 
       <!-- Decorative corner elements -->
-      <div class="absolute top-0 right-0 w-64 h-64 opacity-20">
+      <div class="absolute top-0 right-0 w-64 h-64 opacity-20 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        :class="{
+          'translate-x-0 translate-y-0': heroVisible,
+          'translate-x-12 -translate-y-12': !heroVisible,
+        }"
+      >
         <div
           class="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-[#FFCD4B]"
         ></div>
       </div>
-      <div class="absolute bottom-0 left-0 w-64 h-64 opacity-20">
+      <div class="absolute bottom-0 left-0 w-64 h-64 opacity-20 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        :class="{
+          'translate-x-0 translate-y-0': heroVisible,
+          '-translate-x-12 translate-y-12': !heroVisible,
+        }"
+      >
         <div
           class="absolute bottom-0 left-0 w-24 h-24 border-b-2 border-l-2 border-[#FFCD4B]"
         ></div>
@@ -108,14 +136,33 @@ const prevImage = () => {
       <!-- Content -->
       <div class="relative z-10 h-full flex flex-col justify-center">
         <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 w-full">
-          <div class="max-w-3xl fade-in-up">
+          <div class="max-w-3xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            :class="{
+              'opacity-100 translate-y-0 scale-100 blur-0': heroVisible,
+              'opacity-0 translate-y-12 scale-95 blur-sm': !heroVisible,
+            }"
+          >
             <h1
-              class="text-4xl md:text-5xl lg:text-6xl font-light mb-6 leading-tight text-white"
+              class="text-4xl md:text-5xl lg:text-6xl font-light mb-6 leading-tight text-white transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
+              :class="{
+                'opacity-100 translate-y-0': heroVisible,
+                'opacity-0 translate-y-8': !heroVisible,
+              }"
             >
               {{ t('gallery.title') }}
             </h1>
-            <div class="w-20 h-1 bg-gradient-to-r from-[#FFCD4B] to-transparent mb-6"></div>
-            <p class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl">
+            <div class="w-20 h-1 bg-gradient-to-r from-[#FFCD4B] to-transparent mb-6 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-200 origin-left"
+              :class="{
+                'scale-x-100': heroVisible,
+                'scale-x-0': !heroVisible,
+              }"
+            ></div>
+            <p class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-300"
+              :class="{
+                'opacity-100 translate-y-0': heroVisible,
+                'opacity-0 translate-y-8': !heroVisible,
+              }"
+            >
               {{ t('gallery.subtitle') }}
             </p>
           </div>
@@ -124,20 +171,24 @@ const prevImage = () => {
     </section>
 
     <!-- Filter Section -->
-    <section class="py-16 bg-zinc-50 border-b border-zinc-100 fade-in">
+    <section ref="filtersElement" class="py-16 bg-zinc-50 border-b border-zinc-100">
       <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
         <div class="flex flex-wrap gap-3 justify-center">
           <button
             v-for="(category, index) in categories"
             :key="category.value"
             @click="selectCategory(category.value)"
-            class="px-6 py-2.5 text-sm uppercase tracking-wider font-light transition-all duration-300 transform hover:scale-105"
-            :class="
+            class="px-6 py-2.5 text-sm uppercase tracking-wider font-light transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] transform hover:scale-105"
+            :class="[
               selectedCategory === category.value
                 ? 'bg-black text-[#FFCD4B] shadow-lg'
-                : 'bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-200 hover:border-zinc-300'
-            "
-            :style="{ animationDelay: `${index * 100}ms` }"
+                : 'bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-200 hover:border-zinc-300',
+              {
+                'opacity-100 translate-y-0 scale-100 blur-0': filtersVisible,
+                'opacity-0 translate-y-8 scale-95 blur-sm': !filtersVisible,
+              }
+            ]"
+            :style="{ transitionDelay: `${index * 100}ms` }"
             :disabled="isLoading"
           >
             <span
@@ -157,7 +208,7 @@ const prevImage = () => {
 
     <!-- Gallery Grid -->
     <section class="py-16 lg:py-20 bg-white">
-      <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+      <div ref="galleryGridElement" class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
         <!-- Loading State -->
         <div v-if="isLoading" class="text-center py-20">
           <div
@@ -191,14 +242,22 @@ const prevImage = () => {
         <!-- Gallery Images -->
         <div
           v-else-if="filteredGallery.length > 0"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-300"
+          :class="{
+            'opacity-0 scale-95': isTransitioning,
+            'opacity-100 scale-100': !isTransitioning,
+          }"
         >
           <div
             v-for="(item, index) in filteredGallery"
             :key="item.id"
             @click="openLightbox(item.id)"
-            class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 cursor-pointer fade-in-up"
-            :style="{ animationDelay: `${index * 100}ms` }"
+            class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30 cursor-pointer"
+            :class="{
+              'opacity-100 translate-y-0 scale-100 blur-0': galleryGridVisible && !isTransitioning,
+              'opacity-0 translate-y-12 scale-95 blur-sm': !galleryGridVisible || isTransitioning,
+            }"
+            :style="{ transitionDelay: isTransitioning ? '0ms' : `${index * 80}ms` }"
           >
             <!-- Image -->
             <div class="relative h-72 bg-zinc-100 overflow-hidden">
