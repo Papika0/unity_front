@@ -22,7 +22,7 @@ withDefaults(defineProps<Props>(), {
 <template>
   <div>
     <h3
-      class="text-lg font-semibold font-roboto leading-normal mb-6 text-zinc-900 uppercase tracking-wide"
+      class="text-base font-semibold font-roboto leading-normal mb-6 text-zinc-900 uppercase tracking-wide"
     >
       {{ title }}
     </h3>
@@ -33,7 +33,7 @@ withDefaults(defineProps<Props>(), {
           :to="link.to || link.path"
           :href="link.href"
           :external="link.external"
-          class="text-base font-normal font-roboto leading-relaxed text-zinc-900 hover:text-red-600 transition-colors duration-200"
+          class="text-base font-normal font-roboto leading-relaxed text-zinc-900 hover:text-[#C89116] transition-all duration-300 hover:translate-x-1 inline-block"
         >
           {{ link.label }}
         </BaseLink>
