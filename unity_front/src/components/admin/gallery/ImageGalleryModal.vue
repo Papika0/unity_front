@@ -109,7 +109,7 @@
             >
               <img
                 :src="image.url"
-                :alt="typeof (image.alt_text || image.title) === 'string' ? (image.alt_text || image.title) : (image.alt_text || image.title)?.ka"
+                :alt="getImageAltText(image)"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
               />
               <div
@@ -273,6 +273,14 @@ const loadImages = async () => {
 
 const selectImage = (image: AdminImage) => {
   emit('select', image)
+}
+
+const getImageAltText = (image: AdminImage): string => {
+  const altOrTitle = image.alt_text || image.title
+  if (typeof altOrTitle === 'string') {
+    return altOrTitle
+  }
+  return altOrTitle.ka
 }
 
 // Watch for category prop changes
