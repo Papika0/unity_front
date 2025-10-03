@@ -315,7 +315,7 @@ function editProject() {
 
 function formatDate(dateStr: string) {
   const dt = new Date(dateStr)
-  const months = [
+  const georgianMonths = [
     'იანვარი',
     'თებერვალი',
     'მარტი',
@@ -329,7 +329,7 @@ function formatDate(dateStr: string) {
     'ნოემბერი',
     'დეკემბერი',
   ]
-  return `${months[dt.getMonth()]} ${dt.getFullYear()}`
+  return `${georgianMonths[dt.getMonth()]} ${dt.getFullYear()}`
 }
 
 onMounted(fetchProject)

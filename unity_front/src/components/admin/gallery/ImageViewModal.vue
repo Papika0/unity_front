@@ -211,6 +211,7 @@
 import { ref } from 'vue'
 import type { AdminImage, MultilingualText } from '@/services/adminImageApi'
 import { useToast } from '@/composables/useToast'
+import { useLocaleStore } from '@/stores/ui/locale'
 
 interface Props {
   image: AdminImage
@@ -225,6 +226,7 @@ const emit = defineEmits<{
 }>()
 
 const toast = useToast()
+const localeStore = useLocaleStore()
 const showCopyConfirm = ref(false)
 
 // Helper to get Georgian text
@@ -251,7 +253,28 @@ const getCategoryLabel = (category: string | null): string => {
 }
 
 const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('ka-GE', {
+  const date = new Date(dateString)
+
+  if (localeStore.currentLocale === 'ka') {
+    const georgianMonths = [
+      'იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი',
+      'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი'
+    ]
+    const month = georgianMonths[date.getMonth()]
+    const day = date.getDate()
+    const year = date.getFullYear()
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    return `${day} ${month} ${year}, ${hours}:${minutes}`
+  }
+
+  const localeMap: Record<string, string> = {
+    'en': 'en-US',
+    'ru': 'ru-RU'
+  }
+  const locale = localeMap[localeStore.currentLocale] || 'en-US'
+
+  return date.toLocaleDateString(locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

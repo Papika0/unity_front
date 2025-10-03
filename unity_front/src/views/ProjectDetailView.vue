@@ -85,7 +85,22 @@ const formatDate = (dateString: string | null) => {
   if (!dateString) return t('projects.not_specified')
 
   const date = new Date(dateString)
-  return date.toLocaleDateString('ka-GE', {
+
+  if (localeStore.currentLocale === 'ka') {
+    const georgianMonths = [
+      'იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი',
+      'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი'
+    ]
+    return `${georgianMonths[date.getMonth()]} ${date.getFullYear()}`
+  }
+
+  const localeMap: Record<string, string> = {
+    'en': 'en-US',
+    'ru': 'ru-RU'
+  }
+  const locale = localeMap[localeStore.currentLocale] || 'en-US'
+
+  return date.toLocaleDateString(locale, {
     year: 'numeric',
     month: 'long',
   })

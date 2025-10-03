@@ -18,10 +18,12 @@ export function useGalleryPage() {
   const categories = computed(() => {
     return [
       { value: 'all', label: translationStore.t('gallery.categories.all') || 'ყველა' },
-      ...rawCategories.value.map((cat) => ({
-        value: cat,
-        label: getCategoryLabel(cat),
-      })),
+      ...rawCategories.value
+        .filter((cat) => cat !== 'news' && cat !== 'about')
+        .map((cat) => ({
+          value: cat,
+          label: getCategoryLabel(cat),
+        })),
     ]
   })
 
