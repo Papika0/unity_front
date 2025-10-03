@@ -133,7 +133,7 @@ export const useTranslationsStore = defineStore('translations', () => {
 
     // If translations aren't loaded yet, return empty to prevent key flashing
     if (!isInitialized.value || Object.keys(translations.value).length === 0) {
-      return key
+      return ''
     }
 
     const result = translations.value[key] || key
