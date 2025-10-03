@@ -41,14 +41,18 @@ class AboutController extends Controller
             return $this->pageCacheService->get($cacheKey);
         }
 
-        if ($requestGroups) {
+        // Always fetch translations if groups are provided (even if empty array)
+        if (is_array($requestGroups) && count($requestGroups) > 0) {
             $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
+        } else {
+            // If no groups specified, return empty array
+            $translations = [];
         }
         // Get about info
         $aboutInfo = $this->siteSettingsService->getAboutInfo();
 
         $result = response()->json([
-            'translations' => $translations ?? [],
+            'translations' => $translations,
             'about_info' => $aboutInfo ?: [
                 'stats' => [
                     'successful_projects' => '150+',

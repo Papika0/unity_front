@@ -36,11 +36,13 @@ class NewsController extends Controller
             $search = $request->input('search');
             $page = $request->input('page', 1);
 
-            // Create cache key based on all parameters
+            // Create cache key based on all parameters including groups
+            $groupsKey = !empty($requestGroups) ? md5(json_encode($requestGroups)) : 'nogroups';
             $cacheKey = "news_index_{$locale}_" . 
                         ($category ?: 'all') . '_' . 
                         ($search ? md5($search) : 'nosearch') . '_' .
-                        "page{$page}_per{$perPage}";
+                        "page{$page}_per{$perPage}_" .
+                        $groupsKey;
 
             // Check cache first
             if ($this->pageCacheService->has($cacheKey)) {
@@ -49,7 +51,7 @@ class NewsController extends Controller
 
             // Get translations if groups are requested
             $translations = [];
-            if ($requestGroups) {
+            if (is_array($requestGroups) && count($requestGroups) > 0) {
                 $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
             }
 
@@ -106,8 +108,9 @@ class NewsController extends Controller
             $locale = $request->input('locale', 'ka');
             $requestGroups = $request->input('groups', []);
 
-            // Create cache key
-            $cacheKey = "news_show_{$id}_{$locale}";
+            // Create cache key including groups
+            $groupsKey = !empty($requestGroups) ? md5(json_encode($requestGroups)) : 'nogroups';
+            $cacheKey = "news_show_{$id}_{$locale}_{$groupsKey}";
 
             // Check cache first (but note: view count will not increment for cached responses)
             // We'll skip cache check to ensure view count increments
@@ -115,7 +118,7 @@ class NewsController extends Controller
             
             // Get translations if groups are requested
             $translations = [];
-            if ($requestGroups) {
+            if (is_array($requestGroups) && count($requestGroups) > 0) {
                 $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
             }
 
@@ -182,8 +185,9 @@ class NewsController extends Controller
             $locale = $request->input('locale', 'ka');
             $requestGroups = $request->input('groups', []);
 
-            // Create cache key
-            $cacheKey = "news_featured_{$locale}";
+            // Create cache key including groups
+            $groupsKey = !empty($requestGroups) ? md5(json_encode($requestGroups)) : 'nogroups';
+            $cacheKey = "news_featured_{$locale}_{$groupsKey}";
 
             // Check cache first
             if ($this->pageCacheService->has($cacheKey)) {
@@ -192,7 +196,7 @@ class NewsController extends Controller
 
             // Get translations if groups are requested
             $translations = [];
-            if ($requestGroups) {
+            if (is_array($requestGroups) && count($requestGroups) > 0) {
                 $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
             }
 
@@ -236,8 +240,9 @@ class NewsController extends Controller
             $requestGroups = $request->input('groups', []);
             $limit = $request->input('limit', 10);
 
-            // Create cache key
-            $cacheKey = "news_latest_{$locale}_limit{$limit}";
+            // Create cache key including groups
+            $groupsKey = !empty($requestGroups) ? md5(json_encode($requestGroups)) : 'nogroups';
+            $cacheKey = "news_latest_{$locale}_limit{$limit}_{$groupsKey}";
 
             // Check cache first
             if ($this->pageCacheService->has($cacheKey)) {
@@ -246,7 +251,7 @@ class NewsController extends Controller
 
             // Get translations if groups are requested
             $translations = [];
-            if ($requestGroups) {
+            if (is_array($requestGroups) && count($requestGroups) > 0) {
                 $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
             }
             

@@ -35,18 +35,24 @@ class GalleryPageController extends Controller
         $page = (int) $request->input('page', 1);
         $limit = (int) $request->input('limit', 12);
 
-        // Create cache key
+        // Create cache key including groups to prevent cache collision
+        $groupsKey = !empty($requestGroups) ? md5(json_encode($requestGroups)) : 'nogroups';
         $cacheKey = "gallery_page_{$locale}_" . 
                     ($category ?: 'all') . '_' .
-                    "page{$page}_limit{$limit}";
+                    "page{$page}_limit{$limit}_" .
+                    $groupsKey;
 
         // Check cache first
         if ($this->pageCacheService->has($cacheKey)) {
             return $this->pageCacheService->get($cacheKey);
         }
 
-        if ($requestGroups) {
+        // Always fetch translations if groups are provided (even if empty array)
+        if (is_array($requestGroups) && count($requestGroups) > 0) {
             $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
+        } else {
+            // If no groups specified, return empty array
+            $translations = [];
         }
 
         // Get gallery images with pagination
@@ -80,7 +86,7 @@ class GalleryPageController extends Controller
         }
 
         $result = response()->json([
-            'translations' => $translations ?? [],
+            'translations' => $translations,
             'gallery_images' => $transformedImages,
             'categories' => $categories,
             'meta' => [

@@ -37,18 +37,24 @@ class ProjectsPageController extends Controller
         $perPage = $request->input('per_page', 6);
         $status = $request->input('status', null); // Add status filter
 
-        // Create cache key
+        // Create cache key including groups to prevent cache collision
+        $groupsKey = !empty($requestGroups) ? md5(json_encode($requestGroups)) : 'nogroups';
         $cacheKey = "projects_page_{$locale}_" . 
                     ($status ?: 'all') . '_' . 
-                    "page{$page}_per{$perPage}";
+                    "page{$page}_per{$perPage}_" .
+                    $groupsKey;
 
         // Check cache first
         if ($this->pageCacheService->has($cacheKey)) {
             return $this->pageCacheService->get($cacheKey);
         }
 
-        if ($requestGroups) {
+        // Always fetch translations if groups are provided (even if empty array)
+        if (is_array($requestGroups) && count($requestGroups) > 0) {
             $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
+        } else {
+            // If no groups specified, return empty array
+            $translations = [];
         }
 
         // Get paginated projects data
@@ -71,7 +77,7 @@ class ProjectsPageController extends Controller
         });
 
         $result = response()->json([
-            'translations' => $translations ?? [],
+            'translations' => $translations,
             'projects' => $projectsCollection,
             'pagination' => [
                 'current_page' => $projects->currentPage(),
