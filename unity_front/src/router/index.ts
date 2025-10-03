@@ -215,6 +215,8 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
+  // Don't block navigation - let pages load and fetch their own translations
+  // The App.vue will handle hiding content until translations are ready
   next()
 })
 

@@ -32,6 +32,7 @@ export const useTranslationsStore = defineStore('translations', () => {
   const isLoading = ref(false)
   const loadError = ref('')
   const isInitialized = ref(false)
+  const isFirstLoad = ref(true) // Track if this is the very first load
 
   // Getters
   const currentLocale = computed(() => {
@@ -152,13 +153,18 @@ export const useTranslationsStore = defineStore('translations', () => {
       loadedGroups.value.add(group)
     }
 
+    // Mark as initialized and no longer first load
     isInitialized.value = true
-  } // Clear translations when locale changes to force refetch
+    isFirstLoad.value = false
+  }
+
+  // Clear translations when locale changes to force refetch
   function clearTranslations() {
     translations.value = {}
     translationGroups.value = {}
     loadedGroups.value.clear()
     isInitialized.value = false
+    isFirstLoad.value = true // Reset to first load state
   }
 
   // Check if translations are loaded for current locale
@@ -182,6 +188,7 @@ export const useTranslationsStore = defineStore('translations', () => {
     isLoading,
     loadError,
     isInitialized,
+    isFirstLoad,
     currentLocale,
 
     // Actions

@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue'
-import { useHomepageStore } from '@/stores/public/homepage'
-import { useProjectsStore } from '@/stores/public/projects'
-import { useNewsStore } from '@/stores/public/news'
 import { useLocaleStore } from '@/stores/ui/locale'
 
-const homepageStore = useHomepageStore()
-const projectsStore = useProjectsStore()
-const newsStore = useNewsStore()
 const localeStore = useLocaleStore()
 
 const showOverlay = ref(false)
@@ -24,8 +18,8 @@ try {
   }
 } catch {}
 
-// Minimum display time in milliseconds (2 seconds)
-const MINIMUM_DISPLAY_TIME = 2000
+// Minimum display time in milliseconds (400ms - just enough to look smooth)
+const MINIMUM_DISPLAY_TIME = 400
 
 // Check if we just switched languages on page load
 onMounted(() => {
@@ -58,14 +52,15 @@ const isAnyLoading = computed(() => {
     return localeStore.isSwitching // Only show for active language switching
   }
 
-  // COMMENTED OUT: Global loading overlay is too aggressive for quick operations
-  // Better to use per-page loading indicators (spinners, skeleton screens, etc.)
-  // Keep only for language switching which requires full page reload
+  // Show loading overlay for:
+  // 1. Language switching (requires full page reload)
+  // 2. COMMENTED OUT: Initial page translation loading - CSS hiding is enough
+  // const isPublicRoute = !route.path.startsWith('/admin')
+  // const isWaitingForPageTranslations = isPublicRoute && translationsStore.isLoading
+
   return (
-    // homepageStore.isLoading ||
-    // projectsStore.isLoading ||
-    // newsStore.loading ||
     localeStore.isSwitching
+    // No overlay for page translation loading - CSS handles it
   )
 })
 
@@ -97,11 +92,11 @@ watch(
       hideTimeout = setTimeout(() => {
         isExiting.value = true
 
-        // Hide overlay after exit animation completes
+        // Hide overlay after exit animation completes (500ms for snappier UX)
         setTimeout(() => {
           showOverlay.value = false
           isExiting.value = false
-        }, 800) // Match exit animation duration
+        }, 500) // Reduced from 800ms for faster transition
       }, remainingTime)
     }
   },
@@ -173,7 +168,7 @@ watch(
 }
 
 .animate-slide-out-left {
-  animation: slideOutLeft 0.8s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
+  animation: slideOutLeft 0.5s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
 }
 
 /* Luxury floating animation for logo */
