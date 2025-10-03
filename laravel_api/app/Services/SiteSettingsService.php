@@ -222,6 +222,10 @@ class SiteSettingsService
     public function updateAboutInfo(array $data): bool
     {
         try {
+            // Get current settings before making changes
+            $aboutSettings = SiteSetting::getSettingsForGroup('about');
+            $oldImageId = $aboutSettings['philosophy_image_id'] ?? null;
+            
             // Update stats
             if (isset($data['stats']) && is_array($data['stats'])) {
                 foreach ($data['stats'] as $key => $value) {
@@ -230,31 +234,45 @@ class SiteSettingsService
             }
 
             // Clean up old hero_image if it exists (deprecated field)
-            $aboutSettings = SiteSetting::getSettingsForGroup('about');
             if (isset($aboutSettings['hero_image_id'])) {
-                $oldHeroImageId = $aboutSettings['hero_image_id'];
-                // Remove the setting
-                SiteSetting::where('name', 'hero_image_id')
+                // Just remove the setting, don't delete the image file
+                // (it might be used elsewhere or user might want to reuse it)
+                SiteSetting::where('key', 'hero_image_id')
                     ->where('group', 'about')
                     ->delete();
-                // Clean up the image
-                if ($oldHeroImageId) {
-                    $imageService = app(\App\Services\ImageService::class);
-                    $imageService->cleanupOrphanedImage($oldHeroImageId);
-                }
             }
 
             // Handle philosophy image update with cleanup
-            if (isset($data['philosophy_image_id'])) {
-                $oldImageId = $aboutSettings['philosophy_image_id'] ?? null;
+            if (array_key_exists('philosophy_image_id', $data)) {
+                $newImageId = $data['philosophy_image_id'];
                 
-                // Update to new image
-                SiteSetting::updateSetting('philosophy_image_id', $data['philosophy_image_id'], 'about');
-                
-                // Clean up old image if it exists and is different
-                if ($oldImageId && $oldImageId != $data['philosophy_image_id']) {
-                    $imageService = app(\App\Services\ImageService::class);
-                    $imageService->cleanupOrphanedImage($oldImageId);
+                // Update to new image (or null if deleted)
+                if ($newImageId === null) {
+                    // Delete the setting
+                    SiteSetting::where('key', 'philosophy_image_id')
+                        ->where('group', 'about')
+                        ->delete();
+                    
+                    // Delete the old image file
+                    if ($oldImageId) {
+                        $oldImage = \App\Models\Image::find($oldImageId);
+                        if ($oldImage) {
+                            $imageService = app(\App\Services\ImageService::class);
+                            $imageService->deleteImage($oldImage);
+                        }
+                    }
+                } else {
+                    // Update to new image
+                    SiteSetting::updateSetting('philosophy_image_id', $newImageId, 'about');
+                    
+                    // Delete old image if it exists and is different from new one
+                    if ($oldImageId && $oldImageId != $newImageId) {
+                        $oldImage = \App\Models\Image::find($oldImageId);
+                        if ($oldImage) {
+                            $imageService = app(\App\Services\ImageService::class);
+                            $imageService->deleteImage($oldImage);
+                        }
+                    }
                 }
             }
 

@@ -110,7 +110,7 @@ class ImageService
     /**
      * Delete image if it has no remaining relationships
      */
-    protected function cleanupOrphanedImage(Image $image): void
+    public function cleanupOrphanedImage(Image $image): void
     {
         // Refresh to get latest relationship count
         $image->refresh();

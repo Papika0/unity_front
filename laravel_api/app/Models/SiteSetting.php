@@ -72,7 +72,15 @@ class SiteSetting extends Model
             if ($setting->is_translatable) {
                 $result[$setting->key] = $setting->getTranslation('value', $locale);
             } else {
-                $result[$setting->key] = $setting->value;
+                // For non-translatable fields, extract the actual value from the translation array
+                // Spatie's HasTranslations always wraps values, so we need to unwrap them
+                $value = $setting->value;
+                if (is_array($value) && count($value) > 0) {
+                    // Get the first value from the array (regardless of locale key)
+                    $result[$setting->key] = reset($value);
+                } else {
+                    $result[$setting->key] = $value;
+                }
             }
         }
 

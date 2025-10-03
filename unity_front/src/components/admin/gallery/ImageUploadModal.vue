@@ -61,9 +61,38 @@
                 type="button"
                 @click="() => ($refs.fileInput as HTMLInputElement)?.click()"
                 class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                :disabled="compressing"
               >
                 ფაილის არჩევა
               </button>
+            </div>
+
+            <!-- Compressing State -->
+            <div v-else-if="compressing" class="space-y-4">
+              <div class="flex flex-col items-center justify-center py-8">
+                <svg
+                  class="animate-spin h-12 w-12 text-purple-500 mb-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <p class="text-lg font-medium text-gray-900">სურათის შეკუმშვა...</p>
+                <p class="text-sm text-gray-500">გთხოვთ დაელოდოთ</p>
+              </div>
             </div>
 
             <div v-else class="space-y-4">
@@ -75,6 +104,12 @@
               <div>
                 <p class="text-sm font-medium text-gray-900">{{ selectedFile.name }}</p>
                 <p class="text-xs text-gray-500">{{ formatFileSize(selectedFile.size) }}</p>
+                
+                <!-- Compression Stats -->
+                <div v-if="compressionStats && compressionStats.compressionRatio < 1" class="mt-2 text-xs text-green-600">
+                  <p>✓ შეკუმშული: {{ formatFileSize(compressionStats.originalSize) }} → {{ formatFileSize(compressionStats.compressedSize) }}</p>
+                  <p>დაზოგილია: {{ formatFileSize(compressionStats.originalSize - compressionStats.compressedSize) }} ({{ ((1 - compressionStats.compressionRatio) * 100).toFixed(1) }}%)</p>
+                </div>
               </div>
               <button
                 type="button"
@@ -87,8 +122,8 @@
           </div>
         </div>
 
-        <!-- Image Details -->
-        <div class="space-y-6">
+        <!-- Image Details (only in full mode) -->
+        <div v-if="!simpleMode" class="space-y-6">
           <!-- Title (Multilingual) -->
           <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <label class="block text-sm font-medium text-gray-900 mb-3"> 
@@ -101,7 +136,7 @@
                 <input
                   v-model="form.title.ka"
                   type="text"
-                  required
+                  :required="!simpleMode"
                   class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
                   placeholder="სათაური ქართულად"
                 />
@@ -227,7 +262,9 @@
               </div>
             </div>
           </div>
-        </div>        <!-- Status -->
+        </div>
+        
+        <!-- Status -->
         <div class="flex items-center">
           <input
             v-model="form.is_active"
@@ -268,7 +305,7 @@
           </button>
           <button
             type="submit"
-            :disabled="!selectedFile || uploading"
+            :disabled="!selectedFile || uploading || compressing"
             class="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span v-if="uploading" class="flex items-center">
@@ -293,6 +330,7 @@
               </svg>
               ატვირთვა...
             </span>
+            <span v-else-if="compressing">შეკუმშვა...</span>
             <span v-else>ატვირთვა</span>
           </button>
         </div>
@@ -304,6 +342,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { adminImageApi, type AdminImage } from '@/services/adminImageApi'
+import { compressImage, type CompressionResult } from '@/utils/imageCompression'
 
 interface MultilingualText {
   ka: string
@@ -319,6 +358,12 @@ interface FormData {
   is_active: boolean
 }
 
+interface Props {
+  simpleMode?: boolean // If true, only shows file upload without metadata fields
+}
+
+const { simpleMode = false } = defineProps<Props>()
+
 const emit = defineEmits<{
   close: []
   uploaded: [image: AdminImage]
@@ -326,10 +371,13 @@ const emit = defineEmits<{
 
 // State
 const selectedFile = ref<File | null>(null)
+const originalFile = ref<File | null>(null)
 const previewUrl = ref<string | null>(null)
 const isDragOver = ref(false)
 const uploading = ref(false)
+const compressing = ref(false)
 const error = ref<string | null>(null)
+const compressionStats = ref<CompressionResult | null>(null)
 
 const form = reactive<FormData>({
   title: { ka: '', en: '', ru: '' },
@@ -358,20 +406,56 @@ const handleDrop = (event: DragEvent) => {
   }
 }
 
-const setFile = (file: File) => {
+const setFile = async (file: File) => {
   if (!file.type.startsWith('image/')) {
     error.value = 'Please select an image file'
     return
   }
 
-  selectedFile.value = file
-  previewUrl.value = URL.createObjectURL(file)
+  originalFile.value = file
   error.value = null
+  compressing.value = true
 
-  // Auto-fill title if empty
-  if (!form.title.ka) {
-    const filename = file.name.replace(/\.[^/.]+$/, '')
-    form.title.ka = filename
+  try {
+    // Compress the image using the about preset (high quality)
+    const result = await compressImage(file, {
+      imageType: 'gallery', // Use gallery preset for admin uploads
+      onProgress: (progress) => {
+        console.log(`Compression progress: ${progress}%`)
+      },
+    })
+
+    selectedFile.value = result.file
+    compressionStats.value = result
+    previewUrl.value = URL.createObjectURL(result.file)
+
+    // Log compression results
+    console.log('Image compressed:', {
+      original: formatFileSize(result.originalSize),
+      compressed: formatFileSize(result.compressedSize),
+      saved: formatFileSize(result.originalSize - result.compressedSize),
+      ratio: `${(result.compressionRatio * 100).toFixed(1)}%`,
+    })
+
+    // Auto-fill title if empty
+    if (!form.title.ka) {
+      const filename = file.name.replace(/\.[^/.]+$/, '')
+      form.title.ka = filename
+    }
+  } catch (err) {
+    console.error('Compression failed:', err)
+    // Fall back to original file if compression fails
+    selectedFile.value = file
+    previewUrl.value = URL.createObjectURL(file)
+    error.value = 'Image compression failed, using original file'
+    
+    // Auto-fill title even on error
+    if (!form.title.ka) {
+      const filename = file.name.replace(/\.[^/.]+$/, '')
+      form.title.ka = filename
+    }
+  } finally {
+    compressing.value = false
   }
 }
 
@@ -400,7 +484,10 @@ const handleSubmit = async () => {
 
     const formData = new FormData()
     formData.append('image', selectedFile.value)
-    formData.append('title[ka]', form.title.ka)
+    
+    // In simple mode, use filename as default title
+    const titleKa = simpleMode ? (form.title.ka || selectedFile.value.name.replace(/\.[^/.]+$/, '')) : form.title.ka
+    formData.append('title[ka]', titleKa)
     formData.append('title[en]', form.title.en)
     formData.append('title[ru]', form.title.ru)
     formData.append('category', form.category)

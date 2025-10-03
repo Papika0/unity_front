@@ -19,21 +19,28 @@
         <div class="flex items-center space-x-4">
           <img
             :src="selectedImage.url"
-            :alt="selectedImage.alt_text || selectedImage.title"
+            :alt="getAltText(selectedImage)"
             class="w-24 h-24 object-cover rounded-lg shadow-md border border-gray-200"
           />
           <div class="flex-1">
-            <h4 class="text-sm font-medium text-gray-900">{{ selectedImage.title }}</h4>
-            <p v-if="selectedImage.alt_text" class="text-xs text-gray-500">
-              {{ selectedImage.alt_text }}
+            <h4 class="text-sm font-medium text-gray-900">{{ getTitle(selectedImage) }}</h4>
+            <p v-if="getAltText(selectedImage)" class="text-xs text-gray-500">
+              {{ getAltText(selectedImage) }}
             </p>
-            <div class="flex space-x-2 mt-2">
+            <div class="flex flex-wrap gap-2 mt-2">
               <button
                 type="button"
                 @click="openGalleryModal"
                 class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
               >
-                სურათის შეცვლა
+                გალერეიდან არჩევა
+              </button>
+              <button
+                type="button"
+                @click="openUploadModal"
+                class="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100 transition-colors"
+              >
+                ახალი სურათი
               </button>
               <button
                 type="button"
@@ -113,6 +120,7 @@
     <ImageUploadModal
       v-if="showUploadModal"
       :category="category"
+      :simpleMode="simpleUpload"
       @close="closeUploadModal"
       @uploaded="handleImageUploaded"
     />
@@ -132,6 +140,7 @@ interface Props {
   helpText?: string
   category?: string
   required?: boolean
+  simpleUpload?: boolean // If true, upload modal will only show file selector without metadata
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -139,6 +148,7 @@ const props = withDefaults(defineProps<Props>(), {
   imageData: null,
   category: 'about',
   required: false,
+  simpleUpload: false,
 })
 
 const emit = defineEmits<{
@@ -154,39 +164,44 @@ const loading = ref(false)
 watch(
   [() => props.modelValue, () => props.imageData],
   async ([newValue, newImageData]) => {
-    if (newValue) {
-      // If image data is provided, use it directly
-      if (newImageData && newImageData.id === newValue) {
-        selectedImage.value = {
-          id: newImageData.id,
-          url: newImageData.url,
-          title: newImageData.title || `Image ${newImageData.id}`,
-          alt_text: newImageData.alt_text || null,
-          category: props.category,
-          is_active: true,
-          created_at: '',
-          updated_at: '',
-        } as AdminImage
-        return
-      }
-
-      // Fallback to API call if no image data provided
-      if (newValue !== selectedImage.value?.id) {
-        try {
-          loading.value = true
-          const response = await adminImageApi.getImage(newValue)
-          if (response.success) {
-            selectedImage.value = response.data
-          }
-        } catch (error) {
-          console.error('Failed to load image:', error)
-          selectedImage.value = null
-        } finally {
-          loading.value = false
-        }
-      }
-    } else {
+    // If modelValue is null/undefined, clear the selected image
+    if (!newValue) {
       selectedImage.value = null
+      return
+    }
+
+    // If the selected image already has this ID, no need to reload
+    if (selectedImage.value && selectedImage.value.id === newValue) {
+      return
+    }
+
+    // If image data is provided and matches the modelValue, use it directly
+    if (newImageData && newImageData.id === newValue) {
+      selectedImage.value = {
+        id: newImageData.id,
+        url: newImageData.url,
+        title: newImageData.title || `Image ${newImageData.id}`,
+        alt_text: newImageData.alt_text || null,
+        category: props.category,
+        is_active: true,
+        created_at: '',
+        updated_at: '',
+      } as AdminImage
+      return
+    }
+
+    // Fallback to API call if no image data provided or IDs don't match
+    try {
+      loading.value = true
+      const response = await adminImageApi.getImage(newValue)
+      if (response.success) {
+        selectedImage.value = response.data
+      }
+    } catch (error) {
+      console.error('Failed to load image:', error)
+      selectedImage.value = null
+    } finally {
+      loading.value = false
     }
   },
   { immediate: true },
@@ -225,5 +240,23 @@ const handleImageUploaded = (image: AdminImage) => {
 const removeImage = () => {
   selectedImage.value = null
   emit('update:modelValue', null)
+}
+
+// Helper functions to handle MultilingualText
+const getTitle = (image: AdminImage): string => {
+  if (typeof image.title === 'string') {
+    return image.title
+  }
+  return image.title?.ka || `Image ${image.id}`
+}
+
+const getAltText = (image: AdminImage): string => {
+  if (typeof image.alt_text === 'string') {
+    return image.alt_text || ''
+  }
+  if (image.alt_text && typeof image.alt_text === 'object') {
+    return image.alt_text.ka || ''
+  }
+  return ''
 }
 </script>

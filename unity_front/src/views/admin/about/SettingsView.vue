@@ -138,25 +138,11 @@
               <div>
                 <ImageSelector
                   v-model="formData.philosophy_image_id"
-                  :image-data="
-                    siteSettingsStore.aboutInfo?.philosophy_image
-                      ? {
-                          id: siteSettingsStore.aboutInfo.philosophy_image.id,
-                          url: siteSettingsStore.aboutInfo.philosophy_image.url,
-                          alt_text: siteSettingsStore.aboutInfo.philosophy_image.alt_text || undefined,
-                          title: siteSettingsStore.aboutInfo.philosophy_image.title || 'ფილოსოფიის სექციის სურათი',
-                        }
-                      : siteSettingsStore.aboutInfo?.philosophy_image_id && siteSettingsStore.aboutInfo?.philosophy_image_url
-                      ? {
-                          id: siteSettingsStore.aboutInfo.philosophy_image_id,
-                          url: siteSettingsStore.aboutInfo.philosophy_image_url,
-                          title: 'ფილოსოფიის სექციის სურათი',
-                        }
-                      : null
-                  "
+                  :image-data="getPhilosophyImageData()"
                   label="ფილოსოფიის სექციის სურათი"
                   help-text="სურათი, რომელიც ნაჩვენებია ფილოსოფიის სექციაში"
                   category="about"
+                  :simple-upload="true"
                 />
               </div>
             </div>
@@ -231,9 +217,15 @@ const loadData = async () => {
     await siteSettingsStore.loadAboutInfo()
 
     if (siteSettingsStore.aboutInfo) {
+      // Extract philosophy_image_id from either direct property or nested object
+      const philosophyImageId = 
+        siteSettingsStore.aboutInfo.philosophy_image_id || 
+        siteSettingsStore.aboutInfo.philosophy_image?.id || 
+        null
+
       formData.value = {
         stats: { ...siteSettingsStore.aboutInfo.stats },
-        philosophy_image_id: siteSettingsStore.aboutInfo.philosophy_image_id || null,
+        philosophy_image_id: philosophyImageId,
       }
     }
   } catch (err) {
@@ -241,6 +233,37 @@ const loadData = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// Helper function to get philosophy image data
+const getPhilosophyImageData = () => {
+  const aboutInfo = siteSettingsStore.aboutInfo
+  if (!aboutInfo) return null
+
+  // First priority: use philosophy_image object if available
+  if (aboutInfo.philosophy_image) {
+    return {
+      id: aboutInfo.philosophy_image.id,
+      url: aboutInfo.philosophy_image.url,
+      alt_text: typeof aboutInfo.philosophy_image.alt_text === 'string' 
+        ? aboutInfo.philosophy_image.alt_text 
+        : aboutInfo.philosophy_image.alt_text || undefined,
+      title: typeof aboutInfo.philosophy_image.title === 'string'
+        ? aboutInfo.philosophy_image.title
+        : aboutInfo.philosophy_image.title || 'ფილოსოფიის სექციის სურათი',
+    }
+  }
+
+  // Fallback: use separate id and url fields
+  if (aboutInfo.philosophy_image_id && aboutInfo.philosophy_image_url) {
+    return {
+      id: aboutInfo.philosophy_image_id,
+      url: aboutInfo.philosophy_image_url,
+      title: 'ფილოსოფიის სექციის სურათი',
+    }
+  }
+
+  return null
 }
 
 const handleSubmit = async () => {

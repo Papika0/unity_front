@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\SiteSettingsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AdminAboutController extends Controller
 {
@@ -42,9 +43,19 @@ class AdminAboutController extends Controller
      */
     public function update(Request $request)
     {
+        // Log the incoming request data for debugging
+        Log::info('About info update request received', [
+            'data' => $request->all()
+        ]);
+        
         // Validate the request data
         $validated = $request->validate($this->getValidationRules());
 
+        // Log validated data
+        Log::info('About info validated data', [
+            'validated' => $validated
+        ]);
+        
         // Additional validation using service
         $validationErrors = $this->settingsService->validateAboutInfo($validated);
         if (!empty($validationErrors)) {
