@@ -156,7 +156,6 @@ const submitForm = async () => {
       throw new Error(response.message || 'დაფიქსირდა შეცდომა')
     }
   } catch (error: any) {
-    console.error('Failed to submit contact form:', error)
     toastStore.error(
       t('messages.error_title') || 'შეცდომა',
       error.message || t('messages.error_message') || 'გთხოვთ სცადოთ მოგვიანებით',

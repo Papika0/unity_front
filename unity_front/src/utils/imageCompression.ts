@@ -374,7 +374,6 @@ export async function compressImage(
           if (!hasAlpha && file.size > 500 * 1024) {
             outputType = 'image/jpeg'
             wasConverted = true
-            console.log(`Converting PNG to JPEG (no transparency detected)`)
           }
         }
 
@@ -384,16 +383,7 @@ export async function compressImage(
           if (file.size > 2.5 * 1024 * 1024 || outputType !== 'image/png') {
             outputType = 'image/webp'
             wasConverted = true
-            console.log(
-              `Converting to WebP for better compression (file size: ${(file.size / 1024 / 1024).toFixed(1)}MB)`,
-            )
-          } else {
-            console.log(
-              `Keeping original format for better quality (file size: ${(file.size / 1024 / 1024).toFixed(1)}MB)`,
-            )
           }
-        } else {
-          console.log(`WebP conversion disabled - preferWebP: ${preferWebP}`)
         }
 
         // Calculate final quality
@@ -409,12 +399,6 @@ export async function compressImage(
           finalQuality = Math.max(finalQuality - 0.03, minQuality) // Slightly lower for PNG->JPEG
         }
 
-        console.log(
-          `Compressing: ${(file.size / 1024 / 1024).toFixed(1)}MB`,
-          `${img.width}x${img.height} → ${width}x${height}`,
-          `Quality: ${finalQuality.toFixed(2)}`,
-          wasConverted ? `(${file.type} → ${outputType})` : '',
-        )
 
         onProgress?.(70)
 
@@ -465,7 +449,6 @@ export async function compressImage(
           !wasConverted &&
           !forceCompression
         ) {
-          console.log(`Keeping original (compression not effective)`)
           cleanup()
           resolve({
             file,
@@ -483,10 +466,6 @@ export async function compressImage(
 
         // If still too large after compression, try more aggressive compression
         if (blob.size > phpUploadLimit) {
-          console.log(
-            `File still too large (${(blob.size / 1024 / 1024).toFixed(1)}MB), trying more aggressive compression`,
-          )
-
           // Try multiple approaches to get under the limit
           let attempts = 0
           const maxAttempts = 3
@@ -497,8 +476,6 @@ export async function compressImage(
             attempts < maxAttempts &&
             testQuality >= minQuality
           ) {
-            console.log(`Attempt ${attempts + 1}: trying quality ${testQuality.toFixed(2)}`)
-
             const testBlob = await new Promise<Blob | null>((resolveBlob) => {
               canvas.toBlob(
                 (b: Blob | null) => {
@@ -512,7 +489,6 @@ export async function compressImage(
             if (testBlob && testBlob.size < blob.size) {
               blob = testBlob
               currentQuality = testQuality
-              console.log(`Better compression achieved: ${(blob.size / 1024 / 1024).toFixed(1)}MB`)
             }
 
             testQuality = Math.max(testQuality - 0.05, minQuality)

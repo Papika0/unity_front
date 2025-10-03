@@ -52,25 +52,18 @@ export const useFooterStore = defineStore('footer', () => {
   }
 
   async function loadFooterData(force = false) {
-    console.log(
-      `🦶 Footer loadFooterData called: force=${force}, hasPromise=${!!loadingPromise}, isFetched=${isFetched.value}`,
-    )
-
     // If already loading, return the existing promise
     if (loadingPromise && !force) {
-      console.log('🦶 Footer returning existing promise')
       return loadingPromise
     }
 
     // Skip if data already exists and not forcing reload
     if (!force && isFetched.value && !isDataEmpty.value) {
-      console.log('🦶 Footer data already exists, skipping')
       return
     }
 
     // Only fetch from API if data is empty or force reload
     if (force || isDataEmpty.value) {
-      console.log('🦶 Footer creating new API call')
       loadingPromise = (async () => {
         isLoading.value = true
         error.value = null
@@ -107,7 +100,6 @@ export const useFooterStore = defineStore('footer', () => {
             throw new Error(response.message || 'Failed to load footer data')
           }
         } catch (err) {
-          console.error('Failed to load footer data:', err)
           error.value = err instanceof Error ? err.message : 'Failed to load footer data'
           throw err
         } finally {

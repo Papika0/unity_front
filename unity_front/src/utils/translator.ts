@@ -34,13 +34,11 @@ export class Translator {
           return result
         }
       } catch (error) {
-        console.warn('Translation service failed:', error)
         continue
       }
     }
 
     // If all services fail, return original text
-    console.error(`All translation services failed for: "${text}"`)
     return text
   }
 
@@ -83,7 +81,7 @@ export class Translator {
         return data[0][0][0].trim()
       }
     } catch (error) {
-      console.warn('Google Translate failed:', error)
+      // Google Translate failed
     }
 
     return null
@@ -154,7 +152,7 @@ export class Translator {
         }
       }
     } catch (error) {
-      console.warn('MyMemory failed:', error)
+      // MyMemory failed
     }
 
     return null
@@ -192,7 +190,7 @@ export class Translator {
         return data.translation.trim()
       }
     } catch (error) {
-      console.warn('Lingva failed:', error)
+      // Lingva failed
     }
 
     return null
@@ -214,7 +212,6 @@ export class Translator {
         const translated = await this.translate(text, fromLang, toLang)
         return { key, translated }
       } catch (error) {
-        console.warn(`Failed to translate field "${key}":`, error)
         return { key, translated: text }
       }
     })
@@ -280,7 +277,7 @@ export class Translator {
         }
       }
     } catch (error) {
-      console.warn('Language detection failed:', error)
+      // Language detection failed
     }
 
     return null

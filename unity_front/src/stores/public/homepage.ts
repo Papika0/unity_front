@@ -45,8 +45,6 @@ export const useHomepageStore = defineStore('homepage', () => {
       })
       const data = response.data
 
-      console.log('Bootstrap data received:', data)
-
       // Handle translations - data is already localized for current locale
       if (data?.translations) {
         mergeTranslations(data.translations)
@@ -77,7 +75,6 @@ export const useHomepageStore = defineStore('homepage', () => {
       contactInfo.value = data?.contact_info || data?.contact
       aboutInfo.value = data?.about_info
     } catch (err) {
-      console.error('Failed to load homepage data:', err)
       error.value = err instanceof Error ? err.message : 'Failed to load homepage data'
 
       // Show user-friendly error message

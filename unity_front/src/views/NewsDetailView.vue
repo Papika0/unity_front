@@ -128,7 +128,6 @@ const fetchArticle = async () => {
     await new Promise(resolve => setTimeout(resolve, 100))
   } catch (err) {
     error.value = t('errors.loadFailed') || 'Failed to load article'
-    console.error('Error fetching article:', err)
   }
 }
 

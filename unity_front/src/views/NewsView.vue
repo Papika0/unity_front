@@ -61,8 +61,6 @@ const formatDate = (dateString: string) => {
 
 const loadArticles = async (page = 1, resetPagination = false, isCategoryChange = false) => {
   try {
-    console.log('📰 loadArticles START:', { page, resetPagination, isCategoryChange })
-
     // Only show main loading for initial load, not for category/search changes
     if (!isCategoryChange && page === 1 && !resetPagination) {
       isLoading.value = true
@@ -77,9 +75,7 @@ const loadArticles = async (page = 1, resetPagination = false, isCategoryChange 
       ...(searchQuery.value.trim() && { search: searchQuery.value.trim() }),
     }
 
-    console.log('📰 Calling newsStore.loadArticles with params:', params)
     await newsStore.loadArticles(params)
-    console.log('📰 loadArticles DONE, translations count:', Object.keys(translationsStore.translations).length)
 
     if (resetPagination) {
       currentPage.value = 1
@@ -87,7 +83,7 @@ const loadArticles = async (page = 1, resetPagination = false, isCategoryChange 
       currentPage.value = page
     }
   } catch (error) {
-    console.error('Failed to load articles:', error)
+    // Error handling
   } finally {
     isLoading.value = false
     isLoadingCategories.value = false
@@ -98,7 +94,7 @@ const loadFeaturedArticle = async () => {
   try {
     await newsStore.loadFeaturedArticles()
   } catch (error) {
-    console.error('Failed to load featured articles:', error)
+    // Error handling
   }
 }
 

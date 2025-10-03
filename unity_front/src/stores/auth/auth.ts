@@ -30,7 +30,6 @@ export const useAuthStore = defineStore('auth', () => {
 
       return { success: true }
     } catch (err: any) {
-      console.error('Login error:', err)
       error.value = err.response?.data?.message || 'Login failed'
       return { success: false, error: error.value }
     } finally {
@@ -42,7 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await apiLogout()
     } catch (err) {
-      console.error('Logout error:', err)
+      // Logout error
     } finally {
       token.value = null
       user.value = null
@@ -59,7 +58,6 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await getUser()
       user.value = response.data
     } catch (err) {
-      console.error('Fetch user error:', err)
       // If fetching user fails, token might be invalid
       await logout()
     }

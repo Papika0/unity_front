@@ -142,7 +142,6 @@ const loadProjectData = async (projectId: number) => {
     // Wait for scroll to complete and DOM to update
     await new Promise(resolve => setTimeout(resolve, 100))
   } catch (err) {
-    console.error('Failed to load project:', err)
     error.value = 'Failed to load project'
     router.push('/projects')
   } finally {
