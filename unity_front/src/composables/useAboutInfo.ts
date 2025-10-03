@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { getAboutInfo, type AboutResponse } from '@/services/about'
 import { useTranslationsStore } from '@/stores/ui/translations'
+import type { ImageData } from '@/types'
 
 export interface AboutInfo {
   stats: {
@@ -9,10 +10,9 @@ export interface AboutInfo {
     satisfied_clients: string
     client_satisfaction: string
   }
-  hero_image_id?: number
-  hero_image_url?: string
   philosophy_image_id?: number
   philosophy_image_url?: string
+  philosophy_image?: ImageData
 }
 
 export function useAboutInfo() {

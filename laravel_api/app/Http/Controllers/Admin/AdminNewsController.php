@@ -70,7 +70,7 @@ class AdminNewsController extends Controller
 
             // Pagination
             $perPage = $request->get('per_page', 15);
-            $news = $query->paginate($perPage);
+            $news = $query->with(['mainImage', 'galleryImages'])->paginate($perPage);
 
             return $this->success([
                 'data' => AdminNewsResource::collection($news->items()),
@@ -95,14 +95,16 @@ class AdminNewsController extends Controller
     {
         try {
             // Only select necessary fields for the modal to minimize data transfer
-            $articles = News::select('id', 'title', 'main_image', 'publish_date', 'is_active', 'is_featured')
+            $articles = News::select('id', 'title', 'publish_date', 'is_active', 'is_featured')
+                ->with(['mainImage'])
                 ->latest()
                 ->get();
 
             return $this->success([
                 'articles' => AdminNewsResource::collection($articles),
                 'current_featured' => AdminNewsResource::collection(
-                    News::select('id', 'title', 'main_image', 'publish_date', 'is_active', 'is_featured')
+                    News::select('id', 'title', 'publish_date', 'is_active', 'is_featured')
+                        ->with(['mainImage'])
                         ->where('is_featured', true)
                         ->latest()
                         ->get()
@@ -117,7 +119,7 @@ class AdminNewsController extends Controller
     public function show($id)
     {
         try {
-            $news = News::findOrFail($id);
+            $news = News::with(['mainImage', 'galleryImages'])->findOrFail($id);
             return $this->success(new AdminNewsResource($news));
         } catch (\Exception $e) {
             return $this->error('News article not found', 404);
@@ -154,12 +156,10 @@ class AdminNewsController extends Controller
                     null
                 );
                 $this->imageService->attachImage($image, $news, 'main');
-                $news->update(['main_image' => $image->full_url]);
             }
 
             // Handle gallery images upload
             if ($request->hasFile('gallery_images')) {
-                $galleryImages = [];
                 foreach ($request->file('gallery_images') as $index => $file) {
                     $image = $this->imageService->uploadImage(
                         $file,
@@ -168,12 +168,12 @@ class AdminNewsController extends Controller
                         null
                     );
                     $this->imageService->attachImage($image, $news, 'gallery', $index);
-                    $galleryImages[] = $image->full_url;
                 }
-                $news->update(['gallery_images' => $galleryImages]);
             }
 
             DB::commit();
+
+            $news->load(['mainImage', 'galleryImages']);
 
             return $this->success(new AdminNewsResource($news), 'News article created successfully', 201);
         } catch (\Exception $e) {
@@ -198,7 +198,7 @@ class AdminNewsController extends Controller
 
             // Handle main image upload
             if ($request->hasFile('main_image')) {
-                // Detach old main image
+                // Detach old main image (auto-cleanup will delete if orphaned)
                 $oldMainImages = $news->mainImage()->get();
                 foreach ($oldMainImages as $oldImage) {
                     $this->imageService->detachImage($oldImage, $news, 'main');
@@ -211,17 +211,19 @@ class AdminNewsController extends Controller
                     null
                 );
                 $this->imageService->attachImage($image, $news, 'main');
-                $data['main_image'] = $image->full_url;
             }
 
             // Handle gallery images
             if ($request->hasFile('gallery_images') || $request->has('existing_gallery_images') || $request->has('removed_gallery_images')) {
-                $finalGalleryImages = [];
-
-                // Get existing gallery images to keep
-                if ($request->has('existing_gallery_images')) {
-                    $existingToKeep = $request->input('existing_gallery_images', []);
-                    $finalGalleryImages = array_merge($finalGalleryImages, $existingToKeep);
+                // Handle explicitly removed images
+                if ($request->has('removed_gallery_images')) {
+                    $removedImages = $request->input('removed_gallery_images', []);
+                    foreach ($removedImages as $removedImageId) {
+                        $image = \App\Models\Image::find($removedImageId);
+                        if ($image) {
+                            $this->imageService->detachImage($image, $news, 'gallery');
+                        }
+                    }
                 }
 
                 // Add new gallery images
@@ -235,37 +237,8 @@ class AdminNewsController extends Controller
                             null
                         );
                         $this->imageService->attachImage($image, $news, 'gallery', $galleryCount + $index);
-                        $finalGalleryImages[] = $image->full_url;
                     }
                 }
-
-                // Handle explicitly removed images
-                if ($request->has('removed_gallery_images')) {
-                    $removedImages = $request->input('removed_gallery_images', []);
-                    foreach ($removedImages as $removedImageUrl) {
-                        $image = \App\Models\Image::where('url', $removedImageUrl)->first();
-                        if ($image) {
-                            $this->imageService->detachImage($image, $news, 'gallery');
-                        }
-                    }
-                }
-
-                // Delete images that are no longer needed (additional cleanup)
-                $currentGallery = [];
-                if ($news->gallery_images) {
-                    $currentGallery = is_array($news->gallery_images) ? $news->gallery_images : [];
-                }
-
-                // Find images to delete (those not in finalGalleryImages)
-                $imagesToDelete = array_diff($currentGallery, $finalGalleryImages);
-                foreach ($imagesToDelete as $oldImage) {
-                    $cleanPath = str_replace('storage/', '', $oldImage);
-                    if (Storage::disk('public')->exists($cleanPath)) {
-                        Storage::disk('public')->delete($cleanPath);
-                    }
-                }
-
-                $data['gallery_images'] = $finalGalleryImages;
             }
 
             // Convert string boolean values to actual booleans
@@ -274,7 +247,7 @@ class AdminNewsController extends Controller
             }
 
             $news->update($data);
-            $news->refresh();
+            $news->load(['mainImage', 'galleryImages']);
 
             DB::commit();
 
@@ -295,21 +268,7 @@ class AdminNewsController extends Controller
 
             $news = News::findOrFail($id);
 
-            // Delete main image if exists
-            if ($news->main_image && Storage::disk('public')->exists(str_replace('storage/', '', $news->main_image))) {
-                Storage::disk('public')->delete(str_replace('storage/', '', $news->main_image));
-            }
-
-            // Delete gallery images if exist
-            if ($news->gallery_images && is_array($news->gallery_images)) {
-                foreach ($news->gallery_images as $image) {
-                    $cleanPath = str_replace('storage/', '', $image);
-                    if (Storage::disk('public')->exists($cleanPath)) {
-                        Storage::disk('public')->delete($cleanPath);
-                    }
-                }
-            }
-
+            // Note: Observer will automatically handle image cleanup
             $news->delete();
 
             DB::commit();
@@ -327,7 +286,12 @@ class AdminNewsController extends Controller
     public function featured()
     {
         try {
-            $news = News::active()->published()->featured()->latest()->get();
+            $news = News::active()
+                ->published()
+                ->featured()
+                ->with(['mainImage', 'galleryImages'])
+                ->latest()
+                ->get();
 
             return $this->success(AdminNewsResource::collection($news));
         } catch (\Exception $e) {

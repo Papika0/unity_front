@@ -134,21 +134,8 @@ const values = computed(() => [
 
     <!-- Main Content (always visible) -->
     <div>
-      <!-- Hero Section -->
-      <section class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
-        <!-- Background Image with Overlay -->
-        <div
-          v-if="aboutInfo?.hero_image_url"
-          class="absolute inset-0 transition-all duration-[1500ms] ease-out"
-          :class="{
-            'opacity-100 scale-100': heroVisible,
-            'opacity-0 scale-110': !heroVisible,
-          }"
-          :style="`background-image: url(${aboutInfo.hero_image_url}); background-size: cover; background-position: center;`"
-        >
-          <div class="absolute inset-0 bg-black/70"></div>
-        </div>
-
+      <!-- Hero Section (Simple Header) -->
+      <section class="relative py-20 lg:py-32 bg-gradient-to-br from-zinc-900 via-black to-zinc-900 overflow-hidden">
         <!-- Diagonal overlay accent -->
         <div
           class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent transition-opacity duration-1000 delay-200"
@@ -180,10 +167,10 @@ const values = computed(() => [
         </div>
 
         <!-- Content -->
-        <div class="relative z-10 h-full flex flex-col justify-center">
-          <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 w-full">
+        <div class="relative z-10">
+          <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 text-center">
             <div
-              class="max-w-3xl transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
+              class="max-w-3xl mx-auto transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
               :class="{
                 'opacity-100 translate-y-0 blur-0': heroVisible,
                 'opacity-0 translate-y-12 blur-sm': !heroVisible,
@@ -195,11 +182,10 @@ const values = computed(() => [
                 {{ t('about.title') }}
               </h1>
               <div
-                class="w-20 h-1 bg-gradient-to-r from-[#FFCD4B] to-transparent mb-6 transition-all duration-1000 delay-300"
+                class="w-20 h-1 bg-gradient-to-r from-transparent via-[#FFCD4B] to-transparent mx-auto mb-6 transition-all duration-1000 delay-300"
                 :class="{ 'scale-x-100': heroVisible, 'scale-x-0': !heroVisible }"
-                style="transform-origin: left"
               ></div>
-              <p class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl">
+              <p class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl mx-auto">
                 {{ t('about.hero.subtitle') }}
               </p>
             </div>

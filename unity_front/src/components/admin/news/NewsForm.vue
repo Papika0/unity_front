@@ -548,6 +548,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { Translator } from '@/utils/translator'
 import { FormCard, FormSection, MultiLanguageField, FileUpload } from '@/components/admin/forms'
+import type { ImageData } from '@/types'
 
 interface NewsFormData {
   title: { ka: string; en: string; ru: string }
@@ -570,8 +571,8 @@ interface Props {
   form: NewsFormData
   mode: 'add' | 'edit'
   submitting?: boolean
-  currentMainImage?: string
-  currentGalleryImages?: string[]
+  currentMainImage?: string | ImageData | null
+  currentGalleryImages?: Array<string | ImageData>
   errors?: Record<string, string[]>
 }
 
@@ -600,10 +601,20 @@ const mainImagePreview = computed(() => {
     return URL.createObjectURL(props.form.main_image)
   }
   if (!props.currentMainImage) return ''
-  // Check if the URL already includes the backend URL
-  return props.currentMainImage.startsWith('http')
-    ? props.currentMainImage
-    : backendUrl + props.currentMainImage
+  
+  // Handle ImageData object
+  if (typeof props.currentMainImage === 'object' && props.currentMainImage !== null && 'url' in props.currentMainImage) {
+    return props.currentMainImage.url
+  }
+  
+  // Handle string path (legacy)
+  if (typeof props.currentMainImage === 'string') {
+    return props.currentMainImage.startsWith('http')
+      ? props.currentMainImage
+      : backendUrl + props.currentMainImage
+  }
+  
+  return ''
 })
 
 // Helper function to get field errors
@@ -642,14 +653,28 @@ const galleryPreviews = computed(() => {
   // Add current gallery images (filter out removed ones)
   if (props.currentGalleryImages) {
     props.currentGalleryImages
-      .filter((img: string) => !props.form.removed_gallery_images.includes(img))
-      .forEach((img: string) => {
-        // Check if the URL already includes the backend URL
-        const imageUrl = img.startsWith('http') ? img : `${backendUrl}${img}`
+      .filter((img: string | ImageData) => {
+        const imageId = typeof img === 'string' ? img : img.id ? img.id.toString() : img.url
+        return !props.form.removed_gallery_images.includes(imageId)
+      })
+      .forEach((img: string | ImageData) => {
+        let imageUrl: string
+        let imagePath: string
+        
+        if (typeof img === 'string') {
+          // Legacy string path
+          imageUrl = img.startsWith('http') ? img : `${backendUrl}${img}`
+          imagePath = img
+        } else {
+          // ImageData object
+          imageUrl = img.url
+          imagePath = img.id ? img.id.toString() : img.url
+        }
+        
         previews.push({
           url: imageUrl,
           type: 'existing',
-          path: img,
+          path: imagePath,
         })
       })
   }
@@ -752,9 +777,10 @@ function removeGalleryImage(index: number) {
   } else {
     // Remove new file from the array
     const existingCount = props.currentGalleryImages
-      ? props.currentGalleryImages.filter(
-          (img: string) => !props.form.removed_gallery_images.includes(img),
-        ).length
+      ? props.currentGalleryImages.filter((img: string | ImageData) => {
+          const imageId = typeof img === 'string' ? img : img.id ? img.id.toString() : img.url
+          return !props.form.removed_gallery_images.includes(imageId)
+        }).length
       : 0
     const newFileIndex = index - existingCount
 

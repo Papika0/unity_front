@@ -5,14 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Translatable\HasTranslations;
 
 class Image extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
+
+    public $translatable = [
+        'title',
+        'alt_text',
+        'project',
+    ];
 
     protected $fillable = [
         'filename',
         'path',
+        'url',
         'title',
         'project',
         'alt_text',
@@ -94,9 +102,21 @@ class Image extends Model
 
     /**
      * Get the full URL for the image
+     * Returns external URL if set, otherwise generates URL from path
      */
     public function getFullUrlAttribute()
     {
-        return asset('storage/' . $this->path);
+        // If external URL is set (e.g., placeholder images), use it
+        if ($this->url) {
+            return $this->url;
+        }
+        
+        // Otherwise, generate URL from storage path
+        if ($this->path) {
+            return asset('storage/' . $this->path);
+        }
+        
+        // Fallback to a default placeholder
+        return asset('images/placeholder.jpg');
     }
 }

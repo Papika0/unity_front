@@ -1,11 +1,12 @@
 import api from '@/plugins/axios/api'
 import type { ProjectFeature } from './featuresApi'
+import type { ImageData } from '@/types'
 
 // Related project minimal data
 export interface RelatedProject {
   id: number
   title: string
-  main_image: string | null
+  main_image: ImageData | null
   status: string
 }
 
@@ -19,9 +20,9 @@ export interface ProjectApiResponse {
   status: string
   start_date: string | null
   completion_date: string | null
-  main_image: string | null
-  render_image: string | null
-  gallery_images: string[]
+  main_image: ImageData | null
+  render_image: ImageData | null
+  gallery_images: ImageData[]
   year: string
   is_active: boolean
   is_featured: boolean

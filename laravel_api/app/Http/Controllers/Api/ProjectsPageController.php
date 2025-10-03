@@ -36,7 +36,8 @@ class ProjectsPageController extends Controller
         }
 
         // Get paginated projects data
-        $projectsQuery = Projects::where('is_active', true);
+        $projectsQuery = Projects::where('is_active', true)
+            ->with(['mainImage', 'renderImage', 'galleryImages']);
 
         // Apply status filter if provided
         if ($status && $status !== 'all') {
@@ -48,9 +49,14 @@ class ProjectsPageController extends Controller
         // Get paginated results
         $projects = $projectsQuery->paginate($perPage, ['*'], 'page', $page);
 
+        // Transform projects with locale
+        $projectsCollection = $projects->getCollection()->map(function ($project) use ($locale) {
+            return new ProjectResource($project, $locale);
+        });
+
         return response()->json([
             'translations' => $translations ?? [],
-            'projects' => ProjectResource::collection($projects->items()),
+            'projects' => $projectsCollection,
             'pagination' => [
                 'current_page' => $projects->currentPage(),
                 'per_page' => $projects->perPage(),

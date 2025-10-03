@@ -30,6 +30,16 @@ class AdminImageController extends Controller
             $query->where('category', $request->category);
         }
 
+        // Filter by project (Georgian translation)
+        if ($request->has('project') && $request->project !== '') {
+            $projectName = $request->project;
+            $query->where(function ($q) use ($projectName) {
+                // Search in the ka (Georgian) field of the JSON column
+                $q->where('project->ka', $projectName)
+                  ->orWhere('project', $projectName); // Fallback for string values
+            });
+        }
+
         // Filter by active status
         if ($request->has('is_active')) {
             $query->where('is_active', $request->boolean('is_active'));
@@ -59,7 +69,37 @@ class AdminImageController extends Controller
             $image->url = $image->full_url;
         }
 
-        return response()->json([
+        // Get available categories and projects if requested
+        $metadata = null;
+        if ($request->boolean('include_metadata')) {
+            // Get unique categories (exclude news and about for gallery filtering)
+            $categories = Image::select('category')
+                ->whereNotNull('category')
+                ->whereNotIn('category', ['news', 'about'])
+                ->distinct()
+                ->pluck('category')
+                ->filter()
+                ->values();
+
+            // Get unique project names (extract Georgian from JSON)
+            $allProjects = Image::whereNotNull('project')
+                ->whereNotIn('category', ['news', 'about'])
+                ->get()
+                ->map(function ($image) {
+                    // Get the Georgian translation of the project
+                    return $image->getTranslation('project', 'ka');
+                })
+                ->filter()
+                ->unique()
+                ->values();
+
+            $metadata = [
+                'categories' => $categories,
+                'projects' => $allProjects,
+            ];
+        }
+
+        $response = [
             'success' => true,
             'data' => [
                 'data' => $transformedImages,
@@ -68,7 +108,13 @@ class AdminImageController extends Controller
                 'per_page' => $images->perPage(),
                 'total' => $images->total(),
             ],
-        ]);
+        ];
+
+        if ($metadata) {
+            $response['metadata'] = $metadata;
+        }
+
+        return response()->json($response);
     }
 
     /**
@@ -78,10 +124,16 @@ class AdminImageController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'image' => 'required|file|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
-            'title' => 'required|string|max:255',
-            'project' => 'nullable|string|max:255',
+            'title.ka' => 'required|string|max:255',
+            'title.en' => 'nullable|string|max:255',
+            'title.ru' => 'nullable|string|max:255',
+            'project.ka' => 'nullable|string|max:255',
+            'project.en' => 'nullable|string|max:255',
+            'project.ru' => 'nullable|string|max:255',
+            'alt_text.ka' => 'nullable|string|max:255',
+            'alt_text.en' => 'nullable|string|max:255',
+            'alt_text.ru' => 'nullable|string|max:255',
             'category' => 'nullable|string|max:50',
-            'alt_text' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -95,10 +147,10 @@ class AdminImageController extends Controller
         try {
             $image = $this->imageService->uploadImage(
                 $request->file('image'),
-                $request->title,
+                $request->input('title'),
                 $request->category,
-                $request->project,
-                $request->alt_text
+                $request->input('project'),
+                $request->input('alt_text')
             );
 
             $image->url = $image->full_url;
@@ -135,9 +187,15 @@ class AdminImageController extends Controller
     public function update(Request $request, Image $image): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'project' => 'nullable|string|max:255',
-            'alt_text' => 'nullable|string|max:255',
+            'title.ka' => 'required|string|max:255',
+            'title.en' => 'nullable|string|max:255',
+            'title.ru' => 'nullable|string|max:255',
+            'project.ka' => 'nullable|string|max:255',
+            'project.en' => 'nullable|string|max:255',
+            'project.ru' => 'nullable|string|max:255',
+            'alt_text.ka' => 'nullable|string|max:255',
+            'alt_text.en' => 'nullable|string|max:255',
+            'alt_text.ru' => 'nullable|string|max:255',
             'category' => 'nullable|string|max:50',
             'is_active' => 'boolean',
         ]);
@@ -151,9 +209,25 @@ class AdminImageController extends Controller
         }
 
         try {
-            $image->update($request->only([
-                'title', 'project', 'alt_text', 'category', 'is_active'
-            ]));
+            $updateData = [];
+            
+            if ($request->has('title')) {
+                $updateData['title'] = $request->input('title');
+            }
+            if ($request->has('project')) {
+                $updateData['project'] = $request->input('project');
+            }
+            if ($request->has('alt_text')) {
+                $updateData['alt_text'] = $request->input('alt_text');
+            }
+            if ($request->has('category')) {
+                $updateData['category'] = $request->category;
+            }
+            if ($request->has('is_active')) {
+                $updateData['is_active'] = $request->is_active;
+            }
+
+            $image->update($updateData);
 
             $updatedImage = $image->fresh();
             $updatedImage->url = $updatedImage->full_url;

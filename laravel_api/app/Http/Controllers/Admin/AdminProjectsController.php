@@ -26,7 +26,7 @@ class AdminProjectsController extends Controller
     public function index()
     {
         try {
-            $projects = Projects::all();
+            $projects = Projects::with(['mainImage', 'renderImage', 'galleryImages'])->get();
             // wrap each model in our resource
             $resources = AdminProjectResource::collection($projects);
 
@@ -39,7 +39,7 @@ class AdminProjectsController extends Controller
     public function show($id)
     {
         try {
-            $project = Projects::findOrFail($id);
+            $project = Projects::with(['mainImage', 'renderImage', 'galleryImages'])->findOrFail($id);
             return $this->success(new AdminProjectResource($project));
         } catch (\Exception $e) {
             return $this->error('Project not found', 404);
@@ -66,7 +66,6 @@ class AdminProjectsController extends Controller
                     $projectTitle
                 );
                 $this->imageService->attachImage($image, $project, 'main');
-                $project->update(['main_image' => $image->full_url]);
             }
 
             // Handle render image upload
@@ -78,12 +77,10 @@ class AdminProjectsController extends Controller
                     $projectTitle
                 );
                 $this->imageService->attachImage($image, $project, 'render');
-                $project->update(['render_image' => $image->full_url]);
             }
 
             // Handle gallery images upload
             if ($request->hasFile('gallery_images')) {
-                $galleryImages = [];
                 $uploadErrors = [];
 
                 foreach ($request->file('gallery_images') as $index => $file) {
@@ -101,7 +98,6 @@ class AdminProjectsController extends Controller
                             $projectTitle
                         );
                         $this->imageService->attachImage($image, $project, 'gallery', $index);
-                        $galleryImages[] = $image->full_url;
                     } catch (\Exception $e) {
                         $uploadErrors["gallery_images.{$index}"] = ["The gallery_images.{$index} failed to upload: " . $e->getMessage()];
                     }
@@ -115,9 +111,9 @@ class AdminProjectsController extends Controller
                         'errors' => $uploadErrors
                     ], 422);
                 }
-
-                $project->update(['gallery_images' => $galleryImages]);
             }
+
+            $project->load(['mainImage', 'renderImage', 'galleryImages']);
 
             return $this->success(new AdminProjectResource($project), 'Project created', 201);
         } catch (\Exception $e) {
@@ -136,7 +132,7 @@ class AdminProjectsController extends Controller
         $projectTitle = $data['title']['en'] ?? $data['title']['ka'] ?? $project->getTranslation('title', 'en') ?? 'Project';
 
         if ($request->hasFile('main_image')) {
-            // Detach old main image
+            // Detach old main image (auto-cleanup will delete if orphaned)
             $oldMainImages = $project->mainImage()->get();
             foreach ($oldMainImages as $oldImage) {
                 $this->imageService->detachImage($oldImage, $project, 'main');
@@ -149,11 +145,10 @@ class AdminProjectsController extends Controller
                 $projectTitle
             );
             $this->imageService->attachImage($image, $project, 'main');
-            $data['main_image'] = $image->full_url;
         }
 
         if ($request->hasFile('render_image')) {
-            // Detach old render image
+            // Detach old render image (auto-cleanup will delete if orphaned)
             $oldRenderImages = $project->renderImage()->get();
             foreach ($oldRenderImages as $oldImage) {
                 $this->imageService->detachImage($oldImage, $project, 'render');
@@ -166,17 +161,19 @@ class AdminProjectsController extends Controller
                 $projectTitle
             );
             $this->imageService->attachImage($image, $project, 'render');
-            $data['render_image'] = $image->full_url;
         }
 
         // Handle gallery images
         if ($request->hasFile('gallery_images') || $request->has('existing_gallery_images')) {
-            $finalGalleryImages = [];
-
-            // Get existing gallery images to keep
-            if ($request->has('existing_gallery_images')) {
-                $existingToKeep = $request->input('existing_gallery_images', []);
-                $finalGalleryImages = array_merge($finalGalleryImages, $existingToKeep);
+            // Handle removed images
+            if ($request->has('removed_gallery_images')) {
+                $removedImages = $request->input('removed_gallery_images', []);
+                foreach ($removedImages as $removedImageId) {
+                    $image = \App\Models\Image::find($removedImageId);
+                    if ($image) {
+                        $this->imageService->detachImage($image, $project, 'gallery');
+                    }
+                }
             }
 
             // Add new gallery images
@@ -199,7 +196,6 @@ class AdminProjectsController extends Controller
                             $projectTitle
                         );
                         $this->imageService->attachImage($image, $project, 'gallery', $galleryCount + $index);
-                        $finalGalleryImages[] = $image->full_url;
                     } catch (\Exception $e) {
                         $uploadErrors["gallery_images.{$index}"] = ["The gallery_images.{$index} failed to upload: " . $e->getMessage()];
                     }
@@ -214,24 +210,11 @@ class AdminProjectsController extends Controller
                     ], 422);
                 }
             }
-
-            // Handle removed images
-            if ($request->has('removed_gallery_images')) {
-                $removedImages = $request->input('removed_gallery_images', []);
-                foreach ($removedImages as $removedImageUrl) {
-                    $image = \App\Models\Image::where('url', $removedImageUrl)->first();
-                    if ($image) {
-                        $this->imageService->detachImage($image, $project, 'gallery');
-                    }
-                }
-            }
-
-            $data['gallery_images'] = $finalGalleryImages;
         }
 
         $project->update($data);
 
-        $project->refresh();
+        $project->load(['mainImage', 'renderImage', 'galleryImages']);
 
         return $this->success(new AdminProjectResource($project), 'Project updated');
     } catch (\Exception $e) {
@@ -246,7 +229,7 @@ class AdminProjectsController extends Controller
     {
         try {
             $request->validate([
-                'project_ids' => 'required|array|max:3',
+                'project_ids' => 'required|array',
                 'project_ids.*' => 'required|integer|exists:projects,id',
             ]);
 
@@ -258,7 +241,9 @@ class AdminProjectsController extends Controller
                 Projects::whereIn('id', $request->project_ids)->update(['is_featured' => true]);
             }
 
-            $updatedProjects = Projects::whereIn('id', $request->project_ids)->get();
+            $updatedProjects = Projects::whereIn('id', $request->project_ids)
+                ->with(['mainImage', 'renderImage', 'galleryImages'])
+                ->get();
 
             return $this->success(
                 AdminProjectResource::collection($updatedProjects),
@@ -288,7 +273,9 @@ class AdminProjectsController extends Controller
                 Projects::whereIn('id', $request->project_ids)->update(['is_onHomepage' => true]);
             }
 
-            $updatedProjects = Projects::whereIn('id', $request->project_ids)->get();
+            $updatedProjects = Projects::whereIn('id', $request->project_ids)
+                ->with(['mainImage', 'renderImage', 'galleryImages'])
+                ->get();
 
             return $this->success(
                 AdminProjectResource::collection($updatedProjects),

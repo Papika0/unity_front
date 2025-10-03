@@ -1,6 +1,9 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+  <div 
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    @click.self="$emit('close')"
+  >
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
       <!-- Header -->
       <div class="flex items-center justify-between p-6 border-b border-gray-200">
         <h2 class="text-2xl font-semibold text-gray-900">ახალი სურათის ატვირთვა</h2>
@@ -85,27 +88,57 @@
         </div>
 
         <!-- Image Details -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Title -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"> სათაური * </label>
-            <input
-              v-model="form.title"
-              type="text"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="სურათის სათაური"
-            />
+        <div class="space-y-6">
+          <!-- Title (Multilingual) -->
+          <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <label class="block text-sm font-medium text-gray-900 mb-3"> 
+              სათაური * <span class="text-xs text-gray-500">(ყველა ენა)</span>
+            </label>
+            
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">🇬🇪 ქართული *</label>
+                <input
+                  v-model="form.title.ka"
+                  type="text"
+                  required
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                  placeholder="სათაური ქართულად"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">🇬🇧 English</label>
+                <input
+                  v-model="form.title.en"
+                  type="text"
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                  placeholder="Title in English"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">🇷🇺 Русский</label>
+                <input
+                  v-model="form.title.ru"
+                  type="text"
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                  placeholder="Название на русском"
+                />
+              </div>
+            </div>
           </div>
 
           <!-- Category -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"> კატეგორია </label>
+          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <label class="block text-sm font-medium text-gray-900 mb-2"> 
+              კატეგორია 
+            </label>
             <select
               v-model="form.category"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white font-medium text-gray-900"
             >
-              <option value="">კატეგორიის არჩევა</option>
+              <option value="" class="text-gray-500">კატეგორიის არჩევა</option>
               <option value="exterior">ფასადები</option>
               <option value="interior">ინტერიერი</option>
               <option value="landscape">ლანდშაფტი</option>
@@ -117,30 +150,84 @@
             </select>
           </div>
 
-          <!-- Project -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"> პროექტი </label>
-            <input
-              v-model="form.project"
-              type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="პროექტის სახელი"
-            />
+          <!-- Project (Multilingual) -->
+          <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <label class="block text-sm font-medium text-gray-900 mb-3"> 
+              პროექტი <span class="text-xs text-gray-500">(ყველა ენა)</span>
+            </label>
+            
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">🇬🇪 ქართული</label>
+                <input
+                  v-model="form.project.ka"
+                  type="text"
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                  placeholder="პროექტის სახელი ქართულად"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">🇬🇧 English</label>
+                <input
+                  v-model="form.project.en"
+                  type="text"
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                  placeholder="Project name in English"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">🇷🇺 Русский</label>
+                <input
+                  v-model="form.project.ru"
+                  type="text"
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                  placeholder="Название проекта на русском"
+                />
+              </div>
+            </div>
           </div>
 
-          <!-- Alt Text -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"> Alt Text </label>
-            <input
-              v-model="form.alt_text"
-              type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="სურათის აღწერა"
-            />
+          <!-- Alt Text (Multilingual) -->
+          <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+            <label class="block text-sm font-medium text-gray-900 mb-3"> 
+              Alt Text <span class="text-xs text-gray-500">(ყველა ენა)</span>
+            </label>
+            
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">🇬🇪 ქართული</label>
+                <input
+                  v-model="form.alt_text.ka"
+                  type="text"
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                  placeholder="სურათის აღწერა ქართულად"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">🇬🇧 English</label>
+                <input
+                  v-model="form.alt_text.en"
+                  type="text"
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                  placeholder="Image description in English"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">🇷🇺 Русский</label>
+                <input
+                  v-model="form.alt_text.ru"
+                  type="text"
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                  placeholder="Описание изображения на русском"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-
-        <!-- Status -->
+        </div>        <!-- Status -->
         <div class="flex items-center">
           <input
             v-model="form.is_active"
@@ -218,11 +305,17 @@
 import { ref, reactive } from 'vue'
 import { adminImageApi, type AdminImage } from '@/services/adminImageApi'
 
+interface MultilingualText {
+  ka: string
+  en: string
+  ru: string
+}
+
 interface FormData {
-  title: string
+  title: MultilingualText
   category: string
-  project: string
-  alt_text: string
+  project: MultilingualText
+  alt_text: MultilingualText
   is_active: boolean
 }
 
@@ -239,10 +332,10 @@ const uploading = ref(false)
 const error = ref<string | null>(null)
 
 const form = reactive<FormData>({
-  title: '',
+  title: { ka: '', en: '', ru: '' },
   category: '',
-  project: '',
-  alt_text: '',
+  project: { ka: '', en: '', ru: '' },
+  alt_text: { ka: '', en: '', ru: '' },
   is_active: true,
 })
 
@@ -276,8 +369,9 @@ const setFile = (file: File) => {
   error.value = null
 
   // Auto-fill title if empty
-  if (!form.title) {
-    form.title = file.name.replace(/\.[^/.]+$/, '')
+  if (!form.title.ka) {
+    const filename = file.name.replace(/\.[^/.]+$/, '')
+    form.title.ka = filename
   }
 }
 
@@ -306,10 +400,16 @@ const handleSubmit = async () => {
 
     const formData = new FormData()
     formData.append('image', selectedFile.value)
-    formData.append('title', form.title)
+    formData.append('title[ka]', form.title.ka)
+    formData.append('title[en]', form.title.en)
+    formData.append('title[ru]', form.title.ru)
     formData.append('category', form.category)
-    formData.append('project', form.project)
-    formData.append('alt_text', form.alt_text)
+    formData.append('project[ka]', form.project.ka)
+    formData.append('project[en]', form.project.en)
+    formData.append('project[ru]', form.project.ru)
+    formData.append('alt_text[ka]', form.alt_text.ka)
+    formData.append('alt_text[en]', form.alt_text.en)
+    formData.append('alt_text[ru]', form.alt_text.ru)
     formData.append('is_active', form.is_active ? '1' : '0')
 
     const response = await adminImageApi.uploadImage(formData)
@@ -328,21 +428,12 @@ const handleSubmit = async () => {
 }
 
 const resetForm = () => {
-  form.title = ''
+  form.title = { ka: '', en: '', ru: '' }
   form.category = ''
-  form.project = ''
-  form.alt_text = ''
+  form.project = { ka: '', en: '', ru: '' }
+  form.alt_text = { ka: '', en: '', ru: '' }
   form.is_active = true
   removeFile()
   error.value = null
-}
-
-// Drag and drop handlers
-const handleDragEnter = () => {
-  isDragOver.value = true
-}
-
-const handleDragLeave = () => {
-  isDragOver.value = false
 }
 </script>

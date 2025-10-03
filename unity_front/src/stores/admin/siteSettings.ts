@@ -21,7 +21,6 @@ export interface AboutInfoFormData {
     satisfied_clients: string
     client_satisfaction: string
   }
-  hero_image_id?: number | null
   philosophy_image_id?: number | null
 }
 

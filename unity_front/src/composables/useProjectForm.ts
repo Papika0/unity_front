@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { Translator } from '@/utils/translator'
+import type { ImageData } from '@/types'
 
 export interface ProjectFormData {
   title: Record<string, string>
@@ -237,32 +238,55 @@ export function useProjectForm() {
 
     // Set image previews
     if (projectData.main_image) {
-      const mainImageStr = String(projectData.main_image)
-      if (typeof mainImageStr === 'string' && mainImageStr.startsWith('http')) {
-        previews.main_image = mainImageStr
+      if (typeof projectData.main_image === 'object' && projectData.main_image !== null) {
+        // Handle ImageData object
+        const imageData = projectData.main_image as ImageData
+        previews.main_image = imageData.url
       } else {
-        previews.main_image = backendUrl + mainImageStr
+        // Handle string path (legacy)
+        const mainImageStr = String(projectData.main_image)
+        previews.main_image = mainImageStr.startsWith('http')
+          ? mainImageStr
+          : backendUrl + mainImageStr
       }
     }
 
     if (projectData.render_image) {
-      if (
-        typeof projectData.render_image === 'string' &&
-        projectData.render_image.startsWith('http')
-      ) {
-        previews.render_image = String(projectData.render_image)
+      if (typeof projectData.render_image === 'object' && projectData.render_image !== null) {
+        // Handle ImageData object
+        const imageData = projectData.render_image as ImageData
+        previews.render_image = imageData.url
       } else {
-        previews.render_image = backendUrl + String(projectData.render_image)
+        // Handle string path (legacy)
+        const renderImageStr = String(projectData.render_image)
+        previews.render_image = renderImageStr.startsWith('http')
+          ? renderImageStr
+          : backendUrl + renderImageStr
       }
     }
+    
     if (
       projectData.gallery_images &&
       Array.isArray(projectData.gallery_images) &&
       projectData.gallery_images.length > 0
     ) {
-      previews.gallery_images = (projectData.gallery_images as string[]).slice()
+      // Handle array of strings or ImageData objects
+      previews.gallery_images = projectData.gallery_images.map((img: unknown) => {
+        if (typeof img === 'object' && img !== null && 'url' in img) {
+          return (img as ImageData).url
+        }
+        const imgStr = String(img)
+        return imgStr.startsWith('http') ? imgStr : backendUrl + imgStr
+      })
+      
       if (form.existing_gallery_images) {
-        form.existing_gallery_images = (projectData.gallery_images as string[]).slice()
+        // Store image IDs for tracking which images to keep
+        form.existing_gallery_images = projectData.gallery_images.map((img: unknown) => {
+          if (typeof img === 'object' && img !== null && 'id' in img) {
+            return String((img as ImageData).id)
+          }
+          return String(img)
+        })
       }
     }
   }

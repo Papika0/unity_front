@@ -14,8 +14,15 @@ class ImageService
 {
     /**
      * Upload and create image record
+     * 
+     * @param UploadedFile $file
+     * @param string|array $title Can be string or array ['ka' => '...', 'en' => '...', 'ru' => '...']
+     * @param string|null $category
+     * @param string|array|null $project Can be string or array ['ka' => '...', 'en' => '...', 'ru' => '...']
+     * @param string|array|null $altText Can be string or array ['ka' => '...', 'en' => '...', 'ru' => '...']
+     * @return Image
      */
-    public function uploadImage(UploadedFile $file, string $title, string $category = null, string $project = null, string $altText = null): Image
+    public function uploadImage(UploadedFile $file, string|array $title, string $category = null, string|array $project = null, string|array $altText = null): Image
     {
         try {
             // Validate file
@@ -90,7 +97,32 @@ class ImageService
             $query->where('type', $type);
         }
 
-        return $query->delete() > 0;
+        $deleted = $query->delete() > 0;
+
+        // Auto-cleanup orphaned images
+        if ($deleted) {
+            $this->cleanupOrphanedImage($image);
+        }
+
+        return $deleted;
+    }
+
+    /**
+     * Delete image if it has no remaining relationships
+     */
+    protected function cleanupOrphanedImage(Image $image): void
+    {
+        // Refresh to get latest relationship count
+        $image->refresh();
+
+        if ($image->imageables()->count() === 0) {
+            Log::info('Auto-deleting orphaned image', [
+                'image_id' => $image->id,
+                'filename' => $image->filename,
+                'path' => $image->path
+            ]);
+            $this->deleteImage($image);
+        }
     }
 
     /**
@@ -143,6 +175,7 @@ class ImageService
         $query = Image::active()
             ->join('imageables', 'images.id', '=', 'imageables.image_id')
             ->where('imageables.type', 'gallery')
+            ->whereNotIn('images.category', ['news', 'about']) // Exclude news and about categories
             ->orderBy('imageables.sort_order');
 
         if ($category) {

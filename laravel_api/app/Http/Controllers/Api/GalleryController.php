@@ -24,6 +24,7 @@ class GalleryController extends Controller
         $category = $request->get('category', 'all');
         $limit = $request->get('limit', 20);
         $featured = $request->boolean('featured', false);
+        $locale = $request->get('locale', 'ka');
 
         if ($featured) {
             $images = $this->imageService->getFeaturedImages($limit);
@@ -36,13 +37,13 @@ class GalleryController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $images->map(function ($image) {
+            'data' => $images->map(function ($image) use ($locale) {
                 return [
                     'id' => $image->id,
                     'url' => $image->full_url,
-                    'title' => $image->title,
-                    'project' => $image->project,
-                    'alt_text' => $image->alt_text,
+                    'title' => $image->getTranslation('title', $locale),
+                    'project' => $image->project ? $image->getTranslation('project', $locale) : null,
+                    'alt_text' => $image->getTranslation('alt_text', $locale),
                     'category' => $image->category,
                     'created_at' => $image->created_at,
                 ];
@@ -76,9 +77,10 @@ class GalleryController extends Controller
     /**
      * Get single image details
      */
-    public function show($id): JsonResponse
+    public function show(Request $request, $id): JsonResponse
     {
         try {
+            $locale = $request->get('locale', 'ka');
             $image = \App\Models\Image::active()->findOrFail($id);
 
             return response()->json([
@@ -86,9 +88,9 @@ class GalleryController extends Controller
                 'data' => [
                     'id' => $image->id,
                     'url' => $image->full_url,
-                    'title' => $image->title,
-                    'project' => $image->project,
-                    'alt_text' => $image->alt_text,
+                    'title' => $image->getTranslation('title', $locale),
+                    'project' => $image->project ? $image->getTranslation('project', $locale) : null,
+                    'alt_text' => $image->getTranslation('alt_text', $locale),
                     'category' => $image->category,
                     'created_at' => $image->created_at,
                 ],

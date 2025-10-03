@@ -61,7 +61,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAdminNewsStore } from '@/stores/admin/news'
 import { useToastStore } from '@/stores/ui/toast'
 import NewsForm from '@/components/admin/news/NewsForm.vue'
-import type { AdminNewsArticle } from '@/types'
+import type { AdminNewsArticle, ImageData } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -71,8 +71,9 @@ const toastStore = useToastStore()
 // Refs
 const submitting = ref(false)
 const article = ref<AdminNewsArticle | null>(null)
-const currentMainImage = ref('')
-const currentGalleryImages = ref<string[]>([])
+const currentMainImage = ref<string | ImageData | null>(null)
+const currentGalleryImages = ref<Array<string | ImageData>>([])
+
 
 // Form data
 const form = reactive({
@@ -88,7 +89,7 @@ const form = reactive({
   tags: [] as string[],
   meta_title: '',
   meta_description: '',
-  removed_gallery_images: [] as string[],
+  removed_gallery_images: [] as string[], // Track image IDs/URLs to remove
 })
 
 // Functions
@@ -153,11 +154,14 @@ async function onSubmit(formData: FormData) {
     adminNewsStore.clearValidationErrors()
 
     // Add existing gallery images that weren't removed
-    const imagesToKeep = currentGalleryImages.value.filter(
-      (image) => !form.removed_gallery_images.includes(image),
-    )
+    const imagesToKeep = currentGalleryImages.value.filter((image) => {
+      const imageId =
+        typeof image === 'string' ? image : image.id ? image.id.toString() : image.url
+      return !form.removed_gallery_images.includes(imageId)
+    })
     imagesToKeep.forEach((image) => {
-      formData.append('existing_gallery_images[]', image)
+      const imageValue = typeof image === 'string' ? image : image.id ? image.id.toString() : image.url
+      formData.append('existing_gallery_images[]', imageValue)
     })
 
     // Add removed gallery images for backend processing

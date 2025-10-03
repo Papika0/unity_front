@@ -272,8 +272,8 @@ onBeforeUnmount(() => {
       >
         <div class="relative overflow-hidden border border-zinc-100">
           <img
-            :src="article.main_image || 'https://placehold.co/800x400'"
-            :alt="article.title"
+            :src="article.main_image?.url || 'https://placehold.co/800x400'"
+            :alt="article.main_image?.alt_text || article.title"
             class="w-full h-[400px] md:h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
           />
           <!-- Golden accent line on hover -->
@@ -325,8 +325,8 @@ onBeforeUnmount(() => {
             @click="openGallery(index)"
           >
             <img
-              :src="image"
-              :alt="`${article.title || ''} - ${t('news.gallery.image')} ${index + 1}`"
+              :src="image.url"
+              :alt="image.alt_text || `${article.title || ''} - ${t('news.gallery.image')} ${index + 1}`"
               class="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
             />
             <!-- Gradient overlay on hover -->
@@ -383,8 +383,8 @@ onBeforeUnmount(() => {
             <!-- Image -->
             <div class="max-w-7xl max-h-[90vh] px-16" @click.stop>
               <img
-                :src="article.gallery_images[currentGalleryIndex]"
-                :alt="`${article.title} - ${t('news.gallery.image')} ${currentGalleryIndex + 1}`"
+                :src="article.gallery_images[currentGalleryIndex].url"
+                :alt="article.gallery_images[currentGalleryIndex].alt_text || `${article.title} - ${t('news.gallery.image')} ${currentGalleryIndex + 1}`"
                 class="max-w-full max-h-[90vh] object-contain"
               />
               <p class="text-white text-center mt-4 font-light">
@@ -445,8 +445,8 @@ onBeforeUnmount(() => {
           >
             <div class="relative h-48 bg-zinc-100 overflow-hidden">
               <img
-                :src="relatedArticle.main_image || 'https://placehold.co/400x250'"
-                :alt="relatedArticle.title"
+                :src="relatedArticle.main_image?.url || 'https://placehold.co/400x250'"
+                :alt="relatedArticle.main_image?.alt_text || relatedArticle.title"
                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
               />
 

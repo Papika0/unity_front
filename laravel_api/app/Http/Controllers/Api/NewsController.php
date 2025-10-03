@@ -57,6 +57,9 @@ class NewsController extends Controller
 
             $news = $query->paginate($perPage);
             
+            // Load images for the paginated collection
+            $news->load(['mainImage', 'galleryImages']);
+            
             // Transform news items with locale
             $newsCollection = $news->getCollection()->map(function ($item) use ($locale) {
                 return new NewsResource($item, $locale);
@@ -91,6 +94,7 @@ class NewsController extends Controller
 
             $news = News::where('is_active', true)
                        ->where('publish_date', '<=', now())
+                       ->with(['mainImage', 'galleryImages'])
                        ->findOrFail($id);
 
             // Increment view count
@@ -101,17 +105,24 @@ class NewsController extends Controller
                 ->where('publish_date', '<=', now())
                 ->where('id', '!=', $id)
                 ->where('category', $news->category)
+                ->with('mainImage')
                 ->orderBy('publish_date', 'desc')
                 ->take(3)
-                ->get(['id', 'title', 'excerpt', 'main_image', 'category', 'publish_date', 'views']);
+                ->get(['id', 'title', 'excerpt', 'category', 'publish_date', 'views']);
             
             // Transform related articles with locale
             $relatedData = $relatedArticles->map(function($article) use ($locale) {
+                $mainImage = $article->mainImage->first();
                 return [
                     'id' => $article->id,
                     'title' => $article->getTranslation('title', $locale),
                     'excerpt' => $article->getTranslation('excerpt', $locale),
-                    'main_image' => $article->main_image,
+                    'main_image' => $mainImage ? [
+                        'id' => $mainImage->id,
+                        'url' => $mainImage->full_url,
+                        'alt_text' => $mainImage->getTranslation('alt_text', $locale),
+                        'title' => $mainImage->getTranslation('title', $locale),
+                    ] : null,
                     'category' => $article->category,
                     'publish_date' => $article->publish_date,
                     'views' => $article->views,
@@ -153,6 +164,7 @@ class NewsController extends Controller
             $news = News::where('is_active', true)
                        ->where('is_featured', true)
                        ->where('publish_date', '<=', now())
+                       ->with(['mainImage', 'galleryImages'])
                        ->orderBy('publish_date', 'desc')
                        ->limit(5)
                        ->get();
@@ -192,6 +204,7 @@ class NewsController extends Controller
             
             $news = News::where('is_active', true)
                        ->where('publish_date', '<=', now())
+                       ->with(['mainImage', 'galleryImages'])
                        ->orderBy('publish_date', 'desc')
                        ->limit($limit)
                        ->get();

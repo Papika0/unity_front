@@ -57,11 +57,15 @@
           <img
             v-if="project.main_image"
             :src="
-              project.main_image.startsWith('http')
+              typeof project.main_image === 'string'
                 ? project.main_image
-                : backendUrl + project.main_image
+                : project.main_image.url
             "
-            :alt="project.title"
+            :alt="
+              typeof project.main_image === 'string'
+                ? project.title
+                : project.main_image.alt_text || project.title
+            "
             class="w-full h-full object-cover"
           />
           <div
@@ -168,11 +172,15 @@
             <div class="rounded-2xl overflow-hidden shadow-lg">
               <img
                 :src="
-                  project.render_image.startsWith('http')
+                  typeof project.render_image === 'string'
                     ? project.render_image
-                    : backendUrl + project.render_image
+                    : project.render_image.url
                 "
-                :alt="project.title + ' render'"
+                :alt="
+                  typeof project.render_image === 'string'
+                    ? project.title + ' render'
+                    : project.render_image.alt_text || project.title + ' render'
+                "
                 class="w-full h-80 object-cover"
               />
             </div>
@@ -193,8 +201,12 @@
                 class="relative overflow-hidden rounded-xl shadow-lg transform transition-transform duration-300 hover:scale-105"
               >
                 <img
-                  :src="img.startsWith('http') ? img : backendUrl + img"
-                  :alt="`${project.title} gallery ${idx + 1}`"
+                  :src="typeof img === 'string' ? img : img.url"
+                  :alt="
+                    typeof img === 'string'
+                      ? `${project.title} gallery ${idx + 1}`
+                      : img.alt_text || `${project.title} gallery ${idx + 1}`
+                  "
                   class="object-cover w-full h-64 hover:brightness-110 transition-all duration-300"
                 />
               </div>
@@ -262,8 +274,6 @@ const error = ref<string | null>(null)
 const route = useRoute()
 const router = useRouter()
 const adminProjectsStore = useAdminProjectsStore()
-
-const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 async function fetchProject() {
   try {

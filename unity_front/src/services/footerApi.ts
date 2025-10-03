@@ -1,10 +1,11 @@
 import api from '@/plugins/axios/api'
+import type { ImageData } from '@/types'
 
 export interface FooterData {
   projects: Array<{
     id: number
     title: string
-    main_image: string
+    main_image: ImageData | null
   }>
   contact: {
     phone: string

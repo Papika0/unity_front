@@ -40,18 +40,16 @@
                 type="text"
                 placeholder="ძებნა სურათების მიხედვით..."
                 class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                @input="handleSearch"
               />
             </div>
 
             <!-- Category Filter -->
             <select
               v-model="selectedCategory"
-              @change="handleCategoryChange"
-              class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              class="px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 font-medium text-gray-900 bg-white"
             >
-              <option value="">ყველა კატეგორია</option>
-              <option v-for="category in categories" :key="category" :value="category">
+              <option value="" class="text-gray-500">ყველა კატეგორია</option>
+              <option v-for="category in categories" :key="category" :value="category" class="text-gray-900">
                 {{ getCategoryLabel(category) }}
               </option>
             </select>
@@ -59,11 +57,10 @@
             <!-- Project Filter -->
             <select
               v-model="selectedProject"
-              @change="handleProjectChange"
-              class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              class="px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 font-medium text-gray-900 bg-white"
             >
-              <option value="">ყველა პროექტი</option>
-              <option v-for="project in projects" :key="project" :value="project">
+              <option value="" class="text-gray-500">ყველა პროექტი</option>
+              <option v-for="project in projects" :key="project" :value="project" class="text-gray-900">
                 {{ project }}
               </option>
             </select>
@@ -238,7 +235,7 @@
 
       <!-- Images Grid -->
       <div
-        v-else-if="filteredImages.length > 0"
+        v-else-if="images.length > 0"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
       >
         <div
@@ -250,7 +247,7 @@
           <div class="aspect-square relative overflow-hidden">
             <img
               :src="image.url"
-              :alt="image.alt_text || image.title"
+              :alt="getGeorgianText(image.alt_text) || getGeorgianText(image.title)"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
 
@@ -340,9 +337,9 @@
 
           <!-- Image Info -->
           <div class="p-4">
-            <h3 class="font-semibold text-gray-900 mb-2 truncate">{{ image.title }}</h3>
+            <h3 class="font-semibold text-gray-900 mb-2 truncate">{{ getGeorgianText(image.title) }}</h3>
             <div class="space-y-1 text-sm text-gray-600">
-              <div v-if="image.project" class="flex items-center">
+              <div v-if="getGeorgianText(image.project)" class="flex items-center">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
@@ -351,7 +348,7 @@
                     d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                   />
                 </svg>
-                {{ image.project }}
+                {{ getGeorgianText(image.project) }}
               </div>
               <div v-if="image.category" class="flex items-center">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -459,30 +456,32 @@
       @close="editingImage = null"
       @updated="handleImageUpdated"
     />
+    
+    <!-- Toast Container -->
+    <ToastContainer />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { adminImageApi } from '@/services/adminImageApi'
+import { adminImageApi, type MultilingualText } from '@/services/adminImageApi'
 import ImageUploadModal from '@/components/admin/gallery/ImageUploadModal.vue'
 import ImageViewModal from '@/components/admin/gallery/ImageViewModal.vue'
 import ImageEditModal from '@/components/admin/gallery/ImageEditModal.vue'
+import ToastContainer from '@/components/ToastContainer.vue'
+import { useToast } from '@/composables/useToast'
 
 interface GalleryImage {
   id: number
   url: string
-  title: string
-  project: string | null
-  alt_text: string | null
+  title: string | MultilingualText
+  project: string | null | MultilingualText
+  alt_text: string | null | MultilingualText
   category: string | null
   is_active: boolean
   created_at: string
   updated_at: string
 }
-
-const router = useRouter()
 
 // State
 const images = ref<GalleryImage[]>([])
@@ -494,45 +493,22 @@ const searchQuery = ref('')
 const selectedCategory = ref('')
 const selectedProject = ref('')
 const currentPage = ref(1)
-const itemsPerPage = 20
+const totalPages = ref(1)
+const totalImages = ref(0)
 
 // Modal states
 const showUploadModal = ref(false)
 const selectedImage = ref<GalleryImage | null>(null)
 const editingImage = ref<GalleryImage | null>(null)
 
+// Toast
+const toast = useToast()
+
 // Computed
-const filteredImages = computed(() => {
-  let filtered = images.value
-
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(
-      (img) =>
-        img.title.toLowerCase().includes(query) ||
-        img.alt_text?.toLowerCase().includes(query) ||
-        img.project?.toLowerCase().includes(query),
-    )
-  }
-
-  if (selectedCategory.value) {
-    filtered = filtered.filter((img) => img.category === selectedCategory.value)
-  }
-
-  if (selectedProject.value) {
-    filtered = filtered.filter((img) => img.project === selectedProject.value)
-  }
-
-  return filtered
-})
-
 const paginatedImages = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return filteredImages.value.slice(start, end)
+  // Server-side pagination, so just return images directly
+  return images.value
 })
-
-const totalPages = computed(() => Math.ceil(filteredImages.value.length / itemsPerPage))
 
 const visiblePages = computed(() => {
   const pages = []
@@ -560,9 +536,14 @@ const visiblePages = computed(() => {
 
   return pages
 })
-
-const totalImages = computed(() => images.value.length)
 const activeImages = computed(() => images.value.filter((img) => img.is_active).length)
+
+// Helper to get Georgian text from multilingual field
+const getGeorgianText = (value: string | null | MultilingualText): string => {
+  if (!value) return ''
+  if (typeof value === 'string') return value
+  return value.ka || ''
+}
 
 // Methods
 const loadImages = async () => {
@@ -570,42 +551,39 @@ const loadImages = async () => {
     loading.value = true
     error.value = null
 
-    const response = await adminImageApi.getImages({
-      per_page: 1000, // Get all images for filtering
-    })
+    const response = await adminImageApi.getImages(
+      {
+        category: selectedCategory.value,
+        project: selectedProject.value,
+        search: searchQuery.value,
+        per_page: 15,
+        page: currentPage.value,
+      },
+      true, // Include metadata
+    )
 
     if (response.success) {
       images.value = response.data.data
+      totalPages.value = response.data.last_page
+      totalImages.value = response.data.total
+
+      // Update categories and projects from metadata if available
+      if (response.metadata) {
+        categories.value = response.metadata.categories
+        projects.value = response.metadata.projects
+      }
     }
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load images'
+    const message = err instanceof Error ? err.message : 'Failed to load images'
+    error.value = message
+    toast.error(message)
     console.error('Failed to load images:', err)
   } finally {
     loading.value = false
   }
 }
 
-const loadCategories = async () => {
-  try {
-    const response = await adminImageApi.getCategories()
-    if (response.success) {
-      categories.value = response.data
-    }
-  } catch (err) {
-    console.error('Failed to load categories:', err)
-  }
-}
-
-const loadProjects = async () => {
-  try {
-    const response = await adminImageApi.getProjects()
-    if (response.success) {
-      projects.value = response.data
-    }
-  } catch (err) {
-    console.error('Failed to load projects:', err)
-  }
-}
+// Categories and projects are now loaded with images via metadata
 
 const getCategoryLabel = (category: string): string => {
   const labels: Record<string, string> = {
@@ -625,18 +603,6 @@ const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleDateString('ka-GE')
 }
 
-const handleSearch = () => {
-  currentPage.value = 1
-}
-
-const handleCategoryChange = () => {
-  currentPage.value = 1
-}
-
-const handleProjectChange = () => {
-  currentPage.value = 1
-}
-
 const clearFilters = () => {
   searchQuery.value = ''
   selectedCategory.value = ''
@@ -646,8 +612,6 @@ const clearFilters = () => {
 
 const refreshImages = () => {
   loadImages()
-  loadCategories()
-  loadProjects()
 }
 
 const openUploadModal = () => {
@@ -663,40 +627,51 @@ const editImage = (image: GalleryImage) => {
 }
 
 const deleteImage = async (image: GalleryImage) => {
-  if (confirm(`Are you sure you want to delete "${image.title}"?`)) {
+  const title = getGeorgianText(image.title)
+  if (confirm(`გსურთ წაშალოთ "${title}"?`)) {
     try {
       const response = await adminImageApi.deleteImage(image.id)
       if (response.success) {
-        images.value = images.value.filter((img) => img.id !== image.id)
+        toast.success('სურათი წარმატებით წაიშალა')
+        selectedImage.value = null
+        // Reload to update the list and metadata
+        loadImages()
       }
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'სურათის წაშლა ვერ მოხერხდა'
+      toast.error(message)
       console.error('Failed to delete image:', err)
     }
   }
 }
 
-const handleImageUploaded = (newImage: GalleryImage) => {
-  images.value.unshift(newImage)
+const handleImageUploaded = () => {
   showUploadModal.value = false
+  toast.success('სურათი წარმატებით აიტვირთა')
+  // Reload to show new image and update metadata
+  loadImages()
 }
 
-const handleImageUpdated = (updatedImage: GalleryImage) => {
-  const index = images.value.findIndex((img) => img.id === updatedImage.id)
-  if (index !== -1) {
-    images.value[index] = updatedImage
-  }
+const handleImageUpdated = () => {
   editingImage.value = null
+  toast.success('სურათი წარმატებით განახლდა')
+  // Reload to show updated image and update metadata
+  loadImages()
 }
 
-// Watch for page changes
+// Watch for page changes and filters
 watch(currentPage, () => {
+  loadImages()
   window.scrollTo({ top: 0, behavior: 'smooth' })
+})
+
+watch([selectedCategory, selectedProject, searchQuery], () => {
+  currentPage.value = 1
+  loadImages()
 })
 
 // Lifecycle
 onMounted(() => {
   loadImages()
-  loadCategories()
-  loadProjects()
 })
 </script>

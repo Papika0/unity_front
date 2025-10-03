@@ -7,6 +7,14 @@ export interface User {
   updated_at: string
 }
 
+export interface ImageData {
+  id: number
+  url: string
+  alt_text: string | null
+  title: string
+  sort_order?: number
+}
+
 export interface Project {
   id: number
   title: string
@@ -25,9 +33,9 @@ export interface Project {
   status: string
   start_date: string
   completion_date: string
-  main_image: string | null
-  render_image: string | null
-  gallery_images: string[] | null
+  main_image: ImageData | null
+  render_image: ImageData | null
+  gallery_images: ImageData[]
   year: number
   is_active: boolean
   is_featured: boolean
@@ -84,7 +92,7 @@ export interface RelatedArticle {
   id: number
   title: string
   excerpt: string
-  main_image: string | null
+  main_image: ImageData | null
   category: 'company' | 'project' | 'industry' | 'event'
   publish_date: string
   views: number
@@ -97,8 +105,8 @@ export interface NewsArticle {
   title: string
   content: string
   excerpt: string
-  main_image: string | null
-  gallery_images: string[]
+  main_image: ImageData | null
+  gallery_images: ImageData[]
   publish_date: string
   formatted_publish_date: string
   category: 'company' | 'project' | 'industry' | 'event'
@@ -118,8 +126,8 @@ export interface AdminNewsArticle {
   title: adminNewsTranslation
   content: adminNewsTranslation
   excerpt: adminNewsTranslation
-  main_image: string | null
-  gallery_images: string[]
+  main_image: ImageData | null
+  gallery_images: ImageData[]
   publish_date: string
   formatted_publish_date: string
   category: 'company' | 'project' | 'industry' | 'event'

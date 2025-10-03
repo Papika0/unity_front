@@ -133,34 +133,20 @@
               </p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <!-- Hero Image -->
-              <div>
-                <ImageSelector
-                  v-model="formData.hero_image_id"
-                  :image-data="
-                    siteSettingsStore.aboutInfo?.hero_image_id &&
-                    siteSettingsStore.aboutInfo?.hero_image_url
-                      ? {
-                          id: siteSettingsStore.aboutInfo.hero_image_id,
-                          url: siteSettingsStore.aboutInfo.hero_image_url,
-                          title: 'Hero Section სურათი',
-                        }
-                      : null
-                  "
-                  label="Hero Section სურათი"
-                  help-text="მთავარი სურათი, რომელიც ნაჩვენებია 'ჩვენს შესახებ' გვერდის ზევით"
-                  category="about"
-                />
-              </div>
-
+            <div class="space-y-8">
               <!-- Philosophy Image -->
               <div>
                 <ImageSelector
                   v-model="formData.philosophy_image_id"
                   :image-data="
-                    siteSettingsStore.aboutInfo?.philosophy_image_id &&
-                    siteSettingsStore.aboutInfo?.philosophy_image_url
+                    siteSettingsStore.aboutInfo?.philosophy_image
+                      ? {
+                          id: siteSettingsStore.aboutInfo.philosophy_image.id,
+                          url: siteSettingsStore.aboutInfo.philosophy_image.url,
+                          alt_text: siteSettingsStore.aboutInfo.philosophy_image.alt_text || undefined,
+                          title: siteSettingsStore.aboutInfo.philosophy_image.title || 'ფილოსოფიის სექციის სურათი',
+                        }
+                      : siteSettingsStore.aboutInfo?.philosophy_image_id && siteSettingsStore.aboutInfo?.philosophy_image_url
                       ? {
                           id: siteSettingsStore.aboutInfo.philosophy_image_id,
                           url: siteSettingsStore.aboutInfo.philosophy_image_url,
@@ -234,7 +220,6 @@ const formData = ref<AboutInfoFormData>({
     satisfied_clients: '',
     client_satisfaction: '',
   },
-  hero_image_id: null,
   philosophy_image_id: null,
 })
 
@@ -248,7 +233,6 @@ const loadData = async () => {
     if (siteSettingsStore.aboutInfo) {
       formData.value = {
         stats: { ...siteSettingsStore.aboutInfo.stats },
-        hero_image_id: siteSettingsStore.aboutInfo.hero_image_id || null,
         philosophy_image_id: siteSettingsStore.aboutInfo.philosophy_image_id || null,
       }
     }

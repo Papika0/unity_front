@@ -64,17 +64,19 @@ class SiteSettingsService
             ]
         ];
 
-        // Add image URLs and IDs if they exist
-        if (isset($aboutSettings['hero_image_id'])) {
-            $heroImage = \App\Models\Image::find($aboutSettings['hero_image_id']);
-            $aboutInfo['hero_image_id'] = (int) $aboutSettings['hero_image_id'];
-            $aboutInfo['hero_image_url'] = $heroImage ? $heroImage->full_url : null;
-        }
-
+        // Add philosophy image data if it exists
         if (isset($aboutSettings['philosophy_image_id'])) {
             $philosophyImage = \App\Models\Image::find($aboutSettings['philosophy_image_id']);
-            $aboutInfo['philosophy_image_id'] = (int) $aboutSettings['philosophy_image_id'];
-            $aboutInfo['philosophy_image_url'] = $philosophyImage ? $philosophyImage->full_url : null;
+            if ($philosophyImage) {
+                $aboutInfo['philosophy_image'] = [
+                    'id' => $philosophyImage->id,
+                    'url' => $philosophyImage->full_url,
+                    'alt_text' => $philosophyImage->alt_text,
+                    'title' => $philosophyImage->title,
+                ];
+                // Keep legacy URL field for backward compatibility
+                $aboutInfo['philosophy_image_url'] = $philosophyImage->full_url;
+            }
         }
 
         return $aboutInfo;
@@ -227,13 +229,33 @@ class SiteSettingsService
                 }
             }
 
-            // Update image IDs
-            if (isset($data['hero_image_id'])) {
-                SiteSetting::updateSetting('hero_image_id', $data['hero_image_id'], 'about');
+            // Clean up old hero_image if it exists (deprecated field)
+            $aboutSettings = SiteSetting::getSettingsForGroup('about');
+            if (isset($aboutSettings['hero_image_id'])) {
+                $oldHeroImageId = $aboutSettings['hero_image_id'];
+                // Remove the setting
+                SiteSetting::where('name', 'hero_image_id')
+                    ->where('group', 'about')
+                    ->delete();
+                // Clean up the image
+                if ($oldHeroImageId) {
+                    $imageService = app(\App\Services\ImageService::class);
+                    $imageService->cleanupOrphanedImage($oldHeroImageId);
+                }
             }
 
+            // Handle philosophy image update with cleanup
             if (isset($data['philosophy_image_id'])) {
+                $oldImageId = $aboutSettings['philosophy_image_id'] ?? null;
+                
+                // Update to new image
                 SiteSetting::updateSetting('philosophy_image_id', $data['philosophy_image_id'], 'about');
+                
+                // Clean up old image if it exists and is different
+                if ($oldImageId && $oldImageId != $data['philosophy_image_id']) {
+                    $imageService = app(\App\Services\ImageService::class);
+                    $imageService->cleanupOrphanedImage($oldImageId);
+                }
             }
 
             return true;
@@ -336,13 +358,7 @@ class SiteSettingsService
             }
         }
 
-        // Validate image IDs if provided
-        if (isset($data['hero_image_id']) && !empty($data['hero_image_id'])) {
-            if (!\App\Models\Image::where('id', $data['hero_image_id'])->exists()) {
-                $errors['hero_image_id'] = 'Hero image not found';
-            }
-        }
-
+        // Validate philosophy image ID if provided
         if (isset($data['philosophy_image_id']) && !empty($data['philosophy_image_id'])) {
             if (!\App\Models\Image::where('id', $data['philosophy_image_id'])->exists()) {
                 $errors['philosophy_image_id'] = 'Philosophy image not found';

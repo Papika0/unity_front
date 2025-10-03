@@ -32,8 +32,26 @@ class AdminNewsResource extends JsonResource
                 'ru' => $this->getTranslation('content', 'ru'),
             ],
             'category' => $this->category,
-            'main_image' => $this->main_image,
-            'gallery_images' => $this->gallery_images ?: [],
+            'main_image' => $this->whenLoaded('mainImage', function() {
+                $mainImage = $this->mainImage->first();
+                return $mainImage ? [
+                    'id' => $mainImage->id,
+                    'url' => $mainImage->full_url,
+                    'alt_text' => $mainImage->alt_text,
+                    'title' => $mainImage->title,
+                ] : null;
+            }),
+            'gallery_images' => $this->whenLoaded('galleryImages', function() {
+                return $this->galleryImages->map(function($image) {
+                    return [
+                        'id' => $image->id,
+                        'url' => $image->full_url,
+                        'alt_text' => $image->alt_text,
+                        'title' => $image->title,
+                        'sort_order' => $image->pivot->sort_order,
+                    ];
+                });
+            }, []),
             'tags' => $this->tags ?: [],
             'publish_date' => $this->publish_date ? $this->publish_date->toDateString() : null,
             'formatted_publish_date' => $this->publish_date ? $this->publish_date->format('Y-m-d H:i:s') : null,

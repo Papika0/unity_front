@@ -37,11 +37,10 @@ class NewsFactory extends Factory
         ];
 
         $randomTitle = $this->faker->randomElement($newsTitles);
-        $randomSeed = $this->faker->numberBetween(1, 1000);
 
         return [
             'is_active' => true,
-            'is_featured' => $this->faker->boolean(20), // 20% chance of being featured
+            'is_featured' => false,
             'title' => $randomTitle,
             'excerpt' => [
                 'ka' => $this->faker->paragraph(2),
@@ -54,12 +53,7 @@ class NewsFactory extends Factory
                 'ru' => $this->faker->paragraphs(5, true),
             ],
             'category' => $this->faker->randomElement($categories),
-            'main_image' => "https://picsum.photos/seed/news-{$randomSeed}/1200/630",
-            'gallery_images' => $this->faker->boolean(70) ? [
-                "https://picsum.photos/seed/news-{$randomSeed}-1/1200/800",
-                "https://picsum.photos/seed/news-{$randomSeed}-2/1200/800",
-                "https://picsum.photos/seed/news-{$randomSeed}-3/1200/800",
-            ] : [],
+            // Note: Images will be attached via ImageService in the seeder
             'tags' => $this->faker->randomElements($tags, $this->faker->numberBetween(1, 4)),
             'publish_date' => $this->faker->dateTimeBetween('-6 months', 'now'),
             'views' => $this->faker->numberBetween(100, 5000),

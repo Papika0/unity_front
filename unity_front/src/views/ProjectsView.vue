@@ -83,8 +83,8 @@ const loadProjectsAndUpdateStore = async (page: number = 1, loadMore: boolean = 
       ...project,
       status: project.status as 'planning' | 'ongoing' | 'completed',
       year: parseInt(project.year as string),
-      main_image: project.main_image || '',
-      render_image: project.render_image || '',
+      main_image: project.main_image || null,
+      render_image: project.render_image || null,
       gallery_images: project.gallery_images || [],
       latitude: project.latitude ? parseFloat(project.latitude) : null,
       longitude: project.longitude ? parseFloat(project.longitude) : null,
@@ -321,8 +321,8 @@ const getStatusText = (status: string) => {
               <div class="relative h-72 bg-zinc-100 overflow-hidden">
                 <img
                   v-if="project.main_image"
-                  :src="project.main_image"
-                  :alt="project.title"
+                  :src="project.main_image.url"
+                  :alt="project.main_image.alt_text || project.title"
                   class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center">

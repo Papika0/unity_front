@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Services\SiteSettingsService;
+use App\Models\News;
+use App\Models\Projects;
+use App\Observers\NewsObserver;
+use App\Observers\ProjectsObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register model observers for automatic image cleanup
+        News::observe(NewsObserver::class);
+        Projects::observe(ProjectsObserver::class);
     }
 }

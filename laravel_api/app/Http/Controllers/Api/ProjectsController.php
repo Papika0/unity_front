@@ -19,6 +19,7 @@ class ProjectsController extends Controller
     {
         try {
             $projects = Projects::where('is_active', true)
+                               ->with(['mainImage', 'renderImage', 'galleryImages'])
                                ->orderBy('created_at', 'desc')
                                ->get();
 
@@ -37,6 +38,7 @@ class ProjectsController extends Controller
         try {
             $projects = Projects::where('is_active', true)
                                ->where('is_featured', true)
+                               ->with(['mainImage', 'renderImage', 'galleryImages'])
                                ->orderBy('created_at', 'desc')
                                ->get();
 
@@ -55,6 +57,7 @@ class ProjectsController extends Controller
         try {
             $projects = Projects::where('is_active', true)
                                ->where('is_onHomepage', true)
+                               ->with(['mainImage', 'renderImage', 'galleryImages'])
                                ->orderBy('created_at', 'desc')
                                ->get();
 
@@ -72,16 +75,17 @@ class ProjectsController extends Controller
     {
         try {
             $project = Projects::where('is_active', true)
-                              ->with('features')
+                              ->with(['features', 'mainImage', 'renderImage', 'galleryImages'])
                               ->findOrFail($id);
             
             // Get related projects (same status, excluding current)
             $relatedProjects = Projects::where('is_active', true)
                 ->where('id', '!=', $id)
                 ->where('status', $project->status)
+                ->with('mainImage')
                 ->orderBy('created_at', 'desc')
                 ->take(3)
-                ->get(['id', 'title', 'main_image', 'status']);
+                ->get(['id', 'title', 'status']);
             
             // If less than 3 same-status projects, fill with other projects
             if ($relatedProjects->count() < 3) {
@@ -91,9 +95,10 @@ class ProjectsController extends Controller
                 
                 $additionalProjects = Projects::where('is_active', true)
                     ->whereNotIn('id', $relatedIds)
+                    ->with('mainImage')
                     ->orderBy('created_at', 'desc')
                     ->take($remainingCount)
-                    ->get(['id', 'title', 'main_image', 'status']);
+                    ->get(['id', 'title', 'status']);
                 
                 $relatedProjects = $relatedProjects->concat($additionalProjects);
             }
@@ -104,10 +109,16 @@ class ProjectsController extends Controller
             // Add related projects to the resource
             $resourceData = $resource->toArray($request);
             $resourceData['related_projects'] = $relatedProjects->map(function($related) use ($locale) {
+                $mainImage = $related->mainImage->first();
                 return [
                     'id' => $related->id,
                     'title' => $related->getTranslation('title', $locale),
-                    'main_image' => $related->main_image,
+                    'main_image' => $mainImage ? [
+                        'id' => $mainImage->id,
+                        'url' => $mainImage->full_url,
+                        'alt_text' => $mainImage->getTranslation('alt_text', $locale),
+                        'title' => $mainImage->getTranslation('title', $locale),
+                    ] : null,
                     'status' => $related->status,
                 ];
             })->values()->all();

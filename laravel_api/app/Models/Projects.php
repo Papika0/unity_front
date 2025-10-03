@@ -21,13 +21,11 @@ class Projects extends Model
 
     protected $fillable = [
         'title','description','location', 'status','start_date','completion_date',
-        'main_image','gallery_images','render_image',
        'year','is_active','is_featured','is_onHomepage',
         'latitude','longitude','meta_title','meta_description',
     ];
 
     protected $casts = [
-        'gallery_images'  => 'array',
         'start_date'      => 'date',
         'completion_date' => 'date',
         'latitude'        => 'decimal:7',
@@ -68,36 +66,6 @@ class Projects extends Model
         return $this->morphToMany(Image::class, 'imageable', 'imageables')
             ->wherePivot('type', 'gallery')
             ->orderByPivot('sort_order');
-    }
-
-    /**
-     * Get the main image URL (for backward compatibility)
-     */
-    public function getMainImageUrlAttribute()
-    {
-        $mainImage = $this->mainImage()->first();
-        return $mainImage ? $mainImage->full_url : $this->main_image;
-    }
-
-    /**
-     * Get the render image URL (for backward compatibility)
-     */
-    public function getRenderImageUrlAttribute()
-    {
-        $renderImage = $this->renderImage()->first();
-        return $renderImage ? $renderImage->full_url : $this->render_image;
-    }
-
-    /**
-     * Get gallery images URLs (for backward compatibility)
-     */
-    public function getGalleryImagesUrlsAttribute()
-    {
-        $galleryImages = $this->galleryImages()->get();
-        if ($galleryImages->isNotEmpty()) {
-            return $galleryImages->pluck('full_url')->toArray();
-        }
-        return $this->gallery_images ?? [];
     }
 
     /**

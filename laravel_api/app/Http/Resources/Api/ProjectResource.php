@@ -31,9 +31,35 @@ class ProjectResource extends JsonResource
             'status' => $this->status,
             'start_date' => $this->start_date ? $this->start_date->toDateString() : null,
             'completion_date' => $this->completion_date ? $this->completion_date->toDateString() : null,
-            'main_image' => $this->main_image,
-            'render_image' => $this->render_image,
-            'gallery_images' => $this->gallery_images ?? [],
+            'main_image' => $this->whenLoaded('mainImage', function() {
+                $mainImage = $this->mainImage->first();
+                return $mainImage ? [
+                    'id' => $mainImage->id,
+                    'url' => $mainImage->full_url,
+                    'alt_text' => $mainImage->getTranslation('alt_text', $this->locale),
+                    'title' => $mainImage->getTranslation('title', $this->locale),
+                ] : null;
+            }),
+            'render_image' => $this->whenLoaded('renderImage', function() {
+                $renderImage = $this->renderImage->first();
+                return $renderImage ? [
+                    'id' => $renderImage->id,
+                    'url' => $renderImage->full_url,
+                    'alt_text' => $renderImage->getTranslation('alt_text', $this->locale),
+                    'title' => $renderImage->getTranslation('title', $this->locale),
+                ] : null;
+            }),
+            'gallery_images' => $this->whenLoaded('galleryImages', function() {
+                return $this->galleryImages->map(function($image) {
+                    return [
+                        'id' => $image->id,
+                        'url' => $image->full_url,
+                        'alt_text' => $image->getTranslation('alt_text', $this->locale),
+                        'title' => $image->getTranslation('title', $this->locale),
+                        'sort_order' => $image->pivot->sort_order,
+                    ];
+                });
+            }, []),
             'year' => $this->year,
             'is_active' => (bool) $this->is_active,
             'is_featured' => (bool) $this->is_featured,

@@ -336,12 +336,8 @@
             <div class="relative overflow-hidden">
               <img
                 v-if="article.main_image"
-                :src="
-                  article.main_image.startsWith('http')
-                    ? article.main_image
-                    : backendUrl + article.main_image
-                "
-                :alt="article.title.ka"
+                :src="typeof article.main_image === 'string' ? article.main_image : article.main_image.url"
+                :alt="typeof article.main_image === 'string' ? article.title.ka : (article.main_image.alt_text || article.title.ka)"
                 class="w-full h-40 object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div
@@ -790,11 +786,15 @@
                 <img
                   v-if="article.main_image"
                   :src="
-                    article.main_image.startsWith('http')
+                    typeof article.main_image === 'string'
                       ? article.main_image
-                      : `${backendUrl}/${article.main_image}`
+                      : article.main_image.url
                   "
-                  :alt="article.title.ka"
+                  :alt="
+                    typeof article.main_image === 'string'
+                      ? article.title.ka
+                      : article.main_image.alt_text || article.title.ka
+                  "
                   class="w-16 h-16 object-cover rounded-xl"
                 />
                 <div class="flex-1">
@@ -860,8 +860,16 @@
                 <!-- Article Image -->
                 <img
                   v-if="article.main_image"
-                  :src="`${backendUrl}${article.main_image}`"
-                  :alt="article.title.ka"
+                  :src="
+                    typeof article.main_image === 'string'
+                      ? article.main_image
+                      : article.main_image.url
+                  "
+                  :alt="
+                    typeof article.main_image === 'string'
+                      ? article.title.ka
+                      : article.main_image.alt_text || article.title.ka
+                  "
                   class="w-16 h-16 object-cover rounded-xl"
                 />
                 <div
@@ -973,7 +981,6 @@ import type { AdminNewsArticle } from '@/types/index'
 const router = useRouter()
 const adminNewsStore = useAdminNewsStore()
 const toastStore = useToastStore()
-const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 // Local state
 const showDeleteModal = ref(false)

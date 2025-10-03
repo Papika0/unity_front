@@ -421,8 +421,8 @@ onBeforeUnmount(() => {
             <div class="lg:flex">
               <div class="lg:w-3/5 relative overflow-hidden">
                 <img
-                  :src="featuredArticle.main_image || 'https://placehold.co/800x500'"
-                  :alt="featuredArticle.title"
+                  :src="featuredArticle.main_image?.url || 'https://placehold.co/800x500'"
+                  :alt="featuredArticle.main_image?.alt_text || featuredArticle.title"
                   class="w-full h-64 lg:h-96 object-cover group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700"
                 />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -522,8 +522,8 @@ onBeforeUnmount(() => {
           >
             <div class="relative h-56 bg-zinc-100 overflow-hidden">
               <img
-                :src="article.main_image || 'https://placehold.co/400x280'"
-                :alt="article.title"
+                :src="article.main_image?.url || 'https://placehold.co/400x280'"
+                :alt="article.main_image?.alt_text || article.title"
                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
               />
 

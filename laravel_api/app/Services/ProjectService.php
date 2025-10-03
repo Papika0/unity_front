@@ -25,7 +25,6 @@ class ProjectService
                 // Select only essential columns to reduce memory usage
                 $essentialColumns = [
                     'id', 'title', 'location', 'status', 'description',
-                    'main_image', 
                     'is_active', 'is_featured',
                     'is_onHomepage', 'meta_title',
                     'meta_description', 'created_at'
@@ -33,6 +32,7 @@ class ProjectService
 
                 // Get all active projects in one query
                 $allProjects = Projects::where('is_active', true)
+                    ->with(['mainImage', 'renderImage', 'galleryImages'])
                     ->select($essentialColumns)
                     ->latest()
                     ->get()
@@ -79,7 +79,8 @@ class ProjectService
         return Cache::remember($cacheKey, 3600, function () use ($locale, $limit) {
             try {
                 $projects = Projects::where('is_active', true)
-                    ->select(['id', 'title', 'main_image'])
+                    ->with('mainImage')
+                    ->select(['id', 'title'])
                     ->latest()
                     ->limit($limit)
                     ->get()

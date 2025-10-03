@@ -1,9 +1,12 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+  <div 
+    class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+    @click.self="$emit('close')"
+  >
     <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
       <!-- Header -->
       <div class="flex items-center justify-between p-6 border-b border-gray-200">
-        <h2 class="text-2xl font-semibold text-gray-900">{{ image.title }}</h2>
+        <h2 class="text-2xl font-semibold text-gray-900">{{ getGeorgianText(image.title) }}</h2>
         <div class="flex items-center space-x-3">
           <button
             @click="$emit('edit', image)"
@@ -43,7 +46,7 @@
             <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
               <img
                 :src="image.url"
-                :alt="image.alt_text || image.title"
+                :alt="getGeorgianText(image.alt_text) || getGeorgianText(image.title)"
                 class="w-full h-full object-cover"
               />
             </div>
@@ -110,7 +113,7 @@
                 </div>
                 <div class="flex items-center">
                   <span class="w-24 text-sm font-medium text-gray-500">პროექტი:</span>
-                  <span class="text-sm text-gray-900">{{ image.project || 'არ არის' }}</span>
+                  <span class="text-sm text-gray-900">{{ getGeorgianText(image.project) || 'არ არის' }}</span>
                 </div>
                 <div class="flex items-center">
                   <span class="w-24 text-sm font-medium text-gray-500">შექმნა:</span>
@@ -124,34 +127,43 @@
             </div>
 
             <!-- Alt Text -->
-            <div v-if="image.alt_text">
+            <div v-if="getGeorgianText(image.alt_text)">
               <h3 class="text-lg font-semibold text-gray-900 mb-2">Alt Text</h3>
-              <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">{{ image.alt_text }}</p>
+              <p class="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">{{ getGeorgianText(image.alt_text) }}</p>
             </div>
 
             <!-- URL -->
             <div>
               <h3 class="text-lg font-semibold text-gray-900 mb-2">სურათის URL</h3>
-              <div class="flex items-center space-x-2">
-                <input
-                  :value="image.url"
-                  readonly
-                  class="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg font-mono"
-                />
-                <button
-                  @click="copyImageUrl"
-                  class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-                  title="Copy URL"
+              <div class="relative">
+                <div class="flex items-center space-x-2">
+                  <input
+                    :value="image.url"
+                    readonly
+                    class="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg font-mono text-gray-900"
+                  />
+                  <button
+                    @click="copyImageUrl"
+                    class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                    title="Copy URL"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <!-- Copy Confirmation Popup -->
+                <div
+                  v-if="showCopyConfirm"
+                  class="absolute -top-10 right-0 bg-green-500 text-white px-3 py-1 rounded-lg text-sm font-medium shadow-lg animate-fade-in"
                 >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                </button>
+                  ✓ დაკოპირდა!
+                </div>
               </div>
             </div>
 
@@ -197,7 +209,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { AdminImage } from '@/services/adminImageApi'
+import type { AdminImage, MultilingualText } from '@/services/adminImageApi'
+import { useToast } from '@/composables/useToast'
 
 interface Props {
   image: AdminImage
@@ -211,7 +224,15 @@ const emit = defineEmits<{
   delete: [image: AdminImage]
 }>()
 
-const showDeleteConfirm = ref(false)
+const toast = useToast()
+const showCopyConfirm = ref(false)
+
+// Helper to get Georgian text
+const getGeorgianText = (value: string | null | MultilingualText): string => {
+  if (!value) return ''
+  if (typeof value === 'string') return value
+  return value.ka || ''
+}
 
 const getCategoryLabel = (category: string | null): string => {
   if (!category) return ''
@@ -246,7 +267,7 @@ const downloadImage = async () => {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = props.image.title || 'image'
+    a.download = getGeorgianText(props.image.title) || 'image'
     document.body.appendChild(a)
     a.click()
     window.URL.revokeObjectURL(url)
@@ -259,14 +280,19 @@ const downloadImage = async () => {
 const copyImageUrl = async () => {
   try {
     await navigator.clipboard.writeText(props.image.url)
-    // You could add a toast notification here
+    showCopyConfirm.value = true
+    toast.success('URL დაკოპირდა!')
+    setTimeout(() => {
+      showCopyConfirm.value = false
+    }, 2000)
   } catch (error) {
+    toast.error('URL-ის კოპირება ვერ მოხერხდა')
     console.error('Failed to copy URL:', error)
   }
 }
 
 const confirmDelete = () => {
-  if (confirm(`Are you sure you want to delete "${props.image.title}"?`)) {
+  if (confirm(`გსურთ წაშალოთ "${getGeorgianText(props.image.title)}"?`)) {
     emit('delete', props.image)
   }
 }

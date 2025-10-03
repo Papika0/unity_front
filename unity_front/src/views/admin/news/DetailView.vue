@@ -367,7 +367,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAdminNewsStore } from '@/stores/admin/news'
-import type { AdminNewsArticle } from '@/types'
+import type { AdminNewsArticle, ImageData } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -379,7 +379,7 @@ const loading = ref(true)
 const error = ref(false)
 const showDeleteModal = ref(false)
 const deleting = ref(false)
-const selectedImage = ref<string | null>(null)
+const selectedImage = ref<string | ImageData | null>(null)
 const backendUrl = import.meta.env.VITE_BACKEND_URL || ''
 
 // Lifecycle
@@ -464,14 +464,24 @@ function formatDate(dateString: string): string {
   })
 }
 
-function openImageModal(image: string) {
+function openImageModal(image: string | ImageData) {
   selectedImage.value = image
 }
 
-function getImageUrl(imagePath: string): string {
+function getImageUrl(imagePath: string | ImageData | null): string {
   if (!imagePath) return ''
-  // Check if the URL already includes the backend URL
-  return imagePath.startsWith('http') ? imagePath : backendUrl + imagePath
+  
+  // Handle ImageData object from our types
+  if (typeof imagePath === 'object' && imagePath !== null && 'url' in imagePath) {
+    return (imagePath as ImageData).url
+  }
+  
+  // Handle string path (legacy)
+  if (typeof imagePath === 'string') {
+    return imagePath.startsWith('http') ? imagePath : backendUrl + imagePath
+  }
+  
+  return ''
 }
 </script>
 

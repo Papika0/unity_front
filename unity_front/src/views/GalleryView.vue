@@ -303,7 +303,7 @@ const prevImage = () => {
               <!-- Category Badge -->
               <div
                 v-if="item.category"
-                class="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm text-xs font-light uppercase tracking-wider"
+                class="absolute top-4 left-4 px-3 py-1.5 bg-black/80 backdrop-blur-sm text-[#FFCD4B] text-xs font-medium uppercase tracking-wider shadow-lg border border-[#FFCD4B]/20"
               >
                 {{ getCategoryLabel(item.category) }}
               </div>

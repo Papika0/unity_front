@@ -98,10 +98,11 @@ class HomepageController extends Controller
     {
         return News::where('is_active', true)
             ->where('is_featured', true)
+            ->with(['mainImage', 'galleryImages'])
             ->select([
                 'id', 'title', 'excerpt', 'content', 'category',
-                'main_image', 'gallery_images', 'tags', 'publish_date',
-                'views', 'meta_title', 'meta_description', 'created_at', 'updated_at'
+                'tags', 'publish_date', 'views', 'meta_title', 
+                'meta_description', 'created_at', 'updated_at'
             ])
             ->latest()
             ->limit(2)

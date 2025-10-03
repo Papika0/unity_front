@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import type { ImageData } from '@/types'
 // import { projectsApi } from '@/services/projectsApi'
 
 export interface Project {
@@ -13,9 +14,9 @@ export interface Project {
   status: 'planning' | 'ongoing' | 'completed'
   start_date: string | null
   completion_date: string | null
-  main_image: string
-  render_image: string
-  gallery_images: string[]
+  main_image: ImageData | null
+  render_image: ImageData | null
+  gallery_images: ImageData[]
   year: number
   latitude: number | null
   longitude: number | null

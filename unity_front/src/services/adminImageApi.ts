@@ -1,11 +1,18 @@
 import api from '@/plugins/axios/api'
 
+export interface MultilingualText {
+  ka: string
+  en: string
+  ru: string
+}
+
 export interface AdminImage {
   id: number
   url: string
-  title: string
-  project: string | null
-  alt_text: string | null
+  path?: string
+  title: string | MultilingualText
+  project: string | null | MultilingualText
+  alt_text: string | null | MultilingualText
   category: string | null
   is_active: boolean
   created_at: string
@@ -27,6 +34,10 @@ export interface AdminImagesResponse {
     per_page: number
     total: number
   }
+  metadata?: {
+    categories: string[]
+    projects: string[]
+  }
   message?: string
 }
 
@@ -40,7 +51,10 @@ export interface AdminImageFilters {
 
 export const adminImageApi = {
   // Get all images with pagination and filtering
-  getImages: async (filters: AdminImageFilters = {}): Promise<AdminImagesResponse> => {
+  getImages: async (
+    filters: AdminImageFilters = {},
+    includeMetadata: boolean = false,
+  ): Promise<AdminImagesResponse> => {
     const params = new URLSearchParams()
 
     if (filters.category) params.append('category', filters.category)
@@ -48,6 +62,7 @@ export const adminImageApi = {
     if (filters.search) params.append('search', filters.search)
     if (filters.per_page) params.append('per_page', filters.per_page.toString())
     if (filters.page) params.append('page', filters.page.toString())
+    if (includeMetadata) params.append('include_metadata', 'true')
 
     const url = params.toString() ? `/admin/images?${params}` : '/admin/images'
     const response = await api.get<AdminImagesResponse>(url)
@@ -69,8 +84,9 @@ export const adminImageApi = {
   },
 
   // Update image metadata
-  updateImage: async (id: number, data: Partial<AdminImage>): Promise<AdminImageResponse> => {
-    const response = await api.put<AdminImageResponse>(`/admin/images/${id}`, data)
+  updateImage: async (id: number, data: Partial<AdminImage> | FormData): Promise<AdminImageResponse> => {
+    const config = data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
+    const response = await api.put<AdminImageResponse>(`/admin/images/${id}`, data, config)
     return response.data
   },
 

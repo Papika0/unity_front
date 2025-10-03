@@ -82,7 +82,6 @@ class AdminAboutController extends Controller
             'stats.years_experience' => 'required|string|max:50',
             'stats.satisfied_clients' => 'required|string|max:50',
             'stats.client_satisfaction' => 'required|string|max:50',
-            'hero_image_id' => 'nullable|exists:images,id',
             'philosophy_image_id' => 'nullable|exists:images,id',
         ];
     }
@@ -127,14 +126,6 @@ class AdminAboutController extends Controller
                     'help' => 'Client satisfaction percentage'
                 ],
                 [
-                    'name' => 'hero_image_id',
-                    'label' => 'Hero Section Image',
-                    'type' => 'image_select',
-                    'required' => false,
-                    'help' => 'Main image for the hero section of the about page',
-                    'category' => 'about'
-                ],
-                [
                     'name' => 'philosophy_image_id',
                     'label' => 'Philosophy Section Image',
                     'type' => 'image_select',
@@ -158,7 +149,6 @@ class AdminAboutController extends Controller
                     'title' => 'Images',
                     'description' => 'Manage images for the about page sections',
                     'fields' => [
-                        'hero_image_id',
                         'philosophy_image_id',
                     ]
                 ]

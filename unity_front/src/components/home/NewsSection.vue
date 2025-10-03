@@ -11,7 +11,8 @@ const displayArticles = computed(() =>
   newsStore.recentArticles.slice(0, 2).map((article) => ({
     id: article.id,
     title: article.title,
-    image: article.main_image,
+    image: article.main_image?.url || '',
+    excerpt: article.excerpt,
     publishDate: article.publish_date,
   })),
 )

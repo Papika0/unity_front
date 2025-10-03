@@ -36,16 +36,16 @@ class GalleryPageController extends Controller
         // Get gallery images with pagination
         $galleryImages = $this->imageService->getGalleryImages($category, $limit, $page);
 
-        // Transform images to include url field
-        $transformedImages = $galleryImages->map(function ($image) {
+        // Transform images to include url field with locale support
+        $transformedImages = $galleryImages->map(function ($image) use ($locale) {
             return [
                 'id' => $image->id,
                 'filename' => $image->filename,
                 'path' => $image->path,
                 'url' => $image->full_url,
-                'title' => $image->title,
-                'project' => $image->project,
-                'alt_text' => $image->alt_text,
+                'title' => $image->getTranslation('title', $locale),
+                'project' => $image->project ? $image->getTranslation('project', $locale) : null,
+                'alt_text' => $image->getTranslation('alt_text', $locale),
                 'category' => $image->category,
                 'is_active' => $image->is_active,
                 'created_at' => $image->created_at,

@@ -18,8 +18,6 @@ class News extends Model
         'excerpt',
         'content',
         'category',
-        'main_image',
-        'gallery_images',
         'tags',
         'publish_date',
         'views',
@@ -31,7 +29,6 @@ class News extends Model
         'title' => 'array',
         'excerpt' => 'array',
         'content' => 'array',
-        'gallery_images' => 'array',
         'tags' => 'array',
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
@@ -120,26 +117,5 @@ class News extends Model
         return $this->morphToMany(Image::class, 'imageable', 'imageables')
             ->wherePivot('type', 'gallery')
             ->orderByPivot('sort_order');
-    }
-
-    /**
-     * Get the main image URL (for backward compatibility)
-     */
-    public function getMainImageUrlAttribute()
-    {
-        $mainImage = $this->mainImage()->first();
-        return $mainImage ? $mainImage->full_url : $this->main_image;
-    }
-
-    /**
-     * Get gallery images URLs (for backward compatibility)
-     */
-    public function getGalleryImagesUrlsAttribute()
-    {
-        $galleryImages = $this->galleryImages()->get();
-        if ($galleryImages->isNotEmpty()) {
-            return $galleryImages->pluck('full_url')->toArray();
-        }
-        return $this->gallery_images ?? [];
     }
 }

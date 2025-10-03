@@ -274,8 +274,8 @@ const goBack = () => {
         <div class="absolute inset-0">
           <img
             v-if="project.render_image || project.main_image"
-            :src="(project.render_image || project.main_image)!"
-            :alt="project.title"
+            :src="(project.render_image?.url || project.main_image?.url)!"
+            :alt="(project.render_image?.alt_text || project.main_image?.alt_text || project.title)"
             class="w-full h-full object-cover opacity-40"
           />
           <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black"></div>
@@ -426,14 +426,14 @@ const goBack = () => {
                 >
                   <img
                     v-if="project.gallery_images && project.gallery_images[selectedImageIndex]"
-                    :src="project.gallery_images[selectedImageIndex]"
-                    :alt="project.title"
+                    :src="project.gallery_images[selectedImageIndex].url"
+                    :alt="project.gallery_images[selectedImageIndex].alt_text || project.title"
                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
                   />
                   <img
                     v-else-if="project.main_image"
-                    :src="project.main_image"
-                    :alt="project.title"
+                    :src="project.main_image.url"
+                    :alt="project.main_image.alt_text || project.title"
                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
                   />
 
@@ -496,8 +496,8 @@ const goBack = () => {
                       :style="{ animationDelay: `${index * 50}ms` }"
                     >
                       <img
-                        :src="image"
-                        :alt="`${project.title} ${index + 1}`"
+                        :src="image.url"
+                        :alt="image.alt_text || `${project.title} ${index + 1}`"
                         class="w-full h-full object-cover"
                       />
                     </button>
@@ -890,8 +890,8 @@ const goBack = () => {
               <div class="relative h-64 bg-zinc-100 overflow-hidden">
                 <img
                   v-if="relatedProject.main_image"
-                  :src="relatedProject.main_image"
-                  :alt="relatedProject.title"
+                  :src="relatedProject.main_image.url"
+                  :alt="relatedProject.main_image.alt_text || relatedProject.title"
                   class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
                 />
 
@@ -984,14 +984,14 @@ const goBack = () => {
         <div class="max-w-7xl max-h-[90vh] mx-auto px-16" @click.stop>
           <img
             v-if="project?.gallery_images && project.gallery_images[selectedImageIndex]"
-            :src="project.gallery_images[selectedImageIndex]"
-            :alt="project.title"
+            :src="project.gallery_images[selectedImageIndex].url"
+            :alt="project.gallery_images[selectedImageIndex].alt_text || project.title"
             class="max-w-full max-h-full object-contain"
           />
           <img
             v-else-if="project?.main_image"
-            :src="project.main_image"
-            :alt="project.title"
+            :src="project.main_image.url"
+            :alt="project.main_image.alt_text || project.title"
             class="max-w-full max-h-full object-contain"
           />
         </div>
