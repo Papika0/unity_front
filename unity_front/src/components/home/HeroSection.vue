@@ -21,7 +21,7 @@ const heroProjects = computed(() => {
 
 // Current slide index
 const currentSlide = ref(0)
-const previousSlide = ref(0)
+const previousSlide = ref(-1) // Set to -1 to avoid blur on initial load
 const isAnimating = ref(false)
 const isPaused = ref(false)
 const hasInitiallyLoaded = ref(false)
