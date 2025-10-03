@@ -706,13 +706,18 @@ onBeforeUnmount(() => {
                   />
                 </svg>
               </button>
-              <transition name="accordion">
-                <div v-if="openFaq === index" class="px-8 pb-6">
-                  <p class="text-zinc-600 font-light leading-relaxed">
-                    {{ faq.answer }}
-                  </p>
+              <div
+                class="grid transition-all duration-300 ease-in-out"
+                :class="openFaq === index ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
+              >
+                <div class="overflow-hidden">
+                  <div class="px-8 pb-6">
+                    <p class="text-zinc-600 font-light leading-relaxed">
+                      {{ faq.answer }}
+                    </p>
+                  </div>
                 </div>
-              </transition>
+              </div>
             </div>
           </div>
         </div>
@@ -817,20 +822,6 @@ onBeforeUnmount(() => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Accordion transitions */
-.accordion-enter-active,
-.accordion-leave-active {
-  transition: all 0.3s ease;
-  max-height: 300px;
-  overflow: hidden;
-}
-
-.accordion-enter-from,
-.accordion-leave-to {
-  max-height: 0;
-  opacity: 0;
 }
 
 /* Fade slide transition */

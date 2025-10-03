@@ -27,7 +27,7 @@ export const useTranslationsStore = defineStore('translations', () => {
     projects: ['messages', 'header', 'footer', 'contact', 'errors', 'projects', 'buttons'],
     news: ['messages', 'header', 'footer', 'contact', 'errors', 'news', 'buttons'],
     gallery: ['messages', 'header', 'footer', 'contact', 'errors', 'gallery', 'buttons'],
-    contact: ['messages', 'header', 'footer', 'contact', 'buttons', 'errors', 'forms', 'common'],
+    contact: ['messages', 'header', 'footer', 'contact', 'buttons', 'errors'],
   }
   const isLoading = ref(false)
   const loadError = ref('')
