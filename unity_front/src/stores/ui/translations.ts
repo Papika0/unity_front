@@ -136,7 +136,7 @@ export const useTranslationsStore = defineStore('translations', () => {
       return ''
     }
 
-    const result = translations.value[key] || key
+    const result = translations.value[key] || ''
     return result
   }
 
