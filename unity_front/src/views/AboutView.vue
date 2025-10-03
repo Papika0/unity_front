@@ -135,7 +135,7 @@ const values = computed(() => [
     <!-- Main Content (always visible) -->
     <div>
       <!-- Hero Section (Simple Header) -->
-      <section class="relative py-20 lg:py-32 bg-gradient-to-br from-zinc-900 via-black to-zinc-900 overflow-hidden">
+      <section class="relative py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-gradient-to-br from-zinc-900 via-black to-zinc-900 overflow-hidden">
         <!-- Diagonal overlay accent -->
         <div
           class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent transition-opacity duration-1000 delay-200"
@@ -144,31 +144,31 @@ const values = computed(() => [
 
         <!-- Decorative corner elements -->
         <div
-          class="absolute top-0 right-0 w-64 h-64 opacity-20 transition-all duration-1000 delay-300"
+          class="absolute top-0 right-0 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 opacity-20 transition-all duration-1000 delay-300"
           :class="{
             'opacity-20 translate-x-0 translate-y-0': heroVisible,
             'opacity-0 translate-x-8 -translate-y-8': !heroVisible,
           }"
         >
           <div
-            class="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-[#FFCD4B]"
+            class="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 border-t-2 border-r-2 border-[#FFCD4B]"
           ></div>
         </div>
         <div
-          class="absolute bottom-0 left-0 w-64 h-64 opacity-20 transition-all duration-1000 delay-400"
+          class="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 opacity-20 transition-all duration-1000 delay-400"
           :class="{
             'opacity-20 translate-x-0 translate-y-0': heroVisible,
             'opacity-0 -translate-x-8 translate-y-8': !heroVisible,
           }"
         >
           <div
-            class="absolute bottom-0 left-0 w-24 h-24 border-b-2 border-l-2 border-[#FFCD4B]"
+            class="absolute bottom-0 left-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 border-b-2 border-l-2 border-[#FFCD4B]"
           ></div>
         </div>
 
         <!-- Content -->
         <div class="relative z-10">
-          <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 text-center">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-32 text-center">
             <div
               class="max-w-3xl mx-auto transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
               :class="{
@@ -177,15 +177,15 @@ const values = computed(() => [
               }"
             >
               <h1
-                class="text-4xl md:text-5xl lg:text-6xl font-light mb-6 leading-tight text-white"
+                class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light mb-4 sm:mb-6 leading-tight text-white"
               >
                 {{ t('about.title') }}
               </h1>
               <div
-                class="w-20 h-1 bg-gradient-to-r from-transparent via-[#FFCD4B] to-transparent mx-auto mb-6 transition-all duration-1000 delay-300"
+                class="w-16 sm:w-20 h-1 bg-gradient-to-r from-transparent via-[#FFCD4B] to-transparent mx-auto mb-4 sm:mb-6 transition-all duration-1000 delay-300"
                 :class="{ 'scale-x-100': heroVisible, 'scale-x-0': !heroVisible }"
               ></div>
-              <p class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl mx-auto">
+              <p class="text-base sm:text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl mx-auto">
                 {{ t('about.hero.subtitle') }}
               </p>
             </div>
@@ -194,9 +194,9 @@ const values = computed(() => [
       </section>
 
       <!-- Philosophy Section -->
-      <section class="py-20 lg:py-32 bg-white">
-        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+      <section class="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-32">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 lg:gap-16 xl:gap-24 items-center">
             <div
               ref="philosophyTextRef"
               class="order-2 lg:order-1 transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -205,19 +205,19 @@ const values = computed(() => [
                 'opacity-0 -translate-x-12 blur-sm': !philosophyTextVisible,
               }"
             >
-              <div class="space-y-8">
+              <div class="space-y-6 sm:space-y-8">
                 <div>
-                  <h2 class="text-4xl lg:text-5xl font-light mb-8 text-zinc-900">
+                  <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light mb-6 sm:mb-8 text-zinc-900">
                     {{ t('about.philosophy.title') }}
                   </h2>
                   <div
-                    class="w-20 h-0.5 bg-[#FFCD4B] mb-6 transition-all duration-1000 delay-200"
+                    class="w-16 sm:w-20 h-0.5 bg-[#FFCD4B] mb-4 sm:mb-6 transition-all duration-1000 delay-200"
                     :class="{ 'scale-x-100': philosophyTextVisible, 'scale-x-0': !philosophyTextVisible }"
                     style="transform-origin: left"
                   ></div>
                 </div>
 
-                <div class="space-y-6 text-lg text-zinc-700 leading-relaxed font-light">
+                <div class="space-y-4 sm:space-y-6 text-base sm:text-lg text-zinc-700 leading-relaxed font-light">
                   <p
                     class="transition-all duration-1000 delay-300"
                     :class="{
@@ -292,26 +292,26 @@ const values = computed(() => [
       <!-- Stats Section -->
       <section
         ref="statsSectionRef"
-        class="py-20 bg-zinc-50"
+        class="py-12 sm:py-16 md:py-20 bg-zinc-50"
       >
-        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-32">
           <div
-            class="text-center mb-16 transition-all duration-1000 ease-out"
+            class="text-center mb-10 sm:mb-12 md:mb-16 transition-all duration-1000 ease-out"
             :class="{
               'opacity-100 translate-y-0 blur-0': statsSectionVisible,
               'opacity-0 translate-y-8 blur-sm': !statsSectionVisible,
             }"
           >
-            <h2 class="text-4xl lg:text-5xl font-light mb-4 text-zinc-900">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light mb-4 text-zinc-900">
               {{ t('about.stats.title') }}
             </h2>
             <div
-              class="w-20 h-0.5 bg-[#FFCD4B] mx-auto transition-all duration-1000 delay-200"
+              class="w-16 sm:w-20 h-0.5 bg-[#FFCD4B] mx-auto transition-all duration-1000 delay-200"
               :class="{ 'scale-x-100': statsSectionVisible, 'scale-x-0': !statsSectionVisible }"
             ></div>
           </div>
 
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12">
             <div
               v-for="(stat, index) in stats"
               :key="stat.label"
@@ -323,20 +323,20 @@ const values = computed(() => [
               :style="{ transitionDelay: `${(index + 2) * 150}ms` }"
             >
               <div
-                class="bg-white p-8 hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 relative overflow-hidden"
+                class="bg-white p-4 sm:p-6 md:p-8 hover:shadow-2xl transition-all duration-500 border border-zinc-100 hover:border-[#FFCD4B]/30 relative overflow-hidden"
               >
                 <!-- Subtle background accent -->
                 <div
-                  class="absolute top-0 right-0 w-32 h-32 bg-[#FFCD4B]/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-[#FFCD4B]/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 ></div>
 
                 <div class="relative z-10">
                   <div
-                    class="text-4xl lg:text-5xl font-light mb-2 transition-all duration-500 group-hover:scale-110 bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] bg-clip-text text-transparent"
+                    class="text-3xl sm:text-4xl lg:text-5xl font-light mb-2 transition-all duration-500 group-hover:scale-110 bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] bg-clip-text text-transparent"
                   >
                     {{ stat.number }}
                   </div>
-                  <div class="text-zinc-700 font-light text-base">
+                  <div class="text-zinc-700 font-light text-xs sm:text-sm md:text-base">
                     {{ stat.label }}
                   </div>
                 </div>

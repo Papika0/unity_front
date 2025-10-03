@@ -240,7 +240,7 @@ onUnmounted(() => {
 
         <!-- Hero Content -->
         <div 
-          class="absolute inset-0 flex items-end pb-20 md:pb-32 px-8 md:px-16 lg:px-24 transition-all duration-300"
+          class="absolute inset-0 flex items-end pb-12 sm:pb-16 md:pb-20 lg:pb-24 xl:pb-32 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-24 transition-all duration-300"
           :style="`
             opacity: ${1 - (scrollProgress * 1.2)};
             transform: translateY(${scrollProgress * 30}px);
@@ -248,7 +248,7 @@ onUnmounted(() => {
         >
           <div class="max-w-7xl mx-auto w-full">
             <div
-              class="space-y-6 transition-all duration-[1800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+              class="space-y-3 sm:space-y-4 md:space-y-6 transition-all duration-[1800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
               :class="{
                 'translate-y-0 opacity-100 translate-x-0': index === currentSlide && hasInitiallyLoaded,
                 'translate-y-12 opacity-0 translate-x-12': index !== currentSlide && index === previousSlide && slideDirection === 'next',
@@ -265,8 +265,8 @@ onUnmounted(() => {
                   'translate-x-[60px] opacity-0 blur-sm scale-95': (index !== currentSlide || !hasInitiallyLoaded) && slideDirection === 'prev',
                 }"
               >
-                <div class="w-12 h-[1px] bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] shadow-[0_0_10px_rgba(255,205,75,0.5)]"></div>
-                <p class="text-[#FFCD4B] text-sm font-light tracking-[0.2em] uppercase drop-shadow-[0_2px_10px_rgba(255,205,75,0.3)]">
+                <div class="w-8 sm:w-10 md:w-12 h-[1px] bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] shadow-[0_0_10px_rgba(255,205,75,0.5)]"></div>
+                <p class="text-[#FFCD4B] text-xs sm:text-sm font-light tracking-[0.15em] sm:tracking-[0.2em] uppercase drop-shadow-[0_2px_10px_rgba(255,205,75,0.3)]">
                   {{ project.location }}
                 </p>
               </div>
@@ -281,14 +281,14 @@ onUnmounted(() => {
                   'translate-x-[70px] opacity-0 blur-sm scale-95': (index !== currentSlide || !hasInitiallyLoaded) && slideDirection === 'prev',
                 }"
               >
-                <span class="text-5xl md:text-7xl lg:text-8xl block leading-none">
+                <span class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl block leading-none">
                   {{ project.title }}
                 </span>
               </h1>
 
               <!-- Refined Action Button -->
               <div
-                class="pt-8 transition-all duration-[1600ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-400"
+                class="pt-4 sm:pt-6 md:pt-8 transition-all duration-[1600ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-400"
                 :class="{
                   'translate-y-0 opacity-100 scale-100 blur-0': index === currentSlide && hasInitiallyLoaded,
                   'translate-y-12 opacity-0 scale-90 blur-sm': index !== currentSlide || !hasInitiallyLoaded,
@@ -296,10 +296,10 @@ onUnmounted(() => {
               >
                 <router-link
                   :to="`/projects/${project.id}`"
-                  class="group relative inline-block px-12 py-4 overflow-hidden transition-all duration-500 hover:scale-105"
+                  class="group relative inline-block px-6 sm:px-8 md:px-10 lg:px-12 py-2.5 sm:py-3 md:py-3.5 lg:py-4 overflow-hidden transition-all duration-500 hover:scale-105"
                 >
                   <span
-                    class="relative z-10 text-[#FFCD4B] text-sm tracking-[0.3em] uppercase font-light drop-shadow-[0_2px_10px_rgba(255,205,75,0.4)]"
+                    class="relative z-10 text-[#FFCD4B] text-xs sm:text-sm tracking-[0.2em] sm:tracking-[0.25em] md:tracking-[0.3em] uppercase font-light drop-shadow-[0_2px_10px_rgba(255,205,75,0.4)]"
                   >
                     {{ t('buttons.see_details') }}
                   </span>
@@ -310,7 +310,7 @@ onUnmounted(() => {
                     class="absolute inset-0 bg-[#FFCD4B]/0 transition-all duration-500 group-hover:bg-[#FFCD4B]/10"
                   ></div>
                   <svg 
-                    class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FFCD4B] transition-transform duration-300 group-hover:translate-x-1 opacity-0 group-hover:opacity-100" 
+                    class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-[#FFCD4B] transition-transform duration-300 group-hover:translate-x-1 opacity-0 group-hover:opacity-100" 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -332,7 +332,7 @@ onUnmounted(() => {
 
     <!-- Navigation with Golden Accent -->
     <div 
-      class="absolute bottom-8 left-8 md:left-16 lg:left-24 flex items-center space-x-8 z-30 transition-all duration-1000 ease-out delay-1000"
+      class="absolute bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 lg:left-12 xl:left-16 2xl:left-24 flex items-center space-x-4 sm:space-x-6 md:space-x-8 z-30 transition-all duration-1000 ease-out delay-1000"
       :class="hasInitiallyLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'"
       :style="`opacity: ${hasInitiallyLoaded ? 1 - (scrollProgress * 1.5) : 0}`"
     >
@@ -340,17 +340,17 @@ onUnmounted(() => {
       <div class="text-white/60 font-thin tracking-[0.2em] relative">
         <transition name="slide-counter" mode="out-in">
           <span :key="currentSlide" class="inline-block">
-            <span class="text-2xl text-[#FFCD4B] drop-shadow-[0_2px_10px_rgba(255,205,75,0.4)]">
+            <span class="text-xl sm:text-2xl text-[#FFCD4B] drop-shadow-[0_2px_10px_rgba(255,205,75,0.4)]">
               {{ String(currentSlide + 1).padStart(2, '0') }}
             </span>
-            <span class="text-sm mx-2">/</span>
-            <span class="text-sm">{{ String(heroProjects.length).padStart(2, '0') }}</span>
+            <span class="text-xs sm:text-sm mx-1 sm:mx-2">/</span>
+            <span class="text-xs sm:text-sm">{{ String(heroProjects.length).padStart(2, '0') }}</span>
           </span>
         </transition>
       </div>
 
       <!-- Progress Line with Golden Gradient and animation -->
-      <div class="relative w-32 h-[1px] bg-white/20 overflow-hidden rounded-full">
+      <div class="relative w-16 sm:w-24 md:w-32 h-[1px] bg-white/20 overflow-hidden rounded-full">
         <div
           class="absolute left-0 top-0 h-full bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transition-all duration-[1800ms] ease-[cubic-bezier(0.65,0,0.35,1)] shadow-[0_0_15px_rgba(255,205,75,0.6)]"
           :style="`width: ${((currentSlide + 1) / heroProjects.length) * 100}%`"
@@ -360,20 +360,20 @@ onUnmounted(() => {
 
     <!-- Minimal Navigation Arrows with enhanced effects -->
     <div
-      class="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-8 md:px-16 lg:px-24 pointer-events-none z-30 transition-opacity duration-1000 delay-1200"
+      class="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-24 pointer-events-none z-30 transition-opacity duration-1000 delay-1200"
       :class="hasInitiallyLoaded ? 'opacity-100' : 'opacity-0'"
       :style="`opacity: ${hasInitiallyLoaded ? 1 - (scrollProgress * 1.5) : 0}`"
     >
       <button
         @click="prevSlide"
-        class="group pointer-events-auto p-4 transition-all duration-500 hover:scale-110 active:scale-95 relative"
+        class="group pointer-events-auto p-2 sm:p-3 md:p-4 transition-all duration-500 hover:scale-110 active:scale-95 relative"
         :disabled="isAnimating"
         aria-label="Previous slide"
       >
         <!-- Glow effect on hover -->
         <div class="absolute inset-0 rounded-full bg-[#FFCD4B]/0 group-hover:bg-[#FFCD4B]/10 transition-all duration-500 blur-xl scale-150"></div>
         <svg
-          class="relative w-12 h-12 text-white/40 group-hover:text-[#FFCD4B] transition-all duration-500 group-hover:drop-shadow-[0_0_15px_rgba(255,205,75,0.6)]"
+          class="relative w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white/40 group-hover:text-[#FFCD4B] transition-all duration-500 group-hover:drop-shadow-[0_0_15px_rgba(255,205,75,0.6)]"
           fill="none"
           stroke="currentColor"
           stroke-width="0.5"
@@ -385,14 +385,14 @@ onUnmounted(() => {
 
       <button
         @click="nextSlide"
-        class="group pointer-events-auto p-4 transition-all duration-500 hover:scale-110 active:scale-95 relative"
+        class="group pointer-events-auto p-2 sm:p-3 md:p-4 transition-all duration-500 hover:scale-110 active:scale-95 relative"
         :disabled="isAnimating"
         aria-label="Next slide"
       >
         <!-- Glow effect on hover -->
         <div class="absolute inset-0 rounded-full bg-[#FFCD4B]/0 group-hover:bg-[#FFCD4B]/10 transition-all duration-500 blur-xl scale-150"></div>
         <svg
-          class="relative w-12 h-12 text-white/40 group-hover:text-[#FFCD4B] transition-all duration-500 group-hover:drop-shadow-[0_0_15px_rgba(255,205,75,0.6)]"
+          class="relative w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white/40 group-hover:text-[#FFCD4B] transition-all duration-500 group-hover:drop-shadow-[0_0_15px_rgba(255,205,75,0.6)]"
           fill="none"
           stroke="currentColor"
           stroke-width="0.5"
@@ -405,15 +405,15 @@ onUnmounted(() => {
 
     <!-- Scroll Down Indicator -->
     <div 
-      class="absolute bottom-24 right-8 md:right-16 lg:right-24 flex flex-col items-center space-y-3 z-30 transition-all duration-1000 delay-1400"
+      class="hidden sm:flex absolute bottom-16 sm:bottom-20 md:bottom-24 right-4 sm:right-6 md:right-8 lg:right-12 xl:right-16 2xl:right-24 flex-col items-center space-y-3 z-30 transition-all duration-1000 delay-1400"
       :class="hasInitiallyLoaded ? 'opacity-100' : 'opacity-0'"
       :style="`opacity: ${hasInitiallyLoaded ? 1 - (scrollProgress * 2) : 0}`"
     >
       <span class="text-white/40 text-xs tracking-[0.3em] uppercase font-light rotate-90 origin-center mb-8">
         Scroll
       </span>
-      <div class="relative w-[1px] h-16 bg-white/20 overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-[#FFCD4B] to-transparent animate-scroll-indicator"></div>
+      <div class="relative w-[1px] h-12 sm:h-14 md:h-16 bg-white/20 overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-6 sm:h-7 md:h-8 bg-gradient-to-b from-[#FFCD4B] to-transparent animate-scroll-indicator"></div>
       </div>
     </div>
   </section>
@@ -469,9 +469,22 @@ h1 {
 }
 
 /* Mobile optimizations */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   h1 span {
-    font-size: 3rem;
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 767px) {
+  h1 span {
+    font-size: 2.5rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  h1 span {
+    font-size: 3.5rem;
   }
 }
 

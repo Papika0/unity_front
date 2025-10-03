@@ -28,33 +28,33 @@ const { element: historyElement, isVisible: historyVisible } = useScrollAnimatio
 
 <template>
   <!-- About Section -->
-  <section class="bg-white py-24 lg:py-32">
-    <div class="max-w-4xl mx-auto px-8">
+  <section class="bg-white py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
       <!-- Company Name with fade-in animation -->
       <div
         ref="companyElement"
-        class="mb-16 transition-all duration-1000 transform"
+        class="mb-12 sm:mb-14 md:mb-16 transition-all duration-1000 transform"
         :class="companyVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'"
       >
-        <div class="w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mb-8 transition-all duration-1000"
+        <div class="w-16 sm:w-20 h-0.5 bg-gradient-to-r from-[#FFCD4B] to-[#EBB738] mb-6 sm:mb-8 transition-all duration-1000"
           :class="companyVisible ? 'scale-x-100' : 'scale-x-0'"
           style="transform-origin: left"
         ></div>
-        <h1 class="text-zinc-900 text-5xl md:text-6xl font-extralight leading-tight mb-2">
+        <h1 class="text-zinc-900 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extralight leading-tight mb-2">
           {{ companyNameParts[0] }}
         </h1>
-        <h2 class="text-[#FFCD4B] text-4xl md:text-5xl font-extralight mb-8">
+        <h2 class="text-[#FFCD4B] text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extralight mb-6 sm:mb-8">
           {{ companyNameParts[1] }}
         </h2>
-        <p class="text-zinc-600 text-lg md:text-xl font-light leading-relaxed max-w-2xl mb-6">
+        <p class="text-zinc-600 text-base sm:text-lg md:text-xl font-light leading-relaxed max-w-2xl mb-4 sm:mb-6">
           {{ t('home.small_desc') }}
         </p>
         <RouterLink
           to="/about"
-          class="inline-flex items-center gap-2 text-[#C89116] text-sm font-light uppercase tracking-[3px] hover:text-[#FFCD4B] transition-colors"
+          class="inline-flex items-center gap-2 text-[#C89116] text-xs sm:text-sm font-light uppercase tracking-[2px] sm:tracking-[3px] hover:text-[#FFCD4B] transition-colors"
         >
           <span>{{ t('buttons.see_details') }}</span>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -68,14 +68,14 @@ const { element: historyElement, isVisible: historyVisible } = useScrollAnimatio
       <!-- Who We Are Section with fade-in -->
       <div
         ref="whoWeAreElement"
-        class="mb-16 transition-all duration-1000 transform"
+        class="mb-12 sm:mb-14 md:mb-16 transition-all duration-1000 transform"
         :class="whoWeAreVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
       >
-        <h3 class="text-zinc-900 text-3xl font-light uppercase tracking-wider mb-6">
+        <h3 class="text-zinc-900 text-xl sm:text-2xl md:text-3xl font-light uppercase tracking-wider mb-4 sm:mb-6">
           {{ t('home.whoarewe') }}
         </h3>
-        <div class="w-16 h-0.5 bg-[#FFCD4B] mb-6"></div>
-        <p class="text-zinc-700 text-lg font-light leading-relaxed max-w-2xl">
+        <div class="w-12 sm:w-14 md:w-16 h-0.5 bg-[#FFCD4B] mb-4 sm:mb-6"></div>
+        <p class="text-zinc-700 text-base sm:text-lg font-light leading-relaxed max-w-2xl">
           {{ t('home.description') }}
         </p>
       </div>
@@ -86,11 +86,11 @@ const { element: historyElement, isVisible: historyVisible } = useScrollAnimatio
         class="transition-all duration-1000 transform"
         :class="historyVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'"
       >
-        <h4 class="text-zinc-900 text-3xl font-light uppercase tracking-wider mb-6">
+        <h4 class="text-zinc-900 text-xl sm:text-2xl md:text-3xl font-light uppercase tracking-wider mb-4 sm:mb-6">
           {{ t('home.history') }}
         </h4>
-        <div class="w-16 h-0.5 bg-[#FFCD4B] mb-6"></div>
-        <p class="text-zinc-700 text-lg font-light leading-relaxed max-w-2xl">
+        <div class="w-12 sm:w-14 md:w-16 h-0.5 bg-[#FFCD4B] mb-4 sm:mb-6"></div>
+        <p class="text-zinc-700 text-base sm:text-lg font-light leading-relaxed max-w-2xl">
           {{ t('home.history_text') }}
         </p>
       </div>

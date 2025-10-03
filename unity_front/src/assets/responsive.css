@@ -1,0 +1,603 @@
+/* ========================================
+   UNITY DEVELOPMENT - RESPONSIVE UTILITIES
+   Comprehensive responsive classes for all screen sizes
+   ======================================== */
+
+/* ========================================
+   RESPONSIVE CONTAINER UTILITIES
+   ======================================== */
+.container-responsive {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem; /* 16px - Mobile */
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    padding-left: 1.5rem; /* 24px - Small tablet */
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    padding-left: 2rem; /* 32px - Tablet */
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    padding-left: 4rem; /* 64px - Laptop */
+    padding-right: 4rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive {
+    padding-left: 5rem; /* 80px - Desktop */
+    padding-right: 5rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container-responsive {
+    padding-left: 8rem; /* 128px - Large desktop */
+    padding-right: 8rem;
+  }
+}
+
+/* ========================================
+   RESPONSIVE SECTION PADDING
+   ======================================== */
+.section-py-responsive {
+  padding-top: 3rem; /* 48px - Mobile */
+  padding-bottom: 3rem;
+}
+
+@media (min-width: 640px) {
+  .section-py-responsive {
+    padding-top: 4rem; /* 64px - Small tablet */
+    padding-bottom: 4rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .section-py-responsive {
+    padding-top: 5rem; /* 80px - Tablet */
+    padding-bottom: 5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-py-responsive {
+    padding-top: 6rem; /* 96px - Laptop */
+    padding-bottom: 6rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .section-py-responsive {
+    padding-top: 7rem; /* 112px - Desktop */
+    padding-bottom: 7rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .section-py-responsive {
+    padding-top: 8rem; /* 128px - Large desktop */
+    padding-bottom: 8rem;
+  }
+}
+
+/* ========================================
+   RESPONSIVE GRID UTILITIES
+   ======================================== */
+.grid-responsive-1-2-3 {
+  display: grid;
+  grid-template-columns: 1fr; /* Mobile: 1 column */
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .grid-responsive-1-2-3 {
+    grid-template-columns: repeat(2, 1fr); /* Tablet: 2 columns */
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive-1-2-3 {
+    grid-template-columns: repeat(3, 1fr); /* Laptop+: 3 columns */
+    gap: 2.5rem;
+  }
+}
+
+.grid-responsive-1-2-4 {
+  display: grid;
+  grid-template-columns: 1fr; /* Mobile: 1 column */
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive-1-2-4 {
+    grid-template-columns: repeat(2, 1fr); /* Small tablet: 2 columns */
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive-1-2-4 {
+    grid-template-columns: repeat(4, 1fr); /* Laptop+: 4 columns */
+    gap: 2rem;
+  }
+}
+
+/* ========================================
+   RESPONSIVE TYPOGRAPHY
+   ======================================== */
+.heading-hero-responsive {
+  font-size: 2rem; /* 32px - Mobile */
+  line-height: 1.1;
+}
+
+@media (min-width: 640px) {
+  .heading-hero-responsive {
+    font-size: 2.5rem; /* 40px - Small tablet */
+  }
+}
+
+@media (min-width: 768px) {
+  .heading-hero-responsive {
+    font-size: 3rem; /* 48px - Tablet */
+  }
+}
+
+@media (min-width: 1024px) {
+  .heading-hero-responsive {
+    font-size: 4rem; /* 64px - Laptop */
+  }
+}
+
+@media (min-width: 1280px) {
+  .heading-hero-responsive {
+    font-size: 5rem; /* 80px - Desktop */
+  }
+}
+
+@media (min-width: 1536px) {
+  .heading-hero-responsive {
+    font-size: 6rem; /* 96px - Large desktop */
+  }
+}
+
+.heading-1-responsive {
+  font-size: 1.875rem; /* 30px - Mobile */
+  line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+  .heading-1-responsive {
+    font-size: 2.25rem; /* 36px - Small tablet */
+  }
+}
+
+@media (min-width: 768px) {
+  .heading-1-responsive {
+    font-size: 2.5rem; /* 40px - Tablet */
+  }
+}
+
+@media (min-width: 1024px) {
+  .heading-1-responsive {
+    font-size: 3rem; /* 48px - Laptop */
+  }
+}
+
+@media (min-width: 1280px) {
+  .heading-1-responsive {
+    font-size: 3.5rem; /* 56px - Desktop */
+  }
+}
+
+.heading-2-responsive {
+  font-size: 1.5rem; /* 24px - Mobile */
+  line-height: 1.3;
+}
+
+@media (min-width: 640px) {
+  .heading-2-responsive {
+    font-size: 1.75rem; /* 28px - Small tablet */
+  }
+}
+
+@media (min-width: 768px) {
+  .heading-2-responsive {
+    font-size: 2rem; /* 32px - Tablet */
+  }
+}
+
+@media (min-width: 1024px) {
+  .heading-2-responsive {
+    font-size: 2.25rem; /* 36px - Laptop */
+  }
+}
+
+@media (min-width: 1280px) {
+  .heading-2-responsive {
+    font-size: 2.5rem; /* 40px - Desktop */
+  }
+}
+
+.heading-3-responsive {
+  font-size: 1.25rem; /* 20px - Mobile */
+  line-height: 1.4;
+}
+
+@media (min-width: 640px) {
+  .heading-3-responsive {
+    font-size: 1.375rem; /* 22px - Small tablet */
+  }
+}
+
+@media (min-width: 768px) {
+  .heading-3-responsive {
+    font-size: 1.5rem; /* 24px - Tablet */
+  }
+}
+
+@media (min-width: 1024px) {
+  .heading-3-responsive {
+    font-size: 1.75rem; /* 28px - Laptop */
+  }
+}
+
+@media (min-width: 1280px) {
+  .heading-3-responsive {
+    font-size: 2rem; /* 32px - Desktop */
+  }
+}
+
+.text-body-responsive {
+  font-size: 0.875rem; /* 14px - Mobile */
+  line-height: 1.6;
+}
+
+@media (min-width: 640px) {
+  .text-body-responsive {
+    font-size: 0.9375rem; /* 15px - Small tablet */
+  }
+}
+
+@media (min-width: 768px) {
+  .text-body-responsive {
+    font-size: 1rem; /* 16px - Tablet */
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-body-responsive {
+    font-size: 1.0625rem; /* 17px - Laptop */
+  }
+}
+
+@media (min-width: 1280px) {
+  .text-body-responsive {
+    font-size: 1.125rem; /* 18px - Desktop */
+  }
+}
+
+/* ========================================
+   RESPONSIVE SPACING UTILITIES
+   ======================================== */
+.gap-responsive {
+  gap: 1rem; /* Mobile */
+}
+
+@media (min-width: 640px) {
+  .gap-responsive {
+    gap: 1.25rem; /* Small tablet */
+  }
+}
+
+@media (min-width: 768px) {
+  .gap-responsive {
+    gap: 1.5rem; /* Tablet */
+  }
+}
+
+@media (min-width: 1024px) {
+  .gap-responsive {
+    gap: 2rem; /* Laptop */
+  }
+}
+
+@media (min-width: 1280px) {
+  .gap-responsive {
+    gap: 2.5rem; /* Desktop */
+  }
+}
+
+/* ========================================
+   RESPONSIVE BUTTON SIZES
+   ======================================== */
+.btn-responsive {
+  padding: 0.625rem 1.5rem; /* Mobile: 10px 24px */
+  font-size: 0.75rem; /* 12px */
+}
+
+@media (min-width: 640px) {
+  .btn-responsive {
+    padding: 0.75rem 1.75rem; /* Small tablet: 12px 28px */
+    font-size: 0.8125rem; /* 13px */
+  }
+}
+
+@media (min-width: 768px) {
+  .btn-responsive {
+    padding: 0.875rem 2rem; /* Tablet: 14px 32px */
+    font-size: 0.875rem; /* 14px */
+  }
+}
+
+@media (min-width: 1024px) {
+  .btn-responsive {
+    padding: 1rem 2.5rem; /* Laptop: 16px 40px */
+    font-size: 0.875rem; /* 14px */
+  }
+}
+
+@media (min-width: 1280px) {
+  .btn-responsive {
+    padding: 1rem 3rem; /* Desktop: 16px 48px */
+    font-size: 0.875rem; /* 14px */
+  }
+}
+
+/* ========================================
+   RESPONSIVE IMAGE ASPECT RATIOS
+   ======================================== */
+.aspect-ratio-project {
+  aspect-ratio: 4 / 5; /* Default portrait */
+}
+
+@media (min-width: 768px) {
+  .aspect-ratio-project {
+    aspect-ratio: 3 / 4; /* Slightly less tall on tablets */
+  }
+}
+
+@media (min-width: 1024px) {
+  .aspect-ratio-project {
+    aspect-ratio: 4 / 5; /* Back to portrait on laptop */
+  }
+}
+
+/* ========================================
+   RESPONSIVE VISIBILITY UTILITIES
+   ======================================== */
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hide-mobile {
+    display: block;
+  }
+}
+
+.show-mobile-only {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .show-mobile-only {
+    display: none;
+  }
+}
+
+.hide-tablet {
+  display: block;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hide-tablet {
+    display: none;
+  }
+}
+
+/* ========================================
+   RESPONSIVE HERO SECTIONS
+   ======================================== */
+.hero-height-responsive {
+  height: 60vh;
+  min-height: 400px;
+}
+
+@media (min-width: 640px) {
+  .hero-height-responsive {
+    height: 70vh;
+    min-height: 450px;
+  }
+}
+
+@media (min-width: 768px) {
+  .hero-height-responsive {
+    height: 80vh;
+    min-height: 500px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-height-responsive {
+    height: 90vh;
+    min-height: 600px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hero-height-responsive {
+    height: 100vh;
+    min-height: 700px;
+  }
+}
+
+/* ========================================
+   RESPONSIVE CARD LAYOUTS
+   ======================================== */
+.card-responsive {
+  padding: 1.25rem; /* Mobile: 20px */
+}
+
+@media (min-width: 640px) {
+  .card-responsive {
+    padding: 1.5rem; /* Small tablet: 24px */
+  }
+}
+
+@media (min-width: 768px) {
+  .card-responsive {
+    padding: 2rem; /* Tablet: 32px */
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-responsive {
+    padding: 2.5rem; /* Laptop: 40px */
+  }
+}
+
+@media (min-width: 1280px) {
+  .card-responsive {
+    padding: 3rem; /* Desktop: 48px */
+  }
+}
+
+/* ========================================
+   RESPONSIVE MODALS & OVERLAYS
+   ======================================== */
+.modal-responsive {
+  width: 95%;
+  max-width: 95vw;
+  margin: 1rem;
+}
+
+@media (min-width: 640px) {
+  .modal-responsive {
+    width: 90%;
+    max-width: 90vw;
+  }
+}
+
+@media (min-width: 768px) {
+  .modal-responsive {
+    width: 80%;
+    max-width: 48rem; /* 768px */
+  }
+}
+
+@media (min-width: 1024px) {
+  .modal-responsive {
+    width: 70%;
+    max-width: 56rem; /* 896px */
+  }
+}
+
+@media (min-width: 1280px) {
+  .modal-responsive {
+    width: 60%;
+    max-width: 64rem; /* 1024px */
+  }
+}
+
+/* ========================================
+   RESPONSIVE FORM INPUTS
+   ======================================== */
+.input-responsive {
+  padding: 0.75rem 1rem; /* Mobile */
+  font-size: 0.875rem; /* 14px */
+}
+
+@media (min-width: 768px) {
+  .input-responsive {
+    padding: 0.875rem 1.25rem; /* Tablet */
+    font-size: 1rem; /* 16px */
+  }
+}
+
+@media (min-width: 1024px) {
+  .input-responsive {
+    padding: 1rem 1.5rem; /* Laptop */
+    font-size: 1rem; /* 16px */
+  }
+}
+
+/* ========================================
+   RESPONSIVE MAX WIDTHS
+   ======================================== */
+.max-w-content-responsive {
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .max-w-content-responsive {
+    max-width: 36rem; /* 576px */
+  }
+}
+
+@media (min-width: 768px) {
+  .max-w-content-responsive {
+    max-width: 42rem; /* 672px */
+  }
+}
+
+@media (min-width: 1024px) {
+  .max-w-content-responsive {
+    max-width: 48rem; /* 768px */
+  }
+}
+
+@media (min-width: 1280px) {
+  .max-w-content-responsive {
+    max-width: 56rem; /* 896px */
+  }
+}
+
+/* ========================================
+   RESPONSIVE GALLERY GRIDS
+   ======================================== */
+.gallery-grid-responsive {
+  display: grid;
+  grid-template-columns: 1fr; /* Mobile: 1 column */
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .gallery-grid-responsive {
+    grid-template-columns: repeat(2, 1fr); /* Small tablet: 2 columns */
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .gallery-grid-responsive {
+    grid-template-columns: repeat(3, 1fr); /* Tablet: 3 columns */
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gallery-grid-responsive {
+    grid-template-columns: repeat(4, 1fr); /* Laptop: 4 columns */
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .gallery-grid-responsive {
+    grid-template-columns: repeat(5, 1fr); /* Large desktop: 5 columns */
+    gap: 2rem;
+  }
+}
