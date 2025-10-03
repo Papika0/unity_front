@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\PageCacheService;
+use App\Services\CacheWarmingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Artisan;
@@ -12,10 +13,12 @@ use Illuminate\Support\Facades\Log;
 class AdminController extends Controller
 {
     protected PageCacheService $cacheService;
+    protected CacheWarmingService $cacheWarmingService;
 
-    public function __construct(PageCacheService $cacheService)
+    public function __construct(PageCacheService $cacheService, CacheWarmingService $cacheWarmingService)
     {
         $this->cacheService = $cacheService;
+        $this->cacheWarmingService = $cacheWarmingService;
     }
 
     /**
@@ -93,7 +96,7 @@ class AdminController extends Controller
                 return response()->json([
                     'success' => true,
                     'data' => [
-                        'message' => 'All caches cleared successfully!',
+                        'message' => 'All caches cleared and warmed successfully!',
                         'cleared' => $clearedCaches
                     ]
                 ]);

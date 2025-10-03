@@ -7,10 +7,18 @@ use App\Models\Projects;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use App\Http\Resources\Api\ProjectResource;
+use App\Services\PageCacheService;
 
 class ProjectsController extends Controller
 {
     use ApiResponse;
+
+    protected $pageCacheService;
+
+    public function __construct(PageCacheService $pageCacheService)
+    {
+        $this->pageCacheService = $pageCacheService;
+    }
 
     /**
      * Display a listing of published projects for public API.
@@ -74,6 +82,16 @@ class ProjectsController extends Controller
     public function show(Request $request, $id)
     {
         try {
+            $locale = $request->get('locale', 'ka');
+
+            // Create cache key
+            $cacheKey = "project_show_{$id}_{$locale}";
+
+            // Check cache first
+            if ($this->pageCacheService->has($cacheKey)) {
+                return $this->pageCacheService->get($cacheKey);
+            }
+
             $project = Projects::where('is_active', true)
                               ->with(['features', 'mainImage', 'renderImage', 'galleryImages'])
                               ->findOrFail($id);
@@ -103,7 +121,6 @@ class ProjectsController extends Controller
                 $relatedProjects = $relatedProjects->concat($additionalProjects);
             }
             
-            $locale = $request->get('locale', 'ka');
             $resource = new ProjectResource($project, $locale);
             
             // Add related projects to the resource
@@ -123,7 +140,12 @@ class ProjectsController extends Controller
                 ];
             })->values()->all();
             
-            return $this->success($resourceData);
+            $result = $this->success($resourceData);
+
+            // Cache forever
+            $this->pageCacheService->put($cacheKey, $result, null);
+            
+            return $result;
         } catch (\Exception $e) {
             return $this->error('Project not found', 404);
         }

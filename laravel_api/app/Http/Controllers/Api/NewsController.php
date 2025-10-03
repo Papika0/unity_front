@@ -8,16 +8,19 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use App\Http\Resources\Api\NewsResource;
 use App\Services\TranslationService;
+use App\Services\PageCacheService;
 
 class NewsController extends Controller
 {
     use ApiResponse;
 
     protected $translationService;
+    protected $pageCacheService;
 
-    public function __construct(TranslationService $translationService)
+    public function __construct(TranslationService $translationService, PageCacheService $pageCacheService)
     {
         $this->translationService = $translationService;
+        $this->pageCacheService = $pageCacheService;
     }
 
     /**
@@ -31,6 +34,18 @@ class NewsController extends Controller
             $perPage = $request->input('per_page', 10);
             $category = $request->input('category');
             $search = $request->input('search');
+            $page = $request->input('page', 1);
+
+            // Create cache key based on all parameters
+            $cacheKey = "news_index_{$locale}_" . 
+                        ($category ?: 'all') . '_' . 
+                        ($search ? md5($search) : 'nosearch') . '_' .
+                        "page{$page}_per{$perPage}";
+
+            // Check cache first
+            if ($this->pageCacheService->has($cacheKey)) {
+                return $this->pageCacheService->get($cacheKey);
+            }
 
             // Get translations if groups are requested
             $translations = [];
@@ -71,7 +86,12 @@ class NewsController extends Controller
             $response['meta']['locale'] = $locale;
             $response['meta']['cached_at'] = now()->toISOString();
 
-            return $this->success($response);
+            $result = $this->success($response);
+
+            // Cache forever (null TTL)
+            $this->pageCacheService->put($cacheKey, $result, null);
+
+            return $result;
         } catch (\Exception $e) {
             return $this->error('Failed to fetch news', 500);
         }
@@ -86,6 +106,13 @@ class NewsController extends Controller
             $locale = $request->input('locale', 'ka');
             $requestGroups = $request->input('groups', []);
 
+            // Create cache key
+            $cacheKey = "news_show_{$id}_{$locale}";
+
+            // Check cache first (but note: view count will not increment for cached responses)
+            // We'll skip cache check to ensure view count increments
+            // Instead, we cache after incrementing views
+            
             // Get translations if groups are requested
             $translations = [];
             if ($requestGroups) {
@@ -155,6 +182,14 @@ class NewsController extends Controller
             $locale = $request->input('locale', 'ka');
             $requestGroups = $request->input('groups', []);
 
+            // Create cache key
+            $cacheKey = "news_featured_{$locale}";
+
+            // Check cache first
+            if ($this->pageCacheService->has($cacheKey)) {
+                return $this->pageCacheService->get($cacheKey);
+            }
+
             // Get translations if groups are requested
             $translations = [];
             if ($requestGroups) {
@@ -173,7 +208,7 @@ class NewsController extends Controller
                 return new NewsResource($item, $locale);
             });
 
-            return $this->success([
+            $result = $this->success([
                 'data' => $newsCollection,
                 'translations' => $translations,
                 'meta' => [
@@ -181,6 +216,11 @@ class NewsController extends Controller
                     'cached_at' => now()->toISOString(),
                 ]
             ]);
+
+            // Cache forever
+            $this->pageCacheService->put($cacheKey, $result, null);
+
+            return $result;
         } catch (\Exception $e) {
             return $this->error('Failed to fetch featured news', 500);
         }
@@ -195,6 +235,14 @@ class NewsController extends Controller
             $locale = $request->input('locale', 'ka');
             $requestGroups = $request->input('groups', []);
             $limit = $request->input('limit', 10);
+
+            // Create cache key
+            $cacheKey = "news_latest_{$locale}_limit{$limit}";
+
+            // Check cache first
+            if ($this->pageCacheService->has($cacheKey)) {
+                return $this->pageCacheService->get($cacheKey);
+            }
 
             // Get translations if groups are requested
             $translations = [];
@@ -213,7 +261,7 @@ class NewsController extends Controller
                 return new NewsResource($item, $locale);
             });
 
-            return $this->success([
+            $result = $this->success([
                 'data' => $newsCollection,
                 'translations' => $translations,
                 'meta' => [
@@ -221,6 +269,11 @@ class NewsController extends Controller
                     'cached_at' => now()->toISOString(),
                 ]
             ]);
+
+            // Cache forever
+            $this->pageCacheService->put($cacheKey, $result, null);
+
+            return $result;
         } catch (\Exception $e) {
             return $this->error('Failed to fetch latest news', 500);
         }

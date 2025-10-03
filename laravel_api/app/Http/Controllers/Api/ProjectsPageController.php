@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\SiteSettingsService;
 use App\Services\TranslationService;
+use App\Services\PageCacheService;
 use App\Models\Projects;
 use App\Http\Resources\Api\ProjectResource;
 
@@ -13,11 +14,16 @@ class ProjectsPageController extends Controller
 {
     protected $siteSettingsService;
     protected $translationService;
+    protected $pageCacheService;
 
-    public function __construct(SiteSettingsService $siteSettingsService, TranslationService $translationService)
-    {
+    public function __construct(
+        SiteSettingsService $siteSettingsService, 
+        TranslationService $translationService,
+        PageCacheService $pageCacheService
+    ) {
         $this->siteSettingsService = $siteSettingsService;
         $this->translationService = $translationService;
+        $this->pageCacheService = $pageCacheService;
     }
 
     /**
@@ -30,6 +36,16 @@ class ProjectsPageController extends Controller
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 6);
         $status = $request->input('status', null); // Add status filter
+
+        // Create cache key
+        $cacheKey = "projects_page_{$locale}_" . 
+                    ($status ?: 'all') . '_' . 
+                    "page{$page}_per{$perPage}";
+
+        // Check cache first
+        if ($this->pageCacheService->has($cacheKey)) {
+            return $this->pageCacheService->get($cacheKey);
+        }
 
         if ($requestGroups) {
             $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
@@ -54,7 +70,7 @@ class ProjectsPageController extends Controller
             return new ProjectResource($project, $locale);
         });
 
-        return response()->json([
+        $result = response()->json([
             'translations' => $translations ?? [],
             'projects' => $projectsCollection,
             'pagination' => [
@@ -72,5 +88,10 @@ class ProjectsPageController extends Controller
                 'cached_at' => now()->toISOString(),
             ],
         ]);
+
+        // Cache forever
+        $this->pageCacheService->put($cacheKey, $result, null);
+
+        return $result;
     }
 }

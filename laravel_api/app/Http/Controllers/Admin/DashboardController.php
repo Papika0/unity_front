@@ -99,4 +99,28 @@ class DashboardController extends Controller
             return $this->error('კეშის გასუფთავება ვერ მოხერხდა', 500);
         }
     }
+
+    /**
+     * Warm application cache (pre-populate all API caches)
+     */
+    public function warmCache()
+    {
+        try {
+            Log::info('🔥 Starting manual cache warming from dashboard...');
+            
+            // Run cache warming command and capture output
+            Artisan::call('cache:warm');
+            $output = Artisan::output();
+            
+            // Parse the output to get statistics (optional)
+            // For now, just return success message
+            
+            Log::info('✅ Manual cache warming completed from dashboard');
+            
+            return $this->success(null, 'კეში წარმატებით გაცხელდა - ყველა API cache-ი განახლებულია');
+        } catch (\Exception $e) {
+            Log::error('Failed to warm cache: ' . $e->getMessage());
+            return $this->error('კეშის გაცხელება ვერ მოხერხდა', 500);
+        }
+    }
 }

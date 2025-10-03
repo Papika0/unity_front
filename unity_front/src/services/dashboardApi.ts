@@ -8,6 +8,16 @@ export interface DashboardStatistics {
   chart_data: ChartDataPoint[]
 }
 
+export interface CacheWarmingStats {
+  homepage: { success: number; failed: number }
+  news: { success: number; failed: number }
+  projects: { success: number; failed: number }
+  gallery: { success: number; failed: number }
+  about: { success: number; failed: number }
+  contact: { success: number; failed: number }
+  footer: { success: number; failed: number }
+}
+
 export const dashboardApi = {
   /**
    * Get all dashboard statistics in one API call
@@ -27,5 +37,20 @@ export const dashboardApi = {
       '/admin/dashboard/clear-cache',
     )
     return { message: response.data.message || 'კეში გასუფთავდა' }
+  },
+
+  /**
+   * Warm application cache (pre-populate all API caches)
+   */
+  async warmCache(): Promise<{ message: string; stats?: CacheWarmingStats }> {
+    const response = await api.post<{ 
+      success: boolean
+      message: string
+      stats?: CacheWarmingStats 
+    }>('/admin/dashboard/warm-cache')
+    return { 
+      message: response.data.message || 'კეში გაცხელდა', 
+      stats: response.data.stats 
+    }
   },
 }

@@ -9,10 +9,18 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+use App\Services\PageCacheService;
 
 class FeaturesController extends Controller
 {
     use ApiResponse;
+
+    protected $pageCacheService;
+
+    public function __construct(PageCacheService $pageCacheService)
+    {
+        $this->pageCacheService = $pageCacheService;
+    }
 
     /**
      * Display a listing of the resource.
@@ -109,10 +117,23 @@ class FeaturesController extends Controller
      */
     public function getProjectFeatures(string $projectId): JsonResponse
     {
+        // Create cache key
+        $cacheKey = "project_features_{$projectId}";
+
+        // Check cache first
+        if ($this->pageCacheService->has($cacheKey)) {
+            return $this->pageCacheService->get($cacheKey);
+        }
+
         $project = Projects::findOrFail($projectId);
         $features = $project->features()->get();
 
-        return $this->success($features);
+        $result = $this->success($features);
+
+        // Cache forever
+        $this->pageCacheService->put($cacheKey, $result, null);
+
+        return $result;
     }
 
     /**

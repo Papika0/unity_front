@@ -10,27 +10,15 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref('')
 
   const isAuthenticated = computed(() => !!token.value)
-  const isAdmin = computed(() => {
-    const result = user.value && user.value.role === 'admin'
-    console.log('isAdmin computed - user:', user.value, 'role:', user.value?.role, 'result:', result)
-    return result
-  })
-  const isMarketing = computed(() => {
-    const result = user.value && user.value.role === 'marketing'
-    console.log('isMarketing computed - user:', user.value, 'role:', user.value?.role, 'result:', result)
-    return result
-  })
+  const isAdmin = computed(() => user.value && user.value.role === 'admin')
+  const isMarketing = computed(() => user.value && user.value.role === 'marketing')
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
       loading.value = true
       error.value = ''
 
-      console.log('Attempting login with:', { email, rememberMe })
-
       const response = await apiLogin(email, password, rememberMe)
-
-      console.log('Login response:', response.data)
 
       // Access the nested data structure
       token.value = response.data.data.token
@@ -38,10 +26,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (token.value) {
         localStorage.setItem('jwt_token', token.value)
-        console.log('Token saved to localStorage')
       }
 
-      console.log('Login successful, user:', user.value)
       return { success: true }
     } catch (err: any) {
       console.error('Login error:', err)
@@ -67,19 +53,11 @@ export const useAuthStore = defineStore('auth', () => {
   const fetchUser = async () => {
     try {
       if (!token.value) {
-        console.log('fetchUser: No token found, skipping')
         return
       }
 
-      console.log('fetchUser: Fetching user with token:', token.value)
       const response = await getUser()
-      console.log('fetchUser: Response received:', response)
-      console.log('fetchUser: Response data:', response.data)
-      
       user.value = response.data
-      
-      console.log('fetchUser: User set to:', user.value)
-      console.log('fetchUser: User role:', user.value?.role)
     } catch (err) {
       console.error('Fetch user error:', err)
       // If fetching user fails, token might be invalid
@@ -87,9 +65,9 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const initAuth = () => {
+  const initAuth = async () => {
     if (token.value) {
-      fetchUser()
+      await fetchUser()
     }
   }
 

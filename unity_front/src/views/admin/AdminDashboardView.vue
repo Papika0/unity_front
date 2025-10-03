@@ -7,20 +7,37 @@
           მართეთ თქვენი პროექტები, თარგმანები და კლიენტები
         </p>
       </div>
-      <button
-        @click="clearCache"
-        :disabled="clearingCache"
-        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <svg v-if="!clearingCache" class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        <svg v-else class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        {{ clearingCache ? 'იწმინდება...' : 'კეშის გასუფთავება' }}
-      </button>
+      <div class="flex gap-3">
+        <button
+          @click="warmCache"
+          :disabled="warmingCache"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg v-if="!warmingCache" class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+          </svg>
+          <svg v-else class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ warmingCache ? 'გაცხელება...' : 'კეშის გაცხელება' }}
+        </button>
+        <button
+          @click="clearCache"
+          :disabled="clearingCache"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg v-if="!clearingCache" class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <svg v-else class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ clearingCache ? 'იწმინდება...' : 'კეშის გასუფთავება' }}
+        </button>
+      </div>
     </div>
 
     <!-- Stats Grid -->
@@ -168,7 +185,7 @@
             </span>
           </div>
           <div class="mt-8">
-            <h3 class="text-lg font-medium">
+            <h3 class="text-lg font-medium text-gray-900">
               <router-link to="/admin/customers" class="focus:outline-none">
                 <span class="absolute inset-0" aria-hidden="true"></span>
                 კლიენტების მართვა
@@ -190,7 +207,7 @@
             </span>
           </div>
           <div class="mt-8">
-            <h3 class="text-lg font-medium">
+            <h3 class="text-lg font-medium text-gray-900">
               <router-link to="/admin/projects" class="focus:outline-none">
                 <span class="absolute inset-0" aria-hidden="true"></span>
                 ახალი პროექტი
@@ -212,7 +229,7 @@
             </span>
           </div>
           <div class="mt-8">
-            <h3 class="text-lg font-medium">
+            <h3 class="text-lg font-medium text-gray-900">
               <router-link to="/admin/translations" class="focus:outline-none">
                 <span class="absolute inset-0" aria-hidden="true"></span>
                 თარგმანების მართვა
@@ -292,6 +309,7 @@ const chartCanvas = ref<HTMLCanvasElement | null>(null)
 const chartInstance = ref<Chart | null>(null)
 const loading = ref(true)
 const clearingCache = ref(false)
+const warmingCache = ref(false)
 const showToast = ref(false)
 const toastMessage = ref('')
 
@@ -462,6 +480,33 @@ const clearCache = async () => {
     }, 3000)
   } finally {
     clearingCache.value = false
+  }
+}
+
+const warmCache = async () => {
+  try {
+    warmingCache.value = true
+    const result = await dashboardApi.warmCache()
+    toastMessage.value = result.message
+    showToast.value = true
+
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+      showToast.value = false
+    }, 3000)
+
+    // Optionally reload stats after warming cache
+    await loadStats()
+  } catch (error) {
+    console.error('Error warming cache:', error)
+    toastMessage.value = 'კეშის გაცხელება ვერ მოხერხდა'
+    showToast.value = true
+
+    setTimeout(() => {
+      showToast.value = false
+    }, 3000)
+  } finally {
+    warmingCache.value = false
   }
 }
 

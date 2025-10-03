@@ -6,16 +6,22 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\TranslationService;
 use App\Services\ImageService;
+use App\Services\PageCacheService;
 
 class GalleryPageController extends Controller
 {
     protected $translationService;
     protected $imageService;
+    protected $pageCacheService;
 
-    public function __construct(TranslationService $translationService, ImageService $imageService)
-    {
+    public function __construct(
+        TranslationService $translationService, 
+        ImageService $imageService,
+        PageCacheService $pageCacheService
+    ) {
         $this->translationService = $translationService;
         $this->imageService = $imageService;
+        $this->pageCacheService = $pageCacheService;
     }
 
     /**
@@ -28,6 +34,16 @@ class GalleryPageController extends Controller
         $category = $request->input('category');
         $page = (int) $request->input('page', 1);
         $limit = (int) $request->input('limit', 12);
+
+        // Create cache key
+        $cacheKey = "gallery_page_{$locale}_" . 
+                    ($category ?: 'all') . '_' .
+                    "page{$page}_limit{$limit}";
+
+        // Check cache first
+        if ($this->pageCacheService->has($cacheKey)) {
+            return $this->pageCacheService->get($cacheKey);
+        }
 
         if ($requestGroups) {
             $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
@@ -63,7 +79,7 @@ class GalleryPageController extends Controller
             $hasMorePages = $nextPageImages->count() > 0;
         }
 
-        return response()->json([
+        $result = response()->json([
             'translations' => $translations ?? [],
             'gallery_images' => $transformedImages,
             'categories' => $categories,
@@ -75,5 +91,10 @@ class GalleryPageController extends Controller
                 'has_more_pages' => $hasMorePages,
             ],
         ]);
+
+        // Cache forever
+        $this->pageCacheService->put($cacheKey, $result, null);
+
+        return $result;
     }
 }

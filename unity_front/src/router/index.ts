@@ -102,10 +102,6 @@ const router = createRouter({
           beforeEnter: requireAuth,
           children: [
             {
-              path: '',
-              redirect: '/admin/customers',
-            },
-            {
               path: 'dashboard',
               name: 'admin-dashboard',
               component: AdminDashboardView,
@@ -239,12 +235,11 @@ router.beforeEach(async (to, from, next) => {
 
   // Only initialize auth if navigating to admin routes and token exists but user is not loaded
   if (to.path.startsWith('/admin') && authStore.token && !authStore.user) {
-    authStore.initAuth()
+    await authStore.initAuth()
   }
 
   // Handle guest-only routes (like login)
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    console.log('Already authenticated, redirecting from login based on role')
     if (authStore.isAdmin) {
       next('/admin/dashboard')
     } else {

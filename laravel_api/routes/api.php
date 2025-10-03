@@ -205,6 +205,7 @@ Route::middleware(['auth:api', 'jwt.auth'])->group(function () {
     Route::prefix('admin/dashboard')->controller(DashboardController::class)->group(function () {
         Route::get('/statistics', 'statistics');        // Get all dashboard statistics
         Route::post('/clear-cache', 'clearCache');      // Clear application cache
+        Route::post('/warm-cache', 'warmCache');        // Warm application cache
     });
 
     // Protected customer management routes - shared between admin and marketing

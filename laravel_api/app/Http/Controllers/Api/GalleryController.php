@@ -4,16 +4,19 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\ImageService;
+use App\Services\PageCacheService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class GalleryController extends Controller
 {
     protected $imageService;
+    protected $pageCacheService;
 
-    public function __construct(ImageService $imageService)
+    public function __construct(ImageService $imageService, PageCacheService $pageCacheService)
     {
         $this->imageService = $imageService;
+        $this->pageCacheService = $pageCacheService;
     }
 
     /**
@@ -26,6 +29,17 @@ class GalleryController extends Controller
         $featured = $request->boolean('featured', false);
         $locale = $request->get('locale', 'ka');
 
+        // Create cache key
+        $cacheKey = "gallery_index_{$locale}_" . 
+                    ($category) . '_' .
+                    "limit{$limit}_" .
+                    ($featured ? 'featured' : 'normal');
+
+        // Check cache first
+        if ($this->pageCacheService->has($cacheKey)) {
+            return $this->pageCacheService->get($cacheKey);
+        }
+
         if ($featured) {
             $images = $this->imageService->getFeaturedImages($limit);
         } else {
@@ -35,7 +49,7 @@ class GalleryController extends Controller
             );
         }
 
-        return response()->json([
+        $result = response()->json([
             'success' => true,
             'data' => $images->map(function ($image) use ($locale) {
                 return [
@@ -55,6 +69,11 @@ class GalleryController extends Controller
                 'total' => $images->count(),
             ],
         ]);
+
+        // Cache forever
+        $this->pageCacheService->put($cacheKey, $result, null);
+
+        return $result;
     }
 
     /**
@@ -62,16 +81,29 @@ class GalleryController extends Controller
      */
     public function categories(): JsonResponse
     {
+        // Create cache key
+        $cacheKey = "gallery_categories";
+
+        // Check cache first
+        if ($this->pageCacheService->has($cacheKey)) {
+            return $this->pageCacheService->get($cacheKey);
+        }
+
         $categories = $this->imageService->getGalleryImages()
             ->pluck('category')
             ->filter()
             ->unique()
             ->values();
 
-        return response()->json([
+        $result = response()->json([
             'success' => true,
             'data' => $categories,
         ]);
+
+        // Cache forever
+        $this->pageCacheService->put($cacheKey, $result, null);
+
+        return $result;
     }
 
     /**
