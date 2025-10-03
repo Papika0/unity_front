@@ -1,22 +1,22 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-    <div class="container mx-auto px-6 py-8">
+    <div class="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <!-- Header -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between">
+      <div class="mb-6 sm:mb-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1
-              class="text-4xl font-light bg-gradient-to-r from-indigo-500 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2 tracking-tight"
+              class="text-2xl sm:text-3xl md:text-4xl font-light bg-gradient-to-r from-indigo-500 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-1 sm:mb-2 tracking-tight"
             >
               თარგმანების მართვა
             </h1>
-            <p class="text-slate-600 text-lg font-light">მართეთ აპლიკაციის თარგმანები სამ ენაზე</p>
+            <p class="text-slate-600 text-sm sm:text-base md:text-lg font-light">მართეთ აპლიკაციის თარგმანები სამ ენაზე</p>
           </div>
           <button
             @click="showCreateModal = true"
-            class="inline-flex items-center gap-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-2xl font-medium shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+            class="inline-flex items-center justify-center gap-2 sm:gap-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-medium shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 text-sm sm:text-base"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -30,7 +30,7 @@
       </div>
 
       <!-- Search and Filter Bar -->
-      <div class="mb-8 space-y-4">
+      <div class="mb-6 sm:mb-8 space-y-3 sm:space-y-4">
         <!-- Search Bar -->
         <SearchBar
           v-model="searchQuery"
@@ -40,9 +40,9 @@
 
         <!-- Group Filter -->
         <div
-          class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4"
+          class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4"
         >
-          <label class="text-sm font-semibold text-slate-700 whitespace-nowrap"
+          <label class="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap"
             >ჯგუფის ფილტრი:</label
           >
           <div class="w-full sm:w-64">
@@ -56,9 +56,9 @@
           <button
             v-if="selectedGroup"
             @click="clearGroupFilter"
-            class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all duration-200 whitespace-nowrap"
+            class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg sm:rounded-xl transition-all duration-200 whitespace-nowrap"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -74,8 +74,8 @@
       <!-- Translations Table -->
       <div class="mb-4">
         <!-- Filter Summary -->
-        <div class="flex flex-wrap items-center gap-3 mb-4">
-          <div class="text-sm text-slate-700 font-medium">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+          <div class="text-xs sm:text-sm text-slate-700 font-medium">
             <span v-if="totalPages > 1"> გვერდი {{ currentPage }} / {{ totalPages }} </span>
             <span> სულ {{ translations.length }} თარგმანი </span>
           </div>
@@ -83,13 +83,13 @@
             <span class="text-xs text-slate-500">აქტიური ფილტრები:</span>
             <span
               v-if="searchQuery"
-              class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+              class="inline-flex items-center gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
             >
               🔍 "{{ searchQuery }}"
             </span>
             <span
               v-if="selectedGroup"
-              class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full"
+              class="inline-flex items-center gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full"
             >
               {{ groupOptions.find((g) => g.value === selectedGroup)?.icon }}
               {{ groupOptions.find((g) => g.value === selectedGroup)?.label }}

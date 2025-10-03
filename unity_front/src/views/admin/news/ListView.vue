@@ -1,37 +1,37 @@
 <template>
   <div class="min-h-screen bg-white">
     <!-- Admin Header Section -->
-    <section class="relative bg-white border-b border-slate-100 py-16 lg:py-20">
+    <section class="relative bg-white border-b border-slate-100 py-8 sm:py-12 lg:py-16">
       <div class="absolute inset-0 bg-gradient-to-br from-amber-50/30 to-slate-50/30"></div>
 
       <div class="relative max-w-7xl mx-auto px-4 md:px-8">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-8">
+        <div class="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
           <div class="flex-1">
-            <div class="mb-4">
+            <div class="mb-3 sm:mb-4">
               <div
-                class="w-16 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-6"
+                class="w-12 sm:w-16 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-4 sm:mb-6"
               ></div>
             </div>
             <h1
-              class="text-4xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent break-words leading-tight py-1"
+              class="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent break-words leading-tight py-1"
             >
               სიახლეები
             </h1>
-            <p class="mt-2 text-slate-600 text-lg">
+            <p class="mt-2 text-slate-600 text-sm sm:text-base md:text-lg">
               სიახლეების მართვა, შექმნა, რედაქტირება და წაშლა.
             </p>
             <div
-              class="w-16 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent mt-6"
+              class="w-12 sm:w-16 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent mt-4 sm:mt-6"
             ></div>
           </div>
 
-          <div class="flex-shrink-0 flex flex-col sm:flex-row gap-3 sm:gap-0">
+          <div class="flex-shrink-0 flex flex-col gap-2 sm:gap-3">
             <button
               @click="goToAddNews"
-              class="group bg-gradient-to-r from-amber-500 to-amber-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 w-full sm:w-auto"
+              class="group bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <svg
-                class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300"
+                class="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-90 transition-transform duration-300"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -48,10 +48,10 @@
 
             <button
               @click="openFeaturedModal"
-              class="group sm:ml-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 w-full sm:w-auto"
+              class="group bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <svg
-                class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"
+                class="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform duration-300"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -63,33 +63,33 @@
                   d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                 />
               </svg>
-              <span class="sm:inline">რჩეული სიახლეები</span>
+              რჩეული სიახლეები
             </button>
           </div>
         </div>
       </div>
     </section>
 
-    <div class="max-w-7xl mx-auto px-4 md:px-8 py-16">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-8 sm:py-12 md:py-16">
       <!-- Search and Filter Section -->
-      <div class="mb-16 relative">
+      <div class="mb-8 sm:mb-12 md:mb-16 relative">
         <div
-          class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-slate-200/50 p-8 overflow-visible"
+          class="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 p-4 sm:p-6 md:p-8 overflow-visible"
           style="overflow: visible !important"
         >
-          <div class="flex flex-col lg:flex-row gap-8 items-start lg:items-center justify-between">
+          <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 items-start lg:items-center justify-between">
             <!-- Search Input -->
-            <div class="flex-1 max-w-2xl">
+            <div class="flex-1 w-full lg:max-w-2xl">
               <div class="relative group">
                 <input
                   v-model="adminNewsStore.searchQuery"
                   @input="handleSearch"
                   type="text"
                   placeholder="ძებნა სიახლეებში..."
-                  class="w-full px-6 py-4 pl-14 bg-white/80 backdrop-blur-sm border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-300 text-slate-800 placeholder-slate-500 shadow-sm hover:shadow-md"
+                  class="w-full px-4 sm:px-6 py-3 sm:py-4 pl-10 sm:pl-14 bg-white/80 backdrop-blur-sm border-2 border-slate-200 rounded-xl sm:rounded-2xl focus:ring-4 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-300 text-slate-800 placeholder-slate-500 shadow-sm hover:shadow-md text-sm sm:text-base"
                 />
                 <svg
-                  class="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-amber-500 transition-colors"
+                  class="absolute left-3 sm:left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 group-focus-within:text-amber-500 transition-colors"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -105,27 +105,27 @@
             </div>
 
             <!-- Filter and Info Section -->
-            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center w-full lg:w-auto">
               <!-- Category Filter -->
-              <div class="flex items-center gap-2 relative z-10">
+              <div class="flex items-center gap-2 relative z-10 w-full sm:w-auto">
                 <label
                   for="category-filter"
-                  class="text-slate-600 font-medium text-sm whitespace-nowrap"
+                  class="text-slate-600 font-medium text-xs sm:text-sm whitespace-nowrap"
                 >
                   კატეგორია:
                 </label>
-                <div class="relative custom-dropdown-container">
+                <div class="relative custom-dropdown-container flex-1 sm:flex-initial">
                   <!-- Custom Dropdown Button -->
                   <button
                     @click="toggleCategoryDropdown"
                     @blur="handleDropdownBlur"
-                    class="appearance-none px-4 py-2.5 pr-10 bg-white/90 backdrop-blur-sm border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-300 text-slate-800 text-sm min-w-[160px] font-medium shadow-sm hover:shadow-md hover:border-slate-300 cursor-pointer text-left flex items-center justify-between"
+                    class="appearance-none w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-2.5 pr-8 sm:pr-10 bg-white/90 backdrop-blur-sm border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-300 text-slate-800 text-xs sm:text-sm min-w-[140px] sm:min-w-[160px] font-medium shadow-sm hover:shadow-md hover:border-slate-300 cursor-pointer text-left flex items-center justify-between"
                     :class="{ 'border-amber-400 ring-4 ring-amber-500/20': showCategoryDropdown }"
                   >
-                    <span>{{ getCategoryDisplayText(adminNewsStore.selectedCategory) }}</span>
+                    <span class="truncate">{{ getCategoryDisplayText(adminNewsStore.selectedCategory) }}</span>
                     <!-- Custom dropdown arrow -->
                     <svg
-                      class="w-4 h-4 text-slate-400 transition-all duration-200 ml-2"
+                      class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 transition-all duration-200 ml-2 flex-shrink-0"
                       :class="{
                         'text-amber-500': adminNewsStore.selectedCategory,
                         'rotate-180': showCategoryDropdown,
@@ -187,12 +187,12 @@
               </div>
 
               <!-- Filter Tags -->
-              <div class="flex flex-wrap gap-3">
+              <div class="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
                 <div
-                  class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-100 to-slate-50 rounded-xl border border-slate-200"
+                  class="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-slate-100 to-slate-50 rounded-lg sm:rounded-xl border border-slate-200"
                 >
                   <svg
-                    class="w-4 h-4 text-slate-500"
+                    class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -204,7 +204,7 @@
                       d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2"
                     />
                   </svg>
-                  <span class="text-slate-600 font-medium text-sm"
+                  <span class="text-slate-600 font-medium text-xs sm:text-sm whitespace-nowrap"
                     >სულ: {{ articlesCount }} სიახლე</span
                   >
                 </div>
@@ -212,10 +212,10 @@
                 <!-- Active Filter Indicator -->
                 <div
                   v-if="adminNewsStore.selectedCategory"
-                  class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-100 to-amber-50 rounded-xl border border-amber-200"
+                  class="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-100 to-amber-50 rounded-lg sm:rounded-xl border border-amber-200"
                 >
                   <svg
-                    class="w-4 h-4 text-amber-600"
+                    class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -227,14 +227,14 @@
                       d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
                     />
                   </svg>
-                  <span class="text-amber-700 font-medium text-sm">
+                  <span class="text-amber-700 font-medium text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">
                     {{ getCategoryLabel(adminNewsStore.selectedCategory) }}
                   </span>
                   <button
                     @click="clearCategoryFilter"
-                    class="ml-1 text-amber-600 hover:text-amber-800 transition-colors"
+                    class="ml-0.5 sm:ml-1 text-amber-600 hover:text-amber-800 transition-colors flex-shrink-0"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"

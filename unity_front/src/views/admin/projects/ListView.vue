@@ -1,25 +1,25 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50 to-orange-50">
-    <div class="p-8 font-sans text-slate-800">
+    <div class="p-4 sm:p-6 md:p-8 font-sans text-slate-800">
       <!-- Header Section -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+      <div class="flex flex-col gap-4 mb-6 sm:mb-8 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex-1">
           <h1
-            class="text-4xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent break-words leading-tight py-1"
+            class="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent break-words leading-tight py-1"
           >
             პროექტები
           </h1>
-          <p class="mt-2 text-slate-600 text-lg">
+          <p class="mt-2 text-slate-600 text-sm sm:text-base md:text-lg">
             პროექტების მართვა, შექმნა, რედაქტირება და წაშლა.
           </p>
         </div>
 
-        <div class="flex-shrink-0 flex flex-col sm:flex-row gap-3 sm:gap-0">
+        <div class="flex-shrink-0 flex flex-col gap-2 sm:gap-3">
           <button
             @click="goToAddProject"
-            class="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-6 py-3 rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 w-full sm:w-auto"
+            class="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base w-full sm:w-auto"
           >
-            <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -30,45 +30,47 @@
             ახალი პროექტის დამატება
           </button>
 
-          <button
-            @click="openFeaturedModal"
-            class="sm:ml-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 w-full sm:w-auto"
-          >
-            სლაიდის პროექტები
-          </button>
-          <button
-            @click="openHomepageModal"
-            class="sm:ml-4 bg-gradient-to-r from-blue-400 to-blue-500 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 w-full sm:w-auto"
-          >
-            რჩეული პროექტები
-          </button>
+          <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <button
+              @click="openFeaturedModal"
+              class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 text-sm sm:text-base"
+            >
+              სლაიდის პროექტები
+            </button>
+            <button
+              @click="openHomepageModal"
+              class="bg-gradient-to-r from-blue-400 to-blue-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 text-sm sm:text-base"
+            >
+              რჩეული პროექტები
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <div
           v-for="n in 6"
           :key="n"
           class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-pulse"
         >
-          <div class="w-full h-48 bg-slate-200"></div>
-          <div class="p-6">
-            <div class="h-6 bg-slate-200 rounded mb-3"></div>
-            <div class="h-4 bg-slate-200 rounded mb-2"></div>
-            <div class="h-4 bg-slate-200 rounded w-3/4 mb-4"></div>
+          <div class="w-full h-40 sm:h-48 bg-slate-200"></div>
+          <div class="p-4 sm:p-6">
+            <div class="h-5 sm:h-6 bg-slate-200 rounded mb-2 sm:mb-3"></div>
+            <div class="h-3 sm:h-4 bg-slate-200 rounded mb-2"></div>
+            <div class="h-3 sm:h-4 bg-slate-200 rounded w-3/4 mb-3 sm:mb-4"></div>
             <div class="flex gap-2">
-              <div class="h-9 bg-slate-200 rounded flex-1"></div>
-              <div class="h-9 bg-slate-200 rounded w-20"></div>
+              <div class="h-8 sm:h-9 bg-slate-200 rounded flex-1"></div>
+              <div class="h-8 sm:h-9 bg-slate-200 rounded w-16 sm:w-20"></div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Error State -->
-      <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+      <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-xl p-4 sm:p-6 text-center">
         <svg
-          class="w-12 h-12 text-red-400 mx-auto mb-4"
+          class="w-10 h-10 sm:w-12 sm:h-12 text-red-400 mx-auto mb-3 sm:mb-4"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -80,18 +82,18 @@
             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           ></path>
         </svg>
-        <h3 class="text-lg font-medium text-red-800 mb-2">პროექტების ჩატვირთვის შეცდომა</h3>
-        <p class="text-red-600">{{ error }}</p>
+        <h3 class="text-base sm:text-lg font-medium text-red-800 mb-2">პროექტების ჩატვირთვის შეცდომა</h3>
+        <p class="text-sm sm:text-base text-red-600">{{ error }}</p>
         <button
           @click="adminProjectsStore.loadProjects()"
-          class="mt-4 bg-red-100 text-red-800 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
+          class="mt-3 sm:mt-4 bg-red-100 text-red-800 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors text-sm sm:text-base"
         >
           ხელახლა ცდა
         </button>
       </div>
 
       <!-- Projects Grid -->
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <div
           v-for="project in projects"
           :key="project.id"
@@ -103,14 +105,14 @@
               v-if="project.main_image"
               :src="getImageUrl(project.main_image)"
               :alt="project.title"
-              class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+              class="w-full h-40 sm:h-48 object-cover transition-transform duration-300 group-hover:scale-105"
             />
             <div
               v-else
-              class="w-full h-48 bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center"
+              class="w-full h-40 sm:h-48 bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center"
             >
               <svg
-                class="h-16 w-16 text-amber-300"
+                class="h-12 w-12 sm:h-16 sm:w-16 text-amber-300"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -125,18 +127,18 @@
             </div>
 
             <!-- Status Badge -->
-            <div class="absolute top-3 right-3">
+            <div class="absolute top-2 sm:top-3 right-2 sm:right-3">
               <span
                 :class="
                   project.is_active
                     ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
                     : 'bg-red-100 text-red-700 border-red-200'
                 "
-                class="px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm border"
+                class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm border"
               >
                 <svg
                   v-if="project.is_active"
-                  class="w-3 h-3 mr-1 inline"
+                  class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1 inline"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -146,7 +148,7 @@
                     clip-rule="evenodd"
                   ></path>
                 </svg>
-                <svg v-else class="w-3 h-3 mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
+                <svg v-else class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fill-rule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -158,11 +160,11 @@
             </div>
 
             <!-- Featured Badge -->
-            <div v-if="project.is_featured" class="absolute top-3 left-3">
+            <div v-if="project.is_featured" class="absolute top-2 sm:top-3 left-2 sm:left-3">
               <span
-                class="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm border border-yellow-200"
+                class="bg-yellow-100 text-yellow-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold shadow-sm border border-yellow-200"
               >
-                <svg class="w-3 h-3 mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
                   ></path>
@@ -178,20 +180,20 @@
           </div>
 
           <!-- Project Content -->
-          <div class="p-6 flex-1 flex flex-col">
+          <div class="p-4 sm:p-6 flex-1 flex flex-col">
             <h2
-              class="text-xl font-bold mb-3 text-slate-900 group-hover:text-amber-600 transition-colors duration-200 break-words"
+              class="text-base sm:text-xl font-bold mb-2 sm:mb-3 text-slate-900 group-hover:text-amber-600 transition-colors duration-200 break-words"
             >
               {{ project.title }}
             </h2>
 
-            <p class="text-slate-600 text-sm mb-4 flex-none leading-relaxed line-clamp-3">
+            <p class="text-slate-600 text-xs sm:text-sm mb-3 sm:mb-4 flex-none leading-relaxed line-clamp-3">
               {{ truncate(project.description, 120) }}
             </p>
 
             <!-- Project Details -->
-            <div class="bg-slate-50 rounded-lg p-4 mb-6 flex-none space-y-3">
-              <div class="grid grid-cols-1 gap-3 text-sm">
+            <div class="bg-slate-50 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 flex-none space-y-2 sm:space-y-3">
+              <div class="grid grid-cols-1 gap-2 sm:gap-3 text-xs sm:text-sm">
                 <div>
                   <span class="font-medium text-slate-700">სტატუსი:</span>
                   <div class="mt-1">
@@ -226,10 +228,10 @@
             <div class="mt-auto">
               <button
                 @click.stop="goToDetail(project.id)"
-                class="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-2.5 rounded-lg hover:from-amber-600 hover:to-amber-700 text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-md"
+                class="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg hover:from-amber-600 hover:to-amber-700 text-xs sm:text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-md"
               >
                 <svg
-                  class="w-4 h-4 mr-1.5 inline"
+                  class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 inline"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -257,24 +259,24 @@
       <!-- Featured Projects Modal -->
       <div
         v-if="showFeaturedModal"
-        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4"
         @click.self="cancelFeaturedSelection"
       >
         <div
-          class="bg-white/95 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 border border-slate-200/50 max-h-[90vh] flex flex-col"
+          class="bg-white/95 rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 border border-slate-200/50 max-h-[90vh] flex flex-col"
         >
-          <div class="p-8 border-b border-slate-200/50 flex items-center justify-between flex-shrink-0">
-            <h2 class="text-xl font-bold text-slate-800">რჩეული პროექტების არჩევა</h2>
-            <button @click="cancelFeaturedSelection" class="text-slate-400 hover:text-slate-600">
+          <div class="p-4 sm:p-6 md:p-8 border-b border-slate-200/50 flex items-center justify-between flex-shrink-0">
+            <h2 class="text-base sm:text-lg md:text-xl font-bold text-slate-800">რჩეული პროექტების არჩევა</h2>
+            <button @click="cancelFeaturedSelection" class="text-slate-400 hover:text-slate-600 text-xl sm:text-2xl">
               ✕
             </button>
           </div>
-          <div class="p-8 overflow-y-auto flex-1">
-            <div class="grid grid-cols-1 gap-4">
+          <div class="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1">
+            <div class="grid grid-cols-1 gap-3 sm:gap-4">
               <div
                 v-for="project in projects"
                 :key="project.id"
-                class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-amber-400 cursor-pointer"
+                class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border border-slate-200 hover:border-amber-400 cursor-pointer"
                 :class="
                   selectedFeaturedIds.includes(project.id) ? 'bg-yellow-50 border-amber-400' : ''
                 "
@@ -283,14 +285,14 @@
                 <img
                   v-if="project.main_image"
                   :src="getImageUrl(project.main_image)"
-                  class="w-16 h-16 object-cover rounded-xl"
+                  class="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg sm:rounded-xl flex-shrink-0"
                 />
                 <div
                   v-else
-                  class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center"
+                  class="w-12 h-12 sm:w-16 sm:h-16 bg-slate-100 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0"
                 >
                   <svg
-                    class="w-8 h-8 text-amber-300"
+                    class="w-6 h-6 sm:w-8 sm:h-8 text-amber-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -303,34 +305,35 @@
                     />
                   </svg>
                 </div>
-                <div class="flex-1">
-                  <div class="font-bold text-slate-800">{{ project.title }}</div>
-                  <div class="text-slate-500 text-sm">{{ truncate(project.description, 60) }}</div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-bold text-slate-800 text-sm sm:text-base truncate">{{ project.title }}</div>
+                  <div class="text-slate-500 text-xs sm:text-sm truncate">{{ truncate(project.description, 60) }}</div>
                 </div>
                 <span
                   v-if="selectedFeaturedIds.includes(project.id)"
-                  class="px-2 py-1 rounded bg-yellow-200 text-yellow-800 text-xs font-bold"
+                  class="px-2 py-1 rounded bg-yellow-200 text-yellow-800 text-xs font-bold flex-shrink-0"
                   >{{ selectedFeaturedIds.indexOf(project.id) + 1 }}</span
                 >
                 <input
                   type="checkbox"
                   :checked="selectedFeaturedIds.includes(project.id)"
                   @change.stop="toggleFeaturedSelection(project.id)"
+                  class="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5"
                 />
               </div>
             </div>
           </div>
-          <div class="p-8 border-t border-slate-200/50 flex gap-4 justify-end flex-shrink-0">
+          <div class="p-4 sm:p-6 md:p-8 border-t border-slate-200/50 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-end flex-shrink-0">
             <button
               @click="cancelFeaturedSelection"
-              class="px-6 py-2 rounded-xl bg-slate-100 text-slate-700"
+              class="px-4 sm:px-6 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm sm:text-base order-2 sm:order-1"
             >
               გაუქმება
             </button>
             <button
               @click="saveFeaturedProjects"
               :disabled="savingFeatured"
-              class="px-6 py-2 rounded-xl bg-yellow-500 text-white font-bold shadow hover:bg-yellow-600"
+              class="px-4 sm:px-6 py-2 rounded-xl bg-yellow-500 text-white font-bold shadow hover:bg-yellow-600 text-sm sm:text-base order-1 sm:order-2"
             >
               შენახვა
             </button>
@@ -341,24 +344,24 @@
       <!-- Homepage Projects Modal -->
       <div
         v-if="showHomepageModal"
-        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4"
         @click.self="cancelHomepageSelection"
       >
         <div
-          class="bg-white/95 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 border border-slate-200/50 max-h-[90vh] flex flex-col"
+          class="bg-white/95 rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 border border-slate-200/50 max-h-[90vh] flex flex-col"
         >
-          <div class="p-8 border-b border-slate-200/50 flex items-center justify-between flex-shrink-0">
-            <h2 class="text-xl font-bold text-slate-800">მთავარი პროექტების არჩევა</h2>
-            <button @click="cancelHomepageSelection" class="text-slate-400 hover:text-slate-600">
+          <div class="p-4 sm:p-6 md:p-8 border-b border-slate-200/50 flex items-center justify-between flex-shrink-0">
+            <h2 class="text-base sm:text-lg md:text-xl font-bold text-slate-800">მთავარი პროექტების არჩევა</h2>
+            <button @click="cancelHomepageSelection" class="text-slate-400 hover:text-slate-600 text-xl sm:text-2xl">
               ✕
             </button>
           </div>
-          <div class="p-8 overflow-y-auto flex-1">
-            <div class="grid grid-cols-1 gap-4">
+          <div class="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1">
+            <div class="grid grid-cols-1 gap-3 sm:gap-4">
               <div
                 v-for="project in projects"
                 :key="project.id"
-                class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-blue-400 cursor-pointer"
+                class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border border-slate-200 hover:border-blue-400 cursor-pointer"
                 :class="
                   selectedHomepageIds.includes(project.id) ? 'bg-blue-50 border-blue-400' : ''
                 "
@@ -367,14 +370,14 @@
                 <img
                   v-if="project.main_image"
                   :src="getImageUrl(project.main_image)"
-                  class="w-16 h-16 object-cover rounded-xl"
+                  class="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg sm:rounded-xl flex-shrink-0"
                 />
                 <div
                   v-else
-                  class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center"
+                  class="w-12 h-12 sm:w-16 sm:h-16 bg-slate-100 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0"
                 >
                   <svg
-                    class="w-8 h-8 text-blue-300"
+                    class="w-6 h-6 sm:w-8 sm:h-8 text-blue-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -387,34 +390,35 @@
                     />
                   </svg>
                 </div>
-                <div class="flex-1">
-                  <div class="font-bold text-slate-800">{{ project.title }}</div>
-                  <div class="text-slate-500 text-sm">{{ truncate(project.description, 60) }}</div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-bold text-slate-800 text-sm sm:text-base truncate">{{ project.title }}</div>
+                  <div class="text-slate-500 text-xs sm:text-sm truncate">{{ truncate(project.description, 60) }}</div>
                 </div>
                 <span
                   v-if="selectedHomepageIds.includes(project.id)"
-                  class="px-2 py-1 rounded bg-blue-200 text-blue-800 text-xs font-bold"
+                  class="px-2 py-1 rounded bg-blue-200 text-blue-800 text-xs font-bold flex-shrink-0"
                   >{{ selectedHomepageIds.indexOf(project.id) + 1 }}</span
                 >
                 <input
                   type="checkbox"
                   :checked="selectedHomepageIds.includes(project.id)"
                   @change.stop="toggleHomepageSelection(project.id)"
+                  class="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5"
                 />
               </div>
             </div>
           </div>
-          <div class="p-8 border-t border-slate-200/50 flex gap-4 justify-end flex-shrink-0">
+          <div class="p-4 sm:p-6 md:p-8 border-t border-slate-200/50 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-end flex-shrink-0">
             <button
               @click="cancelHomepageSelection"
-              class="px-6 py-2 rounded-xl bg-slate-100 text-slate-700"
+              class="px-4 sm:px-6 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm sm:text-base order-2 sm:order-1"
             >
               გაუქმება
             </button>
             <button
               @click="saveHomepageProjects"
               :disabled="savingHomepage"
-              class="px-6 py-2 rounded-xl bg-blue-500 text-white font-bold shadow hover:bg-blue-600"
+              class="px-4 sm:px-6 py-2 rounded-xl bg-blue-500 text-white font-bold shadow hover:bg-blue-600 text-sm sm:text-base order-1 sm:order-2"
             >
               შენახვა
             </button>

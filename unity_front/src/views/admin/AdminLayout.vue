@@ -453,13 +453,13 @@
     <!-- Main content -->
     <div class="flex flex-col w-0 flex-1 overflow-hidden">
       <!-- Top bar -->
-      <div class="relative z-10 flex-shrink-0 flex h-16 bg-white border-b border-slate-200">
+      <div class="relative z-10 flex-shrink-0 flex h-14 sm:h-16 bg-white border-b border-slate-200">
         <!-- Mobile menu button -->
         <button
           @click="mobileMenuOpen = true"
-          class="px-4 border-r border-slate-200 text-slate-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-500 md:hidden"
+          class="px-3 sm:px-4 border-r border-slate-200 text-slate-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-500 md:hidden"
         >
-          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -470,9 +470,9 @@
         </button>
 
         <!-- Breadcrumb/Title -->
-        <div class="flex-1 px-6 flex justify-between items-center">
+        <div class="flex-1 px-3 sm:px-4 md:px-6 flex justify-between items-center">
           <div class="flex-1 flex">
-            <h2 class="text-lg font-semibold text-slate-800">
+            <h2 class="text-base sm:text-lg font-semibold text-slate-800 truncate">
               {{
                 $route.name === 'admin-dashboard'
                   ? 'დაშბორდი'
@@ -490,15 +490,15 @@
           </div>
 
           <!-- User menu -->
-          <div class="ml-4 flex items-center md:ml-6">
+          <div class="ml-2 sm:ml-4 flex items-center md:ml-6">
             <div class="relative">
               <button
                 @click="userMenuOpen = !userMenuOpen"
                 class="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
               >
-                <div class="bg-gradient-to-br from-amber-400 to-amber-500 rounded-full p-2">
+                <div class="bg-gradient-to-br from-amber-400 to-amber-500 rounded-full p-1.5 sm:p-2">
                   <svg
-                    class="w-5 h-5 text-white"
+                    class="w-4 h-4 sm:w-5 sm:h-5 text-white"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -516,15 +516,15 @@
               <!-- User dropdown -->
               <div
                 v-if="userMenuOpen"
-                class="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-slate-200 border border-slate-100"
+                class="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-slate-200 border border-slate-100 z-50"
               >
                 <div class="py-1">
-                  <div class="px-4 py-2 text-sm text-slate-700 border-b border-slate-100">
+                  <div class="px-4 py-2 text-xs sm:text-sm text-slate-700 border-b border-slate-100 truncate">
                     {{ authStore.user?.email }}
                   </div>
                   <button
                     @click="handleLogout"
-                    class="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+                    class="block w-full text-left px-4 py-2 text-xs sm:text-sm text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition-colors"
                   >
                     გასვლა
                   </button>
@@ -537,8 +537,8 @@
 
       <!-- Page Content -->
       <main class="flex-1 relative overflow-y-auto focus:outline-none bg-slate-50">
-        <div class="py-8">
-          <div class="max-w-7xl mx-auto px-6 sm:px-8 md:px-10">
+        <div class="py-4 sm:py-6 md:py-8">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
             <router-view />
           </div>
         </div>

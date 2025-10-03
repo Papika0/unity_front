@@ -1,28 +1,28 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-    <div class="container mx-auto px-6 py-12 max-w-7xl">
+    <div class="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-7xl">
       <!-- Header -->
-      <div class="mb-12">
+      <div class="mb-8 sm:mb-12">
         <h1
-          class="text-5xl font-light bg-gradient-to-r from-purple-500 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-3 tracking-tight leading-tight py-1"
+          class="text-3xl sm:text-4xl md:text-5xl font-light bg-gradient-to-r from-purple-500 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2 sm:mb-3 tracking-tight leading-tight py-1"
         >
           გალერეის მართვა
         </h1>
-        <p class="text-slate-600 text-xl font-light">
+        <p class="text-slate-600 text-base sm:text-lg md:text-xl font-light">
           მართეთ სურათები, ორგანიზება კატეგორიების მიხედვით და ატვირთეთ ახალი სურათები
         </p>
       </div>
 
       <!-- Filters and Actions -->
-      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 mb-8">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+      <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 mb-6 sm:mb-8">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6">
           <!-- Search and Filters -->
-          <div class="flex flex-col sm:flex-row gap-4 flex-1">
+          <div class="flex flex-col gap-3 sm:gap-4 flex-1">
             <!-- Search -->
-            <div class="relative flex-1 max-w-md">
+            <div class="relative w-full">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg
-                  class="h-5 w-5 text-gray-400"
+                  class="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -39,42 +39,45 @@
                 v-model="searchQuery"
                 type="text"
                 placeholder="ძებნა სურათების მიხედვით..."
-                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                class="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
               />
             </div>
 
-            <!-- Category Filter -->
-            <select
-              v-model="selectedCategory"
-              class="px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 font-medium text-gray-900 bg-white"
-            >
-              <option value="" class="text-gray-500">ყველა კატეგორია</option>
-              <option v-for="category in categories" :key="category" :value="category" class="text-gray-900">
-                {{ getCategoryLabel(category) }}
-              </option>
-            </select>
+            <!-- Filters Row -->
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <!-- Category Filter -->
+              <select
+                v-model="selectedCategory"
+                class="px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 font-medium text-gray-900 bg-white text-sm sm:text-base"
+              >
+                <option value="" class="text-gray-500">ყველა კატეგორია</option>
+                <option v-for="category in categories" :key="category" :value="category" class="text-gray-900">
+                  {{ getCategoryLabel(category) }}
+                </option>
+              </select>
 
-            <!-- Project Filter -->
-            <select
-              v-model="selectedProject"
-              class="px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 font-medium text-gray-900 bg-white"
-            >
-              <option value="" class="text-gray-500">ყველა პროექტი</option>
-              <option v-for="project in projects" :key="project" :value="project" class="text-gray-900">
-                {{ project }}
-              </option>
-            </select>
+              <!-- Project Filter -->
+              <select
+                v-model="selectedProject"
+                class="px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 font-medium text-gray-900 bg-white text-sm sm:text-base"
+              >
+                <option value="" class="text-gray-500">ყველა პროექტი</option>
+                <option v-for="project in projects" :key="project" :value="project" class="text-gray-900">
+                  {{ project }}
+                </option>
+              </select>
+            </div>
           </div>
 
           <!-- Actions -->
-          <div class="flex gap-3">
+          <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:flex-shrink-0">
             <button
               @click="refreshImages"
               :disabled="loading"
-              class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors duration-200 disabled:opacity-50"
+              class="px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg sm:rounded-xl font-medium transition-colors duration-200 disabled:opacity-50 text-sm sm:text-base"
             >
               <svg
-                class="w-5 h-5 mr-2 inline"
+                class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 inline"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -90,10 +93,10 @@
             </button>
             <button
               @click="openUploadModal"
-              class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+              class="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg sm:rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
             >
               <svg
-                class="w-5 h-5 mr-2 inline"
+                class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 inline"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -112,12 +115,12 @@
       </div>
 
       <!-- Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-xl p-6 shadow-lg border border-slate-200">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
+        <div class="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-lg border border-slate-200">
           <div class="flex items-center">
-            <div class="p-3 bg-blue-100 rounded-lg">
+            <div class="p-2 sm:p-3 bg-blue-100 rounded-lg flex-shrink-0">
               <svg
-                class="w-6 h-6 text-blue-600"
+                class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -130,9 +133,9 @@
                 />
               </svg>
             </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">სულ სურათები</p>
-              <p class="text-2xl font-bold text-gray-900">{{ totalImages }}</p>
+            <div class="ml-3 sm:ml-4 min-w-0">
+              <p class="text-xs sm:text-sm font-medium text-gray-600 truncate">სულ სურათები</p>
+              <p class="text-lg sm:text-2xl font-bold text-gray-900">{{ totalImages }}</p>
             </div>
           </div>
         </div>

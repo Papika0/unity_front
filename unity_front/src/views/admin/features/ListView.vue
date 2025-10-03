@@ -1,17 +1,17 @@
 <template>
-  <div class="p-6">
+  <div class="p-4 sm:p-6">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col gap-4 mb-6 sm:mb-8 lg:flex-row lg:justify-between lg:items-center">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">ფუნქციების მართვა</h1>
-        <p class="text-gray-600 mt-2">პროექტის ფუნქციების და მათი თვისებების მართვა</p>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">ფუნქციების მართვა</h1>
+        <p class="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">პროექტის ფუნქციების და მათი თვისებების მართვა</p>
       </div>
-      <div class="flex gap-3">
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <router-link
           to="/admin/features/assign"
-          class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          class="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -23,9 +23,9 @@
         </router-link>
         <router-link
           to="/admin/features/add"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -40,13 +40,13 @@
 
     <!-- Loading State -->
     <div v-if="isLoading" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div class="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6 text-center">
       <div class="text-red-600 mb-2">
-        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-10 h-10 sm:w-12 sm:h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -55,11 +55,11 @@
           />
         </svg>
       </div>
-      <h3 class="text-lg font-medium text-red-800 mb-2">ფუნქციების ჩატვირთვის შეცდომა</h3>
-      <p class="text-red-600 mb-4">{{ error }}</p>
+      <h3 class="text-base sm:text-lg font-medium text-red-800 mb-2">ფუნქციების ჩატვირთვის შეცდომა</h3>
+      <p class="text-sm sm:text-base text-red-600 mb-3 sm:mb-4">{{ error }}</p>
       <button
         @click="loadFeatures"
-        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm sm:text-base"
       >
         კვლავ სცადეთ
       </button>
@@ -68,36 +68,36 @@
     <!-- Features Table -->
     <div v-else class="bg-white rounded-lg shadow overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full divide-y divide-gray-200" style="min-width: 1200px">
+        <table class="w-full divide-y divide-gray-200" style="min-width: 1000px">
           <thead class="bg-gray-50">
             <tr>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48"
+                class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40 sm:w-48"
               >
                 ფუნქცია
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-56"
+                class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-44 sm:w-56"
               >
                 სათაური
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48"
+                class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40 sm:w-48"
               >
                 ხატულა და ფერი
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64"
+                class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-52 sm:w-64"
               >
                 საკვანძო სიტყვები
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32"
+                class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24 sm:w-32"
               >
                 სტატუსი
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32"
+                class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24 sm:w-32"
               >
                 დალაგების რიგი
               </th>
