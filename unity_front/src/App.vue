@@ -4,9 +4,13 @@ import { useRoute } from 'vue-router'
 import ToastContainer from '@/components/ui/ToastContainer.vue'
 import GlobalLoadingOverlay from '@/components/ui/GlobalLoadingOverlay.vue'
 import { useTranslationsStore } from '@/stores/ui/translations'
+import { usePageTitle } from '@/composables/usePageTitle'
 
 const route = useRoute()
 const translationsStore = useTranslationsStore()
+
+// Initialize page title management
+usePageTitle()
 
 // Track if we're waiting for translations to load
 const waitingForTranslations = ref(false)
