@@ -39,90 +39,95 @@ use App\Http\Controllers\Admin\AdminUserController;
 |
 */
 
-Route::prefix('auth')->group(function () {
+// Auth routes with standard rate limiting
+Route::prefix('auth')->middleware('throttle:public')->group(function () {
     Route::post('login', LoginController::class);
     Route::post('logout', LogoutController::class)->middleware('auth:api');
 });
 
-// Public news routes
-Route::prefix('news')->controller(NewsController::class)->group(function () {
-    Route::get('/', 'index');
-    Route::get('/featured', 'featured');
-    Route::get('/latest', 'latest');
-    Route::get('/recent', 'latest'); // Alias for latest
-    Route::get('/{id}', 'show');
+// Cached public content routes - very permissive rate limiting
+Route::middleware('throttle:public-cached')->group(function () {
+    // Public news routes
+    Route::prefix('news')->controller(NewsController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::get('/featured', 'featured');
+        Route::get('/latest', 'latest');
+        Route::get('/recent', 'latest'); // Alias for latest
+        Route::get('/{id}', 'show');
+    });
+
+    // Public projects routes
+    Route::prefix('projects')->controller(ProjectsController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::get('/featured', 'featured');
+        Route::get('/homepage', 'homepage');
+        Route::get('/{id}', 'show');
+    });
+
+    // Features routes (public)
+    Route::prefix('features')->controller(FeaturesController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::get('/project/{projectId}', 'getProjectFeatures');
+    });
+
+    // Public translations routes (for frontend)
+    Route::prefix('public/translations')->controller(TranslationsController::class)->group(function () {
+        Route::get('/group/{group}', 'getByGroup');
+        Route::post('/groups', 'getByGroups'); // POST to support array of groups in body
+    });
+
+    // Homepage routes
+    Route::prefix('homepage')->controller(HomePageController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::get('/bootstrap', 'index'); // Alias for backward compatibility
+    });
+
+    // Footer routes
+    Route::prefix('footer')->controller(FooterController::class)->group(function () {
+        Route::get('/', 'index'); // Get all footer data (projects + contact)
+        Route::get('/projects', 'projects'); // Get only footer projects
+        Route::get('/contact', 'contact'); // Get only footer contact info
+    });
+
+    // About page routes
+    Route::prefix('about')->controller(AboutController::class)->group(function () {
+        Route::get('/', 'index');
+    });
+
+    // Projects page routes
+    Route::prefix('projects-page')->controller(ProjectsPageController::class)->group(function () {
+        Route::get('/', 'index');
+    });
+
+    // Gallery page routes
+    Route::prefix('gallery-page')->controller(App\Http\Controllers\Api\GalleryPageController::class)->group(function () {
+        Route::get('/', 'index');
+    });
+
+    // Contact info routes (public)
+    Route::get('/contact-info', [App\Http\Controllers\Api\ContactInfoController::class, 'index']);
+    Route::get('/contact-info/settings', [App\Http\Controllers\Api\ContactInfoController::class, 'settings']);
+    Route::get('/contact/settings', [App\Http\Controllers\Api\ContactInfoController::class, 'settings']);
+
+    // Gallery routes (public)
+    Route::prefix('gallery')->controller(GalleryController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::get('/categories', 'categories');
+        Route::get('/{id}', 'show');
+    });
+
+    // Test cache endpoint (no auth required for testing)
+    Route::get('/test-cache', [AdminController::class, 'getCacheStats']);
 });
 
-// Public projects routes
-Route::prefix('projects')->controller(ProjectsController::class)->group(function () {
-    Route::get('/', 'index');
-    Route::get('/featured', 'featured');
-    Route::get('/homepage', 'homepage');
-    Route::get('/{id}', 'show');
+// Customer inquiry routes with moderate rate limiting
+Route::middleware('throttle:public')->group(function () {
+    Route::post('/customers', [CustomerController::class, 'store']);
 });
 
-// Features routes (public)
-Route::prefix('features')->controller(FeaturesController::class)->group(function () {
-    Route::get('/', 'index');
-    Route::get('/{id}', 'show');
-    Route::get('/project/{projectId}', 'getProjectFeatures');
-});
-
-// Public translations routes (for frontend)
-Route::prefix('public/translations')->controller(TranslationsController::class)->group(function () {
-    Route::get('/group/{group}', 'getByGroup');
-    Route::post('/groups', 'getByGroups'); // POST to support array of groups in body
-});
-
-// Homepage routes
-Route::prefix('homepage')->controller(HomePageController::class)->group(function () {
-    Route::get('/', 'index');
-    Route::get('/bootstrap', 'index'); // Alias for backward compatibility
-});
-
-// Footer routes
-Route::prefix('footer')->controller(FooterController::class)->group(function () {
-    Route::get('/', 'index'); // Get all footer data (projects + contact)
-    Route::get('/projects', 'projects'); // Get only footer projects
-    Route::get('/contact', 'contact'); // Get only footer contact info
-});
-
-
-
-// About page routes
-Route::prefix('about')->controller(AboutController::class)->group(function () {
-    Route::get('/', 'index');
-});
-
-// Projects page routes
-Route::prefix('projects-page')->controller(ProjectsPageController::class)->group(function () {
-    Route::get('/', 'index');
-});
-
-// Gallery page routes
-Route::prefix('gallery-page')->controller(App\Http\Controllers\Api\GalleryPageController::class)->group(function () {
-    Route::get('/', 'index');
-});
-
-// Contact info routes (public)
-Route::get('/contact-info', [App\Http\Controllers\Api\ContactInfoController::class, 'index']);
-Route::get('/contact-info/settings', [App\Http\Controllers\Api\ContactInfoController::class, 'settings']);
-Route::get('/contact/settings', [App\Http\Controllers\Api\ContactInfoController::class, 'settings']);
-
-// Customer inquiry routes (public)
-Route::post('/customers', [CustomerController::class, 'store']);
-
-// Gallery routes (public)
-Route::prefix('gallery')->controller(GalleryController::class)->group(function () {
-    Route::get('/', 'index');
-    Route::get('/categories', 'categories');
-    Route::get('/{id}', 'show');
-});
-
-// Test cache endpoint (no auth required for testing)
-Route::get('/test-cache', [AdminController::class, 'getCacheStats']);
-
-Route::middleware(['auth:api', 'jwt.auth'])->group(function () {
+// Authenticated routes with standard API rate limiting
+Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
     Route::get('/user', [UserController::class, 'getUser']);
 
     Route::prefix('translations')->controller(AdminTranslationController::class)->group(function () {

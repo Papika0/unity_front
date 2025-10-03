@@ -5,11 +5,9 @@ import ToastContainer from '@/components/ui/ToastContainer.vue'
 import GlobalLoadingOverlay from '@/components/ui/GlobalLoadingOverlay.vue'
 import { useTranslationsStore } from '@/stores/ui/translations'
 import { usePageTitle } from '@/composables/usePageTitle'
-import { useTranslationLoader } from '@/composables/useTranslationLoader'
 
 const route = useRoute()
 const translationsStore = useTranslationsStore()
-const translationLoader = useTranslationLoader()
 
 // Initialize page title management
 usePageTitle()
@@ -29,37 +27,52 @@ const routeToPageMap: Record<string, string> = {
   'contact': 'contact',
 }
 
-// Watch for route changes and load translations
-watch(() => route.name, async (newRoute) => {
+// Watch for route changes and check if translations are loaded
+watch(() => route.name, (newRoute) => {
   // Skip admin routes
   if (route.path.startsWith('/admin')) {
     waitingForTranslations.value = false
     return
   }
-  
+
   const pageName = routeToPageMap[newRoute as string]
-  
+
   if (pageName) {
     // Check if translations are already loaded
     const isLoaded = translationsStore.arePageGroupsLoaded(pageName)
-    
-    if (!isLoaded) {
-      // Set waiting state - this will show the loading overlay
+
+    // Only wait for translations on initial page load (when store is empty)
+    // After that, show content immediately with fallback to translation keys
+    const hasAnyTranslations = Object.keys(translationsStore.translations).length > 0
+
+    if (!isLoaded && !hasAnyTranslations) {
+      // Initial load - wait for translations
       waitingForTranslations.value = true
       translationsStore.isLoading = true
-      
-      try {
-        // Actually fetch the translations from the API
-        await translationLoader.loadPageTranslations(pageName)
-        
-        waitingForTranslations.value = false
-        translationsStore.isLoading = false
-      } catch {
-        // Don't block the page even if translations fail
-        waitingForTranslations.value = false
-        translationsStore.isLoading = false
-      }
+
+      // Watch for translations to be loaded
+      const unwatch = watch(
+        () => translationsStore.arePageGroupsLoaded(pageName),
+        (loaded) => {
+          if (loaded) {
+            waitingForTranslations.value = false
+            translationsStore.isLoading = false
+            unwatch()
+          }
+        },
+        { immediate: true }
+      )
+
+      // Shorter timeout - show content faster even if translations aren't fully loaded
+      setTimeout(() => {
+        if (waitingForTranslations.value) {
+          waitingForTranslations.value = false
+          translationsStore.isLoading = false
+          unwatch()
+        }
+      }, 800) // Reduced from 2000ms to 800ms
     } else {
+      // Already have some translations or page translations loaded - show immediately
       waitingForTranslations.value = false
       translationsStore.isLoading = false
     }

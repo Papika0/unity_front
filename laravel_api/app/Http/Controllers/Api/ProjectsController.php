@@ -8,16 +8,19 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use App\Http\Resources\Api\ProjectResource;
 use App\Services\PageCacheService;
+use App\Services\TranslationService;
 
 class ProjectsController extends Controller
 {
     use ApiResponse;
 
     protected $pageCacheService;
+    protected $translationService;
 
-    public function __construct(PageCacheService $pageCacheService)
+    public function __construct(PageCacheService $pageCacheService, TranslationService $translationService)
     {
         $this->pageCacheService = $pageCacheService;
+        $this->translationService = $translationService;
     }
 
     /**
@@ -82,20 +85,28 @@ class ProjectsController extends Controller
     public function show(Request $request, $id)
     {
         try {
-            $locale = $request->get('locale', 'ka');
+            $locale = $request->input('locale', 'ka');
+            $requestGroups = $request->input('groups', []);
 
-            // Create cache key
-            $cacheKey = "project_show_{$id}_{$locale}";
+            // Create cache key including groups
+            $groupsKey = !empty($requestGroups) ? md5(json_encode($requestGroups)) : 'nogroups';
+            $cacheKey = "project_show_{$id}_{$locale}_{$groupsKey}";
 
             // Check cache first
             if ($this->pageCacheService->has($cacheKey)) {
                 return $this->pageCacheService->get($cacheKey);
             }
 
+            // Get translations if groups are requested
+            $translations = [];
+            if (is_array($requestGroups) && count($requestGroups) > 0) {
+                $translations = $this->translationService->getOptimizedTranslations($requestGroups, $locale);
+            }
+
             $project = Projects::where('is_active', true)
                               ->with(['features', 'mainImage', 'renderImage', 'galleryImages'])
                               ->findOrFail($id);
-            
+
             // Get related projects (same status, excluding current)
             $relatedProjects = Projects::where('is_active', true)
                 ->where('id', '!=', $id)
@@ -104,25 +115,25 @@ class ProjectsController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->take(3)
                 ->get(['id', 'title', 'status']);
-            
+
             // If less than 3 same-status projects, fill with other projects
             if ($relatedProjects->count() < 3) {
                 $remainingCount = 3 - $relatedProjects->count();
                 $relatedIds = $relatedProjects->pluck('id')->toArray();
                 $relatedIds[] = $id; // Exclude current project
-                
+
                 $additionalProjects = Projects::where('is_active', true)
                     ->whereNotIn('id', $relatedIds)
                     ->with('mainImage')
                     ->orderBy('created_at', 'desc')
                     ->take($remainingCount)
                     ->get(['id', 'title', 'status']);
-                
+
                 $relatedProjects = $relatedProjects->concat($additionalProjects);
             }
-            
+
             $resource = new ProjectResource($project, $locale);
-            
+
             // Add related projects to the resource
             $resourceData = $resource->toArray($request);
             $resourceData['related_projects'] = $relatedProjects->map(function($related) use ($locale) {
@@ -139,12 +150,19 @@ class ProjectsController extends Controller
                     'status' => $related->status,
                 ];
             })->values()->all();
-            
-            $result = $this->success($resourceData);
+
+            $result = $this->success([
+                'data' => $resourceData,
+                'translations' => $translations,
+                'meta' => [
+                    'locale' => $locale,
+                    'cached_at' => now()->toISOString(),
+                ]
+            ]);
 
             // Cache forever
             $this->pageCacheService->put($cacheKey, $result, null);
-            
+
             return $result;
         } catch (\Exception $e) {
             return $this->error('Project not found', 404);

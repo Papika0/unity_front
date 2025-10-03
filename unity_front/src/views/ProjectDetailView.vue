@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTranslations } from '../composables/useTranslations'
 import { useLocaleStore } from '@/stores/ui/locale'
+import { useTranslationsStore } from '@/stores/ui/translations'
 import { projectsApi } from '@/services/projectsApi'
 import type { ProjectApiResponse } from '@/services/projectsApi'
 import type { ProjectFeature } from '@/services/featuresApi'
@@ -11,6 +12,7 @@ import { useScrollAnimation } from '@/composables/useScrollAnimation'
 const { t } = useTranslations()
 const route = useRoute()
 const router = useRouter()
+const translationsStore = useTranslationsStore()
 
 // Initialize locale store
 const localeStore = useLocaleStore()
@@ -145,15 +147,22 @@ const loadProjectData = async (projectId: number) => {
 
   try {
     // Load the specific project (includes features and related projects from API)
-    const projectData = await projectsApi.getById(projectId, localeStore.currentLocale)
-    project.value = projectData
+    const response = await projectsApi.getById(projectId, localeStore.currentLocale)
+
+    // Handle translations if present in response
+    if ((response as any).translations) {
+      translationsStore.mergeTranslations((response as any).translations)
+    }
+
+    // Extract the project data from the nested structure
+    project.value = (response as any).data || response
 
     // Set features from project data
-    projectFeatures.value = projectData.features || []
-    
+    projectFeatures.value = project.value?.features || []
+
     // Scroll to top smoothly to trigger animations properly
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    
+
     // Wait for scroll to complete and DOM to update
     await new Promise(resolve => setTimeout(resolve, 100))
   } catch (err) {
@@ -178,6 +187,17 @@ watch(
     }
   },
   { immediate: true },
+)
+
+// Watch for locale changes to refetch project data with new translations
+watch(
+  () => localeStore.currentLocale,
+  async () => {
+    const projectId = parseInt(route.params.id as string)
+    if (!isNaN(projectId)) {
+      await loadProjectData(projectId)
+    }
+  },
 )
 
 const selectImage = (index: number) => {
