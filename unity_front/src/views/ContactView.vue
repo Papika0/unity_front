@@ -4,9 +4,12 @@ import { VueTelInput } from 'vue-tel-input'
 import { useTranslations } from '../composables/useTranslations'
 import { useContactPage } from '../composables/useContactPage'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useToastStore } from '../stores/ui/toast'
+import { customerApi, type CustomerData } from '../services/customerApi'
 import 'vue-tel-input/vue-tel-input.css'
 
 const { t } = useTranslations()
+const toastStore = useToastStore()
 const {
   contactInfo,
   socialLinks,
@@ -120,18 +123,47 @@ const submitForm = async () => {
   if (!validateForm.value) return
 
   isSubmitting.value = true
-  await new Promise((resolve) => setTimeout(resolve, 2000))
 
-  Object.keys(form).forEach((key) => {
-    form[key as keyof typeof form] = key === 'subject' ? 'general' : ''
-  })
+  try {
+    const customerData: CustomerData = {
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      subject: form.subject,
+      message: form.message,
+      source: 'contact_form',
+    }
 
-  isSubmitting.value = false
-  isSubmitted.value = true
+    const response = await customerApi.submit(customerData)
 
-  setTimeout(() => {
-    isSubmitted.value = false
-  }, 5000)
+    if (response.success) {
+      // Clear form
+      Object.keys(form).forEach((key) => {
+        form[key as keyof typeof form] = key === 'subject' ? 'general' : ''
+      })
+
+      isSubmitted.value = true
+
+      toastStore.success(
+        t('contact.form.success.title') || 'წარმატებული',
+        response.message || t('contact.form.success.message') || 'თქვენი შეტყობინება გაიგზავნა',
+      )
+
+      setTimeout(() => {
+        isSubmitted.value = false
+      }, 5000)
+    } else {
+      throw new Error(response.message || 'დაფიქსირდა შეცდომა')
+    }
+  } catch (error: any) {
+    console.error('Failed to submit contact form:', error)
+    toastStore.error(
+      t('messages.error_title') || 'შეცდომა',
+      error.message || t('messages.error_message') || 'გთხოვთ სცადოთ მოგვიანებით',
+    )
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 const scrollToForm = () => {

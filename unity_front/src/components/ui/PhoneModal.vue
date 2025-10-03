@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { VueTelInput } from 'vue-tel-input'
 import { useTranslations } from '../../composables/useTranslations'
 import 'vue-tel-input/vue-tel-input.css'
@@ -21,16 +21,29 @@ interface PhoneInputObject {
 defineProps<Props>()
 const emit = defineEmits<{
   close: []
-  submit: [phone: string]
+  submit: [data: FormData]
 }>()
 
 const { t } = useTranslations()
 
-const phoneNumber = ref('')
+interface FormData {
+  name: string
+  email: string
+  phone: string
+  message: string
+}
+
+const form = reactive<FormData>({
+  name: '',
+  email: '',
+  phone: '',
+  message: ''
+})
+
 const isValidPhone = ref(false)
 
 const handleInput = (number: string, phoneObject?: PhoneInputObject) => {
-  phoneNumber.value = number
+  form.phone = number
   if (phoneObject) {
     isValidPhone.value = phoneObject.valid || false
   } else {
@@ -38,15 +51,28 @@ const handleInput = (number: string, phoneObject?: PhoneInputObject) => {
   }
 }
 
+const isValidForm = () => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return !!(
+    form.name.trim() &&
+    emailRegex.test(form.email) &&
+    isValidPhone.value &&
+    form.phone
+  )
+}
+
 const handleSubmit = () => {
-  if (isValidPhone.value && phoneNumber.value) {
-    emit('submit', phoneNumber.value)
+  if (isValidForm()) {
+    emit('submit', { ...form })
     closeModal()
   }
 }
 
 const closeModal = () => {
-  phoneNumber.value = ''
+  form.name = ''
+  form.email = ''
+  form.phone = ''
+  form.message = ''
   isValidPhone.value = false
   emit('close')
 }
@@ -97,7 +123,7 @@ const vueTelInputProps = {
           <!-- Header -->
           <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-medium text-zinc-900">
-              {{ t('contact.modal_title') || 'Enter Phone Number' }}
+              {{ t('contact.modal_title') || 'გთხოვთ შეავსოთ ფორმა' }}
             </h3>
             <button @click="closeModal" class="text-zinc-400 hover:text-zinc-600 transition-colors">
               <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -113,20 +139,61 @@ const vueTelInputProps = {
 
           <!-- Form -->
           <form @submit.prevent="handleSubmit" class="space-y-4">
+            <!-- Name Input -->
+            <div>
+              <label class="block text-sm font-medium text-zinc-700 mb-2">
+                {{ t('contact.form.fields.name.label') || 'სახელი *' }}
+              </label>
+              <input
+                v-model="form.name"
+                type="text"
+                required
+                class="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent text-zinc-900"
+                :placeholder="t('contact.form.fields.name.placeholder') || 'თქვენი სახელი'"
+              />
+            </div>
+
+            <!-- Email Input -->
+            <div>
+              <label class="block text-sm font-medium text-zinc-700 mb-2">
+                {{ t('contact.form.fields.email.label') || 'ელ. ფოსტა *' }}
+              </label>
+              <input
+                v-model="form.email"
+                type="email"
+                required
+                class="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent text-zinc-900"
+                :placeholder="t('contact.form.fields.email.placeholder') || 'your@email.com'"
+              />
+            </div>
+
             <!-- Phone Number Input -->
             <div>
               <label class="block text-sm font-medium text-zinc-700 mb-2">
-                {{ t('contact.enter_number') || 'Phone Number' }}
+                {{ t('contact.form.fields.phone.label') || 'ტელეფონი *' }}
               </label>
               <VueTelInput
                 v-bind="vueTelInputProps"
-                v-model="phoneNumber"
+                v-model="form.phone"
                 @on-input="handleInput"
                 class="w-full vue-tel-input-wrapper"
               />
-              <p v-if="phoneNumber && !isValidPhone" class="mt-1 text-sm text-red-600">
-                {{ t('errors.invalidPhone') || 'Please enter a valid phone number' }}
+              <p v-if="form.phone && !isValidPhone" class="mt-1 text-sm text-red-600">
+                {{ t('errors.invalidPhone') || 'გთხოვთ შეიყვანოთ სწორი ტელეფონის ნომერი' }}
               </p>
+            </div>
+
+            <!-- Message Input (Optional) -->
+            <div>
+              <label class="block text-sm font-medium text-zinc-700 mb-2">
+                {{ t('contact.form.fields.message.label') || 'შეტყობინება' }}
+              </label>
+              <textarea
+                v-model="form.message"
+                rows="3"
+                class="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent resize-none text-zinc-900"
+                :placeholder="t('contact.form.fields.message.placeholder') || 'თქვენი შეტყობინება...'"
+              ></textarea>
             </div>
 
             <!-- Actions -->
@@ -140,10 +207,10 @@ const vueTelInputProps = {
               </button>
               <button
                 type="submit"
-                :disabled="!isValidPhone"
+                :disabled="!isValidForm()"
                 class="flex-1 px-4 py-2 text-sm font-medium text-white bg-zinc-900 border border-transparent rounded-md hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ t('contact.button') || 'Call Now' }}
+                {{ t('contact.button') || 'გაგზავნა' }}
               </button>
             </div>
           </form>

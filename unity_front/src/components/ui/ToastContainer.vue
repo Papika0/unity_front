@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div class="fixed top-4 right-4 z-50 space-y-3 max-w-sm">
+    <div class="fixed top-4 right-4 z-[100] space-y-3 max-w-sm">
       <TransitionGroup name="toast" tag="div" class="space-y-3">
         <div
           v-for="toast in toastStore.toasts"

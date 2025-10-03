@@ -4,6 +4,7 @@ import { useTranslations } from '../composables/useTranslations'
 import { useNavigationLinks } from '../composables/useNavigationLinks'
 import { useContactInfo } from '../composables/useContactInfo'
 import { useToastStore } from '../stores/ui/toast'
+import { customerApi, type CustomerData } from '../services/customerApi'
 import BaseButton from './ui/BaseButton.vue'
 import LinkSection from './ui/LinkSection.vue'
 import ContactInfo from './ui/ContactInfo.vue'
@@ -25,20 +26,40 @@ const closePhoneModal = () => {
   isPhoneModalOpen.value = false
 }
 
-const handlePhoneSubmit = (phoneNumber: string) => {
-  // Here you can handle the phone number submission
-  // For example, initiate a call or send to an API
-  console.log('Phone number submitted:', phoneNumber)
+interface FormData {
+  name: string
+  email: string
+  phone: string
+  message: string
+}
 
-  // Show success toast
-  toastStore.success(
-    t('messages.phone_success_title') || 'Call Request Successful',
-    t('messages.phone_success_message') + ' ' + phoneNumber ||
-      `We'll call you shortly at ${phoneNumber}`,
-  )
+const handlePhoneSubmit = async (formData: FormData) => {
+  try {
+    const customerData: CustomerData = {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      message: formData.message,
+      source: 'call_request',
+    }
 
-  // You could redirect to a tel: link or handle it differently
-  // window.location.href = `tel:${phoneNumber}`
+    const response = await customerApi.submit(customerData)
+
+    if (response.success) {
+      toastStore.success(
+        t('messages.phone_success_title') || 'მოთხოვნა გაგზავნილია',
+        response.message || t('messages.phone_success_message') || 'ჩვენ მალე დაგიკავშირდებით',
+      )
+    } else {
+      throw new Error(response.message || 'დაფიქსირდა შეცდომა')
+    }
+  } catch (error: any) {
+    console.error('Failed to submit customer inquiry:', error)
+    toastStore.error(
+      t('messages.error_title') || 'შეცდომა',
+      error.message || t('messages.error_message') || 'გთხოვთ სცადოთ მოგვიანებით',
+    )
+  }
 }
 </script>
 

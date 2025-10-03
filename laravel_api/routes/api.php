@@ -20,6 +20,10 @@ use App\Http\Controllers\Admin\AdminAboutController;
 use App\Http\Controllers\Admin\AdminImageController;
 use App\Http\Controllers\Api\GalleryController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\Admin\AdminCustomerController;
+use App\Http\Controllers\Admin\AdminMarketingEmailController;
+use App\Http\Controllers\Admin\DashboardController;
 
 
 /*
@@ -96,6 +100,9 @@ Route::prefix('gallery-page')->controller(App\Http\Controllers\Api\GalleryPageCo
 Route::get('/contact-info', [App\Http\Controllers\Api\ContactInfoController::class, 'index']);
 Route::get('/contact-info/settings', [App\Http\Controllers\Api\ContactInfoController::class, 'settings']);
 Route::get('/contact/settings', [App\Http\Controllers\Api\ContactInfoController::class, 'settings']);
+
+// Customer inquiry routes (public)
+Route::post('/customers', [CustomerController::class, 'store']);
 
 // Gallery routes (public)
 Route::prefix('gallery')->controller(GalleryController::class)->group(function () {
@@ -191,6 +198,35 @@ Route::middleware(['auth:api', 'jwt.auth'])->group(function () {
         Route::delete('/{id}', 'destroy');  // Delete image
         Route::post('/attach', 'attach');   // Attach image to model
         Route::post('/detach', 'detach');   // Detach image from model
+    });
+
+    // Dashboard statistics endpoint
+    Route::prefix('admin/dashboard')->controller(DashboardController::class)->group(function () {
+        Route::get('/statistics', 'statistics');        // Get all dashboard statistics
+        Route::post('/clear-cache', 'clearCache');      // Clear application cache
+    });
+
+    // Protected customer management routes (admin only)
+    Route::prefix('admin/customers')->controller(AdminCustomerController::class)->group(function () {
+        Route::get('/', 'index');                       // Get all customers with filters
+        Route::get('/statistics', 'statistics');        // Get customer statistics
+        Route::get('/chart-data', 'chartData');         // Get chart data for last 30 days
+        Route::get('/{id}', 'show');                   // Get single customer
+        Route::put('/{id}', 'update');                 // Update customer (status, notes)
+        Route::delete('/{id}', 'destroy');             // Delete customer
+        Route::post('/bulk-update-status', 'bulkUpdateStatus'); // Bulk update status
+        Route::post('/bulk-delete', 'bulkDelete');     // Bulk delete
+    });
+
+    // Protected marketing email management routes (admin only)
+    Route::prefix('admin/marketing-emails')->controller(AdminMarketingEmailController::class)->group(function () {
+        Route::get('/', 'index');                      // Get all marketing emails
+        Route::get('/{id}', 'show');                  // Get single email
+        Route::post('/', 'store');                    // Create new email
+        Route::put('/{id}', 'update');                // Update email
+        Route::delete('/{id}', 'destroy');            // Delete email
+        Route::post('/{id}/toggle-active', 'toggleActive'); // Toggle active status
+        Route::post('/bulk-delete', 'bulkDelete');    // Bulk delete
     });
 });
 

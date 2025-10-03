@@ -3,6 +3,7 @@ import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTranslations } from '../composables/useTranslations'
 import { useLocaleStore } from '@/stores/ui/locale'
+import IconPhone from './icons/IconPhone.vue'
 
 interface Props {
   transparent?: boolean
@@ -16,6 +17,19 @@ const { t } = useTranslations()
 const localeStore = useLocaleStore()
 const router = useRouter()
 const isMobileMenuOpen = ref(false)
+
+const emit = defineEmits<{
+  openPhoneModal: []
+}>()
+
+const openPhoneModal = () => {
+  emit('openPhoneModal')
+  // Close mobile menu if open
+  if (isMobileMenuOpen.value) {
+    isMobileMenuOpen.value = false
+    document.body.style.overflow = ''
+  }
+}
 
 const navigation = [
   { key: 'header.home', path: '/' },
@@ -132,41 +146,70 @@ onUnmounted(() => {
         </router-link>
       </nav>
 
-      <!-- Language Switcher -->
+      <!-- Call Us Button & Language Switcher -->
       <div class="hidden lg:flex items-center space-x-4 xl:space-x-6 ml-auto">
+        <!-- Call Us Button -->
         <button
+          @click="openPhoneModal"
           :class="[
-            'px-3 py-2 text-sm xl:text-base font-medium transition-all duration-200 whitespace-nowrap rounded-lg',
+            'inline-flex items-center gap-2 px-4 py-2 text-sm font-normal font-roboto uppercase tracking-widest transition-all duration-200 whitespace-nowrap',
             transparent
-              ? 'text-orange-100 hover:text-orange-200 hover:bg-white/10'
-              : 'text-zinc-900 hover:text-zinc-600 hover:bg-zinc-100',
+              ? 'border border-orange-100 text-orange-100 hover:bg-orange-100 hover:text-zinc-900'
+              : 'border border-zinc-900 text-zinc-900 hover:bg-zinc-900 hover:text-white',
           ]"
-          @click="localeStore.setLocale('en')"
         >
-          EN
+          <IconPhone class="w-4 h-4" />
+          {{ t('footer.callUS') || 'Call Us' }}
         </button>
-        <button
-          :class="[
-            'px-3 py-2 text-sm xl:text-base font-medium transition-all duration-200 whitespace-nowrap rounded-lg',
-            transparent
-              ? 'text-orange-100 hover:text-orange-200 hover:bg-white/10'
-              : 'text-zinc-900 hover:text-zinc-600 hover:bg-zinc-100',
-          ]"
-          @click="localeStore.setLocale('ka')"
-        >
-          KA
-        </button>
-        <button
-          :class="[
-            'px-3 py-2 text-sm xl:text-base font-medium transition-all duration-200 whitespace-nowrap rounded-lg',
-            transparent
-              ? 'text-orange-100 hover:text-orange-200 hover:bg-white/10'
-              : 'text-zinc-900 hover:text-zinc-600 hover:bg-zinc-100',
-          ]"
-          @click="localeStore.setLocale('ru')"
-        >
-          RU
-        </button>
+
+        <!-- Language Switcher -->
+        <div class="flex items-center gap-1 border rounded-sm p-0.5" :class="transparent ? 'border-orange-100/30' : 'border-zinc-900/20'">
+          <button
+            :class="[
+              'px-3 py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
+              localeStore.locale === 'en'
+                ? transparent
+                  ? 'bg-orange-100 text-zinc-900'
+                  : 'bg-zinc-900 text-white'
+                : transparent
+                  ? 'text-orange-100 hover:text-orange-200'
+                  : 'text-zinc-900 hover:text-zinc-600',
+            ]"
+            @click="localeStore.setLocale('en')"
+          >
+            EN
+          </button>
+          <button
+            :class="[
+              'px-3 py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
+              localeStore.locale === 'ka'
+                ? transparent
+                  ? 'bg-orange-100 text-zinc-900'
+                  : 'bg-zinc-900 text-white'
+                : transparent
+                  ? 'text-orange-100 hover:text-orange-200'
+                  : 'text-zinc-900 hover:text-zinc-600',
+            ]"
+            @click="localeStore.setLocale('ka')"
+          >
+            KA
+          </button>
+          <button
+            :class="[
+              'px-3 py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
+              localeStore.locale === 'ru'
+                ? transparent
+                  ? 'bg-orange-100 text-zinc-900'
+                  : 'bg-zinc-900 text-white'
+                : transparent
+                  ? 'text-orange-100 hover:text-orange-200'
+                  : 'text-zinc-900 hover:text-zinc-600',
+            ]"
+            @click="localeStore.setLocale('ru')"
+          >
+            RU
+          </button>
+        </div>
       </div>
 
       <!-- Spacer for mobile layout balance -->
@@ -227,43 +270,76 @@ onUnmounted(() => {
             {{ t(item.key as any) }}
           </router-link>
 
+          <!-- Call Us Button in mobile -->
+          <button
+            @click="openPhoneModal"
+            :style="{ transitionDelay: `${navigation.length * 50}ms` }"
+            :class="[
+              'w-full flex items-center justify-center gap-2 py-3 px-4 text-base font-normal font-roboto uppercase tracking-widest transition-all duration-300 transform',
+              transparent
+                ? 'border border-orange-100 text-orange-100 hover:bg-orange-100 hover:text-zinc-900'
+                : 'border border-zinc-900 text-zinc-900 hover:bg-zinc-900 hover:text-white',
+              isMobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0',
+            ]"
+          >
+            <IconPhone class="w-4 h-4" />
+            {{ t('footer.callUS') || 'Call Us' }}
+          </button>
+
           <!-- Language switcher in mobile -->
           <div
             :class="[
-              'flex justify-center space-x-4 pt-4 mt-4 border-t',
+              'flex justify-center pt-4 mt-4 border-t',
               transparent ? 'border-orange-100/20' : 'border-zinc-200',
             ]"
           >
-            <button
-              :class="[
-                'px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg',
-                transparent
-                  ? 'text-orange-100 hover:text-orange-200 hover:bg-white/10'
-                  : 'text-zinc-900 hover:text-zinc-600 hover:bg-zinc-100',
-              ]"
-            >
-              EN
-            </button>
-            <button
-              :class="[
-                'px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg',
-                transparent
-                  ? 'text-orange-100 hover:text-orange-200 hover:bg-white/10'
-                  : 'text-zinc-900 hover:text-zinc-600 hover:bg-zinc-100',
-              ]"
-            >
-              KA
-            </button>
-            <button
-              :class="[
-                'px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg',
-                transparent
-                  ? 'text-orange-100 hover:text-orange-200 hover:bg-white/10'
-                  : 'text-zinc-900 hover:text-zinc-600 hover:bg-zinc-100',
-              ]"
-            >
-              RU
-            </button>
+            <div class="flex items-center gap-1 border rounded-sm p-0.5" :class="transparent ? 'border-orange-100/30' : 'border-zinc-900/20'">
+              <button
+                :class="[
+                  'px-4 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap',
+                  localeStore.locale === 'en'
+                    ? transparent
+                      ? 'bg-orange-100 text-zinc-900'
+                      : 'bg-zinc-900 text-white'
+                    : transparent
+                      ? 'text-orange-100 hover:text-orange-200'
+                      : 'text-zinc-900 hover:text-zinc-600',
+                ]"
+                @click="localeStore.setLocale('en')"
+              >
+                EN
+              </button>
+              <button
+                :class="[
+                  'px-4 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap',
+                  localeStore.locale === 'ka'
+                    ? transparent
+                      ? 'bg-orange-100 text-zinc-900'
+                      : 'bg-zinc-900 text-white'
+                    : transparent
+                      ? 'text-orange-100 hover:text-orange-200'
+                      : 'text-zinc-900 hover:text-zinc-600',
+                ]"
+                @click="localeStore.setLocale('ka')"
+              >
+                KA
+              </button>
+              <button
+                :class="[
+                  'px-4 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap',
+                  localeStore.locale === 'ru'
+                    ? transparent
+                      ? 'bg-orange-100 text-zinc-900'
+                      : 'bg-zinc-900 text-white'
+                    : transparent
+                      ? 'text-orange-100 hover:text-orange-200'
+                      : 'text-zinc-900 hover:text-zinc-600',
+                ]"
+                @click="localeStore.setLocale('ru')"
+              >
+                RU
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -190,6 +190,16 @@ const router = createRouter({
               name: 'admin-about-settings',
               component: () => import('@/views/admin/about/SettingsView.vue'),
             },
+            {
+              path: 'customers',
+              name: 'admin-customers',
+              component: () => import('@/views/admin/customers/AdminCustomersView.vue'),
+            },
+            {
+              path: 'marketing-emails',
+              name: 'admin-marketing-emails',
+              component: () => import('@/views/admin/marketing-emails/AdminMarketingEmailsView.vue'),
+            },
           ],
         },
       ],
