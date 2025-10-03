@@ -2,8 +2,10 @@
 import { ref, onMounted, computed } from 'vue'
 import { adminCustomerApi, type Customer, type CustomerStatistics } from '@/services/adminCustomerApi'
 import { useToastStore } from '@/stores/ui/toast'
+import { useAuthStore } from '@/stores/auth/auth'
 
 const toastStore = useToastStore()
+const authStore = useAuthStore()
 
 const customers = ref<Customer[]>([])
 const statistics = ref<CustomerStatistics>({
@@ -21,6 +23,8 @@ const loading = ref(false)
 const selectedCustomer = ref<Customer | null>(null)
 const showDetailsModal = ref(false)
 const selectedIds = ref<number[]>([])
+const editingNotes = ref(false)
+const notesInput = ref('')
 
 // Filters
 const filters = ref({
@@ -87,12 +91,33 @@ const loadStatistics = async () => {
 
 const viewDetails = (customer: Customer) => {
   selectedCustomer.value = customer
+  notesInput.value = customer.notes || ''
+  editingNotes.value = false
   showDetailsModal.value = true
 }
 
 const closeDetailsModal = () => {
   showDetailsModal.value = false
   selectedCustomer.value = null
+  editingNotes.value = false
+  notesInput.value = ''
+}
+
+const saveNotes = async () => {
+  if (!selectedCustomer.value) return
+
+  try {
+    await adminCustomerApi.update(selectedCustomer.value.id, {
+      notes: notesInput.value,
+    })
+    toastStore.success('წარმატება', 'შენიშვნები შენახულია')
+    selectedCustomer.value.notes = notesInput.value
+    editingNotes.value = false
+    await loadCustomers()
+  } catch (error) {
+    console.error('Failed to save notes:', error)
+    toastStore.error('შეცდომა', 'შენიშვნების შენახვა ვერ მოხერხდა')
+  }
 }
 
 const updateCustomerStatus = async (id: number, status: string) => {
@@ -355,13 +380,25 @@ onMounted(() => {
     </div>
 
     <!-- Bulk Actions -->
-    <div v-if="selectedIds.length > 0" class="bg-amber-50 border border-amber-200 rounded-lg p-4">
-      <div class="flex items-center justify-between">
-        <span class="text-sm text-slate-700">არჩეული: {{ selectedIds.length }}</span>
-        <div class="flex space-x-2">
+      <!-- Bulk Actions -->
+      <div v-if="selectedIds.length > 0 && authStore.isAdmin" class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium text-blue-900">
+            არჩეულია {{ selectedIds.length }} კლიენტი
+          </span>
+        </div>
+        <div class="mt-3 flex space-x-3">
           <select
-            class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500"
-            @change="(e) => bulkUpdateStatus((e.target as HTMLSelectElement).value)"
+            @change="
+              (e) => {
+                const target = e.target as HTMLSelectElement
+                if (target.value) {
+                  bulkUpdateStatus(target.value)
+                  target.value = ''
+                }
+              }
+            "
+            class="px-3 py-1.5 text-sm border border-blue-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">სტატუსის შეცვლა</option>
             <option value="contacted">დაკავშირებული</option>
@@ -376,16 +413,13 @@ onMounted(() => {
             წაშლა
           </button>
         </div>
-      </div>
-    </div>
-
-    <!-- Table -->
+      </div>    <!-- Table -->
     <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-200">
           <thead class="bg-slate-50">
             <tr>
-              <th class="px-4 py-3 text-left">
+              <th v-if="authStore.isAdmin" class="px-4 py-3 text-left">
                 <input
                   v-model="allSelected"
                   type="checkbox"
@@ -402,17 +436,17 @@ onMounted(() => {
           </thead>
           <tbody class="bg-white divide-y divide-slate-200">
             <tr v-if="loading">
-              <td colspan="7" class="px-6 py-12 text-center text-slate-500">იტვირთება...</td>
+              <td :colspan="authStore.isAdmin ? 7 : 6" class="px-6 py-12 text-center text-slate-500">იტვირთება...</td>
             </tr>
             <tr v-else-if="customers.length === 0">
-              <td colspan="7" class="px-6 py-12 text-center text-slate-500">კლიენტები არ მოიძებნა</td>
+              <td :colspan="authStore.isAdmin ? 7 : 6" class="px-6 py-12 text-center text-slate-500">კლიენტები არ მოიძებნა</td>
             </tr>
             <tr
               v-for="customer in customers"
               :key="customer.id"
               class="hover:bg-slate-50 transition-colors"
             >
-              <td class="px-4 py-4">
+              <td v-if="authStore.isAdmin" class="px-4 py-4">
                 <input
                   v-model="selectedIds"
                   :value="customer.id"
@@ -464,6 +498,7 @@ onMounted(() => {
                   </svg>
                 </button>
                 <button
+                  v-if="authStore.isAdmin"
                   @click="deleteCustomer(customer.id)"
                   class="text-red-600 hover:text-red-800 transition-colors"
                   title="წაშლა"
@@ -587,11 +622,51 @@ onMounted(() => {
                 <p class="text-slate-900">{{ formatDate(selectedCustomer.created_at) }}</p>
               </div>
 
-              <div v-if="selectedCustomer.notes">
-                <label class="block text-sm font-medium text-slate-700 mb-1">შენიშვნები</label>
-                <p class="text-slate-900 whitespace-pre-wrap bg-slate-50 p-4 rounded-lg">
-                  {{ selectedCustomer.notes }}
-                </p>
+              <!-- Notes Section -->
+              <div class="border-t border-slate-200 pt-4">
+                <div class="flex items-center justify-between mb-2">
+                  <label class="block text-sm font-medium text-slate-700">შენიშვნები</label>
+                  <button
+                    v-if="!editingNotes"
+                    @click="editingNotes = true"
+                    class="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    {{ selectedCustomer.notes ? 'რედაქტირება' : 'დამატება' }}
+                  </button>
+                </div>
+                
+                <div v-if="editingNotes">
+                  <textarea
+                    v-model="notesInput"
+                    rows="4"
+                    placeholder="დაწერეთ შენიშვნები..."
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 resize-none"
+                  ></textarea>
+                  <div class="flex justify-end space-x-2 mt-2">
+                    <button
+                      @click="editingNotes = false; notesInput = selectedCustomer.notes || ''"
+                      class="px-3 py-1.5 text-sm bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
+                    >
+                      გაუქმება
+                    </button>
+                    <button
+                      @click="saveNotes"
+                      class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      შენახვა
+                    </button>
+                  </div>
+                </div>
+                
+                <div v-else>
+                  <p
+                    v-if="selectedCustomer.notes"
+                    class="text-slate-900 whitespace-pre-wrap bg-slate-50 p-4 rounded-lg"
+                  >
+                    {{ selectedCustomer.notes }}
+                  </p>
+                  <p v-else class="text-slate-500 italic">შენიშვნები არ არის დამატებული</p>
+                </div>
               </div>
             </div>
 

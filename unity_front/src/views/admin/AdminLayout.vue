@@ -27,6 +27,7 @@
             <!-- Navigation -->
             <nav class="mt-8 flex-1 px-4 space-y-2">
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/dashboard"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                 :class="
@@ -47,6 +48,7 @@
               </router-link>
 
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/projects"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                 :class="
@@ -67,6 +69,7 @@
               </router-link>
 
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/features"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                 :class="
@@ -87,6 +90,7 @@
               </router-link>
 
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/news"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                 :class="
@@ -107,6 +111,7 @@
               </router-link>
 
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/gallery"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                 :class="
@@ -127,6 +132,7 @@
               </router-link>
 
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/translations"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                 :class="
@@ -147,6 +153,7 @@
               </router-link>
 
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/contact-info"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                 :class="
@@ -167,6 +174,7 @@
               </router-link>
 
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/about-settings"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                 :class="
@@ -213,6 +221,7 @@
                 </router-link>
 
                 <router-link
+                  v-if="authStore.isAdmin"
                   to="/admin/marketing-emails"
                   class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                   :class="
@@ -230,6 +239,27 @@
                     />
                   </svg>
                   მარკეტინგის ელ. ფოსტები
+                </router-link>
+
+                <router-link
+                  v-if="authStore.isAdmin"
+                  to="/admin/users"
+                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                  :class="
+                    $route.name === 'admin-users'
+                      ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
+                      : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'
+                  "
+                >
+                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
+                  მომხმარებლების მართვა
                 </router-link>
               </div>
             </nav>
@@ -307,6 +337,7 @@
             <nav class="mt-5 px-4 space-y-2">
               <!-- Same navigation items as desktop -->
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/dashboard"
                 @click="mobileMenuOpen = false"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
@@ -319,6 +350,7 @@
                 დაშბორდი
               </router-link>
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/projects"
                 @click="mobileMenuOpen = false"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
@@ -331,6 +363,7 @@
                 პროექტები
               </router-link>
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/features"
                 @click="mobileMenuOpen = false"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
@@ -343,6 +376,7 @@
                 ფუნქციები
               </router-link>
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/news"
                 @click="mobileMenuOpen = false"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
@@ -355,6 +389,7 @@
                 სიახლეები
               </router-link>
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/gallery"
                 @click="mobileMenuOpen = false"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
@@ -367,6 +402,7 @@
                 გალერეა
               </router-link>
               <router-link
+                v-if="authStore.isAdmin"
                 to="/admin/translations"
                 @click="mobileMenuOpen = false"
                 class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
@@ -378,6 +414,36 @@
               >
                 თარგმანები
               </router-link>
+              
+              <!-- Customers Section -->
+              <div class="pt-4 mt-4 border-t border-slate-200">
+                <router-link
+                  to="/admin/customers"
+                  @click="mobileMenuOpen = false"
+                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                  :class="
+                    $route.name === 'admin-customers'
+                      ? 'bg-gradient-to-r from-rose-500 to-rose-600 text-white'
+                      : 'text-slate-600 hover:bg-rose-50 hover:text-rose-700'
+                  "
+                >
+                  კლიენტების მოთხოვნები
+                </router-link>
+                
+                <router-link
+                  v-if="authStore.isAdmin"
+                  to="/admin/users"
+                  @click="mobileMenuOpen = false"
+                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                  :class="
+                    $route.name === 'admin-users'
+                      ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white'
+                      : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'
+                  "
+                >
+                  მომხმარებლების მართვა
+                </router-link>
+              </div>
             </nav>
           </div>
         </div>
@@ -482,7 +548,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth/auth'
 
@@ -490,6 +556,22 @@ const router = useRouter()
 const authStore = useAuthStore()
 const mobileMenuOpen = ref(false)
 const userMenuOpen = ref(false)
+
+// Debug logging
+onMounted(() => {
+  console.log('AdminLayout mounted - Auth Debug Info:')
+  console.log('User object:', JSON.stringify(authStore.user, null, 2))
+  console.log('User role:', authStore.user?.role)
+  console.log('isAdmin:', authStore.isAdmin)
+  console.log('isMarketing:', authStore.isMarketing)
+})
+
+watch(() => authStore.user, (newUser) => {
+  console.log('Auth user changed:', JSON.stringify(newUser, null, 2))
+  console.log('User role:', newUser?.role)
+  console.log('isAdmin:', authStore.isAdmin)
+  console.log('isMarketing:', authStore.isMarketing)
+}, { deep: true })
 
 const handleLogout = async () => {
   await authStore.logout()

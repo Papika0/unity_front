@@ -21,11 +21,21 @@ export const requireAuth = (to: any, from: any, next: any) => {
 export const requireAdmin = (to: any, from: any, next: any) => {
   const authStore = useAuthStore()
 
+  console.log('Route guard: requireAdmin', {
+    isAuthenticated: authStore.isAuthenticated,
+    isAdmin: authStore.isAdmin,
+    user: authStore.user,
+    route: to.path,
+  })
+
   if (!authStore.isAuthenticated) {
+    console.log('Not authenticated, redirecting to login')
     next('/admin/login')
   } else if (!authStore.isAdmin) {
-    next('/admin/login') // or a forbidden page
+    console.log('Not admin, redirecting to customers page')
+    next('/admin/customers')
   } else {
+    console.log('Admin access granted')
     next()
   }
 }

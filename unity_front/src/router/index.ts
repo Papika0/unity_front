@@ -17,7 +17,7 @@ import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminDashboardView from '../views/admin/AdminDashboardView.vue'
 
 // Guards
-import { requireAuth } from './guards'
+import { requireAuth, requireAdmin } from './guards'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -103,92 +103,109 @@ const router = createRouter({
           children: [
             {
               path: '',
-              redirect: '/admin/dashboard',
+              redirect: '/admin/customers',
             },
             {
               path: 'dashboard',
               name: 'admin-dashboard',
               component: AdminDashboardView,
+              beforeEnter: requireAdmin,
             },
             {
               path: 'news',
               name: 'admin-news',
               component: () => import('@/views/admin/news/ListView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'news/add',
               name: 'admin-news-add',
               component: () => import('@/views/admin/news/AddView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'news/:id',
               name: 'admin-news-detail',
               component: () => import('@/views/admin/news/DetailView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'news/:id/edit',
               name: 'admin-news-edit',
               component: () => import('@/views/admin/news/EditView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'projects',
               name: 'admin-projects',
               component: () => import('@/views/admin/projects/ListView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'projects/add',
               name: 'admin-project-add',
               component: () => import('@/views/admin/projects/AddView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'projects/:id',
               name: 'admin-project-detail',
               component: () => import('@/views/admin/projects/DetailView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'projects/:id/edit',
               name: 'admin-project-edit',
               component: () => import('@/views/admin/projects/EditView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'features',
               name: 'admin-features',
               component: () => import('@/views/admin/features/ListView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'features/add',
               name: 'admin-feature-add',
               component: () => import('@/views/admin/features/AddView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'features/edit/:id',
               name: 'admin-feature-edit',
               component: () => import('@/views/admin/features/EditView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'features/assign',
               name: 'admin-feature-assign',
               component: () => import('@/views/admin/features/AssignToProject.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'translations',
               name: 'admin-translations',
               component: () => import('@/views/admin/translations/ListView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'contact-info',
               name: 'admin-contact-info',
               component: () => import('@/views/admin/contact-info/ListView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'gallery',
               name: 'admin-gallery',
               component: () => import('@/views/admin/gallery/ListView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'about-settings',
               name: 'admin-about-settings',
               component: () => import('@/views/admin/about/SettingsView.vue'),
+              beforeEnter: requireAdmin,
             },
             {
               path: 'customers',
@@ -199,6 +216,13 @@ const router = createRouter({
               path: 'marketing-emails',
               name: 'admin-marketing-emails',
               component: () => import('@/views/admin/marketing-emails/AdminMarketingEmailsView.vue'),
+              beforeEnter: requireAdmin,
+            },
+            {
+              path: 'users',
+              name: 'admin-users',
+              component: () => import('@/views/admin/users/AdminUsersView.vue'),
+              beforeEnter: requireAdmin,
             },
           ],
         },
@@ -220,9 +244,25 @@ router.beforeEach(async (to, from, next) => {
 
   // Handle guest-only routes (like login)
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    console.log('Already authenticated, redirecting from login to dashboard')
-    next('/admin/dashboard')
+    console.log('Already authenticated, redirecting from login based on role')
+    if (authStore.isAdmin) {
+      next('/admin/dashboard')
+    } else {
+      next('/admin/customers')
+    }
     return
+  }
+
+  // Handle default /admin redirect based on role
+  if (to.path === '/admin' || to.path === '/admin/') {
+    if (authStore.isAuthenticated) {
+      if (authStore.isAdmin) {
+        next('/admin/dashboard')
+      } else {
+        next('/admin/customers')
+      }
+      return
+    }
   }
 
   // Don't block navigation - let pages load and fetch their own translations

@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Admin\AdminCustomerController;
 use App\Http\Controllers\Admin\AdminMarketingEmailController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AdminUserController;
 
 
 /*
@@ -206,16 +207,24 @@ Route::middleware(['auth:api', 'jwt.auth'])->group(function () {
         Route::post('/clear-cache', 'clearCache');      // Clear application cache
     });
 
-    // Protected customer management routes (admin only)
-    Route::prefix('admin/customers')->controller(AdminCustomerController::class)->group(function () {
-        Route::get('/', 'index');                       // Get all customers with filters
-        Route::get('/statistics', 'statistics');        // Get customer statistics
-        Route::get('/chart-data', 'chartData');         // Get chart data for last 30 days
-        Route::get('/{id}', 'show');                   // Get single customer
-        Route::put('/{id}', 'update');                 // Update customer (status, notes)
-        Route::delete('/{id}', 'destroy');             // Delete customer
-        Route::post('/bulk-update-status', 'bulkUpdateStatus'); // Bulk update status
-        Route::post('/bulk-delete', 'bulkDelete');     // Bulk delete
+    // Protected customer management routes - shared between admin and marketing
+    Route::prefix('admin/customers')->group(function () {
+        // Routes accessible by both admin and marketing
+        Route::middleware('role:admin,marketing')->group(function () {
+            Route::get('/', [AdminCustomerController::class, 'index']);                       // Get all customers with filters
+            Route::get('/statistics', [AdminCustomerController::class, 'statistics']);        // Get customer statistics
+            Route::get('/chart-data', [AdminCustomerController::class, 'chartData']);         // Get chart data for last 30 days
+            Route::get('/{id}', [AdminCustomerController::class, 'show']);                   // Get single customer
+            Route::put('/{id}/status', [AdminCustomerController::class, 'updateStatus']);     // Update customer status only
+        });
+
+        // Routes accessible by admin only
+        Route::middleware('role:admin')->group(function () {
+            Route::put('/{id}', [AdminCustomerController::class, 'update']);                 // Update customer (status, notes)
+            Route::delete('/{id}', [AdminCustomerController::class, 'destroy']);             // Delete customer
+            Route::post('/bulk-update-status', [AdminCustomerController::class, 'bulkUpdateStatus']); // Bulk update status
+            Route::post('/bulk-delete', [AdminCustomerController::class, 'bulkDelete']);     // Bulk delete
+        });
     });
 
     // Protected marketing email management routes (admin only)
@@ -227,6 +236,16 @@ Route::middleware(['auth:api', 'jwt.auth'])->group(function () {
         Route::delete('/{id}', 'destroy');            // Delete email
         Route::post('/{id}/toggle-active', 'toggleActive'); // Toggle active status
         Route::post('/bulk-delete', 'bulkDelete');    // Bulk delete
+    });
+
+    // Protected user management routes (admin only)
+    Route::prefix('admin/users')->middleware('role:admin')->controller(AdminUserController::class)->group(function () {
+        Route::get('/', 'index');                      // Get all users
+        Route::get('/roles', 'roles');                 // Get all roles
+        Route::get('/{id}', 'show');                   // Get single user
+        Route::post('/', 'store');                     // Create new user
+        Route::put('/{id}', 'update');                 // Update user
+        Route::delete('/{id}', 'destroy');             // Delete user
     });
 });
 

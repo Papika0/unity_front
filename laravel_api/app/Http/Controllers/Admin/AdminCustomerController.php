@@ -161,6 +161,30 @@ class AdminCustomerController extends Controller
     }
 
     /**
+     * Update customer status only (for marketing users)
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|in:new,contacted,in_progress,completed,cancelled',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error($validator->errors(), 422);
+        }
+
+        try {
+            $customer = Customer::findOrFail($id);
+            $customer->update(['status' => $request->status]);
+
+            return $this->success($customer, 'სტატუსი განახლდა');
+        } catch (\Exception $e) {
+            \Log::error('Failed to update customer status: ' . $e->getMessage());
+            return $this->error('სტატუსის განახლება ვერ მოხერხდა', 500);
+        }
+    }
+
+    /**
      * Delete a customer
      */
     public function destroy($id)

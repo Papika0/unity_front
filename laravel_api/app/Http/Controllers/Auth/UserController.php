@@ -20,15 +20,18 @@ class UserController extends Controller
                 // Load the role relationship
                 $user->load('role');
                 
-                // Add role name to the user object for frontend compatibility
-                $user->role = $user->role ? $user->role->name : null;
+                // Create a clean user array with role name instead of relationship
+                $userData = $user->toArray();
+                $userData['role'] = $user->role ? $user->role->name : null;
+                
+                return response()->json($userData, 200);
             }
         } catch (JWTException $e) {
             Log::error('JWTException occurred while authenticating user', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
         
-        return response()->json($user, 200);
+        return response()->json(['error' => 'User not found'], 404);
     }
 
 }

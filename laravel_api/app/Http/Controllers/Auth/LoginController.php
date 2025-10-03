@@ -42,12 +42,13 @@ class LoginController extends Controller
             // Load the role relationship
             $user->load('role');
             
-            // Add role name to the user object for frontend compatibility
-            $user->role = $user->role ? $user->role->name : null;
+            // Create a clean user array with role name instead of relationship
+            $userData = $user->toArray();
+            $userData['role'] = $user->role ? $user->role->name : null;
 
             return new ApiSuccessResponse([
                 'token' => $token,
-                'user' => $user,
+                'user' => $userData,
             ]);
         } catch (\Exception $e) {
             return new ApiErrorResponse([], $e->getMessage(), 500);
