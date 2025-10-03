@@ -13,5 +13,9 @@ export const deleteTranslation = async (id: number) => api.delete(`/translations
 export const getTranslation = async (id: number) => api.get(`/translations/${id}`)
 
 // Public/grouped fetch for frontend consumption
-export const getTranslationsByGroup = async (group: string, perPage: number = 500) =>
-  api.get(`/translations/group/${group}`, { params: { per_page: perPage } })
+export const getTranslationsByGroup = async (group: string, locale: string = 'ka') =>
+  api.get(`/public/translations/group/${group}`, { params: { locale } })
+
+// Fetch multiple groups at once
+export const getTranslationsByGroups = async (groups: string[], locale: string = 'ka') =>
+  api.post(`/public/translations/groups`, { groups, locale })

@@ -5,9 +5,11 @@ import ToastContainer from '@/components/ui/ToastContainer.vue'
 import GlobalLoadingOverlay from '@/components/ui/GlobalLoadingOverlay.vue'
 import { useTranslationsStore } from '@/stores/ui/translations'
 import { usePageTitle } from '@/composables/usePageTitle'
+import { useTranslationLoader } from '@/composables/useTranslationLoader'
 
 const route = useRoute()
 const translationsStore = useTranslationsStore()
+const translationLoader = useTranslationLoader()
 
 // Initialize page title management
 usePageTitle()
@@ -27,8 +29,8 @@ const routeToPageMap: Record<string, string> = {
   'contact': 'contact',
 }
 
-// Watch for route changes and check if translations are loaded
-watch(() => route.name, (newRoute) => {
+// Watch for route changes and load translations
+watch(() => route.name, async (newRoute) => {
   // Skip admin routes
   if (route.path.startsWith('/admin')) {
     waitingForTranslations.value = false
@@ -41,36 +43,22 @@ watch(() => route.name, (newRoute) => {
     // Check if translations are already loaded
     const isLoaded = translationsStore.arePageGroupsLoaded(pageName)
     
-    console.log(`🌐 Route changed to: ${String(newRoute)}, page: ${pageName}, Loaded: ${isLoaded}`)
-    
     if (!isLoaded) {
       // Set waiting state - this will show the loading overlay
       waitingForTranslations.value = true
       translationsStore.isLoading = true
       
-      // Watch for translations to be loaded
-      const unwatch = watch(
-        () => translationsStore.arePageGroupsLoaded(pageName),
-        (loaded) => {
-          if (loaded) {
-            console.log(`✅ Translations loaded for page: ${pageName}`)
-            waitingForTranslations.value = false
-            translationsStore.isLoading = false
-            unwatch()
-          }
-        },
-        { immediate: true }
-      )
-      
-      // Timeout after 2 seconds (reduced from 3 for faster UX)
-      setTimeout(() => {
-        if (waitingForTranslations.value) {
-          console.log(`⏱️ Translation load timeout for page: ${pageName}`)
-          waitingForTranslations.value = false
-          translationsStore.isLoading = false
-          unwatch()
-        }
-      }, 2000)
+      try {
+        // Actually fetch the translations from the API
+        await translationLoader.loadPageTranslations(pageName)
+        
+        waitingForTranslations.value = false
+        translationsStore.isLoading = false
+      } catch {
+        // Don't block the page even if translations fail
+        waitingForTranslations.value = false
+        translationsStore.isLoading = false
+      }
     } else {
       waitingForTranslations.value = false
       translationsStore.isLoading = false

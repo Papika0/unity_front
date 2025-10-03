@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\DebugController;
 use App\Http\Controllers\Api\AboutController;
 use App\Http\Controllers\Api\ProjectsPageController;
 use App\Http\Controllers\Api\FeaturesController;
+use App\Http\Controllers\Api\TranslationsController;
 use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\AdminProjectsController;
 use App\Http\Controllers\Admin\AdminTranslationController;
@@ -65,6 +66,12 @@ Route::prefix('features')->controller(FeaturesController::class)->group(function
     Route::get('/', 'index');
     Route::get('/{id}', 'show');
     Route::get('/project/{projectId}', 'getProjectFeatures');
+});
+
+// Public translations routes (for frontend)
+Route::prefix('public/translations')->controller(TranslationsController::class)->group(function () {
+    Route::get('/group/{group}', 'getByGroup');
+    Route::post('/groups', 'getByGroups'); // POST to support array of groups in body
 });
 
 // Homepage routes
