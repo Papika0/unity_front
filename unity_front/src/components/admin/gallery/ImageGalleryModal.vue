@@ -109,7 +109,7 @@
             >
               <img
                 :src="image.url"
-                :alt="image.alt_text || image.title"
+                :alt="typeof (image.alt_text || image.title) === 'string' ? (image.alt_text || image.title) : (image.alt_text || image.title)?.ka"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
               />
               <div

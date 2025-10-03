@@ -30,6 +30,8 @@ const pagination = ref({
   last_page: 1,
   per_page: 15,
   total: 0,
+  from: 0,
+  to: 0,
 })
 
 const activeFilterOptions = [

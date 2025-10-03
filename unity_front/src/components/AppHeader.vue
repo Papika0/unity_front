@@ -167,7 +167,7 @@ onUnmounted(() => {
           <button
             :class="[
               'px-3 py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
-              localeStore.locale === 'en'
+              localeStore.currentLocale === 'en'
                 ? transparent
                   ? 'bg-orange-100 text-zinc-900'
                   : 'bg-zinc-900 text-white'
@@ -182,7 +182,7 @@ onUnmounted(() => {
           <button
             :class="[
               'px-3 py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
-              localeStore.locale === 'ka'
+              localeStore.currentLocale === 'ka'
                 ? transparent
                   ? 'bg-orange-100 text-zinc-900'
                   : 'bg-zinc-900 text-white'
@@ -197,7 +197,7 @@ onUnmounted(() => {
           <button
             :class="[
               'px-3 py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
-              localeStore.locale === 'ru'
+              localeStore.currentLocale === 'ru'
                 ? transparent
                   ? 'bg-orange-100 text-zinc-900'
                   : 'bg-zinc-900 text-white'
@@ -297,7 +297,7 @@ onUnmounted(() => {
               <button
                 :class="[
                   'px-4 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap',
-                  localeStore.locale === 'en'
+                  localeStore.currentLocale === 'en'
                     ? transparent
                       ? 'bg-orange-100 text-zinc-900'
                       : 'bg-zinc-900 text-white'
@@ -312,7 +312,7 @@ onUnmounted(() => {
               <button
                 :class="[
                   'px-4 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap',
-                  localeStore.locale === 'ka'
+                  localeStore.currentLocale === 'ka'
                     ? transparent
                       ? 'bg-orange-100 text-zinc-900'
                       : 'bg-zinc-900 text-white'
@@ -327,7 +327,7 @@ onUnmounted(() => {
               <button
                 :class="[
                   'px-4 py-2 text-sm font-medium transition-all duration-200 whitespace-nowrap',
-                  localeStore.locale === 'ru'
+                  localeStore.currentLocale === 'ru'
                     ? transparent
                       ? 'bg-orange-100 text-zinc-900'
                       : 'bg-zinc-900 text-white'
