@@ -318,17 +318,11 @@ const toastMessage = ref('')
 const loadStats = async () => {
   try {
     loading.value = true
-    console.log('🔄 Loading dashboard statistics...')
     
     // Single API call to get all dashboard data
     stats.value = await dashboardApi.getStatistics()
     
-    console.log('✅ Statistics loaded:', {
-      customers: stats.value.customer_stats.total,
-      projects: stats.value.projects_count,
-      translations: stats.value.translations_count,
-      chartDataPoints: stats.value.chart_data.length,
-    })
+
 
     // Set loading to false first to render the canvas
     loading.value = false
@@ -336,7 +330,6 @@ const loadStats = async () => {
     // Wait for DOM to update and render chart
     await nextTick()
     await nextTick() // Double nextTick to ensure DOM is fully rendered
-    console.log('⏳ Rendering chart after nextTick...')
     renderChart()
   } catch (error) {
     console.error('❌ Error loading stats:', error)
@@ -347,23 +340,17 @@ const loadStats = async () => {
 // Watch for chart data changes and re-render
 watch(() => stats.value.chart_data, (newData) => {
   if (newData && newData.length > 0 && chartCanvas.value) {
-    console.log('📊 Chart data changed, re-rendering...', newData.length, 'points')
     nextTick(() => renderChart())
   }
 }, { deep: true })
 
 const renderChart = () => {
-  console.log('renderChart called:', {
-    hasCanvas: !!chartCanvas.value,
-    canvasElement: chartCanvas.value,
-    dataLength: stats.value.chart_data?.length || 0,
-  })
+
 
   if (!chartCanvas.value) {
     console.error('❌ Canvas element not found - retrying in 100ms...')
     // Retry after a short delay
     setTimeout(() => {
-      console.log('🔄 Retrying chart render...')
       if (chartCanvas.value) {
         renderChart()
       } else {
@@ -380,7 +367,6 @@ const renderChart = () => {
 
   // Destroy existing chart if any
   if (chartInstance.value) {
-    console.log('🗑️ Destroying existing chart instance')
     chartInstance.value.destroy()
     chartInstance.value = null
   }
@@ -392,7 +378,6 @@ const renderChart = () => {
   }
 
   try {
-    console.log('🎨 Creating new chart with', stats.value.chart_data.length, 'data points')
     
     chartInstance.value = new Chart(ctx, {
       type: 'line',
@@ -452,7 +437,6 @@ const renderChart = () => {
         },
       },
     })
-    console.log('✅ Chart rendered successfully!', chartInstance.value)
   } catch (error) {
     console.error('❌ Error rendering chart:', error)
   }

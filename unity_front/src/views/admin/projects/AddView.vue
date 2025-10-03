@@ -129,7 +129,6 @@ async function onSubmit() {
     submitting.value = true
     isUploading.value = true
     uploadProgress.value = 0
-    console.log('Starting project creation...')
 
     // Check if we need sequential upload (large payload)
     const allImageFiles = [form.main_image, form.render_image, ...form.gallery_images].filter(
@@ -138,57 +137,37 @@ async function onSubmit() {
     const totalSize = allImageFiles.reduce((sum, file) => sum + file.size, 0)
     const totalSizeMB = totalSize / (1024 * 1024)
 
-    console.log(`Total payload size: ${totalSizeMB.toFixed(2)}MB`)
 
     if (totalSizeMB > 6) {
       // Use sequential upload for large payloads
-      console.log('Using sequential upload for large payload...')
 
       const formData = await prepareFormData(form, false)
       const result = await adminProjectsStore.addProject(formData)
 
-      console.log('Sequential project creation result:', result)
-
       if (result.success) {
-        console.log('Project created successfully with sequential upload, redirecting...')
         uploadProgress.value = 100
         router.push({ name: 'admin-projects' })
       } else {
-        console.error('Sequential creation failed:', result.error)
         alert(`პროექტის შექმნა ვერ მოხერხდა: ${result.error}`)
       }
     } else {
       // Use normal upload for small payloads
-      console.log('Using normal upload for small payload...')
 
       const formData = await prepareFormData(form, false)
-      console.log('Form data prepared:', formData)
 
-      // Log form data contents for debugging
-      for (const [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`)
-        } else {
-          console.log(`${key}: ${value}`)
-        }
-      }
+   
 
       uploadProgress.value = 50
-      console.log('Starting network upload...')
       const result = await adminProjectsStore.addProject(formData)
-      console.log('Project creation result:', result)
 
       if (result.success) {
-        console.log('Project created successfully, redirecting...')
         uploadProgress.value = 100
         router.push({ name: 'admin-projects' })
       } else {
-        console.error('Creation failed:', result.error)
         alert(`პროექტის შექმნა ვერ მოხერხდა: ${result.error}`)
       }
     }
   } catch (error) {
-    console.error('Creation failed with error:', error)
     const errorMessage = error instanceof Error ? error.message : 'უცნობი შეცდომა'
     alert(`პროექტის შექმნა ვერ მოხერხდა: ${errorMessage}`)
   } finally {

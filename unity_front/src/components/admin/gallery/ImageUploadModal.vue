@@ -429,13 +429,7 @@ const setFile = async (file: File) => {
     compressionStats.value = result
     previewUrl.value = URL.createObjectURL(result.file)
 
-    // Log compression results
-    console.log('Image compressed:', {
-      original: formatFileSize(result.originalSize),
-      compressed: formatFileSize(result.compressedSize),
-      saved: formatFileSize(result.originalSize - result.compressedSize),
-      ratio: `${(result.compressionRatio * 100).toFixed(1)}%`,
-    })
+ 
 
     // Auto-fill title if empty
     if (!form.title.ka) {

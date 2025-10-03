@@ -170,32 +170,22 @@ const form = reactive({
 })
 
 const handleLogin = async () => {
-  console.log('Starting login process...')
   const result = await authStore.login(form.email, form.password, form.rememberMe)
 
-  console.log('Login result:', result)
-  console.log('Auth store state after login:', {
-    isAuthenticated: authStore.isAuthenticated,
-    user: authStore.user,
-    token: authStore.token,
-  })
+ 
 
   if (result.success) {
-    console.log('Login successful, user role:', authStore.user?.role)
     redirecting.value = true
     // Small delay to ensure reactive state is updated
     await new Promise((resolve) => setTimeout(resolve, 100))
     
     // Redirect based on user role
     if (authStore.isMarketing) {
-      console.log('Marketing user, redirecting to customers...')
       await router.replace('/admin/customers')
     } else {
-      console.log('Admin user, redirecting to dashboard...')
       await router.replace('/admin/dashboard')
     }
     
-    console.log('Navigation complete')
   } else {
     console.log('Login failed:', result.error)
   }
@@ -204,7 +194,6 @@ const handleLogin = async () => {
 onMounted(() => {
   // If already authenticated, redirect based on role
   if (authStore.isAuthenticated) {
-    console.log('Already authenticated on mount, redirecting...')
     redirecting.value = true
     
     if (authStore.isMarketing) {

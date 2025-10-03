@@ -497,7 +497,6 @@ export async function compressImage(
 
           // If still too large, try with even smaller dimensions
           if (blob.size > phpUploadLimit) {
-            console.log(`Still too large, trying smaller dimensions`)
 
             const smallerWidth = Math.floor(width * 0.8)
             const smallerHeight = Math.floor(height * 0.8)
@@ -519,7 +518,6 @@ export async function compressImage(
             if (smallerBlob && smallerBlob.size < blob.size) {
               blob = smallerBlob
               currentQuality = minQuality
-              console.log(`Smaller dimensions helped: ${(blob.size / 1024 / 1024).toFixed(1)}MB`)
             }
           }
         }
@@ -556,11 +554,7 @@ export async function compressImage(
           wasConverted,
         }
 
-        console.log(
-          `Result: ${(result.compressedSize / 1024 / 1024).toFixed(1)}MB`,
-          `(${(result.compressionRatio * 100).toFixed(0)}% of original)`,
-        )
-
+ 
         resolve(result)
       } catch (error) {
         cleanup()
@@ -604,9 +598,7 @@ export async function compressBatch(
       quality: Math.max((adjustedOptions.quality || 0.88) - 0.03, 0.75), // Very gentle reduction
       forceDimensions: false, // Don't force dimension reduction
     }
-    console.log(
-      `Large payload detected (${totalSizeMB.toFixed(1)}MB), using slightly adjusted compression`,
-    )
+
   }
 
   for (let i = 0; i < files.length; i++) {

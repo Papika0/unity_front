@@ -548,7 +548,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref  } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth/auth'
 
@@ -558,20 +558,8 @@ const mobileMenuOpen = ref(false)
 const userMenuOpen = ref(false)
 
 // Debug logging
-onMounted(() => {
-  console.log('AdminLayout mounted - Auth Debug Info:')
-  console.log('User object:', JSON.stringify(authStore.user, null, 2))
-  console.log('User role:', authStore.user?.role)
-  console.log('isAdmin:', authStore.isAdmin)
-  console.log('isMarketing:', authStore.isMarketing)
-})
 
-watch(() => authStore.user, (newUser) => {
-  console.log('Auth user changed:', JSON.stringify(newUser, null, 2))
-  console.log('User role:', newUser?.role)
-  console.log('isAdmin:', authStore.isAdmin)
-  console.log('isMarketing:', authStore.isMarketing)
-}, { deep: true })
+
 
 const handleLogout = async () => {
   await authStore.logout()

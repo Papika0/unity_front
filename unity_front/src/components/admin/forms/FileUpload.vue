@@ -173,7 +173,6 @@ async function handleChange(event: Event) {
 
     for (let i = 0; i < imageFiles.length; i++) {
       const file = imageFiles[i]
-      console.log(`Compressing ${file.name} (${i + 1}/${totalFiles})...`)
 
       // Update progress
       compressionProgress.value = Math.round((i / totalFiles) * 100)
@@ -183,9 +182,7 @@ async function handleChange(event: Event) {
       const compressedFile = await compressFileIfNeeded(file, props.imageType)
       if (compressedFile) {
         compressedFiles.push(compressedFile)
-        console.log(
-          `Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`,
-        )
+     
       } else {
         compressedFiles.push(file) // Use original if compression failed
       }

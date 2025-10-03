@@ -28,8 +28,6 @@ const checkVisibility = () => {
 }
 
 onMounted(() => {
-  console.log('FeaturedProject mounted')
-  
   // Check immediately in case it's already visible
   setTimeout(() => {
     checkVisibility()

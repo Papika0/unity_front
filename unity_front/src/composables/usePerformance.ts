@@ -18,11 +18,6 @@ export function usePerformance() {
       const duration = performance.now() - start
       metrics.value[label] = duration
 
-      // Log performance metrics in development
-      if (import.meta.env.DEV) {
-        console.log(`⏱️ ${label}: ${duration.toFixed(2)}ms`)
-      }
-
       // Clean up timer
       delete timers.value[label]
 

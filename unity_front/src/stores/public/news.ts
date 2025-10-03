@@ -81,14 +81,10 @@ export const useNewsStore = defineStore('news', () => {
       const response = await getNews(params)
       const responseData = response.data
 
-      console.log('🗞️ loadArticles: response.data:', responseData)
-      console.log('🗞️ loadArticles: responseData.data:', responseData.data)
-      console.log('🗞️ loadArticles: responseData.data.translations:', responseData.data?.translations)
 
       // Handle translations if present - they are at responseData.data.translations
       if (responseData.data?.translations) {
         const translationsStore = useTranslationsStore()
-        console.log('🗞️ Merging translations:', Object.keys(responseData.data.translations).length, 'keys')
         translationsStore.mergeTranslations(responseData.data.translations)
       }
 
@@ -175,24 +171,16 @@ export const useNewsStore = defineStore('news', () => {
       const response = await getNewsArticle(id)
       const responseData = response.data
 
-      console.log('loadArticle: Full response:', response)
-      console.log('loadArticle: responseData:', responseData)
-      console.log('loadArticle: responseData.data:', responseData.data)
-      console.log(
-        'loadArticle: responseData.data.translations keys:',
-        responseData.data?.translations ? Object.keys(responseData.data.translations).length : 'none',
-      )
+     
 
       // Handle translations if present - they are at responseData.data.translations
       if (responseData.data?.translations) {
         const translationsStore = useTranslationsStore()
         translationsStore.mergeTranslations(responseData.data.translations)
-        console.log('loadArticle: Merged translations')
       }
 
       // Extract the actual article data from responseData.data.data
       const articleData = responseData.data?.data || responseData.data
-      console.log('loadArticle: Setting currentArticle to:', articleData)
       currentArticle.value = articleData || null
 
       return currentArticle.value

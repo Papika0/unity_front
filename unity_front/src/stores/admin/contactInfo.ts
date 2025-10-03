@@ -33,7 +33,6 @@ export const useAdminContactInfoStore = defineStore('adminContactInfo', () => {
       error.value = ''
 
       const response = await api.get('/admin/contact-info')
-      console.log(response)
 
       // The response.data.data contains the single contact info object directly
       const data = response.data?.data
