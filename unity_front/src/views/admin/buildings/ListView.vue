@@ -143,7 +143,7 @@
             <!-- Building Name -->
             <div class="flex items-start justify-between mb-4">
               <div class="flex-1">
-                <h3 class="text-xl font-bold text-slate-800 mb-1">{{ building.name.ka }}</h3>
+                <h3 class="text-xl font-bold text-slate-800 mb-1">{{ building.name_ka || building.name }}</h3>
                 <p v-if="building.identifier" class="text-sm text-slate-500">
                   ID: {{ building.identifier }}
                 </p>

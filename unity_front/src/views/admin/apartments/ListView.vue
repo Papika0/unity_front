@@ -86,7 +86,7 @@
           >
             <option :value="null">-- ყველა შენობა --</option>
             <option v-for="building in buildings" :key="building.id" :value="building.id">
-              {{ building.name.ka }}
+              {{ building.name_ka || building.name }}
             </option>
           </select>
         </div>

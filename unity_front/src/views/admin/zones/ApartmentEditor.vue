@@ -927,10 +927,11 @@ async function autoDetectPolygons() {
           points: detected.points.map(([x, y]) => ({ x, y })),
           selected: false,
           entityId: apartment.id,
-          entityType: 'apartment' as const,
           label: `ბინა ${apartment.apartment_number}`,
-          color: '#93c5fd',
-          hover: '#60a5fa',
+          fillColor: '#93c5fd',
+          strokeColor: '#60a5fa',
+          hoverColor: '#60a5fa',
+          visible: true,
         })
       } else {
         unmatchedPolygons.push(detected)
@@ -944,10 +945,11 @@ async function autoDetectPolygons() {
         points: detected.points.map(([x, y]) => ({ x, y })),
         selected: false,
         entityId: null,
-        entityType: 'apartment' as const,
         label: `ახალი ${index + 1}`,
-        color: '#fca5a5',
-        hover: '#ef4444',
+        fillColor: '#fca5a5',
+        strokeColor: '#ef4444',
+        hoverColor: '#ef4444',
+        visible: true,
       })
     }
 
