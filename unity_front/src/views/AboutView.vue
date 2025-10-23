@@ -185,7 +185,7 @@ const values = computed(() => [
                 class="w-16 sm:w-20 h-1 bg-gradient-to-r from-transparent via-[#FFCD4B] to-transparent mx-auto mb-4 sm:mb-6 transition-all duration-1000 delay-300"
                 :class="{ 'scale-x-100': heroVisible, 'scale-x-0': !heroVisible }"
               ></div>
-              <p class="text-base sm:text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl mx-auto">
+              <p class="text-base sm:text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl mx-auto text-justify">
                 {{ t('about.hero.subtitle') }}
               </p>
             </div>
