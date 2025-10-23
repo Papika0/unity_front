@@ -124,8 +124,8 @@ class AdminZoneImageController extends Controller
                 'sort_order' => 0,
             ]);
             
-            // Attach image to zone image
-            $zoneImage->images()->attach($imageRecord->id);
+            // Attach image to zone image with 'zone' type (not 'gallery' to prevent showing in gallery page)
+            $zoneImage->images()->attach($imageRecord->id, ['type' => 'zone', 'sort_order' => 0]);
             
             DB::commit();
             
@@ -296,8 +296,8 @@ class AdminZoneImageController extends Controller
                 'opacity' => $validated['opacity'] ?? 1.0,
             ]);
             
-            // Attach image to zone image
-            $zoneImage->images()->attach($imageRecord->id);
+            // Attach image to zone image with 'zone' type (not 'gallery' to prevent showing in gallery page)
+            $zoneImage->images()->attach($imageRecord->id, ['type' => 'zone', 'sort_order' => 0]);
             
             DB::commit();
             
@@ -370,8 +370,8 @@ class AdminZoneImageController extends Controller
                     $projectId
                 );
                 
-                // Attach new image
-                $zoneImage->images()->attach($imageRecord->id);
+                // Attach new image with 'zone' type (not 'gallery' to prevent showing in gallery page)
+                $zoneImage->images()->attach($imageRecord->id, ['type' => 'zone', 'sort_order' => 0]);
             }
             
             // Update zone image metadata
@@ -502,8 +502,8 @@ class AdminZoneImageController extends Controller
                     'opacity' => 1.0,
                 ]);
                 
-                // Attach image
-                $zoneImage->images()->attach($imageRecord->id);
+                // Attach image with 'zone' type (not 'gallery' to prevent showing in gallery page)
+                $zoneImage->images()->attach($imageRecord->id, ['type' => 'zone', 'sort_order' => 0]);
                 
                 $createdZoneImages[] = $zoneImage->load('images');
             }
