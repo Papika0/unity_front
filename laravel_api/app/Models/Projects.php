@@ -7,6 +7,7 @@ use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\InvalidatesHomepageCache;
 
 class Projects extends Model
@@ -101,5 +102,45 @@ class Projects extends Model
                 ]);
             }
         }
+    }
+
+    /**
+     * Get all buildings for this project
+     */
+    public function buildings(): HasMany
+    {
+        return $this->hasMany(Building::class, 'project_id');
+    }
+
+    /**
+     * Get all apartments for this project
+     */
+    public function apartments(): HasMany
+    {
+        return $this->hasMany(Apartment::class, 'project_id');
+    }
+
+    /**
+     * Get all interactive zones for this project
+     */
+    public function interactiveZones(): HasMany
+    {
+        return $this->hasMany(InteractiveZone::class, 'project_id');
+    }
+
+    /**
+     * Get all zone images for this project
+     */
+    public function zoneImages(): HasMany
+    {
+        return $this->hasMany(ZoneImage::class, 'project_id');
+    }
+
+    /**
+     * Check if the project has multiple buildings
+     */
+    public function hasMultipleBuildings(): bool
+    {
+        return $this->buildings()->count() > 1;
     }
 }

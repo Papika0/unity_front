@@ -64,6 +64,36 @@ const router = createRouter({
           component: ProjectDetailView,
         },
         {
+          path: 'projects/:id/:buildingIdentifier',
+          name: 'floor-selection',
+          component: () => import('@/views/FloorSelectionView.vue'),
+          props: (route) => ({
+            projectId: Number(route.params.id),
+            buildingIdentifier: route.params.buildingIdentifier,
+          }),
+        },
+        {
+          path: 'projects/:id/:buildingIdentifier/floor-:floorNumber',
+          name: 'apartment-selection',
+          component: () => import('@/views/ApartmentSelectionView.vue'),
+          props: (route) => ({
+            projectId: Number(route.params.id),
+            buildingIdentifier: route.params.buildingIdentifier,
+            floorNumber: Number(route.params.floorNumber),
+          }),
+        },
+        {
+          path: 'projects/:id/:buildingIdentifier/floor-:floorNumber/apartment-:apartmentId',
+          name: 'apartment-detail',
+          component: () => import('@/views/ApartmentDetailView.vue'),
+          props: (route) => ({
+            projectId: Number(route.params.id),
+            buildingIdentifier: route.params.buildingIdentifier,
+            floorNumber: Number(route.params.floorNumber),
+            apartmentId: Number(route.params.apartmentId),
+          }),
+        },
+        {
           path: 'news',
           name: 'news',
           component: NewsView,
@@ -203,6 +233,51 @@ const router = createRouter({
               component: () => import('@/views/admin/about/SettingsView.vue'),
               beforeEnter: requireAdmin,
             },
+            // Apartment Navigation Management
+            {
+              path: 'buildings',
+              name: 'admin-buildings',
+              component: () => import('@/views/admin/buildings/ListView.vue'),
+              beforeEnter: requireAdmin,
+            },
+            {
+              path: 'apartments',
+              name: 'admin-apartments',
+              component: () => import('@/views/admin/apartments/ListView.vue'),
+              beforeEnter: requireAdmin,
+            },
+            {
+              path: 'zones',
+              name: 'admin-zones',
+              component: () => import('@/views/admin/zones/ListView.vue'),
+              beforeEnter: requireAdmin,
+            },
+            {
+              path: 'zone-images',
+              name: 'admin-zone-images',
+              component: () => import('@/views/admin/zone-images/ListView.vue'),
+              beforeEnter: requireAdmin,
+            },
+            // PHASE 7: Interactive Polygon Editors
+            {
+              path: 'projects/:id/zones/buildings',
+              name: 'admin-zones-building-blocks',
+              component: () => import('@/views/admin/zones/BuildingBlockEditor.vue'),
+              beforeEnter: requireAdmin,
+            },
+            {
+              path: 'projects/:id/buildings/:buildingId/zones/floors',
+              name: 'admin-zones-floor-strips',
+              component: () => import('@/views/admin/zones/FloorStripEditor.vue'),
+              beforeEnter: requireAdmin,
+            },
+            {
+              path: 'projects/:id/buildings/:buildingId/floors/:floorNumber/zones/apartments',
+              name: 'admin-zones-apartments',
+              component: () => import('@/views/admin/zones/ApartmentEditor.vue'),
+              beforeEnter: requireAdmin,
+            },
+            // Customer Management
             {
               path: 'customers',
               name: 'admin-customers',

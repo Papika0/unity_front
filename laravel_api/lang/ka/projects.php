@@ -5,4 +5,5 @@ return [
         'ongoing'   => 'მიმდინარეობს',
         'completed' => 'დასრულდა',
     ],
+    'explore_apartments' => 'ბინების დათვალიერება',
 ];

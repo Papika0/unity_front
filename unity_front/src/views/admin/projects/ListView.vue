@@ -225,7 +225,7 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="mt-auto">
+            <div class="mt-auto space-y-2">
               <button
                 @click.stop="goToDetail(project.id)"
                 class="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg hover:from-amber-600 hover:to-amber-700 text-xs sm:text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-md"
@@ -250,6 +250,26 @@
                   ></path>
                 </svg>
                 დეტალურად ნახვა
+              </button>
+              
+              <button
+                @click.stop="goToZonesEditor(project.id)"
+                class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg hover:from-purple-600 hover:to-indigo-700 text-xs sm:text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-md"
+              >
+                <svg
+                  class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 inline"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                  ></path>
+                </svg>
+                შენობების ბლოკების რედაქტორი
               </button>
             </div>
           </div>
@@ -522,6 +542,10 @@ function goToAddProject() {
 
 const goToDetail = (id: number) => {
   router.push({ name: 'admin-project-detail', params: { id: id.toString() } })
+}
+
+const goToZonesEditor = (id: number) => {
+  router.push({ name: 'admin-zones-building-blocks', params: { id: id.toString() } })
 }
 
 const formatDate = (dateString: string) => {

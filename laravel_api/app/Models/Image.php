@@ -33,6 +33,13 @@ class Image extends Model
     ];
 
     /**
+     * Append these accessors to JSON serialization
+     */
+    protected $appends = [
+        'full_url',
+    ];
+
+    /**
      * Get all models that use this image
      */
     public function imageables()

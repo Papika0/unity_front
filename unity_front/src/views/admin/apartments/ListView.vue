@@ -1,0 +1,483 @@
+<template>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
+    <div class="p-4 sm:p-6 md:p-8 font-sans text-slate-800">
+      <!-- Header Section -->
+      <div class="flex flex-col gap-4 mb-6 sm:mb-8 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex-1">
+          <h1
+            class="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent break-words leading-tight py-1"
+          >
+            ბინების მართვა
+          </h1>
+          <p class="mt-2 text-slate-600 text-sm sm:text-base md:text-lg">
+            ბინების შექმნა, რედაქტირება, ბლოკური იმპორტი.
+          </p>
+        </div>
+
+        <div class="flex-shrink-0 flex gap-2">
+          <button
+            @click="showImportModal = true"
+            :disabled="!selectedProjectId"
+            class="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base disabled:opacity-50"
+          >
+            <svg
+              class="w-4 h-4 sm:w-5 sm:h-5 mr-2 inline"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              ></path>
+            </svg>
+            იმპორტი
+          </button>
+          <button
+            @click="openCreateModal"
+            :disabled="!selectedProjectId"
+            class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base disabled:opacity-50"
+          >
+            <svg
+              class="w-4 h-4 sm:w-5 sm:h-5 mr-2 inline"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              ></path>
+            </svg>
+            ახალი ბინის დამატება
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Project Selector -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">პროექტი</label>
+          <select
+            v-model="selectedProjectId"
+            @change="onProjectChange"
+            class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-gray-900"
+          >
+            <option :value="null">-- აირჩიეთ პროექტი --</option>
+            <option v-for="project in projects" :key="project.id" :value="project.id">
+              {{ project.title }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Building Selector -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">შენობა</label>
+          <select
+            v-model="selectedBuildingId"
+            @change="loadApartments"
+            :disabled="!selectedProjectId"
+            class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all disabled:opacity-50 text-gray-900"
+          >
+            <option :value="null">-- ყველა შენობა --</option>
+            <option v-for="building in buildings" :key="building.id" :value="building.id">
+              {{ building.name.ka }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Status Filter -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">სტატუსი</label>
+          <select
+            v-model="filterStatus"
+            @change="loadApartments"
+            class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-gray-900"
+          >
+            <option :value="null">-- ყველა სტატუსი --</option>
+            <option value="available">ხელმისაწვდომი</option>
+            <option value="reserved">დაჯავშნილი</option>
+            <option value="sold">გაყიდული</option>
+          </select>
+        </div>
+
+        <!-- Search -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">ძებნა</label>
+          <input
+            v-model="searchQuery"
+            @input="loadApartments"
+            type="text"
+            placeholder="ბინის ნომერი..."
+            class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-gray-900"
+          />
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div
+        v-if="apartmentsStore.isLoading"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+      >
+        <div
+          v-for="n in 8"
+          :key="n"
+          class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 animate-pulse"
+        >
+          <div class="h-6 bg-slate-200 rounded mb-3"></div>
+          <div class="h-4 bg-slate-200 rounded mb-2"></div>
+          <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div
+        v-else-if="apartmentsStore.error"
+        class="bg-red-50 border border-red-200 rounded-xl p-6 text-center"
+      >
+        <svg
+          class="w-12 h-12 text-red-400 mx-auto mb-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+        <p class="text-red-600 font-medium">{{ apartmentsStore.error }}</p>
+      </div>
+
+      <!-- Empty State -->
+      <div
+        v-else-if="!selectedProjectId"
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center"
+      >
+        <svg
+          class="w-16 h-16 text-slate-300 mx-auto mb-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          ></path>
+        </svg>
+        <p class="text-slate-500 text-lg">პროექტი არ არის არჩეული</p>
+        <p class="text-slate-400 mt-2">გთხოვთ აირჩიოთ პროექტი ზემოთ</p>
+      </div>
+
+      <!-- Apartments Grid -->
+      <div
+        v-else-if="apartmentsStore.apartments.length === 0"
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center"
+      >
+        <svg
+          class="w-16 h-16 text-slate-300 mx-auto mb-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          ></path>
+        </svg>
+        <p class="text-slate-500 text-lg">ბინები არ მოიძებნა</p>
+        <p class="text-slate-400 mt-2">დაამატეთ პირველი ბინა ან გამოიყენეთ იმპორტი</p>
+      </div>
+
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div
+          v-for="apartment in apartmentsStore.apartments"
+          :key="apartment.id"
+          class="bg-white rounded-2xl shadow-sm border border-slate-200 hover:shadow-lg transition-all duration-300 overflow-hidden group"
+        >
+          <div class="p-6">
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <h3 class="text-xl font-bold text-slate-800">{{ apartment.apartment_number }}</h3>
+                <p class="text-sm text-slate-500">სართული: {{ apartment.floor_number }}</p>
+              </div>
+              <span
+                :class="getStatusClass(apartment.status)"
+                class="px-3 py-1 rounded-lg text-sm font-medium"
+              >
+                {{ getStatusLabel(apartment.status) }}
+              </span>
+            </div>
+
+            <!-- Details -->
+            <div class="space-y-2 mb-4">
+              <div v-if="apartment.price" class="flex items-center gap-2 text-slate-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                <span class="text-sm font-semibold">{{ formatPrice(apartment.price) }}</span>
+              </div>
+              <div v-if="apartment.area_total" class="flex items-center gap-2 text-slate-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z"
+                  ></path>
+                </svg>
+                <span class="text-sm">{{ apartment.area_total }} მ²</span>
+              </div>
+              <div v-if="apartment.bedrooms" class="flex items-center gap-2 text-slate-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                  ></path>
+                </svg>
+                <span class="text-sm">{{ apartment.bedrooms }} ოთახი</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-2">
+              <button
+                @click="editApartment(apartment)"
+                class="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all duration-300 font-medium text-sm"
+              >
+                რედაქტირება
+              </button>
+              <button
+                @click="deleteApartment(apartment)"
+                class="bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-rose-700 transition-all duration-300 font-medium text-sm"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="apartmentsStore.apartments.length > 0" class="mt-8 flex justify-center">
+        <div class="flex gap-2">
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            @click="currentPage = page; loadApartments()"
+            :class="[
+              'px-4 py-2 rounded-lg font-medium transition-all',
+              currentPage === page
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white'
+                : 'bg-white text-slate-700 hover:bg-slate-100',
+            ]"
+          >
+            {{ page }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <ApartmentFormModal
+      v-if="showFormModal"
+      :apartment="selectedApartment"
+      :project-id="selectedProjectId"
+      :buildings="buildings"
+      @close="closeFormModal"
+      @saved="handleSaved"
+    />
+
+    <!-- Import Modal -->
+    <ApartmentImportModal
+      v-if="showImportModal"
+      :project-id="selectedProjectId"
+      :buildings="buildings"
+      @close="showImportModal = false"
+      @imported="handleImported"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useApartmentsAdminStore } from '@/stores/admin/apartments'
+import { useBuildingsAdminStore } from '@/stores/admin/buildings'
+import { useAdminProjectsStore } from '@/stores/admin/projects'
+import type { Apartment, Building, ApartmentStatus } from '@/types/apartments'
+import type { Project } from '@/types'
+import ApartmentFormModal from './components/ApartmentFormModal.vue'
+import ApartmentImportModal from './components/ApartmentImportModal.vue'
+
+const apartmentsStore = useApartmentsAdminStore()
+const buildingsStore = useBuildingsAdminStore()
+const projectsStore = useAdminProjectsStore()
+
+const selectedProjectId = ref<number | null>(null)
+const selectedBuildingId = ref<number | null>(null)
+const filterStatus = ref<string | null>(null)
+const searchQuery = ref('')
+const currentPage = ref(1)
+const showFormModal = ref(false)
+const showImportModal = ref(false)
+const selectedApartment = ref<Apartment | null>(null)
+const projects = ref<Project[]>([])
+const buildings = ref<Building[]>([])
+
+const totalPages = computed(() => {
+  // Simplified - implement proper pagination based on API response
+  return 1
+})
+
+onMounted(async () => {
+  try {
+    await projectsStore.loadProjects()
+    projects.value = projectsStore.projects
+  } catch (error) {
+    console.error('Failed to load projects:', error)
+  }
+})
+
+async function onProjectChange() {
+  selectedBuildingId.value = null
+  buildings.value = []
+
+  if (!selectedProjectId.value) return
+
+  try {
+    await buildingsStore.fetchBuildings(selectedProjectId.value)
+    buildings.value = buildingsStore.buildings
+  } catch (error) {
+    console.error('Failed to load buildings:', error)
+  }
+
+  loadApartments()
+}
+
+async function loadApartments() {
+  if (!selectedProjectId.value) return
+
+  // For now, if no building selected, don't load
+  if (!selectedBuildingId.value) {
+    apartmentsStore.apartments = []
+    return
+  }
+
+  try {
+    await apartmentsStore.fetchApartments(
+      selectedProjectId.value,
+      selectedBuildingId.value,
+      {
+        status: (filterStatus.value as ApartmentStatus) || undefined,
+        // Add other filters if needed
+      }
+    )
+  } catch (error) {
+    console.error('Failed to load apartments:', error)
+  }
+}
+
+function openCreateModal() {
+  if (!selectedProjectId.value) {
+    alert('გთხოვთ პირველ აირჩიოთ პროექტი')
+    return
+  }
+  selectedApartment.value = null
+  showFormModal.value = true
+}
+
+function editApartment(apartment: Apartment) {
+  selectedApartment.value = apartment
+  showFormModal.value = true
+}
+
+function closeFormModal() {
+  showFormModal.value = false
+  selectedApartment.value = null
+}
+
+function handleSaved() {
+  closeFormModal()
+  loadApartments()
+}
+
+function handleImported() {
+  showImportModal.value = false
+  loadApartments()
+}
+
+async function deleteApartment(apartment: Apartment) {
+  if (!confirm(`დარწმუნებული ხართ, რომ გსურთ ბინის "${apartment.apartment_number}" წაშლა?`)) {
+    return
+  }
+
+  try {
+    await apartmentsStore.deleteApartment(apartment.id)
+    alert('ბინა წარმატებით წაიშალა')
+    loadApartments()
+  } catch (error: unknown) {
+    const apiError = error as { response?: { data?: { message?: string } }; message?: string }
+    alert('შეცდომა: ' + (apiError.response?.data?.message || apiError.message))
+  }
+}
+
+function getStatusClass(status: string) {
+  switch (status) {
+    case 'available':
+      return 'bg-green-100 text-green-700'
+    case 'reserved':
+      return 'bg-amber-100 text-amber-700'
+    case 'sold':
+      return 'bg-red-100 text-red-700'
+    default:
+      return 'bg-slate-100 text-slate-700'
+  }
+}
+
+function getStatusLabel(status: string) {
+  switch (status) {
+    case 'available':
+      return 'ხელმისაწვდომი'
+    case 'reserved':
+      return 'დაჯავშნილი'
+    case 'sold':
+      return 'გაყიდული'
+    default:
+      return status
+  }
+}
+
+function formatPrice(price: number) {
+  return new Intl.NumberFormat('ka-GE', {
+    style: 'currency',
+    currency: 'GEL',
+    minimumFractionDigits: 0,
+  }).format(price)
+}
+</script>

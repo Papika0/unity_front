@@ -8,6 +8,7 @@ import { projectsApi } from '@/services/projectsApi'
 import type { ProjectApiResponse } from '@/services/projectsApi'
 import type { ProjectFeature } from '@/services/featuresApi'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import BuildingSelector from '@/components/apartments/BuildingSelector.vue'
 
 const { t } = useTranslations()
 const route = useRoute()
@@ -68,6 +69,12 @@ const statusText = computed(() => {
     default:
       return project.value.status
   }
+})
+
+const hasApartmentNavigation = computed(() => {
+  // Check if apartmentStore has loaded data and it's available
+  // This will be loaded when the BuildingSelector component mounts
+  return project.value?.id !== undefined
 })
 
 const getStatusColor = (status: string) => {
@@ -150,12 +157,12 @@ const loadProjectData = async (projectId: number) => {
     const response = await projectsApi.getById(projectId, localeStore.currentLocale)
 
     // Handle translations if present in response
-    if ((response as any).translations) {
-      translationsStore.mergeTranslations((response as any).translations)
+    if ('translations' in response && response.translations) {
+      translationsStore.mergeTranslations(response.translations)
     }
 
     // Extract the project data from the nested structure
-    project.value = (response as any).data || response
+    project.value = ('data' in response ? response.data : response) as ProjectApiResponse
 
     // Set features from project data
     projectFeatures.value = project.value?.features || []
@@ -165,7 +172,7 @@ const loadProjectData = async (projectId: number) => {
 
     // Wait for scroll to complete and DOM to update
     await new Promise(resolve => setTimeout(resolve, 100))
-  } catch (err) {
+  } catch {
     error.value = 'Failed to load project'
     router.push('/projects')
   } finally {
@@ -644,6 +651,20 @@ const goBack = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- Apartment Navigation Section -->
+      <section v-if="hasApartmentNavigation" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+          <div class="text-center mb-12">
+            <h2 class="text-4xl font-light text-zinc-900 mb-4">
+              {{ t('projects.explore_apartments') }}
+            </h2>
+            <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto"></div>
+          </div>
+
+          <BuildingSelector :project-id="project.id" :auto-navigate="false" />
         </div>
       </section>
 

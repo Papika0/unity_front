@@ -1,31 +1,42 @@
 <template>
   <div class="h-screen flex overflow-hidden bg-slate-50">
     <!-- Sidebar -->
-    <div class="hidden md:flex md:flex-shrink-0">
-      <div class="flex flex-col w-72">
-        <div class="flex flex-col h-0 flex-1 bg-white border-r border-slate-200 shadow-sm">
-          <!-- Logo/Brand -->
-          <div class="flex-1 flex flex-col pt-6 pb-4 overflow-y-auto">
-            <div class="flex items-center flex-shrink-0 px-6">
-              <div class="flex items-center">
-                <div
-                  class="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-200 p-1"
+    <transition name="slide-sidebar">
+      <div v-if="sidebarOpen" class="hidden md:flex md:flex-shrink-0">
+        <div class="flex flex-col w-72">
+          <div class="flex flex-col h-0 flex-1 bg-white border-r border-slate-200 shadow-sm">
+            <!-- Logo/Brand -->
+            <div class="flex-1 flex flex-col pt-6 pb-4 overflow-y-auto overflow-x-hidden px-2">
+              <div class="flex items-center flex-shrink-0 px-4 justify-between">
+                <div class="flex items-center">
+                  <div
+                    class="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-200 p-1"
+                  >
+                    <img
+                      src="@/assets/logo_black.png"
+                      alt="Unity Logo"
+                      class="h-full w-full object-contain"
+                    />
+                  </div>
+                  <div class="ml-3">
+                    <h1 class="text-lg font-bold text-slate-800">ადმინისტრაციული პანელი</h1>
+                    <p class="text-xs text-slate-500">მართვის სისტემა</p>
+                  </div>
+                </div>
+                <button
+                  @click="sidebarOpen = false"
+                  class="group relative p-2 hover:bg-gradient-to-br hover:from-amber-50 hover:to-orange-50 rounded-lg transition-all duration-200 hover:shadow-md"
+                  title="დახურვა"
                 >
-                  <img
-                    src="@/assets/logo_black.png"
-                    alt="Unity Logo"
-                    class="h-full w-full object-contain"
-                  />
-                </div>
-                <div class="ml-3">
-                  <h1 class="text-lg font-bold text-slate-800">ადმინისტრაციული პანელი</h1>
-                  <p class="text-xs text-slate-500">მართვის სისტემა</p>
-                </div>
+                  <div class="absolute inset-0 bg-gradient-to-br from-amber-400/0 to-orange-400/0 group-hover:from-amber-400/10 group-hover:to-orange-400/10 rounded-lg transition-all duration-200"></div>
+                  <svg class="relative w-5 h-5 text-slate-400 group-hover:text-amber-600 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
               </div>
-            </div>
 
             <!-- Navigation -->
-            <nav class="mt-8 flex-1 px-4 space-y-2">
+            <nav class="mt-8 flex-1 px-2 space-y-2">
               <router-link
                 v-if="authStore.isAdmin"
                 to="/admin/dashboard"
@@ -194,6 +205,97 @@
                 "ჩვენს შესახებ" პარამეტრები
               </router-link>
 
+              <!-- Apartment Navigation Section -->
+              <div class="pt-4 mt-4 border-t border-slate-200">
+                <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  ბინების ნავიგაცია
+                </p>
+
+                <router-link
+                  v-if="authStore.isAdmin"
+                  to="/admin/buildings"
+                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                  :class="
+                    typeof $route.name === 'string' && $route.name.startsWith('admin-buildings')
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25'
+                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
+                  "
+                >
+                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    ></path>
+                  </svg>
+                  შენობები
+                </router-link>
+
+                <router-link
+                  v-if="authStore.isAdmin"
+                  to="/admin/apartments"
+                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                  :class="
+                    typeof $route.name === 'string' && $route.name.startsWith('admin-apartments')
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
+                      : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'
+                  "
+                >
+                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                    ></path>
+                  </svg>
+                  ბინები
+                </router-link>
+
+                <router-link
+                  v-if="authStore.isAdmin"
+                  to="/admin/zones"
+                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                  :class="
+                    typeof $route.name === 'string' && $route.name.startsWith('admin-zones')
+                      ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/25'
+                      : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'
+                  "
+                >
+                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                    ></path>
+                  </svg>
+                  ინტერაქტიული ზონები
+                </router-link>
+
+                <router-link
+                  v-if="authStore.isAdmin"
+                  to="/admin/zone-images"
+                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                  :class="
+                    typeof $route.name === 'string' && $route.name.startsWith('admin-zone-images')
+                      ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/25'
+                      : 'text-slate-600 hover:bg-rose-50 hover:text-rose-700'
+                  "
+                >
+                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    ></path>
+                  </svg>
+                  ზონის სურათები
+                </router-link>
+              </div>
+
               <!-- Customer Management Section -->
               <div class="pt-4 mt-4 border-t border-slate-200">
                 <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
@@ -299,6 +401,22 @@
         </div>
       </div>
     </div>
+    </transition>
+
+    <!-- Toggle Button (when sidebar is closed) -->
+    <button
+      v-if="!sidebarOpen"
+      @click="sidebarOpen = true"
+      class="hidden md:block fixed left-0 top-1/2 transform -translate-y-1/2 z-50 group"
+      title="ნავიგაციის გახსნა"
+    >
+      <div class="relative bg-gradient-to-r from-white to-slate-50 border-2 border-slate-200 hover:border-amber-400 rounded-r-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-3 hover:pr-4">
+        <div class="absolute inset-0 bg-gradient-to-br from-amber-400/0 to-orange-400/0 group-hover:from-amber-400/10 group-hover:to-orange-400/10 rounded-r-xl transition-all duration-300"></div>
+        <svg class="relative w-6 h-6 text-slate-400 group-hover:text-amber-600 transition-all duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </button>
 
     <!-- Mobile menu -->
     <div v-if="mobileMenuOpen" class="md:hidden">
@@ -535,10 +653,12 @@
         </div>
       </div>
 
+
+      <!-- add padding for some pages -->
       <!-- Page Content -->
       <main class="flex-1 relative overflow-y-auto focus:outline-none bg-slate-50">
         <div class="py-4 sm:py-6 md:py-8">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
+          <div class="">
             <router-view />
           </div>
         </div>
@@ -556,6 +676,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const mobileMenuOpen = ref(false)
 const userMenuOpen = ref(false)
+const sidebarOpen = ref(true) // Sidebar toggle state
 
 // Debug logging
 
@@ -566,3 +687,21 @@ const handleLogout = async () => {
   router.push('/admin/login')
 }
 </script>
+
+<style scoped>
+/* Slide transition for sidebar */
+.slide-sidebar-enter-active,
+.slide-sidebar-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-sidebar-enter-from {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.slide-sidebar-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+</style>

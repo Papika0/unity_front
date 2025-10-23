@@ -71,6 +71,24 @@ class ImageService
     }
 
     /**
+     * Store image for admin zone image upload
+     * Simplified version that works with zone image controller
+     * 
+     * @param UploadedFile $file
+     * @param string $category
+     * @param int $projectId
+     * @return Image
+     */
+    public function storeImage(UploadedFile $file, string $category, int $projectId): Image
+    {
+        // Use the original filename as title
+        $title = $file->getClientOriginalName();
+        
+        // Call the main uploadImage method
+        return $this->uploadImage($file, $title, $category, null, null);
+    }
+
+    /**
      * Attach image to a model
      */
     public function attachImage(Image $image, $model, string $type = 'gallery', int $sortOrder = 0): Imageable

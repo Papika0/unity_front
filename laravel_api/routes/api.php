@@ -26,6 +26,12 @@ use App\Http\Controllers\Admin\AdminCustomerController;
 use App\Http\Controllers\Admin\AdminMarketingEmailController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Api\ApartmentNavigationController;
+use App\Http\Controllers\Api\ApartmentController;
+use App\Http\Controllers\Admin\AdminBuildingController;
+use App\Http\Controllers\Admin\AdminApartmentController;
+use App\Http\Controllers\Admin\AdminInteractiveZoneController;
+use App\Http\Controllers\Admin\AdminZoneImageController;
 
 
 /*
@@ -116,6 +122,16 @@ Route::middleware('throttle:public-cached')->group(function () {
         Route::get('/categories', 'categories');
         Route::get('/{id}', 'show');
     });
+
+    // Apartment navigation routes (public)
+    Route::get('/projects/{projectId}/apartment-navigation', [ApartmentNavigationController::class, 'index']);
+
+    // Buildings routes (public)
+    Route::get('/projects/{projectId}/buildings', [App\Http\Controllers\Api\BuildingsController::class, 'index']);
+    Route::get('/projects/{projectId}/buildings/{buildingIdOrIdentifier}', [App\Http\Controllers\Api\BuildingsController::class, 'show']);
+
+    // Apartment detail routes (public)
+    Route::get('/apartments/{id}', [ApartmentController::class, 'show']);
 
     // Test cache endpoint (no auth required for testing)
     Route::get('/test-cache', [AdminController::class, 'getCacheStats']);
@@ -260,7 +276,101 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
         Route::put('/{id}', 'update');                 // Update user
         Route::delete('/{id}', 'destroy');             // Delete user
     });
+
+    // Global Zone Image Management Routes (for polygon editors that don't know project ID in advance)
+    Route::prefix('admin/zone-images')->middleware('role:admin')->controller(AdminZoneImageController::class)->group(function () {
+        Route::post('/', 'storeGlobal');               // Upload zone image (project_id in body)
+        Route::get('/', 'indexGlobal');                // Get zone images with filters (project_id in query)
+        Route::get('/{zoneImageId}', 'showGlobal');   // Get single zone image
+        Route::put('/{zoneImageId}', 'updateGlobal'); // Update zone image
+        Route::delete('/{zoneImageId}', 'destroyGlobal'); // Delete zone image
+    });
+    
+    // Global Interactive Zone Management Routes (for polygon editors)
+    Route::prefix('admin/projects/{projectId}/interactive-zones')->middleware('role:admin')->controller(AdminInteractiveZoneController::class)->group(function () {
+        Route::get('/', 'index');                      // Get zones with filters
+        Route::post('/', 'store');                     // Create single zone
+        Route::delete('/', 'bulkDelete');              // Delete all zones (with filters)
+        Route::put('/{zoneId}', 'update');            // Update zone
+        Route::delete('/{zoneId}', 'destroy');        // Delete zone
+    });
+
+    // Admin Apartment Navigation Management Routes
+    Route::prefix('admin/projects/{projectId}')->middleware('role:admin')->group(function () {
+        
+        // Building Management
+        Route::prefix('buildings')->controller(AdminBuildingController::class)->group(function () {
+            Route::get('/', 'index');                  // Get all buildings for project
+            Route::post('/', 'store');                 // Create new building
+            Route::get('/{buildingId}', 'show');      // Get single building
+            Route::put('/{buildingId}', 'update');    // Update building
+            Route::delete('/{buildingId}', 'destroy'); // Delete building (soft delete with validation)
+        });
+        
+        // Building-specific Zone Management (for frontend ListView compatibility)
+        Route::prefix('buildings/{buildingId}/zones')->controller(AdminInteractiveZoneController::class)->group(function () {
+            Route::get('/', 'indexByBuilding');       // Get zones for specific building
+            Route::post('/', 'storeByBuilding');      // Create zone for specific building
+            Route::put('/{zoneId}', 'updateByBuilding'); // Update zone
+            Route::delete('/{zoneId}', 'destroyByBuilding'); // Delete zone
+        });
+        
+        // Apartment Management (within building context)
+        Route::prefix('buildings/{buildingId}/apartments')->controller(AdminApartmentController::class)->group(function () {
+            Route::get('/', 'index');                  // Get all apartments for building
+            Route::post('/', 'store');                 // Create new apartment
+            Route::post('/bulk-import', 'bulkImport'); // Bulk import apartments from CSV/Excel
+            Route::get('/template', 'downloadTemplate'); // Download CSV template
+        });
+        
+        // Interactive Zone Management
+        Route::prefix('zones')->controller(AdminInteractiveZoneController::class)->group(function () {
+            Route::get('/', 'index');                  // Get zones with filters
+            Route::post('/', 'store');                 // Create single zone
+            Route::post('/bulk', 'bulkCreate');        // Bulk create zones with template
+            Route::put('/{zoneId}', 'update');        // Update zone
+            Route::delete('/{zoneId}', 'destroy');    // Delete zone
+        });
+        
+        // Zone Image Management (project-specific endpoints)
+        Route::prefix('zone-images')->controller(AdminZoneImageController::class)->group(function () {
+            Route::get('/', 'index');                  // Get zone images with filters
+            Route::post('/', 'store');                 // Upload single zone image
+            Route::post('/bulk', 'bulkUpload');        // Bulk upload zone images
+            Route::get('/{zoneImageId}', 'show');     // Get single zone image
+            Route::put('/{zoneImageId}', 'update');   // Update zone image
+            Route::delete('/{zoneImageId}', 'destroy'); // Delete zone image
+        });
+    });
+    
+    // Apartment Management (non-building context for updates/deletes)
+    Route::prefix('admin/apartments')->controller(AdminApartmentController::class)->group(function () {
+        Route::put('/{apartmentId}', 'update');       // Update apartment
+        Route::patch('/{apartmentId}/status', 'updateStatus'); // Quick status update
+        Route::delete('/{apartmentId}', 'destroy');   // Delete apartment
+    });
+
+    // Building Management (standalone routes without project context)
+    Route::prefix('admin/buildings')->middleware('role:admin')->controller(AdminBuildingController::class)->group(function () {
+        Route::get('/{buildingId}', 'showStandalone');      // Get single building
+        Route::get('/{buildingId}/apartments', 'getApartments'); // Get apartments for building (filtered by floor if needed)
+    });
 });
+
+// Storage proxy route with CORS headers for image processing (crossOrigin)
+Route::get('storage-proxy/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+
+    return response()->file($filePath, [
+        'Access-Control-Allow-Origin' => '*',
+        'Access-Control-Allow-Methods' => 'GET',
+        'Access-Control-Allow-Headers' => '*',
+    ]);
+})->where('path', '.*');
 
 // Debug route for checking authorization headers (remove in production)
 Route::get('debug/auth-headers', [\App\Http\Controllers\Debug\AuthDebugController::class, 'checkHeaders']);
