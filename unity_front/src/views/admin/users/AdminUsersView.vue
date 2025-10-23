@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="p-4 sm:p-6 lg:p-8">
     <div class="mb-8 flex justify-between items-center">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">მომხმარებლების მართვა</h1>

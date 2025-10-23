@@ -96,7 +96,7 @@ class DashboardController extends Controller
             return $this->success(null, 'კეში წარმატებით გასუფთავდა');
         } catch (\Exception $e) {
             Log::error('Failed to clear cache: ' . $e->getMessage());
-            return $this->error('კეშის გასუფთავება ვერ მოხერხდა', 500);
+            return $this->error('მონაცემების განახლება ვერ მოხერხდა', 500);
         }
     }
 
@@ -120,7 +120,7 @@ class DashboardController extends Controller
             return $this->success(null, 'კეში წარმატებით გაცხელდა - ყველა API cache-ი განახლებულია');
         } catch (\Exception $e) {
             Log::error('Failed to warm cache: ' . $e->getMessage());
-            return $this->error('კეშის გაცხელება ვერ მოხერხდა', 500);
+            return $this->error('მონაცემების შევსება ვერ მოხერხდა', 500);
         }
     }
 }

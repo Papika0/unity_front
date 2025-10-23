@@ -608,7 +608,7 @@
           </div>
 
           <!-- User menu -->
-          <div class="ml-2 sm:ml-4 flex items-center md:ml-6">
+          <div class="ml-2 sm:ml-4 flex items-center md:ml-6 user-menu-container">
             <div class="relative">
               <button
                 @click="userMenuOpen = !userMenuOpen"
@@ -634,16 +634,34 @@
               <!-- User dropdown -->
               <div
                 v-if="userMenuOpen"
-                class="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-slate-200 border border-slate-100 z-50"
+                class="user-dropdown origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-slate-200 border border-slate-100 z-50"
               >
                 <div class="py-1">
-                  <div class="px-4 py-2 text-xs sm:text-sm text-slate-700 border-b border-slate-100 truncate">
+                  <div class="px-4 py-3 text-xs sm:text-sm font-medium text-slate-900 border-b border-slate-200 truncate bg-slate-50">
                     {{ authStore.user?.email }}
                   </div>
                   <button
-                    @click="handleLogout"
-                    class="block w-full text-left px-4 py-2 text-xs sm:text-sm text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+                    @click="handleClearCache"
+                    :disabled="clearingCache"
+                    class="flex items-center w-full text-left px-4 py-2.5 text-xs sm:text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed group"
                   >
+                    <svg v-if="!clearingCache" class="h-4 w-4 mr-2.5 text-slate-400 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <svg v-else class="animate-spin h-4 w-4 mr-2.5 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span v-if="clearingCache">მონაცემების განახლება...</span>
+                    <span v-else>მონაცემების განახლება</span>
+                  </button>
+                  <button
+                    @click="handleLogout"
+                    class="flex items-center w-full text-left px-4 py-2.5 text-xs sm:text-sm text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition-all duration-150 border-t border-slate-100 group"
+                  >
+                    <svg class="h-4 w-4 mr-2.5 text-slate-400 group-hover:text-amber-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
                     გასვლა
                   </button>
                 </div>
@@ -664,19 +682,57 @@
         </div>
       </main>
     </div>
+
+    <!-- Toast Notification -->
+    <div
+      v-if="showToast"
+      class="fixed bottom-4 right-4 bg-green-50 border border-green-200 rounded-lg shadow-lg p-4 max-w-sm transition-opacity duration-300 z-50"
+      :class="{ 'opacity-0': !showToast }"
+    >
+      <div class="flex items-center">
+        <svg class="h-5 w-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span class="text-sm font-medium text-green-900">{{ toastMessage }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref  } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth/auth'
+import { dashboardApi } from '@/services/dashboardApi'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const mobileMenuOpen = ref(false)
 const userMenuOpen = ref(false)
 const sidebarOpen = ref(true) // Sidebar toggle state
+const clearingCache = ref(false)
+const showToast = ref(false)
+const toastMessage = ref('')
+
+// Handle click outside to close dropdown
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  const userMenuButton = target.closest('button')
+  const userMenuDropdown = target.closest('.user-dropdown')
+
+  // If click is outside both the button and dropdown, close the menu
+  if (!userMenuButton?.closest('.user-menu-container') && !userMenuDropdown) {
+    userMenuOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 // Debug logging
 
@@ -685,6 +741,33 @@ const sidebarOpen = ref(true) // Sidebar toggle state
 const handleLogout = async () => {
   await authStore.logout()
   router.push('/admin/login')
+}
+
+const handleClearCache = async () => {
+  try {
+    clearingCache.value = true
+    const result = await dashboardApi.clearCache()
+    toastMessage.value = result.message
+    showToast.value = true
+
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+      showToast.value = false
+    }, 3000)
+
+    // Close user menu
+    userMenuOpen.value = false
+  } catch (error) {
+    console.error('Error clearing cache:', error)
+    toastMessage.value = 'მონაცემების განახლება ვერ მოხერხდა'
+    showToast.value = true
+
+    setTimeout(() => {
+      showToast.value = false
+    }, 3000)
+  } finally {
+    clearingCache.value = false
+  }
 }
 </script>
 

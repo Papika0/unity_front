@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="p-4 sm:p-6 lg:p-8">
     <div class="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold text-gray-900">მთავარი პანელი</h1>
@@ -21,7 +21,7 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span class="hidden sm:inline">{{ warmingCache ? 'გაცხელება...' : 'კეშის გაცხელება' }}</span>
+          <span class="hidden sm:inline">{{ warmingCache ? 'გაცხელება...' : 'მონაცემების შევსება' }}</span>
           <span class="sm:hidden">{{ warmingCache ? 'გაცხელება' : 'გაცხელება' }}</span>
         </button>
         <button
@@ -36,7 +36,7 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span class="hidden sm:inline">{{ clearingCache ? 'იწმინდება...' : 'კეშის გასუფთავება' }}</span>
+          <span class="hidden sm:inline">{{ clearingCache ? 'იწმინდება...' : 'მონაცემების განახლება' }}</span>
           <span class="sm:hidden">{{ clearingCache ? 'იწმინდება' : 'გასუფთავება' }}</span>
         </button>
       </div>
@@ -458,7 +458,7 @@ const clearCache = async () => {
     await loadStats()
   } catch (error) {
     console.error('Error clearing cache:', error)
-    toastMessage.value = 'კეშის გასუფთავება ვერ მოხერხდა'
+    toastMessage.value = 'მონაცემების განახლება ვერ მოხერხდა'
     showToast.value = true
 
     setTimeout(() => {
@@ -485,7 +485,7 @@ const warmCache = async () => {
     await loadStats()
   } catch (error) {
     console.error('Error warming cache:', error)
-    toastMessage.value = 'კეშის გაცხელება ვერ მოხერხდა'
+    toastMessage.value = 'მონაცემების შევსება ვერ მოხერხდა'
     showToast.value = true
 
     setTimeout(() => {
