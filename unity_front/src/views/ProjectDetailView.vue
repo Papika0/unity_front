@@ -72,9 +72,8 @@ const statusText = computed(() => {
 })
 
 const hasApartmentNavigation = computed(() => {
-  // Check if apartmentStore has loaded data and it's available
-  // This will be loaded when the BuildingSelector component mounts
-  return project.value?.id !== undefined
+  // Check if project has active building block zones from backend
+  return project.value?.hasApartmentNavigation === true
 })
 
 const getStatusColor = (status: string) => {

@@ -35,6 +35,7 @@ export interface ProjectApiResponse {
   meta_description: string | null
   features?: ProjectFeature[]
   related_projects?: RelatedProject[] // Added related projects
+  hasApartmentNavigation: boolean // True if project has active building block zones
 }
 
 export const projectsApi = {

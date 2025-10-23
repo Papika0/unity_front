@@ -82,6 +82,10 @@ class ProjectResource extends JsonResource
                     ];
                 });
             }),
+            'hasApartmentNavigation' => $this->interactiveZones()
+                ->where('zone_type', 'building_block')
+                ->where('is_active', true)
+                ->exists(),
             // 'created_at' => $this->created_at->toIso8601String(),
             // 'updated_at' => $this->updated_at->toIso8601String(),
         ];
