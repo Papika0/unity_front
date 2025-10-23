@@ -123,7 +123,7 @@ onUnmounted(() => {
         ]"
       >
         <img
-          :src="transparent ? '/src/assets/logo.png' : '/src/assets/logo_black.png'"
+          :src="transparent ? '/logo.png' : '/logo_black.png'"
           alt="Unity Development Logo"
           class="h-full w-auto object-contain"
         />
