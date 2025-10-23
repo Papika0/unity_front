@@ -115,27 +115,28 @@ onUnmounted(() => {
       <!-- Logo - Centered on mobile, left on desktop -->
       <div
         :class="[
-          'h-12 w-auto transition-all duration-200',
-          'lg:h-14',
-          'lg:mr-32 xl:mr-40 2xl:mr-48 lg:flex-shrink-0',
+          'h-10 w-auto transition-all duration-200',
+          'lg:h-12 xl:h-14',
+          'lg:mr-8 xl:mr-16 2xl:mr-32 lg:flex-shrink-0',
           'flex-1 flex justify-center lg:flex-none lg:justify-start items-center',
+          'min-w-0', // Prevent flex-1 from expanding too much
         ]"
       >
         <img
-          src="/src/assets/logo_black.png"
+          :src="transparent ? '/src/assets/logo.png' : '/src/assets/logo_black.png'"
           alt="Unity Development Logo"
           class="h-full w-auto object-contain"
         />
       </div>
 
       <!-- Desktop Navigation -->
-      <nav class="hidden lg:flex lg:space-x-10 xl:space-x-14 2xl:space-x-16 items-center">
+      <nav class="hidden lg:flex lg:space-x-4 xl:space-x-8 2xl:space-x-12 items-center flex-shrink lg:mx-auto xl:mx-0">
         <router-link
           v-for="item in navigation"
           :key="item.key"
           :to="item.path"
           :class="[
-            'text-base xl:text-lg font-medium transition-colors duration-200 whitespace-nowrap',
+            'text-sm lg:text-base xl:text-lg font-medium transition-colors duration-200 whitespace-nowrap',
             transparent
               ? 'text-orange-100 hover:text-orange-200'
               : 'text-zinc-900 hover:text-zinc-600',
@@ -147,26 +148,26 @@ onUnmounted(() => {
       </nav>
 
       <!-- Call Us Button & Language Switcher -->
-      <div class="hidden lg:flex items-center space-x-4 xl:space-x-6 ml-auto">
+      <div class="hidden lg:flex items-center space-x-2 xl:space-x-4 ml-auto flex-shrink-0">
         <!-- Call Us Button -->
         <button
           @click="openPhoneModal"
           :class="[
-            'inline-flex items-center gap-2 px-4 py-2 text-sm font-normal font-roboto uppercase tracking-widest transition-all duration-200 whitespace-nowrap',
+            'inline-flex items-center gap-1.5 px-3 py-1.5 xl:px-4 xl:py-2 text-xs xl:text-sm font-normal font-roboto uppercase tracking-widest transition-all duration-200 whitespace-nowrap',
             transparent
               ? 'border border-orange-100 text-orange-100 hover:bg-orange-100 hover:text-zinc-900'
               : 'border border-zinc-900 text-zinc-900 hover:bg-zinc-900 hover:text-white',
           ]"
         >
-          <IconPhone class="w-4 h-4" />
+          <IconPhone class="w-3.5 h-3.5 xl:w-4 xl:h-4" />
           {{ t('footer.callUS') || 'Call Us' }}
         </button>
 
         <!-- Language Switcher -->
-        <div class="flex items-center gap-1 border rounded-sm p-0.5" :class="transparent ? 'border-orange-100/30' : 'border-zinc-900/20'">
+        <div class="flex items-center gap-0.5 border rounded-sm p-0.5" :class="transparent ? 'border-orange-100/30' : 'border-zinc-900/20'">
           <button
             :class="[
-              'px-3 py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
+              'px-2 py-1 xl:px-3 xl:py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
               localeStore.currentLocale === 'en'
                 ? transparent
                   ? 'bg-orange-100 text-zinc-900'
@@ -181,7 +182,7 @@ onUnmounted(() => {
           </button>
           <button
             :class="[
-              'px-3 py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
+              'px-2 py-1 xl:px-3 xl:py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
               localeStore.currentLocale === 'ka'
                 ? transparent
                   ? 'bg-orange-100 text-zinc-900'
@@ -196,7 +197,7 @@ onUnmounted(() => {
           </button>
           <button
             :class="[
-              'px-3 py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
+              'px-2 py-1 xl:px-3 xl:py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap',
               localeStore.currentLocale === 'ru'
                 ? transparent
                   ? 'bg-orange-100 text-zinc-900'
@@ -212,8 +213,8 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Spacer for mobile layout balance -->
-      <div class="lg:hidden w-12"></div>
+      <!-- Spacer for mobile layout balance - matches the hamburger button width -->
+      <div class="lg:hidden flex-shrink-0" style="width: 60px;"></div>
     </div>
 
     <!-- Mobile Navigation Menu -->

@@ -60,6 +60,16 @@ const featuredProject = computed((): Project | null => {
   // Otherwise return null (will hide the section)
   return null
 })
+
+// Truncate description to a specific character limit
+const truncatedDescription = computed(() => {
+  if (!featuredProject.value?.description) return ''
+  const maxLength = 200
+  const description = featuredProject.value.description
+  return description.length > maxLength
+    ? description.substring(0, maxLength).trim() + '...'
+    : description
+})
 </script>
 
 <template>
@@ -111,12 +121,12 @@ const featuredProject = computed((): Project | null => {
           </h3>
           
           <!-- Description with slide up and fade -->
-          <p 
+          <p
             class="text-zinc-300 text-lg md:text-xl font-light leading-relaxed max-w-2xl mb-12 transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] transform"
             :class="sectionVisible ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 translate-y-12 blur-sm'"
             style="transition-delay: 700ms; text-shadow: 0 1px 10px rgba(0,0,0,0.5);"
           >
-            {{ featuredProject.description }}
+            {{ truncatedDescription }}
           </p>
           
           <!-- Button with slide up, scale, and glow -->
