@@ -66,7 +66,9 @@ class ProjectsPageController extends Controller
             $projectsQuery->where('status', $status);
         }
 
-        $projectsQuery->orderBy('created_at', 'desc');
+        // Order by status priority (ongoing, planning, completed) then by created_at
+        $projectsQuery->orderByRaw("FIELD(status, 'ongoing', 'planning', 'completed')")
+            ->orderBy('created_at', 'desc');
 
         // Get paginated results
         $projects = $projectsQuery->paginate($perPage, ['*'], 'page', $page);
