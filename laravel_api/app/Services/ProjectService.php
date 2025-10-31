@@ -42,11 +42,28 @@ class ProjectService
                     });
 
                 // Efficiently separate by type using collections
+                // For is_alone, prioritize ongoing projects
+                $aloneProject = $allProjects
+                    ->where('is_onHomepage', false)
+                    ->where('is_featured', false)
+                    ->where('status', 'ongoing')
+                    ->values()
+                    ->first();
+
+                // If no ongoing project found, fallback to any project that's not on homepage or featured
+                if (!$aloneProject) {
+                    $aloneProject = $allProjects
+                        ->where('is_onHomepage', false)
+                        ->where('is_featured', false)
+                        ->values()
+                        ->first();
+                }
+
                 return [
                     'all' => $allProjects->values()->toArray(),
                     'is_featured' => $allProjects->where('is_featured', true)->values()->toArray(),
                     'is_onHomepage' => $allProjects->where('is_onHomepage', true)->values()->toArray(),
-                    'is_alone' => $allProjects->where('is_onHomepage', false)->where('is_featured', false)->values()->first(),
+                    'is_alone' => $aloneProject,
                 ];
             } catch (\Exception $e) {
                 Log::error('ProjectService: Failed to get optimized projects', [
