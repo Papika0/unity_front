@@ -30,10 +30,11 @@ class ProjectService
                     'meta_description', 'created_at'
                 ];
 
-                // Get all active projects in one query
+                // Get all active projects in one query, prioritizing ongoing projects
                 $allProjects = Projects::where('is_active', true)
                     ->with(['mainImage', 'renderImage', 'galleryImages'])
                     ->select($essentialColumns)
+                    ->orderByRaw("CASE WHEN status = 'ongoing' THEN 0 WHEN status = 'planning' THEN 1 ELSE 2 END")
                     ->latest()
                     ->get()
                     ->map(function ($project) use ($locale) {
@@ -84,7 +85,8 @@ class ProjectService
 
     /**
      * Get projects specifically for footer (limited number for performance)
-     * 
+     * Prioritizes ongoing projects
+     *
      * @param string $locale
      * @param int $limit
      * @return array
@@ -92,15 +94,37 @@ class ProjectService
     public function getFooterProjects(string $locale = 'ka', int $limit = 6): array
     {
         $cacheKey = "footer_projects_{$locale}_{$limit}";
-        
+
         return Cache::remember($cacheKey, 3600, function () use ($locale, $limit) {
             try {
-                $projects = Projects::where('is_active', true)
+                // First, get ongoing projects
+                $ongoingProjects = Projects::where('is_active', true)
+                    ->where('status', 'ongoing')
                     ->with('mainImage')
-                    ->select(['id', 'title'])
+                    ->select(['id', 'title', 'status'])
                     ->latest()
                     ->limit($limit)
-                    ->get()
+                    ->get();
+
+                // If we have enough ongoing projects, use them
+                if ($ongoingProjects->count() >= $limit) {
+                    $projects = $ongoingProjects;
+                } else {
+                    // Otherwise, fill the rest with other active projects
+                    $remainingLimit = $limit - $ongoingProjects->count();
+
+                    $otherProjects = Projects::where('is_active', true)
+                        ->where('status', '!=', 'ongoing')
+                        ->with('mainImage')
+                        ->select(['id', 'title', 'status'])
+                        ->latest()
+                        ->limit($remainingLimit)
+                        ->get();
+
+                    $projects = $ongoingProjects->merge($otherProjects);
+                }
+
+                $projects = $projects
                     ->map(function ($project) use ($locale) {
                         $resource = new ProjectResource($project, $locale);
                         return $resource->toArray(request());
