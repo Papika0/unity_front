@@ -25,8 +25,8 @@ class ProjectService
                 // Select only essential columns to reduce memory usage
                 $essentialColumns = [
                     'id', 'title', 'location', 'status', 'description',
-                    'is_active', 'is_featured',
-                    'is_onHomepage', 'meta_title',
+                    'is_active', 'is_featured', 'featured_order',
+                    'is_onHomepage', 'homepage_order', 'meta_title',
                     'meta_description', 'created_at'
                 ];
 
@@ -62,8 +62,16 @@ class ProjectService
 
                 return [
                     'all' => $allProjects->values()->toArray(),
-                    'is_featured' => $allProjects->where('is_featured', true)->values()->toArray(),
-                    'is_onHomepage' => $allProjects->where('is_onHomepage', true)->values()->toArray(),
+                    'is_featured' => $allProjects
+                        ->where('is_featured', true)
+                        ->sortBy('featured_order')
+                        ->values()
+                        ->toArray(),
+                    'is_onHomepage' => $allProjects
+                        ->where('is_onHomepage', true)
+                        ->sortBy('homepage_order')
+                        ->values()
+                        ->toArray(),
                     'is_alone' => $aloneProject,
                 ];
             } catch (\Exception $e) {

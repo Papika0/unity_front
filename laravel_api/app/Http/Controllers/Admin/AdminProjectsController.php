@@ -229,21 +229,32 @@ class AdminProjectsController extends Controller
     {
         try {
             $request->validate([
-                'project_ids' => 'required|array',
+                'project_ids' => 'required|array|max:3',
                 'project_ids.*' => 'required|integer|exists:projects,id',
             ]);
 
-            // Reset all projects' featured status
-            Projects::query()->update(['is_featured' => false]);
+            // Reset all projects' featured status and order
+            Projects::query()->update([
+                'is_featured' => false,
+                'featured_order' => null
+            ]);
 
-            // Set selected projects as featured
+            // Set selected projects as featured with order preserved
             if (!empty($request->project_ids)) {
-                Projects::whereIn('id', $request->project_ids)->update(['is_featured' => true]);
+                foreach ($request->project_ids as $index => $projectId) {
+                    Projects::where('id', $projectId)->update([
+                        'is_featured' => true,
+                        'featured_order' => $index + 1 // Order starts from 1
+                    ]);
+                }
             }
 
-            $updatedProjects = Projects::whereIn('id', $request->project_ids)
-                ->with(['mainImage', 'renderImage', 'galleryImages'])
-                ->get();
+            // Return projects in the order they were submitted
+            $updatedProjects = collect($request->project_ids)
+                ->map(function ($id) {
+                    return Projects::with(['mainImage', 'renderImage', 'galleryImages'])->find($id);
+                })
+                ->filter(); // Remove any null values
 
             return $this->success(
                 AdminProjectResource::collection($updatedProjects),
@@ -265,17 +276,28 @@ class AdminProjectsController extends Controller
                 'project_ids.*' => 'required|integer|exists:projects,id',
             ]);
 
-            // Reset all projects' homepage status
-            Projects::query()->update(['is_onHomepage' => false]);
+            // Reset all projects' homepage status and order
+            Projects::query()->update([
+                'is_onHomepage' => false,
+                'homepage_order' => null
+            ]);
 
-            // Set selected projects as homepage
+            // Set selected projects as homepage with order preserved
             if (!empty($request->project_ids)) {
-                Projects::whereIn('id', $request->project_ids)->update(['is_onHomepage' => true]);
+                foreach ($request->project_ids as $index => $projectId) {
+                    Projects::where('id', $projectId)->update([
+                        'is_onHomepage' => true,
+                        'homepage_order' => $index + 1 // Order starts from 1
+                    ]);
+                }
             }
 
-            $updatedProjects = Projects::whereIn('id', $request->project_ids)
-                ->with(['mainImage', 'renderImage', 'galleryImages'])
-                ->get();
+            // Return projects in the order they were submitted
+            $updatedProjects = collect($request->project_ids)
+                ->map(function ($id) {
+                    return Projects::with(['mainImage', 'renderImage', 'galleryImages'])->find($id);
+                })
+                ->filter(); // Remove any null values
 
             return $this->success(
                 AdminProjectResource::collection($updatedProjects),
