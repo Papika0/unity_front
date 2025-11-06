@@ -25,6 +25,7 @@ class Projects extends Model
        'year','is_active','is_featured','is_onHomepage',
         'featured_order','homepage_order',
         'latitude','longitude','meta_title','meta_description',
+        'base_price_per_sqm','calculator_settings',
     ];
 
     protected $casts = [
@@ -32,6 +33,8 @@ class Projects extends Model
         'completion_date' => 'date',
         'latitude'        => 'decimal:7',
         'longitude'       => 'decimal:7',
+        'base_price_per_sqm' => 'decimal:2',
+        'calculator_settings' => 'array',
     ];
 
     /**

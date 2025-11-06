@@ -17,7 +17,7 @@ import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminDashboardView from '../views/admin/AdminDashboardView.vue'
 
 // Guards
-import { requireAuth, requireAdmin } from './guards'
+import { requireAuth, requireAdmin, requireAdminOrMarketing } from './guards'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -288,6 +288,18 @@ const router = createRouter({
               name: 'admin-marketing-emails',
               component: () => import('@/views/admin/marketing-emails/AdminMarketingEmailsView.vue'),
               beforeEnter: requireAdmin,
+            },
+            {
+              path: 'calculator',
+              name: 'admin-calculator',
+              component: () => import('@/views/admin/calculator/AdminCalculatorView.vue'),
+              beforeEnter: requireAdminOrMarketing,
+            },
+            {
+              path: 'bank-rates',
+              name: 'admin-bank-rates',
+              component: () => import('@/views/admin/bank-rates/AdminBankRatesView.vue'),
+              beforeEnter: requireAdminOrMarketing,
             },
             {
               path: 'users',

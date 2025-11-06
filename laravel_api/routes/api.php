@@ -32,6 +32,8 @@ use App\Http\Controllers\Admin\AdminBuildingController;
 use App\Http\Controllers\Admin\AdminApartmentController;
 use App\Http\Controllers\Admin\AdminInteractiveZoneController;
 use App\Http\Controllers\Admin\AdminZoneImageController;
+use App\Http\Controllers\Admin\AdminBankRateController;
+use App\Http\Controllers\Admin\AdminCalculatorController;
 
 
 /*
@@ -275,6 +277,29 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
         Route::post('/', 'store');                     // Create new user
         Route::put('/{id}', 'update');                 // Update user
         Route::delete('/{id}', 'destroy');             // Delete user
+    });
+
+    // Protected bank rates management routes (admin and marketing)
+    Route::prefix('admin/bank-rates')->middleware('role:admin,marketing')->controller(AdminBankRateController::class)->group(function () {
+        Route::get('/', 'index');                      // Get all bank rates
+        Route::get('/active', 'active');               // Get active bank rates only
+        Route::post('/', 'store');                     // Create new bank rate
+        Route::put('/{id}', 'update');                 // Update bank rate
+        Route::delete('/{id}', 'destroy');             // Delete bank rate
+        Route::post('/{id}/toggle-active', 'toggleActive'); // Toggle active status
+        Route::post('/reorder', 'reorder');            // Reorder bank rates
+    });
+
+    // Protected calculator management routes (admin and marketing)
+    Route::prefix('admin/calculator')->middleware('role:admin,marketing')->controller(AdminCalculatorController::class)->group(function () {
+        Route::get('/active-projects', 'getActiveProjects');  // Get all active projects with calculator settings
+    });
+
+    // Calculator settings routes under projects (admin and marketing)
+    Route::prefix('admin/projects')->middleware('role:admin,marketing')->controller(AdminCalculatorController::class)->group(function () {
+        Route::get('/{id}/calculator-settings', 'getProjectCalculatorSettings'); // Get calculator settings for specific project
+        Route::put('/{id}/calculator-settings', 'updateProjectCalculatorSettings'); // Update calculator settings
+        Route::put('/{id}/base-price', 'updateBasePrice'); // Update base price
     });
 
     // Global Zone Image Management Routes (for polygon editors that don't know project ID in advance)

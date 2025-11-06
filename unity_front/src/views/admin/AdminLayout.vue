@@ -205,14 +205,13 @@
                 "ჩვენს შესახებ" პარამეტრები
               </router-link>
 
-              <!-- Apartment Navigation Section -->
-              <div class="pt-4 mt-4 border-t border-slate-200">
+              <!-- Apartment Navigation Section (Admin Only) -->
+              <div v-if="authStore.isAdmin" class="pt-4 mt-4 border-t border-slate-200">
                 <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   ბინების ნავიგაცია
                 </p>
 
                 <router-link
-                  v-if="authStore.isAdmin"
                   to="/admin/buildings"
                   class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                   :class="
@@ -233,7 +232,6 @@
                 </router-link>
 
                 <router-link
-                  v-if="authStore.isAdmin"
                   to="/admin/apartments"
                   class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                   :class="
@@ -254,7 +252,6 @@
                 </router-link>
 
                 <router-link
-                  v-if="authStore.isAdmin"
                   to="/admin/zones"
                   class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                   :class="
@@ -275,7 +272,6 @@
                 </router-link>
 
                 <router-link
-                  v-if="authStore.isAdmin"
                   to="/admin/zone-images"
                   class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
                   :class="
@@ -297,7 +293,7 @@
               </div>
 
               <!-- Customer Management Section -->
-              <div class="pt-4 mt-4 border-t border-slate-200">
+              <div :class="authStore.isAdmin ? 'pt-4 mt-4 border-t border-slate-200' : ''">
                 <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   კლიენტები
                 </p>
@@ -362,6 +358,53 @@
                     />
                   </svg>
                   მომხმარებლების მართვა
+                </router-link>
+              </div>
+
+              <!-- Payment Calculator Section -->
+              <div v-if="authStore.isAdmin || authStore.isMarketing" class="pt-4 mt-4 border-t border-slate-200">
+                <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  გადახდის კალკულატორი
+                </p>
+
+                <router-link
+                  to="/admin/calculator"
+                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                  :class="
+                    $route.name === 'admin-calculator'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25'
+                      : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700'
+                  "
+                >
+                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
+                  </svg>
+                  კალკულატორი
+                </router-link>
+
+                <router-link
+                  to="/admin/bank-rates"
+                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                  :class="
+                    $route.name === 'admin-bank-rates'
+                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                      : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700'
+                  "
+                >
+                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                  საბანკო განაკვეთები
                 </router-link>
               </div>
             </nav>
@@ -560,6 +603,39 @@
                   "
                 >
                   მომხმარებლების მართვა
+                </router-link>
+              </div>
+
+              <!-- Payment Calculator Section (Mobile) -->
+              <div v-if="authStore.isAdmin || authStore.isMarketing" class="pt-4 mt-4 border-t border-slate-200">
+                <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  გადახდის კალკულატორი
+                </p>
+
+                <router-link
+                  to="/admin/calculator"
+                  @click="mobileMenuOpen = false"
+                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                  :class="
+                    $route.name === 'admin-calculator'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white'
+                      : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700'
+                  "
+                >
+                  კალკულატორი
+                </router-link>
+
+                <router-link
+                  to="/admin/bank-rates"
+                  @click="mobileMenuOpen = false"
+                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                  :class="
+                    $route.name === 'admin-bank-rates'
+                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white'
+                      : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700'
+                  "
+                >
+                  საბანკო განაკვეთები
                 </router-link>
               </div>
             </nav>

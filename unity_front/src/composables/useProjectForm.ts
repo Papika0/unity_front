@@ -10,6 +10,7 @@ export interface ProjectFormData {
   year: number
   start_date: string
   completion_date: string
+  base_price_per_sqm?: number // Calculator base price
   is_active: boolean
   is_featured: boolean
   is_onHomepage: boolean
@@ -37,6 +38,7 @@ export function useProjectForm() {
     year: new Date().getFullYear(),
     start_date: '',
     completion_date: '',
+    base_price_per_sqm: undefined,
     is_active: true,
     is_featured: false,
     is_onHomepage: false,
@@ -159,6 +161,9 @@ export function useProjectForm() {
     formData.append('year', String(form.year))
     formData.append('start_date', form.start_date)
     formData.append('completion_date', form.completion_date)
+    if (form.base_price_per_sqm !== undefined && form.base_price_per_sqm !== null) {
+      formData.append('base_price_per_sqm', String(form.base_price_per_sqm))
+    }
     formData.append('is_active', form.is_active ? '1' : '0')
     formData.append('is_featured', form.is_featured ? '1' : '0')
     formData.append('is_onHomepage', form.is_onHomepage ? '1' : '0')
@@ -235,6 +240,7 @@ export function useProjectForm() {
     form.is_active = Boolean(projectData.is_active)
     form.is_featured = Boolean(projectData.is_featured)
     form.is_onHomepage = Boolean(projectData.is_onHomepage)
+    form.base_price_per_sqm = projectData.base_price_per_sqm ? Number(projectData.base_price_per_sqm) : undefined
 
     // Set image previews
     if (projectData.main_image) {
