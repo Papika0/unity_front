@@ -117,30 +117,50 @@ export const usePaymentCalculator = () => {
     completionDate: Date,
     customDate?: string,
     customAmount?: number,
+    customPayments?: Array<{ date: string, amount: number }>,
   ): PaymentScheduleItem[] => {
     const schedule: PaymentScheduleItem[] = []
-    const remaining = totalPrice - downPayment
+    let remaining = totalPrice - downPayment
 
     // Down payment
     schedule.push({
       month: 0,
       date: new Date(),
       amount: downPayment,
-      remainingBalance: customAmount !== undefined ? customAmount : remaining,
+      remainingBalance: remaining,
       description: 'Down Payment / შენატანი',
     })
 
-    // Remaining payment if not 100% upfront
-    const finalAmount = customAmount !== undefined ? customAmount : remaining
-    if (finalAmount > 0) {
-      const finalDate = customDate ? new Date(customDate) : new Date(completionDate)
-      schedule.push({
-        month: 1,
-        date: finalDate,
-        amount: finalAmount,
-        remainingBalance: 0,
-        description: 'Balance Payment at Completion / დარჩენილი თანხა მშენებლობის დასრულებისას',
+    // If multiple custom payments are provided, use them instead of single payment
+    if (customPayments && customPayments.length > 0) {
+      // Sort custom payments by date
+      const sortedPayments = [...customPayments].sort((a, b) =>
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      )
+
+      sortedPayments.forEach((payment, index) => {
+        remaining -= payment.amount
+        schedule.push({
+          month: index + 1,
+          date: new Date(payment.date),
+          amount: payment.amount,
+          remainingBalance: Math.max(0, remaining),
+          description: 'Scheduled Payment / დაგეგმილი გადახდა',
+        })
       })
+    } else {
+      // Legacy single payment support
+      const finalAmount = customAmount !== undefined ? customAmount : remaining
+      if (finalAmount > 0) {
+        const finalDate = customDate ? new Date(customDate) : new Date(completionDate)
+        schedule.push({
+          month: 1,
+          date: finalDate,
+          amount: finalAmount,
+          remainingBalance: 0,
+          description: 'Balance Payment at Completion / დარჩენილი თანხა მშენებლობის დასრულებისას',
+        })
+      }
     }
 
     return schedule
@@ -155,29 +175,50 @@ export const usePaymentCalculator = () => {
     completionDate: Date,
     customDate?: string,
     customAmount?: number,
+    customPayments?: Array<{ date: string, amount: number }>,
   ): PaymentScheduleItem[] => {
     const schedule: PaymentScheduleItem[] = []
+    let remaining = remainingPayment
 
     // Down payment
     schedule.push({
       month: 0,
       date: new Date(),
       amount: downPayment,
-      remainingBalance: customAmount !== undefined ? customAmount : remainingPayment,
+      remainingBalance: remaining,
       description: 'Down Payment / შენატანი',
     })
 
-    // Negotiated remaining payment
-    const finalAmount = customAmount !== undefined ? customAmount : remainingPayment
-    if (finalAmount > 0) {
-      const finalDate = customDate ? new Date(customDate) : new Date(completionDate)
-      schedule.push({
-        month: 1,
-        date: finalDate,
-        amount: finalAmount,
-        remainingBalance: 0,
-        description: 'Balance Payment at Completion / დარჩენილი თანხა მშენებლობის დასრულებისას',
+    // If multiple custom payments are provided, use them instead of single payment
+    if (customPayments && customPayments.length > 0) {
+      // Sort custom payments by date
+      const sortedPayments = [...customPayments].sort((a, b) =>
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      )
+
+      sortedPayments.forEach((payment, index) => {
+        remaining -= payment.amount
+        schedule.push({
+          month: index + 1,
+          date: new Date(payment.date),
+          amount: payment.amount,
+          remainingBalance: Math.max(0, remaining),
+          description: 'Scheduled Payment / დაგეგმილი გადახდა',
+        })
       })
+    } else {
+      // Legacy single payment support
+      const finalAmount = customAmount !== undefined ? customAmount : remainingPayment
+      if (finalAmount > 0) {
+        const finalDate = customDate ? new Date(customDate) : new Date(completionDate)
+        schedule.push({
+          month: 1,
+          date: finalDate,
+          amount: finalAmount,
+          remainingBalance: 0,
+          description: 'Balance Payment at Completion / დარჩენილი თანხა მშენებლობის დასრულებისას',
+        })
+      }
     }
 
     return schedule
@@ -309,6 +350,7 @@ export const usePaymentCalculator = () => {
         deadline,
         input.customPaymentDate,
         input.customPaymentAmount,
+        input.customPayments,
       ),
     }
   }
@@ -343,6 +385,7 @@ export const usePaymentCalculator = () => {
         deadline,
         input.customPaymentDate,
         input.customPaymentAmount,
+        input.customPayments,
       ),
     }
   }

@@ -123,7 +123,7 @@ const translations = {
     calculate: 'გამოთვლა',
     bankNotSelected: 'ბანკი არ არის არჩეული',
     areaNotEntered: 'ფართობი არ არის შეყვანილი',
-    basePriceNotSet: 'საბაზო ფასი არ არის დაყენებული',
+    basePriceNotSet: 'საბაზრო ფასი არ არის დაყენებული',
     pleaseCheck: 'გთხოვთ შეამოწმოთ შემდეგი:'
   },
   en: {

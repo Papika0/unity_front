@@ -47,8 +47,9 @@ export interface CalculationInput {
   projectSettings: ProjectCalculatorSettings
   downPaymentPercent?: number
   monthlyPayment?: number
-  customPaymentDate?: string // Optional custom date for Alt 3 & 4
-  customPaymentAmount?: number // Optional custom amount for Alt 3 & 4
+  customPaymentDate?: string // Optional custom date for Alt 3 & 4 (deprecated, use customPayments)
+  customPaymentAmount?: number // Optional custom amount for Alt 3 & 4 (deprecated, use customPayments)
+  customPayments?: Array<{ date: string, amount: number }> // Multiple custom scheduled payments for Alt 3 & 4
 }
 
 export interface CalculationResult {

@@ -105,8 +105,8 @@ const translations = {
     bankLoan: 'საბანკო სესხი',
     selectProject: 'გთხოვთ აირჩიოთ პროექტი',
     enterArea: 'გთხოვთ შეიყვანოთ ფართობი',
-    basePriceNotSet: 'საბაზო ფასი არ არის დაყენებული',
-    basePriceNotSetDesc: 'ამ პროექტისთვის საბაზო ფასი არ არის დაყენებული',
+    basePriceNotSet: 'საბაზრო ფასი არ არის დაყენებული',
+    basePriceNotSetDesc: 'ამ პროექტისთვის საბაზრო ფასი არ არის დაყენებული',
     useCustomPrice: 'გთხოვთ გამოიყენოთ "საკუთარი ფასი" ოფცია ზემოთ',
     fillAllFields: 'გთხოვთ შეავსოთ ყველა ველი'
   },

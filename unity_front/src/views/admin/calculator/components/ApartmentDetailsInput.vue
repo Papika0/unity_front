@@ -49,7 +49,7 @@ const translations = {
   ka: {
     areaLabel: 'ფართობი (კვ.მ)',
     areaPlaceholder: 'შეიყვანეთ ფართობი',
-    baseTotal: 'საბაზო საერთო'
+    baseTotal: 'საბაზრო საერთო'
   },
   en: {
     areaLabel: 'Area (m²)',

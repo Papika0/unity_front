@@ -315,10 +315,10 @@ const emit = defineEmits<{
 const translations = {
   ka: {
     title: 'პროექტის პარამეტრების რედაქტირება',
-    subtitle: 'განაახლეთ საბაზო ფასი, ვადა და გადახდის ვარიანტები',
+    subtitle: 'განაახლეთ საბაზრო ფასი, ვადა და გადახდის ვარიანტები',
     selectProject: 'აირჩიეთ პროექტი',
     selectProjectPlaceholder: '-- აირჩიეთ პროექტი --',
-    basePricePerSqm: 'საბაზო ფასი კვ.მ-ზე',
+    basePricePerSqm: 'საბაზრო ფასი კვ.მ-ზე',
     basePricePlaceholder: 'შეიყვანეთ ფასი',
     basePriceHint: 'ფასი დოლარებში თითო კვადრატულ მეტრზე',
     deadline: 'ვადა (ყველა ვარიანტისთვის)',
@@ -538,52 +538,56 @@ const saveSettings = async () => {
     // Get current calculator settings
     const currentSettings = await adminCalculatorApi.getProjectCalculatorSettings(selectedProjectId.value)
 
+    // Safely access calculator settings with null fallback
+    const existingCalculatorSettings = currentSettings.calculator_settings || {}
+    const existingAlternatives = existingCalculatorSettings.alternatives || {}
+
     // Build updated calculator settings with all form data
     const updatedCalculatorSettings = {
-      ...currentSettings.calculator_settings,
+      ...existingCalculatorSettings,
       alternatives: {
         alt1: {
-          ...currentSettings.calculator_settings.alternatives.alt1,
+          ...existingAlternatives.alt1,
           enabled: formData.value.alternatives.alt1.enabled,
           deadline: formData.value.deadline
         },
         alt2: {
-          ...currentSettings.calculator_settings.alternatives.alt2,
+          ...existingAlternatives.alt2,
           enabled: formData.value.alternatives.alt2.enabled,
-          surcharge_percent: formData.value.alternatives.alt2.enabled 
-            ? formData.value.alternatives.alt2.surcharge_percent 
+          surcharge_percent: formData.value.alternatives.alt2.enabled
+            ? formData.value.alternatives.alt2.surcharge_percent
             : 0,
           deadline: formData.value.deadline
         },
         alt3: {
-          ...currentSettings.calculator_settings.alternatives.alt3,
+          ...existingAlternatives.alt3,
           enabled: formData.value.alternatives.alt3.enabled,
-          discount_percent: formData.value.alternatives.alt3.enabled 
-            ? formData.value.alternatives.alt3.discount_percent 
+          discount_percent: formData.value.alternatives.alt3.enabled
+            ? formData.value.alternatives.alt3.discount_percent
             : 0,
           deadline: formData.value.deadline
         },
         alt4: {
-          ...currentSettings.calculator_settings.alternatives.alt4,
+          ...existingAlternatives.alt4,
           enabled: formData.value.alternatives.alt4.enabled,
-          discount_percent: formData.value.alternatives.alt4.enabled 
-            ? formData.value.alternatives.alt4.discount_percent 
+          discount_percent: formData.value.alternatives.alt4.enabled
+            ? formData.value.alternatives.alt4.discount_percent
             : 0,
           deadline: formData.value.deadline
         },
         alt5: {
-          ...currentSettings.calculator_settings.alternatives.alt5,
+          ...existingAlternatives.alt5,
           enabled: formData.value.alternatives.alt5.enabled,
-          price_increase_per_sqm: formData.value.alternatives.alt5.enabled 
-            ? formData.value.alternatives.alt5.price_increase_per_sqm 
+          price_increase_per_sqm: formData.value.alternatives.alt5.enabled
+            ? formData.value.alternatives.alt5.price_increase_per_sqm
             : 0,
           deadline: formData.value.deadline
         },
         alt6: {
-          ...currentSettings.calculator_settings.alternatives.alt6,
+          ...existingAlternatives.alt6,
           enabled: formData.value.alternatives.alt6.enabled,
-          price_increase_per_sqm: formData.value.alternatives.alt6.enabled 
-            ? formData.value.alternatives.alt6.price_increase_per_sqm 
+          price_increase_per_sqm: formData.value.alternatives.alt6.enabled
+            ? formData.value.alternatives.alt6.price_increase_per_sqm
             : 0,
           deadline: formData.value.deadline
         }

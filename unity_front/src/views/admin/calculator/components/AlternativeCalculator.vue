@@ -59,16 +59,16 @@
         <input
           v-model.number="downPaymentDollars"
           type="number"
-          :min="(basePrice * area) * (minDownPayment / 100)"
-          :max="(basePrice * area) * (maxDownPayment / 100)"
+          :min="effectiveTotalPrice * (minDownPayment / 100)"
+          :max="effectiveTotalPrice * (maxDownPayment / 100)"
           step="100"
           class="w-full px-4 py-3 bg-white border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-slate-900 font-medium"
           placeholder="Enter amount in dollars"
         />
         <div class="flex justify-between text-sm text-black mt-2">
-          <span>${{ ((basePrice * area) * (minDownPayment / 100)).toLocaleString() }}</span>
+          <span>${{ (effectiveTotalPrice * (minDownPayment / 100)).toLocaleString() }}</span>
           <span class="font-bold text-amber-600">${{ downPaymentDollars.toLocaleString() }} = {{ downPaymentPercent.toFixed(1) }}%</span>
-          <span>${{ ((basePrice * area) * (maxDownPayment / 100)).toLocaleString() }}</span>
+          <span>${{ (effectiveTotalPrice * (maxDownPayment / 100)).toLocaleString() }}</span>
         </div>
       </div>
     </div>
@@ -205,7 +205,7 @@ const translations = {
     pleaseCheck: 'გთხოვთ შეამოწმოთ შემდეგი:',
     projectNotSelected: 'პროექტი არ არის არჩეული',
     areaNotEntered: 'ფართობი არ არის შეყვანილი',
-    basePriceNotSet: 'საბაზო ფასი არ არის დაყენებული',
+    basePriceNotSet: 'საბაზრო ფასი არ არის დაყენებული',
     alt1Title: 'ალტერნატივა 1: სტანდარტული',
     alt2Title: 'ალტერნატივა 2: შიდა განვადება',
     alt3Title: 'ალტერნატივა 3: სრული წინასწარ გადახდა',
@@ -339,18 +339,30 @@ const removeCustomPayment = (idx: number) => {
 
 const totalCustomPayments = computed(() => customPayments.value.reduce((sum, p) => sum + p.amount, 0))
 const remainingBalance = computed(() => {
-  const baseTotal = props.basePrice * props.area
-  return Math.max(0, baseTotal - downPaymentDollars.value - totalCustomPayments.value)
+  return Math.max(0, effectiveTotalPrice.value - downPaymentDollars.value - totalCustomPayments.value)
 })
 
 // Watch for changes and sync
-watch(() => [props.basePrice, props.area, downPaymentPercent.value, downPaymentDollars.value, downPaymentMode.value], () => {
+watch(() => [props.basePrice, props.area, downPaymentPercent.value, downPaymentDollars.value, downPaymentMode.value, props.alternative, props.project.calculator_settings], () => {
   const baseTotal = props.basePrice * props.area
+
+  // Apply discount for Alt 3 and Alt 4
+  let totalPrice = baseTotal
+  if (props.project.calculator_settings) {
+    if (props.alternative === 3) {
+      const discountPercent = props.project.calculator_settings.alternatives.alt3.discount_percent
+      totalPrice = baseTotal * (1 - discountPercent / 100)
+    } else if (props.alternative === 4) {
+      const discountPercent = props.project.calculator_settings.alternatives.alt4.discount_percent
+      totalPrice = baseTotal * (1 - discountPercent / 100)
+    }
+  }
+
   if (downPaymentMode.value === 'percent') {
-    downPaymentDollars.value = baseTotal * (downPaymentPercent.value / 100)
+    downPaymentDollars.value = totalPrice * (downPaymentPercent.value / 100)
   } else {
-    if (baseTotal > 0) {
-      downPaymentPercent.value = Math.min(maxDownPayment.value, Math.max(minDownPayment.value, (downPaymentDollars.value / baseTotal) * 100))
+    if (totalPrice > 0) {
+      downPaymentPercent.value = Math.min(maxDownPayment.value, Math.max(minDownPayment.value, (downPaymentDollars.value / totalPrice) * 100))
     }
   }
 }, { immediate: true })
@@ -379,6 +391,24 @@ const alternativeDescription = computed(() => {
   return descriptions[props.alternative]
 })
 
+// Computed property for effective total price (with discount for Alt 3 & 4)
+const effectiveTotalPrice = computed(() => {
+  const baseTotal = props.basePrice * props.area
+
+  // Apply discount for Alt 3 and Alt 4
+  if (props.project.calculator_settings) {
+    if (props.alternative === 3) {
+      const discountPercent = props.project.calculator_settings.alternatives.alt3.discount_percent
+      return baseTotal * (1 - discountPercent / 100)
+    } else if (props.alternative === 4) {
+      const discountPercent = props.project.calculator_settings.alternatives.alt4.discount_percent
+      return baseTotal * (1 - discountPercent / 100)
+    }
+  }
+
+  return baseTotal
+})
+
 const needsDownPayment = computed(() => [1, 2, 3, 4].includes(props.alternative))
 const needsMonthlyPayment = computed(() => [2, 5, 6].includes(props.alternative))
 const needsCustomPayment = computed(() => [3, 4].includes(props.alternative))
@@ -401,7 +431,7 @@ const minMonthlyPayment = computed(() => {
 })
 
 const downPaymentAmount = computed(() => {
-  return (props.basePrice * props.area) * (downPaymentPercent.value / 100)
+  return effectiveTotalPrice.value * (downPaymentPercent.value / 100)
 })
 
 const canCalculate = computed(() => {
@@ -421,8 +451,12 @@ const handleCalculate = () => {
     projectSettings: props.project.calculator_settings,
     downPaymentPercent: downPaymentPercent.value,
     monthlyPayment: monthlyPayment.value,
-    // Note: customPayments support needs to be added to the calculator composable
-    // For now, we'll use the first payment or undefined
+    // Pass all custom payments for Alt 3 & 4
+    customPayments:
+      useCustomPayment.value && customPayments.value.length > 0
+        ? customPayments.value
+        : undefined,
+    // Keep legacy single payment support for backwards compatibility
     customPaymentDate:
       useCustomPayment.value && customPayments.value.length > 0
         ? customPayments.value[0].date

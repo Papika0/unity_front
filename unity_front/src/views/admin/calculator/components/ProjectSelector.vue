@@ -93,10 +93,10 @@ const props = defineProps<Props>()
 const translations = {
   ka: {
     selectProject: 'აირჩიეთ პროექტი',
-    basePrice: 'საბაზო ფასი',
-    useProjectPrice: 'გამოიყენეთ პროექტის საბაზო ფასი',
-    customPrice: 'მითითებული საბაზო ფასი',
-    noBasePriceWarning: 'ამ პროექტს არ აქვს საბაზო ფასი. გთხოვთ შეიყვანოთ მითითებული ფასი.',
+    basePrice: 'საბაზრო ფასი',
+    useProjectPrice: 'გამოიყენეთ პროექტის საბაზრო ფასი',
+    customPrice: 'მითითებული საბაზრო ფასი',
+    noBasePriceWarning: 'ამ პროექტს არ აქვს საბაზრო ფასი. გთხოვთ შეიყვანოთ მითითებული ფასი.',
     enterCustomPrice: 'შეიყვანეთ ფასი კვ.მ-ზე'
   },
   en: {

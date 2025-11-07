@@ -51,7 +51,9 @@ export const useCalculatorStore = defineStore('calculator', () => {
     if (usesCustomPrice.value) {
       return customBasePrice.value
     }
-    return selectedProject.value?.base_price_per_sqm || 0
+    // Ensure base_price_per_sqm is converted to number (API may return it as string)
+    const projectPrice = selectedProject.value?.base_price_per_sqm
+    return projectPrice ? Number(projectPrice) : 0
   })
 
   const baseTotal = computed(() => {

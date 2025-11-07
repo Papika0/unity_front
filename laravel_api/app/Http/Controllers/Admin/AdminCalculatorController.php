@@ -168,10 +168,10 @@ class AdminCalculatorController extends Controller
                 'id' => $project->id,
                 'title' => $title,
                 'base_price_per_sqm' => $project->base_price_per_sqm,
-            ], 'საბაზო ფასი განახლდა');
+            ], 'საბაზრო ფასი განახლდა');
         } catch (\Exception $e) {
             \Log::error('Failed to update project base price: ' . $e->getMessage());
-            return $this->error('საბაზო ფასის განახლება ვერ მოხერხდა', 500);
+            return $this->error('საბაზრო ფასის განახლება ვერ მოხერხდა', 500);
         }
     }
 }
