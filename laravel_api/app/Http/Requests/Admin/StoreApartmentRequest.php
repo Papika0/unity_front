@@ -26,14 +26,17 @@ class StoreApartmentRequest extends FormRequest
                     ->where('building_id', $buildingId)
                     ->where('floor_number', $this->input('floor_number')),
             ],
+            'cadastral_code' => ['nullable', 'string', 'max:100', Rule::unique('apartments')],
             'status' => ['required', Rule::in(['available', 'reserved', 'sold'])],
             'price' => ['nullable', 'numeric', 'min:0'],
             'area_total' => ['nullable', 'numeric', 'min:0'],
             'area_living' => ['nullable', 'numeric', 'min:0'],
+            'summer_area' => ['nullable', 'numeric', 'min:0'],
             'bedrooms' => ['nullable', 'integer', 'min:0'],
             'bathrooms' => ['nullable', 'integer', 'min:0'],
             'has_balcony' => ['boolean'],
             'has_parking' => ['boolean'],
+            'room_details' => ['nullable', 'array'],
         ];
     }
 

@@ -50,7 +50,7 @@ class AdminApartmentController extends Controller
     }
 
     /**
-     * Bulk import apartments from CSV/Excel
+     * Bulk import apartments from CSV/Excel or JSON
      */
     public function bulkImport(BulkImportApartmentsRequest $request, int $projectId, int $buildingId): JsonResponse
     {
@@ -58,64 +58,23 @@ class AdminApartmentController extends Controller
             ->where('id', $buildingId)
             ->firstOrFail();
 
-        $file = $request->file('file');
         $imported = 0;
         $errors = [];
 
         try {
             DB::beginTransaction();
 
-            // Load spreadsheet
-            $spreadsheet = IOFactory::load($file->getRealPath());
-            $worksheet = $spreadsheet->getActiveSheet();
-            $rows = $worksheet->toArray();
-
-            // Skip header row
-            $headers = array_shift($rows);
-
-            foreach ($rows as $index => $row) {
-                $rowNumber = $index + 2; // +2 because we skipped header and arrays are 0-indexed
-
-                // Skip empty rows
-                if (empty(array_filter($row))) {
-                    continue;
-                }
-
-                try {
-                    // Map columns
-                    $data = $this->mapRowToData($row, $headers);
-
-                    // Validate required fields
-                    if (empty($data['floor_number']) || empty($data['apartment_number'])) {
-                        $errors[] = "Row {$rowNumber}: Missing floor number or apartment number";
-                        continue;
-                    }
-
-                    // Create or update apartment
-                    Apartment::updateOrCreate(
-                        [
-                            'building_id' => $buildingId,
-                            'floor_number' => $data['floor_number'],
-                            'apartment_number' => $data['apartment_number'],
-                        ],
-                        [
-                            'project_id' => $projectId,
-                            'status' => $data['status'] ?? 'available',
-                            'price' => $data['price'] ?? null,
-                            'area_total' => $data['area_total'] ?? null,
-                            'area_living' => $data['area_living'] ?? null,
-                            'bedrooms' => $data['bedrooms'] ?? null,
-                            'bathrooms' => $data['bathrooms'] ?? null,
-                            'has_balcony' => $data['has_balcony'] ?? false,
-                            'has_parking' => $data['has_parking'] ?? false,
-                        ]
-                    );
-
-                    $imported++;
-                } catch (\Exception $e) {
-                    $errors[] = "Row {$rowNumber}: " . $e->getMessage();
-                }
+            // Check if this is a file upload or JSON request
+            if ($request->hasFile('file')) {
+                // Process Excel/CSV file
+                $result = $this->processExcelImport($request->file('file'), $projectId, $buildingId);
+            } else {
+                // Process JSON data
+                $result = $this->processJsonImport($request->input('apartments', []), $projectId, $buildingId);
             }
+
+            $imported = $result['imported'];
+            $errors = $result['errors'];
 
             DB::commit();
 
@@ -139,16 +98,120 @@ class AdminApartmentController extends Controller
     }
 
     /**
-     * Map spreadsheet row to apartment data
+     * Process Excel/CSV file import
      */
-    private function mapRowToData(array $row, array $headers): array
+    private function processExcelImport($file, int $projectId, int $buildingId): array
+    {
+        $imported = 0;
+        $errors = [];
+
+        // Load spreadsheet
+        $spreadsheet = IOFactory::load($file->getRealPath());
+        $worksheet = $spreadsheet->getActiveSheet();
+        $rows = $worksheet->toArray();
+
+        // Skip header row
+        $headers = array_shift($rows);
+
+        foreach ($rows as $index => $row) {
+            $rowNumber = $index + 2; // +2 because we skipped header and arrays are 0-indexed
+
+            // Skip empty rows
+            if (empty(array_filter($row))) {
+                continue;
+            }
+
+            try {
+                // Map columns
+                $data = $this->mapExcelRowToData($row, $headers, $projectId, $buildingId);
+
+                // Validate required fields
+                if (empty($data['floor_number']) || empty($data['apartment_number'])) {
+                    $errors[] = "Row {$rowNumber}: Missing floor number or apartment number";
+                    continue;
+                }
+
+                // Create or update apartment
+                $this->upsertApartment($data);
+
+                $imported++;
+            } catch (\Exception $e) {
+                $errors[] = "Row {$rowNumber}: " . $e->getMessage();
+            }
+        }
+
+        return ['imported' => $imported, 'errors' => $errors];
+    }
+
+    /**
+     * Process JSON data import
+     */
+    private function processJsonImport(array $apartments, int $projectId, int $buildingId): array
+    {
+        $imported = 0;
+        $errors = [];
+
+        foreach ($apartments as $index => $apartmentData) {
+            $rowNumber = $index + 1;
+
+            try {
+                // Map JSON fields
+                $data = $this->mapJsonRowToData($apartmentData, $projectId, $buildingId);
+
+                // Validate required fields
+                if (empty($data['floor_number'])) {
+                    $errors[] = "Row {$rowNumber}: Missing floor number";
+                    continue;
+                }
+
+                // Create or update apartment
+                $this->upsertApartment($data);
+
+                $imported++;
+            } catch (\Exception $e) {
+                $errors[] = "Row {$rowNumber}: " . $e->getMessage();
+            }
+        }
+
+        return ['imported' => $imported, 'errors' => $errors];
+    }
+
+    /**
+     * Upsert apartment using cadastral code or building+floor+number
+     */
+    private function upsertApartment(array $data): void
+    {
+        // Use cadastral code if available, otherwise use building+floor+apartment_number
+        if (!empty($data['cadastral_code'])) {
+            Apartment::updateOrCreate(
+                ['cadastral_code' => $data['cadastral_code']],
+                $data
+            );
+        } else {
+            Apartment::updateOrCreate(
+                [
+                    'building_id' => $data['building_id'],
+                    'floor_number' => $data['floor_number'],
+                    'apartment_number' => $data['apartment_number'],
+                ],
+                $data
+            );
+        }
+    }
+
+    /**
+     * Map spreadsheet row to apartment data (Excel/CSV)
+     */
+    private function mapExcelRowToData(array $row, array $headers, int $projectId, int $buildingId): array
     {
         $data = [];
         $mapping = [
             'floor_number' => ['floor_number', 'floor', 'სართული'],
             'apartment_number' => ['apartment_number', 'apartment', 'number', 'ბინის ნომერი', 'ნომერი'],
+            'cadastral_code' => ['cadastral_code', 'cadastral'],
             'area_total' => ['area_total', 'total_area', 'area', 'ფართობი'],
             'area_living' => ['area_living', 'living_area', 'საცხოვრებელი ფართი'],
+            'summer_area' => ['summer_area', 'summer/auxiliary area', 'balcony_area'],
             'bedrooms' => ['bedrooms', 'rooms', 'საძინებელი'],
             'bathrooms' => ['bathrooms', 'bath', 'სააბაზანო'],
             'price' => ['price', 'ფასი'],
@@ -174,7 +237,130 @@ class AdminApartmentController extends Controller
             }
         }
 
+        // Add project and building IDs
+        $data['project_id'] = $projectId;
+        $data['building_id'] = $buildingId;
+        $data['status'] = $data['status'] ?? 'available';
+
         return $data;
+    }
+
+    /**
+     * Map JSON data to apartment data
+     */
+    private function mapJsonRowToData(array $row, int $projectId, int $buildingId): array
+    {
+        // Extract apartment number from "Area status" field
+        $apartmentNumber = $this->extractApartmentNumber($row['Area status'] ?? '');
+
+        // Calculate bathrooms count from individual bathroom fields
+        $bathroomsCount = $this->countBathrooms($row);
+
+        // Determine has_balcony from summer area
+        $summerArea = !empty($row['Summer/auxiliary area']) ? (float) $row['Summer/auxiliary area'] : 0;
+        $hasBalcony = $summerArea > 0;
+
+        // Build room details JSON
+        $roomDetails = $this->buildRoomDetails($row);
+
+        return [
+            'project_id' => $projectId,
+            'building_id' => $buildingId,
+            'cadastral_code' => $row['Individual cadastral code of real estate (if any)'] ?? null,
+            'floor_number' => (int) ($row['Floor'] ?? 0),
+            'apartment_number' => $apartmentNumber,
+            'area_total' => !empty($row['Total area']) ? (float) $row['Total area'] : null,
+            'area_living' => !empty($row['Living space']) ? (float) $row['Living space'] : null,
+            'summer_area' => $summerArea > 0 ? $summerArea : null,
+            'bedrooms' => !empty($row['Number of bedrooms']) ? (int) $row['Number of bedrooms'] : 0,
+            'bathrooms' => $bathroomsCount,
+            'has_balcony' => $hasBalcony,
+            'has_parking' => false, // Parking sold separately
+            'room_details' => $roomDetails,
+            'status' => 'available', // Default status
+            'is_active' => true,
+        ];
+    }
+
+    /**
+     * Extract apartment number from "Apartment No. X" format
+     */
+    private function extractApartmentNumber(string $areaStatus): string
+    {
+        // Try to extract number from "Apartment No. 1" or similar formats
+        if (preg_match('/No\.\s*(\d+)/i', $areaStatus, $matches)) {
+            return $matches[1];
+        }
+
+        // Try to extract just numbers
+        if (preg_match('/(\d+)/', $areaStatus, $matches)) {
+            return $matches[1];
+        }
+
+        // Return full string if no number found
+        return $areaStatus ?: 'N/A';
+    }
+
+    /**
+     * Count non-empty bathroom fields
+     */
+    private function countBathrooms(array $row): int
+    {
+        $count = 0;
+        for ($i = 1; $i <= 4; $i++) {
+            $key = "Bathroom {$i}";
+            if (isset($row[$key]) && !empty(trim((string) $row[$key]))) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    /**
+     * Build room details JSON from individual room fields
+     */
+    private function buildRoomDetails(array $row): array
+    {
+        $details = [];
+
+        // Map basic room fields
+        $roomFields = [
+            'Studio/Living Room' => 'studio_living',
+            'Guest room' => 'guest_room',
+            'Kitchen' => 'kitchen',
+            'Dressing room' => 'dressing_room',
+            'Entrance' => 'entrance',
+            'Auxiliary room' => 'auxiliary_room',
+        ];
+
+        foreach ($roomFields as $jsonKey => $mappedKey) {
+            if (isset($row[$jsonKey]) && !empty(trim((string) $row[$jsonKey]))) {
+                $details[$mappedKey] = (float) $row[$jsonKey];
+            }
+        }
+
+        // Handle bedrooms 1-6
+        for ($i = 1; $i <= 6; $i++) {
+            $key = "Bedroom {$i}";
+            if (isset($row[$key]) && !empty(trim((string) $row[$key]))) {
+                $details["bedroom_{$i}"] = (float) $row[$key];
+            }
+        }
+
+        // Handle bathrooms 1-4 with their areas
+        for ($i = 1; $i <= 4; $i++) {
+            $key = "Bathroom {$i}";
+            if (isset($row[$key]) && !empty(trim((string) $row[$key]))) {
+                $details["bathroom_{$i}"] = (float) $row[$key];
+            }
+        }
+
+        // Entrance hall
+        if (isset($row['Entrance hall']) && !empty(trim((string) $row['Entrance hall']))) {
+            $details['entrance_hall'] = (float) $row['Entrance hall'];
+        }
+
+        return $details;
     }
 
     /**

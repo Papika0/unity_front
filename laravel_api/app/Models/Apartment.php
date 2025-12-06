@@ -22,16 +22,19 @@ class Apartment extends Model
         'building_id',
         'floor_number',
         'apartment_number',
+        'cadastral_code',
         'status',
         'price',
         'area_total',
         'area_living',
+        'summer_area',
         'bedrooms',
         'bathrooms',
         'has_balcony',
         'has_parking',
         'is_active',
         'sort_order',
+        'room_details',
     ];
 
     /**
@@ -43,9 +46,11 @@ class Apartment extends Model
         'price' => 'decimal:2',
         'area_total' => 'decimal:2',
         'area_living' => 'decimal:2',
+        'summer_area' => 'decimal:2',
         'has_balcony' => 'boolean',
         'has_parking' => 'boolean',
         'is_active' => 'boolean',
+        'room_details' => 'array',
     ];
 
     /**
