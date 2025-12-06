@@ -1147,17 +1147,18 @@ onMounted(async () => {
 
     await loadBuildings()
 
-    // Validate building ID exists
-    if (selectedBuildingId.value && !selectedBuilding.value) {
-      showError(`შენობა ID ${selectedBuildingId.value} არ მოიძებნა`)
-      router.push({
-        name: 'admin-zones-building-blocks',
-        params: { id: selectedProjectId.value }
-      })
-      return
-    }
-
+    // Validate building ID exists (use loose equality for string/number comparison)
     if (selectedBuildingId.value) {
+      const buildingExists = buildings.value.some(b => b.id == selectedBuildingId.value)
+      if (!buildingExists) {
+        showError(`შენობა ID ${selectedBuildingId.value} არ მოიძებნა`)
+        router.push({
+          name: 'admin-zones-building-blocks',
+          params: { id: selectedProjectId.value }
+        })
+        return
+      }
+
       await loadZones()
     }
   }
