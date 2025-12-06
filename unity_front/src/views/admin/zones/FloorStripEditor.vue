@@ -472,6 +472,7 @@ import type { Project } from '@/types'
 import type { Building } from '@/types/apartments'
 import { pointsToBackendFormat } from '@/utils/polygon'
 import api from '@/plugins/axios/api'
+import { compressImage } from '@/utils/imageCompression'
 
 interface ZoneResponse {
   id: number
@@ -845,23 +846,56 @@ function handleFileDrop(event: DragEvent) {
   }
 }
 
-function handleFile(file: File) {
-  previewImageFile.value = file
+async function handleFile(file: File) {
+  try {
+    // Compress the image to ensure it's under the 2MB PHP upload limit
+    const compressionResult = await compressImage(file, {
+      imageType: 'sitePhoto',
+      smartCompression: true,
+      maxWidth: 2400,
+      maxHeight: 1800,
+      quality: 0.85,
+      forceDimensions: true,
+    })
 
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    const result = e.target?.result as string
-    previewImageUrl.value = result
+    // Use the compressed file
+    const compressedFile = compressionResult.file
+    previewImageFile.value = compressedFile
 
-    const img = new Image()
-    img.onload = () => {
-      imageWidth.value = img.width
-      imageHeight.value = img.height
-      viewBox.value = `0 0 ${img.width} ${img.height}`
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const result = e.target?.result as string
+      previewImageUrl.value = result
+
+      const img = new Image()
+      img.onload = () => {
+        imageWidth.value = img.width
+        imageHeight.value = img.height
+        viewBox.value = `0 0 ${img.width} ${img.height}`
+      }
+      img.src = result
     }
-    img.src = result
+    reader.readAsDataURL(compressedFile)
+  } catch (error) {
+    console.error('Failed to compress image:', error)
+    // Fall back to original file if compression fails
+    previewImageFile.value = file
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const result = e.target?.result as string
+      previewImageUrl.value = result
+
+      const img = new Image()
+      img.onload = () => {
+        imageWidth.value = img.width
+        imageHeight.value = img.height
+        viewBox.value = `0 0 ${img.width} ${img.height}`
+      }
+      img.src = result
+    }
+    reader.readAsDataURL(file)
   }
-  reader.readAsDataURL(file)
 }
 
 function clearPreview() {
