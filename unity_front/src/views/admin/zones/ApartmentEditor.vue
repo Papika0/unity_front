@@ -24,9 +24,31 @@
               {{ (selectedBuilding?.name as any)?.ka || selectedBuilding?.name || 'შენობა' }} - სართული {{ floorNumber }} - ბინების ხატვა
             </p>
           </div>
+          <ZoneEditorBreadcrumbs class="ml-4" />
         </div>
 
         <div class="flex items-center space-x-3">
+          <!-- Phase 2: Unsaved Changes Badge -->
+          <div v-if="hasChanges" class="flex items-center space-x-2 px-3 py-1 bg-amber-100 text-amber-800 rounded-lg border border-amber-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <span class="text-sm font-medium">შეუნახავი ცვლილებები</span>
+          </div>
+
+          <!-- Phase 2: Discard Button -->
+          <button
+            v-if="hasChanges"
+            @click="handleDiscard"
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors flex items-center space-x-2"
+            title="ცვლილებების გაუქმება"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            <span class="hidden md:inline">გაუქმება</span>
+          </button>
+
           <button
             @click="autoDetectPolygons"
             :disabled="!backgroundImageUrl || isDetecting"
@@ -96,9 +118,23 @@
             </svg>
             <span class="hidden md:inline">{{ isSaving ? 'შენახვა...' : 'შენახვა' }}</span>
           </button>
+
+          <!-- Phase 4: Keyboard Shortcut Hint -->
+          <span class="hidden lg:inline text-xs text-gray-400 ml-2">Ctrl+S</span>
         </div>
       </div>
     </div>
+
+    <!-- Phase 1: Confirm Dialog -->
+    <ConfirmDialog
+      :show="showConfirmDialog"
+      title="შეუნახავი ცვლილებები"
+      message="გაქვთ შეუნახავი ზონები. გსურთ მათი შენახვა?"
+      :is-saving="isSaving"
+      @save="saveAndNavigate"
+      @discard="discardAndNavigate"
+      @cancel="cancelNavigation"
+    />
 
     <!-- Main Content -->
     <div class="flex-1 flex overflow-hidden">
@@ -473,14 +509,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import PolygonEditor from '@/components/admin/PolygonEditor.vue'
+import ConfirmDialog from '@/components/admin/ConfirmDialog.vue'
+import ZoneEditorBreadcrumbs from '@/components/admin/ZoneEditorBreadcrumbs.vue'
 import type { Polygon } from '@/utils/polygon'
 import type { Building } from '@/types/apartments'
 import api from '@/plugins/axios/api'
 import { detectApartmentPolygons, type DetectionOptions } from '@/utils/polygonDetection'
 import { compressImage } from '@/utils/imageCompression'
+import { useUnsavedChanges } from '@/composables/useUnsavedChanges'
+import { useToast } from '@/composables/useToast'
+import { useAutoSave } from '@/composables/useAutoSave'
+import { useZoneValidation } from '@/composables/useZoneValidation'
+import { useZoneEditorStore } from '@/stores/admin/zoneEditor'
 
 interface ZoneResponse {
   id: number
@@ -542,15 +585,85 @@ const isUploading = ref(false)
 // Editor ref
 const editorRef = ref<InstanceType<typeof PolygonEditor>>()
 
+// Zone Editor Store
+const zoneStore = useZoneEditorStore()
+
+// Update store when building or floor changes
+watch(selectedBuilding, (building) => {
+  if (building) {
+    zoneStore.setBuilding(building.id, building.name)
+  }
+})
+
+watch(floorNumber, (floor) => {
+  if (floor !== null && floor !== undefined) {
+    zoneStore.setFloor(floor)
+  }
+}, { immediate: true })
+
+// Composables
+const { success, error: showError, warning, info } = useToast()
+const { validateZones } = useZoneValidation()
+
+// Phase 1: Unsaved Changes Protection
+const {
+  showConfirmDialog,
+  saveAndNavigate,
+  discardAndNavigate,
+  cancelNavigation
+} = useUnsavedChanges({
+  hasChanges,
+  isSaving,
+  onSave: async () => {
+    await saveZones()
+  },
+  onDiscard: () => {
+    loadZones()
+    hasChanges.value = false
+  },
+  message: 'გაქვთ შეუნახავი ზონები. გსურთ მათი შენახვა?'
+})
+
+// Phase 3: Auto-Save & Draft Recovery
+// Draft key computed from route params (source of truth)
+const draftKey = computed(() => {
+  const pid = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id || 'new'
+  const bid = Array.isArray(route.params.buildingId) ? route.params.buildingId[0] : route.params.buildingId || 'new'
+  const floor = Array.isArray(route.params.floorNumber) ? route.params.floorNumber[0] : route.params.floorNumber || '0'
+  return `zones-draft-apartment-${pid}-${bid}-${floor}`
+})
+
+const {
+  loadDraft,
+  clearDraft,
+  checkForDraft,
+  getLastSavedTime,
+  startAutoSave
+} = useAutoSave({
+  key: draftKey.value,
+  data: zones,
+  hasChanges,
+  interval: 30000
+})
+
 // Methods
 function goBack() {
-  router.push({
-    name: 'admin-zones-floor-strips',
-    params: {
-      id: projectId.value,
-      buildingId: buildingId.value
-    }
-  })
+  // Navigation guard will handle unsaved changes
+  const customBackRoute = zoneStore.getBackRoute()
+
+  // Use custom back route if user came from Projects page directly
+  if (customBackRoute === '/admin/projects') {
+    router.push(customBackRoute)
+  } else {
+    // Default hierarchical: go up to FloorStripEditor
+    router.push({
+      name: 'admin-zones-floor-strips',
+      params: {
+        id: projectId.value,
+        buildingId: buildingId.value
+      }
+    })
+  }
 }
 
 async function loadBuilding() {
@@ -674,6 +787,18 @@ function handleZonesChange(updatedZones: Polygon[]) {
 async function saveZones() {
   if (!projectId.value || !buildingId.value || !hasChanges.value) return
 
+  // Phase 4: Validate zones before saving
+  const validation = validateZones(zones.value, imageWidth.value, imageHeight.value)
+
+  if (!validation.valid) {
+    validation.errors.forEach(err => showError(err, 5000))
+    return
+  }
+
+  if (validation.warnings.length > 0) {
+    validation.warnings.forEach(warn => warning(warn, 4000))
+  }
+
   isSaving.value = true
   try {
     // Delete all existing zones for this floor
@@ -705,13 +830,22 @@ async function saveZones() {
     }
 
     hasChanges.value = false
-    alert('ზონები წარმატებით შეინახა!')
+    clearDraft()
+    success('ზონები წარმატებით შეინახა!')
   } catch (error) {
     console.error('Failed to save zones:', error)
-    alert('ზონების შენახვა ვერ მოხერხდა')
+    showError('ზონების შენახვა ვერ მოხერხდა')
   } finally {
     isSaving.value = false
   }
+}
+
+// Phase 2: Discard changes function
+function handleDiscard() {
+  loadZones()
+  hasChanges.value = false
+  clearDraft()
+  info('ცვლილებები გაუქმდა')
 }
 
 function openImageUpload() {
@@ -836,10 +970,10 @@ async function uploadImage() {
     }
 
     closeImageModal()
-    alert('სურათი წარმატებით აიტვირთა!')
+    success('სურათი წარმატებით აიტვირთა!')
   } catch (error) {
     console.error('Failed to upload image:', error)
-    alert('სურათის ატვირთვა ვერ მოხერხდა')
+    showError('სურათის ატვირთვა ვერ მოხერხდა')
   } finally {
     isUploading.value = false
   }
@@ -848,12 +982,13 @@ async function uploadImage() {
 // Auto-detect apartment polygons from floor plan
 async function autoDetectPolygons() {
   if (!backgroundImageUrl.value) {
-    alert('გთხოვთ ჯერ ატვირთოთ სართულის სურათი')
+    warning('გთხოვთ ჯერ ატვირთოთ სართულის სურათი')
     return
   }
 
-  if (!confirm('გნებავთ ავტომატური გამოვლენა? არსებული ზონები წაიშლება.')) {
-    return
+  // Show warning that existing zones will be replaced
+  if (zones.value.length > 0) {
+    warning('ავტომატური გამოვლენა ჩაანაცვლებს არსებულ ზონებს')
   }
 
   isDetecting.value = true
@@ -934,7 +1069,7 @@ async function autoDetectPolygons() {
     }
 
     if (detectedPolygons.length === 0) {
-      alert('ბინები ვერ მოიძებნა.\n\nსცადეთ:\n- სურათის ხელახლა ატვირთვა\n- უფრო მაღალი გარჩევადობის სურათი\n- ან გამოიყენეთ ხელით დახატვა')
+      warning('ბინები ვერ მოიძებნა. სცადეთ სურათის ხელახლა ატვირთვა ან ხელით დახატვა')
       return
     }
 
@@ -999,27 +1134,67 @@ async function autoDetectPolygons() {
     const unmatchedCount = unmatchedPolygons.length
 
     if (unmatchedCount > 0) {
-      alert(
-        `${detectedPolygons.length} ბინა აღმოჩნდა!\n` +
-        `${matchedCount} დაკავშირებულია ბინებთან\n` +
-        `${unmatchedCount} უნდა დაუკავშიროთ ხელით (წითლით)\n\n` +
-        `თუ ზონები არჩანს, სცადეთ გვერდის განახლება`
-      )
+      info(`${matchedCount} ბინა დაკავშირდა, ${unmatchedCount} უნდა დაუკავშიროთ ხელით (წითლით)`)
     } else {
-      alert(`${matchedCount} ბინა აღმოჩნდა და ავტომატურად დაკავშირდა!\n\nთუ ზონები არჩანს, სცადეთ გვერდის განახლება`)
+      success(`${matchedCount} ბინა აღმოჩნდა და ავტომატურად დაკავშირდა!`)
     }
   } catch (error) {
     console.error('Auto-detection error:', error)
-    alert('გამოვლენა ვერ მოხერხდა: ' + (error as Error).message)
+    showError('გამოვლენა ვერ მოხერხდა: ' + (error as Error).message)
   } finally {
     isDetecting.value = false
+  }
+}
+
+// Phase 4: Keyboard shortcuts
+function handleKeyboard(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault()
+    if (hasChanges.value && !isSaving.value) {
+      saveZones()
+    }
   }
 }
 
 // Lifecycle
 onMounted(async () => {
   await loadBuilding()
+
+  // Validate building ID exists
+  if (!selectedBuilding.value) {
+    showError(`შენობა ID ${buildingId.value} არ მოიძებნა`)
+    if (projectId.value) {
+      router.push({
+        name: 'admin-zones-building-blocks',
+        params: { id: projectId.value }
+      })
+    } else {
+      router.push('/admin/projects')
+    }
+    return
+  }
+
   await loadApartments()
   await loadZones()
+
+  // Phase 3: Check for draft recovery
+  if (checkForDraft()) {
+    const restored = loadDraft()
+    if (restored) {
+      zones.value = restored
+      hasChanges.value = true
+      info(`დრაფტი აღდგა (${getLastSavedTime()})`)
+    }
+  }
+
+  // Start auto-save
+  startAutoSave()
+
+  // Phase 4: Add keyboard listeners
+  window.addEventListener('keydown', handleKeyboard)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyboard)
 })
 </script>

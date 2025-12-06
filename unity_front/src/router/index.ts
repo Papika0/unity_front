@@ -246,18 +246,6 @@ const router = createRouter({
               component: () => import('@/views/admin/apartments/ListView.vue'),
               beforeEnter: requireAdmin,
             },
-            {
-              path: 'zones',
-              name: 'admin-zones',
-              component: () => import('@/views/admin/zones/ListView.vue'),
-              beforeEnter: requireAdmin,
-            },
-            {
-              path: 'zone-images',
-              name: 'admin-zone-images',
-              component: () => import('@/views/admin/zone-images/ListView.vue'),
-              beforeEnter: requireAdmin,
-            },
             // PHASE 7: Interactive Polygon Editors
             {
               path: 'projects/:id/zones/buildings',

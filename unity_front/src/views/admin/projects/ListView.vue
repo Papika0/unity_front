@@ -453,6 +453,7 @@
 import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminProjectsStore } from '@/stores/admin/projects'
+import { useZoneEditorStore } from '@/stores/admin/zoneEditor'
 import { getImageUrl } from '@/utils/imageUrl'
 
 const router = useRouter()
@@ -545,6 +546,9 @@ const goToDetail = (id: number) => {
 }
 
 const goToZonesEditor = (id: number) => {
+  const zoneStore = useZoneEditorStore()
+  zoneStore.setEntryPoint('projects')
+
   router.push({ name: 'admin-zones-building-blocks', params: { id: id.toString() } })
 }
 

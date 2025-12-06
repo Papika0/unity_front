@@ -1,28 +1,56 @@
 import { ref } from 'vue'
 
+export interface ToastAction {
+  label: string
+  onClick: () => void
+}
+
 export interface Toast {
   id: number
   message: string
   type: 'success' | 'error' | 'info' | 'warning'
   duration?: number
+  action?: ToastAction
+  dismissible?: boolean
 }
 
 const toasts = ref<Toast[]>([])
 let idCounter = 0
 
 export function useToast() {
-  const showToast = (message: string, type: Toast['type'] = 'info', duration = 3000) => {
+  const showToast = (
+    message: string,
+    type: Toast['type'] = 'info',
+    duration?: number,
+    action?: ToastAction,
+    dismissible = true
+  ) => {
     const id = ++idCounter
-    const toast: Toast = { id, message, type, duration }
-    
+
+    // Default durations based on type
+    const defaultDuration = duration !== undefined ? duration : (
+      type === 'error' ? 5000 :
+      type === 'warning' ? 4000 :
+      3000
+    )
+
+    const toast: Toast = {
+      id,
+      message,
+      type,
+      duration: defaultDuration,
+      action,
+      dismissible
+    }
+
     toasts.value.push(toast)
-    
-    if (duration > 0) {
+
+    if (defaultDuration > 0) {
       setTimeout(() => {
         removeToast(id)
-      }, duration)
+      }, defaultDuration)
     }
-    
+
     return id
   }
   
@@ -33,20 +61,20 @@ export function useToast() {
     }
   }
   
-  const success = (message: string, duration?: number) => {
-    return showToast(message, 'success', duration)
+  const success = (message: string, duration?: number, action?: ToastAction) => {
+    return showToast(message, 'success', duration, action)
   }
-  
-  const error = (message: string, duration?: number) => {
-    return showToast(message, 'error', duration)
+
+  const error = (message: string, duration?: number, action?: ToastAction) => {
+    return showToast(message, 'error', duration, action)
   }
-  
-  const info = (message: string, duration?: number) => {
-    return showToast(message, 'info', duration)
+
+  const info = (message: string, duration?: number, action?: ToastAction) => {
+    return showToast(message, 'info', duration, action)
   }
-  
-  const warning = (message: string, duration?: number) => {
-    return showToast(message, 'warning', duration)
+
+  const warning = (message: string, duration?: number, action?: ToastAction) => {
+    return showToast(message, 'warning', duration, action)
   }
   
   return {

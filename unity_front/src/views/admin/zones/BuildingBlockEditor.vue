@@ -24,9 +24,39 @@
               {{ selectedProject?.title || 'პროექტი' }} - ზონების ხატვა
             </p>
           </div>
+          <ZoneEditorBreadcrumbs class="ml-4" />
         </div>
 
         <div class="flex items-center space-x-3">
+          <!-- Phase 2: Unsaved Changes Badge -->
+          <Transition name="fade">
+            <div
+              v-if="hasChanges && !isSaving"
+              class="px-3 py-1 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg text-sm font-medium flex items-center space-x-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>შეუნახავი ცვლილებები</span>
+            </div>
+          </Transition>
+
+          <!-- Phase 3: Last Draft Saved Indicator -->
+          <div v-if="getLastSavedTime()" class="text-xs text-gray-500 flex items-center space-x-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>ბოლო დრაფტი: {{ getLastSavedTime() }}</span>
+          </div>
+
+          <!-- Phase 4: Keyboard Shortcut Hint -->
+          <div class="text-xs text-gray-500 hidden lg:flex items-center space-x-1">
+            <kbd class="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl+S</kbd>
+            <span>შენახვა</span>
+          </div>
+
           <button
             @click="openImageUpload"
             class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
@@ -41,6 +71,21 @@
             </svg>
             <span class="hidden md:inline">სურათის ატვირთვა</span>
           </button>
+
+          <!-- Phase 2: Discard Changes Button -->
+          <button
+            @click="handleDiscard"
+            :disabled="!hasChanges || isSaving"
+            class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+            title="ცვლილებების გაუქმება და ბოლო შენახული მდგომარეობის აღდგენა"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span class="hidden md:inline">გაუქმება</span>
+          </button>
+
           <button
             @click="saveZones"
             :disabled="!hasChanges || isSaving"
@@ -434,18 +479,52 @@
         </div>
       </div>
     </div>
+
+    <!-- Phase 1: Confirmation Dialog for Unsaved Changes -->
+    <ConfirmDialog
+      :show="showConfirmDialog"
+      title="შეუნახავი ცვლილებები"
+      message="გაქვთ შეუნახავი ზონები. გსურთ მათი შენახვა?"
+      confirmText="შენახვა და გასვლა"
+      destructiveText="გაუქმება და გასვლა"
+      cancelText="დარჩენა"
+      :isLoading="isSaving"
+      @confirm="saveAndNavigate"
+      @destructive="discardAndNavigate"
+      @cancel="cancelNavigation"
+    />
   </div>
 </template>
 
+<style scoped>
+/* Fade transition for unsaved changes badge */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
+
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import PolygonEditor from '@/components/admin/PolygonEditor.vue'
+import ConfirmDialog from '@/components/admin/ConfirmDialog.vue'
+import ZoneEditorBreadcrumbs from '@/components/admin/ZoneEditorBreadcrumbs.vue'
 import type { Polygon } from '@/utils/polygon'
 import type { Project } from '@/types'
 import type { Building } from '@/types/apartments'
 import api from '@/plugins/axios/api'
 import { compressImage } from '@/utils/imageCompression'
+import { useUnsavedChanges } from '@/composables/useUnsavedChanges'
+import { useToast } from '@/composables/useToast'
+import { useAutoSave } from '@/composables/useAutoSave'
+import { useZoneValidation } from '@/composables/useZoneValidation'
+import { useZoneEditorStore } from '@/stores/admin/zoneEditor'
 
 interface ZoneResponse {
   id: number
@@ -462,12 +541,15 @@ interface ZoneResponse {
 
 // Router
 const router = useRouter()
+const route = useRoute()
 
 // State
 const projects = ref<Project[]>([])
 const buildings = ref<Building[]>([])
 const zones = ref<Polygon[]>([])
-const selectedProjectId = ref<number | string>('')
+const selectedProjectId = ref<number | string>(
+  (Array.isArray(route.params.id) ? route.params.id[0] : route.params.id) || ''
+)
 const selectedProject = computed(() => projects.value.find((p) => p.id === selectedProjectId.value))
 const isLoadingBuildings = ref(false)
 const isSaving = ref(false)
@@ -487,15 +569,73 @@ const isUploading = ref(false)
 // Editor ref
 const editorRef = ref<InstanceType<typeof PolygonEditor>>()
 
+// Zone Editor Store
+const zoneStore = useZoneEditorStore()
+
+// Update store when project changes or on initial mount
+watch(selectedProject, (project) => {
+  if (project) {
+    zoneStore.setProject(project.id, project.title)
+  }
+}, { immediate: true })
+
+// Composables
+const { success, error: showError, warning, info } = useToast()
+const { validateZones } = useZoneValidation()
+
+// Phase 1: Unsaved Changes Protection
+const {
+  showConfirmDialog,
+  saveAndNavigate,
+  discardAndNavigate,
+  cancelNavigation,
+  confirmNavigationChange
+} = useUnsavedChanges({
+  hasChanges,
+  isSaving,
+  onSave: async () => {
+    await saveZones()
+  },
+  onDiscard: () => {
+    loadZones()
+    hasChanges.value = false
+  },
+  message: 'გაქვთ შეუნახავი ზონები. გსურთ მათი შენახვა?'
+})
+
+// Phase 3: Auto-Save & Draft Recovery
+// Draft key computed from route params (source of truth)
+const draftKey = computed(() => {
+  const pid = Array.isArray(route.params.id)
+    ? route.params.id[0]
+    : route.params.id || 'new'
+  return `zones-draft-building-${pid}`
+})
+
+const {
+  loadDraft,
+  clearDraft,
+  checkForDraft,
+  getLastSavedTime,
+  startAutoSave
+} = useAutoSave({
+  key: draftKey.value,
+  data: zones,
+  hasChanges,
+  interval: 30000 // 30 seconds
+})
+
 // Methods
 function goBack() {
-  router.push('/admin/zones')
+  // Navigation guard will handle unsaved changes
+  const customBackRoute = zoneStore.getBackRoute()
+  router.push(customBackRoute)
 }
 
 function navigateToFloorEditor(polygon: Polygon) {
   console.log('🏢 Navigating to floor editor for building:', polygon.entityId)
   if (!polygon.entityId) {
-    alert('შენობა არ არის მითითებული')
+    warning('შენობა არ არის მითითებული')
     return
   }
   router.push({
@@ -629,6 +769,20 @@ async function loadZoneImage() {
 }
 
 async function handleProjectChange() {
+  // Check for unsaved changes before switching projects
+  if (hasChanges.value && !confirmNavigationChange('გაქვთ შეუნახავი ცვლილებები. დარწმუნებული ხართ რომ გსურთ პროექტის შეცვლა?')) {
+    // Revert selection to previous project
+    return
+  }
+
+  // UPDATE URL to match new selection
+  if (selectedProjectId.value) {
+    router.replace({
+      name: 'admin-zones-building-blocks',
+      params: { id: selectedProjectId.value.toString() }
+    })
+  }
+
   zones.value = []
   backgroundImageUrl.value = ''
   hasChanges.value = false
@@ -643,6 +797,23 @@ function handleZonesChange(updatedZones: Polygon[]) {
 
 async function saveZones() {
   if (!selectedProjectId.value || !hasChanges.value) return
+
+  // Phase 4: Validate zones before saving
+  const validation = validateZones(zones.value, imageWidth.value, imageHeight.value)
+
+  if (!validation.valid) {
+    validation.errors.forEach(err => showError(err, 5000))
+    return
+  }
+
+  if (validation.warnings.length > 0) {
+    const proceed = confirm(
+      'გაფრთხილებები:\n\n' +
+      validation.warnings.join('\n\n') +
+      '\n\nგსურთ გაგრძელება?'
+    )
+    if (!proceed) return
+  }
 
   isSaving.value = true
   try {
@@ -671,12 +842,23 @@ async function saveZones() {
     }
 
     hasChanges.value = false
-    alert('ზონები წარმატებით შეინახა!')
+    clearDraft() // Clear auto-save draft after successful save
+    success('ზონები წარმატებით შეინახა!')
   } catch (error) {
     console.error('Failed to save zones:', error)
-    alert('ზონების შენახვა ვერ მოხერხდა')
+    showError('ზონების შენახვა ვერ მოხერხდა')
   } finally {
     isSaving.value = false
+  }
+}
+
+// Phase 2: Discard changes function
+function handleDiscard() {
+  if (confirm('დარწმუნებული ხართ რომ გსურთ ცვლილებების გაუქმება?')) {
+    loadZones()
+    hasChanges.value = false
+    clearDraft()
+    info('ცვლილებები გაუქმდა')
   }
 }
 
@@ -799,17 +981,68 @@ async function uploadImage() {
     }
 
     closeImageModal()
-    alert('სურათი წარმატებით აიტვირთა!')
+    success('სურათი წარმატებით აიტვირთა!')
   } catch (error: any) {
     const errorMessage = error.response?.data?.message || 'სურათის ატვირთვა ვერ მოხერხდა'
-    alert(errorMessage)
+    showError(errorMessage)
   } finally {
     isUploading.value = false
   }
 }
 
+// Phase 4: Keyboard shortcuts
+function handleKeyDown(event: KeyboardEvent) {
+  // Ctrl+S or Cmd+S to save
+  if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+    event.preventDefault()
+    if (hasChanges.value && !isSaving.value) {
+      saveZones()
+    }
+  }
+}
+
 // Lifecycle
-onMounted(() => {
-  loadProjects()
+onMounted(async () => {
+  await loadProjects()
+
+  // Validate project ID exists (only if we have an ID from route)
+  if (selectedProjectId.value) {
+    // Now check if project exists in the loaded projects list
+    const projectExists = projects.value.some(p => p.id == selectedProjectId.value)
+    if (!projectExists) {
+      showError(`პროექტი ID ${selectedProjectId.value} არ მოიძებნა`)
+      router.push('/admin/projects')
+      return
+    }
+    
+    // Load buildings and zones for the selected project
+    await loadBuildings()
+    await loadZones()
+  }
+
+  // Phase 3: Check for draft on mount
+  if (selectedProjectId.value && checkForDraft()) {
+    const shouldRestore = confirm('აღმოჩენილია შეუნახავი დრაფტი. გსურთ მისი აღდგენა?')
+    if (shouldRestore) {
+      const draft = loadDraft()
+      if (draft) {
+        zones.value = draft
+        hasChanges.value = true
+        info('დრაფტი აღდგენილია')
+      }
+    } else {
+      clearDraft()
+    }
+  }
+
+  // Start auto-save
+  startAutoSave()
+
+  // Add keyboard shortcuts
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
 })
 </script>

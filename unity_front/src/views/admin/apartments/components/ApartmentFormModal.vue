@@ -183,8 +183,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useApartmentsAdminStore } from '@/stores/admin/apartments'
+import { useToast } from '@/composables/useToast'
 import type { Apartment, Building } from '@/types/apartments'
 
 interface Props {
@@ -202,6 +203,14 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const apartmentsStore = useApartmentsAdminStore()
+const { success, error: showError } = useToast()
+
+// Keyboard handler for ESC to close
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && !isSubmitting.value) {
+    emit('close')
+  }
+}
 
 const isEdit = computed(() => !!props.apartment)
 
@@ -223,6 +232,9 @@ const isSubmitting = ref(false)
 const error = ref('')
 
 onMounted(() => {
+  // Add keyboard listener for ESC
+  window.addEventListener('keydown', handleKeydown)
+  
   if (props.apartment) {
     form.value = {
       building_id: props.apartment.building_id,
@@ -240,9 +252,14 @@ onMounted(() => {
   }
 })
 
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
 async function handleSubmit() {
   if (!props.projectId || !form.value.building_id) {
     error.value = 'პროექტი ან შენობა არ არის არჩეული'
+    showError('პროექტი ან შენობა არ არის არჩეული')
     return
   }
 
@@ -265,13 +282,16 @@ async function handleSubmit() {
 
     if (isEdit.value && props.apartment) {
       await apartmentsStore.updateApartment(props.apartment.id, payload)
+      success('ბინა წარმატებით განახლდა!')
     } else {
       await apartmentsStore.createApartment(props.projectId, form.value.building_id, payload)
+      success('ბინა წარმატებით დაემატა!')
     }
     emit('saved')
   } catch (err: unknown) {
     const apiError = err as { response?: { data?: { message?: string } }; message?: string }
     error.value = apiError.response?.data?.message || apiError.message || 'დაფიქსირდა შეცდომა'
+    showError(error.value)
   } finally {
     isSubmitting.value = false
   }
