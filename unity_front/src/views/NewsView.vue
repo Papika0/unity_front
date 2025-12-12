@@ -4,10 +4,40 @@ import { useTranslations } from '../composables/useTranslations'
 import { useTranslationsStore } from '@/stores/ui/translations'
 import { useNewsStore } from '@/stores/public/news'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useSeo, useStructuredData, useAnalytics } from '@/composables/useSeo'
+import { useLocaleStore } from '@/stores/ui/locale'
 
 const { t } = useTranslations()
 const newsStore = useNewsStore()
 const translationsStore = useTranslationsStore()
+const localeStore = useLocaleStore()
+
+// SEO for news page
+const seoDescriptions = {
+  ka: 'Unity Development-ის სიახლეები - უახლესი ამბები პროექტებზე, ინდუსტრიაზე და კომპანიის განვითარებაზე.',
+  en: 'Unity Development News - Latest updates on projects, industry and company development.',
+  ru: 'Новости Unity Development - Последние новости о проектах, отрасли и развитии компании.',
+}
+
+useSeo({
+  title: computed(() => t('news.hero.title') || 'სიახლეები'),
+  description: computed(() => seoDescriptions[localeStore.currentLocale]),
+  url: '/news',
+  keywords: computed(() => localeStore.currentLocale === 'ka'
+    ? 'სიახლეები, ახალი ამბები, Unity Development, უძრავი ქონება, თბილისი'
+    : 'news, updates, Unity Development, real estate, Tbilisi'),
+})
+
+// Add breadcrumb schema
+const { addBreadcrumbSchema } = useStructuredData()
+addBreadcrumbSchema([
+  { name: 'Unity Development', url: '/' },
+  { name: t('header.news') || 'News', url: '/news' },
+])
+
+// Analytics
+const { trackPageView } = useAnalytics()
+trackPageView('/news', 'News - Unity Development')
 
 const scrollProgress = ref(0)
 

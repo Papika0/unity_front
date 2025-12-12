@@ -4,8 +4,38 @@ import { useTranslations } from '../composables/useTranslations'
 import { useProjectsPage } from '../composables/useProjectsPage'
 import { useProjectsStore } from '@/stores/public/projects'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useSeo, useStructuredData, useAnalytics } from '@/composables/useSeo'
+import { useLocaleStore } from '@/stores/ui/locale'
 
 const { t } = useTranslations()
+const localeStore = useLocaleStore()
+
+// SEO for projects page
+const seoDescriptions = {
+  ka: 'Unity Development-ის პროექტები - თანამედროვე საცხოვრებელი კომპლექსები თბილისში. ნახეთ ჩვენი მიმდინარე და დასრულებული პროექტები.',
+  en: 'Unity Development Projects - Modern residential complexes in Tbilisi. See our ongoing and completed projects.',
+  ru: 'Проекты Unity Development - Современные жилые комплексы в Тбилиси. Смотрите наши текущие и завершенные проекты.',
+}
+
+useSeo({
+  title: computed(() => t('projects.hero.title') || 'პროექტები'),
+  description: computed(() => seoDescriptions[localeStore.currentLocale]),
+  url: '/projects',
+  keywords: computed(() => localeStore.currentLocale === 'ka'
+    ? 'პროექტები, უძრავი ქონება, აპარტამენტები, თბილისი, Unity Development'
+    : 'projects, real estate, apartments, Tbilisi, Unity Development'),
+})
+
+// Add breadcrumb schema
+const { addBreadcrumbSchema } = useStructuredData()
+addBreadcrumbSchema([
+  { name: 'Unity Development', url: '/' },
+  { name: t('header.projects') || 'Projects', url: '/projects' },
+])
+
+// Analytics
+const { trackPageView } = useAnalytics()
+trackPageView('/projects', 'Projects - Unity Development')
 const {
   allProjects,
   totalProjects,

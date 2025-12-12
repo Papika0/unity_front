@@ -9,6 +9,7 @@ import type { ProjectApiResponse } from '@/services/projectsApi'
 import type { ProjectFeature } from '@/services/featuresApi'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
 import BuildingSelector from '@/components/apartments/BuildingSelector.vue'
+import { useSeo, useStructuredData, useAnalytics } from '@/composables/useSeo'
 
 const { t } = useTranslations()
 const route = useRoute()
@@ -18,6 +19,9 @@ const translationsStore = useTranslationsStore()
 // Initialize locale store
 const localeStore = useLocaleStore()
 
+// Analytics tracking
+const { trackProjectView } = useAnalytics()
+
 const project = ref<ProjectApiResponse | null>(null)
 const isLoading = ref(true) // Start with loading true
 const error = ref<string | null>(null)
@@ -25,6 +29,15 @@ const selectedImageIndex = ref(0)
 const isFullscreenGallery = ref(false)
 const projectFeatures = ref<ProjectFeature[]>([])
 const scrollProgress = ref(0)
+
+// Dynamic SEO based on project data
+useSeo({
+  title: computed(() => project.value?.meta_title || project.value?.title),
+  description: computed(() => project.value?.meta_description || project.value?.description?.substring(0, 160)),
+  image: computed(() => project.value?.main_image?.url),
+  url: computed(() => project.value ? `/projects/${project.value.id}` : undefined),
+  keywords: computed(() => project.value ? `${project.value.title}, ${project.value.location}, უძრავი ქონება, პროექტი` : undefined),
+})
 
 // Scroll animation refs
 const { element: heroElement, isVisible: heroVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
@@ -146,6 +159,9 @@ const formatDescription = (description: string) => {
     .join('')
 }
 
+// Structured data helper
+const { addProjectSchema, addBreadcrumbSchema } = useStructuredData()
+
 // Function to load project data
 const loadProjectData = async (projectId: number) => {
   isLoading.value = true
@@ -165,6 +181,29 @@ const loadProjectData = async (projectId: number) => {
 
     // Set features from project data
     projectFeatures.value = project.value?.features || []
+
+    // Update SEO with project data
+    if (project.value) {
+      // Track project view in analytics
+      trackProjectView(project.value.id, project.value.title)
+
+      // Add structured data for this project
+      addProjectSchema({
+        id: project.value.id,
+        title: project.value.title,
+        description: project.value.description,
+        location: project.value.location,
+        main_image: project.value.main_image,
+        status: project.value.status,
+      })
+
+      // Add breadcrumb schema
+      addBreadcrumbSchema([
+        { name: 'Unity Development', url: '/' },
+        { name: t('header.projects'), url: '/projects' },
+        { name: project.value.title, url: `/projects/${project.value.id}` },
+      ])
+    }
 
     // Scroll to top smoothly to trigger animations properly
     window.scrollTo({ top: 0, behavior: 'smooth' })

@@ -6,10 +6,13 @@ import { useContactPage } from '../composables/useContactPage'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
 import { useToastStore } from '../stores/ui/toast'
 import { customerApi, type CustomerData } from '../services/customerApi'
+import { useSeo, useStructuredData, useAnalytics } from '@/composables/useSeo'
+import { useLocaleStore } from '@/stores/ui/locale'
 import 'vue-tel-input/vue-tel-input.css'
 
 const { t } = useTranslations()
 const toastStore = useToastStore()
+const localeStore = useLocaleStore()
 const {
   contactInfo,
   socialLinks,
@@ -19,6 +22,33 @@ const {
   officeDays,
   loadContactPage,
 } = useContactPage()
+
+// SEO for contact page
+const seoDescriptions = {
+  ka: 'დაგვიკავშირდით - Unity Development. მისამართი, ტელეფონი, ელფოსტა და საკონტაქტო ფორმა.',
+  en: 'Contact Us - Unity Development. Address, phone, email and contact form.',
+  ru: 'Свяжитесь с нами - Unity Development. Адрес, телефон, email и контактная форма.',
+}
+
+useSeo({
+  title: computed(() => t('contact.hero.title') || 'კონტაქტი'),
+  description: computed(() => seoDescriptions[localeStore.currentLocale]),
+  url: '/contact',
+  keywords: computed(() => localeStore.currentLocale === 'ka'
+    ? 'კონტაქტი, დაგვიკავშირდით, Unity Development, თბილისი, ტელეფონი'
+    : 'contact, get in touch, Unity Development, Tbilisi, phone'),
+})
+
+// Add breadcrumb schema
+const { addBreadcrumbSchema } = useStructuredData()
+addBreadcrumbSchema([
+  { name: 'Unity Development', url: '/' },
+  { name: t('header.contact') || 'Contact', url: '/contact' },
+])
+
+// Analytics
+const { trackPageView, trackContactFormSubmit } = useAnalytics()
+trackPageView('/contact', 'Contact - Unity Development')
 
 // Scroll animation refs
 const { element: heroElement, isVisible: heroVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })

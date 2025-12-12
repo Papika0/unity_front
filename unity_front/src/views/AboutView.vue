@@ -3,9 +3,39 @@ import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
 import { useAboutInfo } from '../composables/useAboutInfo'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useSeo, useStructuredData, useAnalytics } from '@/composables/useSeo'
+import { useLocaleStore } from '@/stores/ui/locale'
 
 const { t } = useTranslations()
 const { aboutInfo, stats: aboutStats, loadAboutInfo, isLoading, error } = useAboutInfo()
+const localeStore = useLocaleStore()
+
+// SEO for about page
+const seoDescriptions = {
+  ka: 'Unity Development-ის შესახებ - ჩვენი ისტორია, მისია და ღირებულებები. ვაშენებთ თანამედროვე საცხოვრებელ კომპლექსებს თბილისში.',
+  en: 'About Unity Development - Our history, mission and values. We build modern residential complexes in Tbilisi.',
+  ru: 'О компании Unity Development - Наша история, миссия и ценности. Мы строим современные жилые комплексы в Тбилиси.',
+}
+
+useSeo({
+  title: computed(() => t('about.hero.title') || 'ჩვენს შესახებ'),
+  description: computed(() => seoDescriptions[localeStore.currentLocale]),
+  url: '/about',
+  keywords: computed(() => localeStore.currentLocale === 'ka'
+    ? 'Unity Development, ჩვენს შესახებ, კომპანია, მშენებლობა, თბილისი'
+    : 'Unity Development, about us, company, construction, Tbilisi'),
+})
+
+// Add breadcrumb schema
+const { addBreadcrumbSchema } = useStructuredData()
+addBreadcrumbSchema([
+  { name: 'Unity Development', url: '/' },
+  { name: t('header.about') || 'About', url: '/about' },
+])
+
+// Analytics
+const { trackPageView } = useAnalytics()
+trackPageView('/about', 'About Unity Development')
 
 // Hero is always visible since it's at the top
 const heroVisible = ref(false)

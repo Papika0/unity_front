@@ -7,9 +7,26 @@ import FeaturedProject from '../components/home/FeaturedProject.vue'
 import NewsSection from '../components/home/NewsSection.vue'
 import { useHomepageStore } from '@/stores/public/homepage'
 import { useLocaleStore } from '@/stores/ui/locale'
+import { useSeo, useStructuredData, useAnalytics } from '@/composables/useSeo'
 
 const homepageStore = useHomepageStore()
 const localeStore = useLocaleStore()
+
+// SEO setup for homepage
+useSeo({
+  url: '/',
+})
+
+// Add Organization schema for homepage
+const { addOrganizationSchema, addBreadcrumbSchema } = useStructuredData()
+addOrganizationSchema()
+addBreadcrumbSchema([
+  { name: 'Unity Development', url: '/' }
+])
+
+// Analytics tracking
+const { trackPageView } = useAnalytics()
+trackPageView('/', 'Unity Development - Homepage')
 
 // Scroll progress indicator
 const scrollProgress = ref(0)

@@ -5,12 +5,19 @@ import { useTranslations } from '../composables/useTranslations'
 import { useNewsStore } from '@/stores/public/news'
 import { useLocaleStore } from '@/stores/ui/locale'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useSeo, useStructuredData, useAnalytics } from '@/composables/useSeo'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useTranslations()
 const newsStore = useNewsStore()
 const localeStore = useLocaleStore()
+
+// Analytics tracking
+const { trackNewsView } = useAnalytics()
+
+// Structured data helper
+const { addNewsArticleSchema, addBreadcrumbSchema } = useStructuredData()
 
 // Scroll animation refs
 const { element: breadcrumbElement, isVisible: breadcrumbVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
@@ -26,6 +33,17 @@ const error = ref<string | null>(null)
 const showGalleryModal = ref(false)
 const currentGalleryIndex = ref(0)
 const scrollProgress = ref(0)
+
+// Dynamic SEO based on article data
+useSeo({
+  title: computed(() => article.value?.meta_title || article.value?.title),
+  description: computed(() => article.value?.meta_description || article.value?.excerpt),
+  image: computed(() => article.value?.main_image?.url),
+  url: computed(() => article.value ? `/news/${article.value.id}` : undefined),
+  type: 'article',
+  publishedTime: computed(() => article.value?.publish_date),
+  keywords: computed(() => article.value ? `${article.value.title}, სიახლეები, Unity Development` : undefined),
+})
 
 // Scroll progress tracking
 const handleScroll = () => {
@@ -120,10 +138,30 @@ const fetchArticle = async () => {
       router.push('/news')
       return
     }
-    
+
+    // Track news view in analytics
+    trackNewsView(fetchedArticle.id, fetchedArticle.title)
+
+    // Add structured data for this news article
+    addNewsArticleSchema({
+      id: fetchedArticle.id,
+      title: fetchedArticle.title,
+      excerpt: fetchedArticle.excerpt,
+      content: fetchedArticle.content,
+      main_image: fetchedArticle.main_image,
+      publish_date: fetchedArticle.publish_date,
+    })
+
+    // Add breadcrumb schema
+    addBreadcrumbSchema([
+      { name: 'Unity Development', url: '/' },
+      { name: t('header.news'), url: '/news' },
+      { name: fetchedArticle.title, url: `/news/${fetchedArticle.id}` },
+    ])
+
     // Scroll to top smoothly to trigger animations properly
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    
+
     // Wait for scroll to complete and DOM to update
     await new Promise(resolve => setTimeout(resolve, 100))
   } catch (err) {

@@ -3,8 +3,11 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useTranslations } from '../composables/useTranslations'
 import { useGalleryPage } from '../composables/useGalleryPage'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useSeo, useStructuredData, useAnalytics } from '@/composables/useSeo'
+import { useLocaleStore } from '@/stores/ui/locale'
 
 const { t } = useTranslations()
+const localeStore = useLocaleStore()
 const {
   galleryImages,
   categories,
@@ -16,6 +19,33 @@ const {
   loadMore,
   getCategoryLabel,
 } = useGalleryPage()
+
+// SEO for gallery page
+const seoDescriptions = {
+  ka: 'Unity Development-ის გალერეა - ნახეთ ჩვენი პროექტების ფოტოები და ვიზუალიზაციები.',
+  en: 'Unity Development Gallery - View photos and visualizations of our projects.',
+  ru: 'Галерея Unity Development - Смотрите фотографии и визуализации наших проектов.',
+}
+
+useSeo({
+  title: computed(() => t('gallery.hero.title') || 'გალერეა'),
+  description: computed(() => seoDescriptions[localeStore.currentLocale]),
+  url: '/gallery',
+  keywords: computed(() => localeStore.currentLocale === 'ka'
+    ? 'გალერეა, ფოტოები, პროექტები, Unity Development, თბილისი'
+    : 'gallery, photos, projects, Unity Development, Tbilisi'),
+})
+
+// Add breadcrumb schema
+const { addBreadcrumbSchema } = useStructuredData()
+addBreadcrumbSchema([
+  { name: 'Unity Development', url: '/' },
+  { name: t('header.gallery') || 'Gallery', url: '/gallery' },
+])
+
+// Analytics
+const { trackPageView } = useAnalytics()
+trackPageView('/gallery', 'Gallery - Unity Development')
 
 const selectedCategory = ref('all')
 const selectedImage = ref<number | null>(null)

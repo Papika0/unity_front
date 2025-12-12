@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Homepage -->
+  <url>
+    <loc>https://unityd.ge/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="ka" href="https://unityd.ge/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://unityd.ge/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://unityd.ge/"/>
+  </url>
+
+  <!-- About Page -->
+  <url>
+    <loc>https://unityd.ge/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ka" href="https://unityd.ge/about"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://unityd.ge/about"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://unityd.ge/about"/>
+  </url>
+
+  <!-- Projects Page -->
+  <url>
+    <loc>https://unityd.ge/projects</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ka" href="https://unityd.ge/projects"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://unityd.ge/projects"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://unityd.ge/projects"/>
+  </url>
+
+  <!-- News Page -->
+  <url>
+    <loc>https://unityd.ge/news</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ka" href="https://unityd.ge/news"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://unityd.ge/news"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://unityd.ge/news"/>
+  </url>
+
+  <!-- Gallery Page -->
+  <url>
+    <loc>https://unityd.ge/gallery</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="ka" href="https://unityd.ge/gallery"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://unityd.ge/gallery"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://unityd.ge/gallery"/>
+  </url>
+
+  <!-- Contact Page -->
+  <url>
+    <loc>https://unityd.ge/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ka" href="https://unityd.ge/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://unityd.ge/contact"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://unityd.ge/contact"/>
+  </url>
+
+  <!-- Dynamic project and news pages should be added via backend API -->
+  <!-- Consider implementing a sitemap generation endpoint in your Laravel API -->
+
+</urlset>
