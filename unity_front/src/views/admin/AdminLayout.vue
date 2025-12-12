@@ -1,53 +1,69 @@
 <template>
   <div class="h-screen flex overflow-hidden bg-slate-50">
     <!-- Sidebar -->
-    <transition name="slide-sidebar">
-      <div v-if="sidebarOpen" class="hidden md:flex md:flex-shrink-0">
-        <div class="flex flex-col w-72">
-          <div class="flex flex-col h-0 flex-1 bg-white border-r border-slate-200 shadow-sm">
-            <!-- Logo/Brand -->
-            <div class="flex-1 flex flex-col pt-6 pb-4 overflow-y-auto overflow-x-hidden px-2">
-              <div class="flex items-center flex-shrink-0 px-4 justify-between">
-                <div class="flex items-center">
-                  <div
-                    class="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-200 p-1"
-                  >
-                    <img
-                      src="@/assets/logo_black.png"
-                      alt="Unity Logo"
-                      class="h-full w-full object-contain"
-                    />
-                  </div>
-                  <div class="ml-3">
-                    <h1 class="text-lg font-bold text-slate-800">ადმინისტრაციული პანელი</h1>
-                    <p class="text-xs text-slate-500">მართვის სისტემა</p>
-                  </div>
-                </div>
-                <button
-                  @click="sidebarOpen = false"
-                  class="group relative p-2 hover:bg-gradient-to-br hover:from-amber-50 hover:to-orange-50 rounded-lg transition-all duration-200 hover:shadow-md"
-                  title="დახურვა"
+    <div class="hidden md:flex md:flex-shrink-0 transition-all duration-300" :class="sidebarOpen ? 'w-72' : 'w-16'">
+      <div class="flex flex-col flex-1 bg-white border-r border-slate-200 shadow-sm">
+        <!-- Logo/Brand & Toggle -->
+        <div class="flex-1 flex flex-col pt-6 pb-4 overflow-y-auto overflow-x-hidden">
+          <div class="flex items-center flex-shrink-0 mb-6 px-2">
+            <!-- When Sidebar is Open -->
+            <div v-if="sidebarOpen" class="flex items-start justify-between w-full gap-2">
+              <div class="flex items-start min-w-0 flex-1 gap-2">
+                <div
+                  class="h-8 w-8 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-200 p-1 flex-shrink-0 mt-1"
                 >
-                  <div class="absolute inset-0 bg-gradient-to-br from-amber-400/0 to-orange-400/0 group-hover:from-amber-400/10 group-hover:to-orange-400/10 rounded-lg transition-all duration-200"></div>
-                  <svg class="relative w-5 h-5 text-slate-400 group-hover:text-amber-600 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
+                  <img
+                    src="@/assets/logo_black.png"
+                    alt="Unity Logo"
+                    class="h-full w-full object-contain"
+                  />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h1 class="text-sm font-bold text-slate-800 leading-tight break-words">ადმინისტრაციული პანელი</h1>
+                  <p class="text-xs text-slate-500 leading-tight break-words">მართვის სისტემა</p>
+                </div>
               </div>
+              <button
+                @click="sidebarOpen = false"
+                class="group relative p-1.5 hover:bg-gradient-to-br hover:from-amber-50 hover:to-orange-50 rounded-lg transition-all duration-200 hover:shadow-md flex-shrink-0 border border-slate-200 hover:border-amber-400"
+                title="შეკუმშვა"
+              >
+                <div class="absolute inset-0 bg-gradient-to-br from-amber-400/0 to-orange-400/0 group-hover:from-amber-400/10 group-hover:to-orange-400/10 rounded-lg transition-all duration-200"></div>
+                <svg class="relative w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- When Sidebar is Collapsed -->
+            <button
+              v-else
+              @click="sidebarOpen = true"
+              class="group relative p-2 hover:bg-gradient-to-br hover:from-amber-50 hover:to-orange-50 rounded-lg transition-all duration-200 hover:shadow-md flex-shrink-0 border border-slate-200 hover:border-amber-400 mx-auto"
+              title="გაშლა"
+            >
+              <div class="absolute inset-0 bg-gradient-to-br from-amber-400/0 to-orange-400/0 group-hover:from-amber-400/10 group-hover:to-orange-400/10 rounded-lg transition-all duration-200"></div>
+              <svg class="relative w-5 h-5 text-slate-400 group-hover:text-amber-600 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
 
             <!-- Navigation -->
-            <nav class="mt-8 flex-1 px-2 space-y-2">
+            <nav class="flex-1 px-2 space-y-2">
               <router-link
                 v-if="authStore.isAdmin"
                 to="/admin/dashboard"
-                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                :class="
+                class="group flex items-center rounded-xl transition-all duration-200 relative"
+                :class="[
                   $route.name === 'admin-dashboard'
                     ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25'
-                    : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700'
-                "
+                    : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700',
+                  sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                ]"
+                :title="!sidebarOpen ? 'დაშბორდი' : ''"
               >
-                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -55,20 +71,24 @@
                     d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2H3zm0 0h18"
                   ></path>
                 </svg>
-                დაშბორდი
+                <transition name="fade">
+                  <span v-if="sidebarOpen" class="text-sm font-medium">დაშბორდი</span>
+                </transition>
               </router-link>
 
               <router-link
                 v-if="authStore.isAdmin"
                 to="/admin/projects"
-                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                :class="
+                class="group flex items-center rounded-xl transition-all duration-200 relative"
+                :class="[
                   $route.name === 'admin-projects'
                     ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25'
-                    : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700'
-                "
+                    : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700',
+                  sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                ]"
+                :title="!sidebarOpen ? 'პროექტები' : ''"
               >
-                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -76,20 +96,24 @@
                     d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                   ></path>
                 </svg>
-                პროექტები
+                <transition name="fade">
+                  <span v-if="sidebarOpen" class="text-sm font-medium">პროექტები</span>
+                </transition>
               </router-link>
 
               <router-link
                 v-if="authStore.isAdmin"
                 to="/admin/features"
-                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                :class="
+                class="group flex items-center rounded-xl transition-all duration-200 relative"
+                :class="[
                   typeof $route.name === 'string' && $route.name.startsWith('admin-feature')
                     ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-                    : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700'
-                "
+                    : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700',
+                  sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                ]"
+                :title="!sidebarOpen ? 'ფუნქციები' : ''"
               >
-                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -97,20 +121,24 @@
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   ></path>
                 </svg>
-                ფუნქციები
+                <transition name="fade">
+                  <span v-if="sidebarOpen" class="text-sm font-medium">ფუნქციები</span>
+                </transition>
               </router-link>
 
               <router-link
                 v-if="authStore.isAdmin"
                 to="/admin/news"
-                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                :class="
+                class="group flex items-center rounded-xl transition-all duration-200 relative"
+                :class="[
                   typeof $route.name === 'string' && $route.name.startsWith('admin-news')
                     ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25'
-                    : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'
-                "
+                    : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700',
+                  sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                ]"
+                :title="!sidebarOpen ? 'სიახლეები' : ''"
               >
-                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -118,20 +146,24 @@
                     d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
                   ></path>
                 </svg>
-                სიახლეები
+                <transition name="fade">
+                  <span v-if="sidebarOpen" class="text-sm font-medium">სიახლეები</span>
+                </transition>
               </router-link>
 
               <router-link
                 v-if="authStore.isAdmin"
                 to="/admin/gallery"
-                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                :class="
+                class="group flex items-center rounded-xl transition-all duration-200 relative"
+                :class="[
                   $route.name === 'admin-gallery'
                     ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
-                    : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'
-                "
+                    : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700',
+                  sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                ]"
+                :title="!sidebarOpen ? 'გალერეა' : ''"
               >
-                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -139,20 +171,24 @@
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   ></path>
                 </svg>
-                გალერეა
+                <transition name="fade">
+                  <span v-if="sidebarOpen" class="text-sm font-medium">გალერეა</span>
+                </transition>
               </router-link>
 
               <router-link
                 v-if="authStore.isAdmin"
                 to="/admin/translations"
-                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                :class="
+                class="group flex items-center rounded-xl transition-all duration-200 relative"
+                :class="[
                   $route.name === 'admin-translations'
                     ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25'
-                    : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700'
-                "
+                    : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700',
+                  sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                ]"
+                :title="!sidebarOpen ? 'თარგმანები' : ''"
               >
-                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -160,20 +196,24 @@
                     d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
                   ></path>
                 </svg>
-                თარგმანები
+                <transition name="fade">
+                  <span v-if="sidebarOpen" class="text-sm font-medium">თარგმანები</span>
+                </transition>
               </router-link>
 
               <router-link
                 v-if="authStore.isAdmin"
                 to="/admin/contact-info"
-                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                :class="
+                class="group flex items-center rounded-xl transition-all duration-200 relative"
+                :class="[
                   $route.name === 'admin-contact-info'
                     ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25'
-                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
-                "
+                    : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                  sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                ]"
+                :title="!sidebarOpen ? 'კონტაქტის ინფორმაცია' : ''"
               >
-                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -181,20 +221,24 @@
                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                   />
                 </svg>
-                კონტაქტის ინფორმაცია
+                <transition name="fade">
+                  <span v-if="sidebarOpen" class="text-sm font-medium">კონტაქტის ინფორმაცია</span>
+                </transition>
               </router-link>
 
               <router-link
                 v-if="authStore.isAdmin"
                 to="/admin/about-settings"
-                class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                :class="
+                class="group flex items-center rounded-xl transition-all duration-200 relative"
+                :class="[
                   $route.name === 'admin-about-settings'
                     ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-                    : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700'
-                "
+                    : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700',
+                  sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                ]"
+                :title="!sidebarOpen ? 'ჩვენს შესახებ პარამეტრები' : ''"
               >
-                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -202,25 +246,31 @@
                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                   />
                 </svg>
-                "ჩვენს შესახებ" პარამეტრები
+                <transition name="fade">
+                  <span v-if="sidebarOpen" class="text-sm font-medium">"ჩვენს შესახებ" პარამეტრები</span>
+                </transition>
               </router-link>
 
               <!-- Apartment Navigation Section (Admin Only) -->
               <div v-if="authStore.isAdmin" class="pt-4 mt-4 border-t border-slate-200">
-                <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  ბინების ნავიგაცია
-                </p>
+                <transition name="fade">
+                  <p v-if="sidebarOpen" class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                    ბინების ნავიგაცია
+                  </p>
+                </transition>
 
                 <router-link
                   to="/admin/buildings"
-                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                  :class="
+                  class="group flex items-center rounded-xl transition-all duration-200 relative"
+                  :class="[
                     typeof $route.name === 'string' && $route.name.startsWith('admin-buildings')
                       ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25'
-                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
-                  "
+                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                    sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                  ]"
+                  :title="!sidebarOpen ? 'შენობები' : ''"
                 >
-                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -228,19 +278,23 @@
                       d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                     ></path>
                   </svg>
-                  შენობები
+                  <transition name="fade">
+                    <span v-if="sidebarOpen" class="text-sm font-medium">შენობები</span>
+                  </transition>
                 </router-link>
 
                 <router-link
                   to="/admin/apartments"
-                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                  :class="
+                  class="group flex items-center rounded-xl transition-all duration-200 relative"
+                  :class="[
                     typeof $route.name === 'string' && $route.name.startsWith('admin-apartments')
                       ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
-                      : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'
-                  "
+                      : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700',
+                    sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                  ]"
+                  :title="!sidebarOpen ? 'ბინები' : ''"
                 >
-                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -248,26 +302,32 @@
                       d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                     ></path>
                   </svg>
-                  ბინები
+                  <transition name="fade">
+                    <span v-if="sidebarOpen" class="text-sm font-medium">ბინები</span>
+                  </transition>
                 </router-link>
               </div>
 
               <!-- Customer Management Section -->
               <div :class="authStore.isAdmin ? 'pt-4 mt-4 border-t border-slate-200' : ''">
-                <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  კლიენტები
-                </p>
+                <transition name="fade">
+                  <p v-if="sidebarOpen" class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                    კლიენტები
+                  </p>
+                </transition>
 
                 <router-link
                   to="/admin/customers"
-                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                  :class="
+                  class="group flex items-center rounded-xl transition-all duration-200 relative"
+                  :class="[
                     $route.name === 'admin-customers'
                       ? 'bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-lg shadow-rose-500/25'
-                      : 'text-slate-600 hover:bg-rose-50 hover:text-rose-700'
-                  "
+                      : 'text-slate-600 hover:bg-rose-50 hover:text-rose-700',
+                    sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                  ]"
+                  :title="!sidebarOpen ? 'კლიენტების მოთხოვნები' : ''"
                 >
-                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -275,20 +335,24 @@
                       d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                     />
                   </svg>
-                  კლიენტების მოთხოვნები
+                  <transition name="fade">
+                    <span v-if="sidebarOpen" class="text-sm font-medium">კლიენტების მოთხოვნები</span>
+                  </transition>
                 </router-link>
 
                 <router-link
                   v-if="authStore.isAdmin"
                   to="/admin/marketing-emails"
-                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                  :class="
+                  class="group flex items-center rounded-xl transition-all duration-200 relative"
+                  :class="[
                     $route.name === 'admin-marketing-emails'
                       ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/25'
-                      : 'text-slate-600 hover:bg-cyan-50 hover:text-cyan-700'
-                  "
+                      : 'text-slate-600 hover:bg-cyan-50 hover:text-cyan-700',
+                    sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                  ]"
+                  :title="!sidebarOpen ? 'მარკეტინგის ელ. ფოსტები' : ''"
                 >
-                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -296,20 +360,24 @@
                       d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                     />
                   </svg>
-                  მარკეტინგის ელ. ფოსტები
+                  <transition name="fade">
+                    <span v-if="sidebarOpen" class="text-sm font-medium">მარკეტინგის ელ. ფოსტები</span>
+                  </transition>
                 </router-link>
 
                 <router-link
                   v-if="authStore.isAdmin"
                   to="/admin/users"
-                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                  :class="
+                  class="group flex items-center rounded-xl transition-all duration-200 relative"
+                  :class="[
                     $route.name === 'admin-users'
                       ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
-                      : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'
-                  "
+                      : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700',
+                    sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                  ]"
+                  :title="!sidebarOpen ? 'მომხმარებლების მართვა' : ''"
                 >
-                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -317,26 +385,32 @@
                       d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
                     />
                   </svg>
-                  მომხმარებლების მართვა
+                  <transition name="fade">
+                    <span v-if="sidebarOpen" class="text-sm font-medium">მომხმარებლების მართვა</span>
+                  </transition>
                 </router-link>
               </div>
 
               <!-- Payment Calculator Section -->
               <div v-if="authStore.isAdmin || authStore.isMarketing" class="pt-4 mt-4 border-t border-slate-200">
-                <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  გადახდის კალკულატორი
-                </p>
+                <transition name="fade">
+                  <p v-if="sidebarOpen" class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                    გადახდის კალკულატორი
+                  </p>
+                </transition>
 
                 <router-link
                   to="/admin/calculator"
-                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                  :class="
+                  class="group flex items-center rounded-xl transition-all duration-200 relative"
+                  :class="[
                     $route.name === 'admin-calculator'
                       ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25'
-                      : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700'
-                  "
+                      : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700',
+                    sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                  ]"
+                  :title="!sidebarOpen ? 'კალკულატორი' : ''"
                 >
-                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -344,19 +418,23 @@
                       d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
                     />
                   </svg>
-                  კალკულატორი
+                  <transition name="fade">
+                    <span v-if="sidebarOpen" class="text-sm font-medium">კალკულატორი</span>
+                  </transition>
                 </router-link>
 
                 <router-link
                   to="/admin/bank-rates"
-                  class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                  :class="
+                  class="group flex items-center rounded-xl transition-all duration-200 relative"
+                  :class="[
                     $route.name === 'admin-bank-rates'
                       ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-                      : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700'
-                  "
+                      : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700',
+                    sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
+                  ]"
+                  :title="!sidebarOpen ? 'საბანკო განაკვეთები' : ''"
                 >
-                  <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -364,16 +442,21 @@
                       d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                     />
                   </svg>
-                  საბანკო განაკვეთები
+                  <transition name="fade">
+                    <span v-if="sidebarOpen" class="text-sm font-medium">საბანკო განაკვეთები</span>
+                  </transition>
                 </router-link>
               </div>
             </nav>
-          </div>
 
           <!-- User info at bottom -->
           <div class="flex-shrink-0 border-t border-slate-200 p-4">
-            <div class="flex items-center">
-              <div class="bg-gradient-to-br from-amber-400 to-amber-500 rounded-full p-2">
+            <div class="flex items-center" :class="sidebarOpen ? '' : 'justify-center'">
+              <div
+                class="bg-gradient-to-br from-amber-400 to-amber-500 rounded-full p-2 cursor-pointer"
+                :title="!sidebarOpen ? (authStore.user?.name || authStore.user?.email || '') : ''"
+                @click="!sidebarOpen ? handleLogout() : null"
+              >
                 <svg
                   class="w-5 h-5 text-white"
                   fill="none"
@@ -388,38 +471,24 @@
                   ></path>
                 </svg>
               </div>
-              <div class="ml-3">
-                <p class="text-sm font-medium text-slate-700">
-                  {{ authStore.user?.name || authStore.user?.email }}
-                </p>
-                <button
-                  @click="handleLogout"
-                  class="text-xs text-slate-500 hover:text-amber-600 transition-colors"
-                >
-                  გასვლა
-                </button>
-              </div>
+              <transition name="fade">
+                <div v-if="sidebarOpen" class="ml-3 min-w-0">
+                  <p class="text-sm font-medium text-slate-700 truncate">
+                    {{ authStore.user?.name || authStore.user?.email }}
+                  </p>
+                  <button
+                    @click="handleLogout"
+                    class="text-xs text-slate-500 hover:text-amber-600 transition-colors"
+                  >
+                    გასვლა
+                  </button>
+                </div>
+              </transition>
             </div>
           </div>
         </div>
       </div>
     </div>
-    </transition>
-
-    <!-- Toggle Button (when sidebar is closed) -->
-    <button
-      v-if="!sidebarOpen"
-      @click="sidebarOpen = true"
-      class="hidden md:block fixed left-0 top-1/2 transform -translate-y-1/2 z-50 group"
-      title="ნავიგაციის გახსნა"
-    >
-      <div class="relative bg-gradient-to-r from-white to-slate-50 border-2 border-slate-200 hover:border-amber-400 rounded-r-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-3 hover:pr-4">
-        <div class="absolute inset-0 bg-gradient-to-br from-amber-400/0 to-orange-400/0 group-hover:from-amber-400/10 group-hover:to-orange-400/10 rounded-r-xl transition-all duration-300"></div>
-        <svg class="relative w-6 h-6 text-slate-400 group-hover:text-amber-600 transition-all duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
-        </svg>
-      </div>
-    </button>
 
     <!-- Mobile menu -->
     <div v-if="mobileMenuOpen" class="md:hidden">
@@ -821,6 +890,17 @@ const handleClearCache = async () => {
 
 .slide-sidebar-leave-to {
   transform: translateX(-100%);
+  opacity: 0;
+}
+
+/* Fade transition for sidebar text */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>
