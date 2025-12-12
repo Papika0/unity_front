@@ -22,9 +22,9 @@ class AdminApartmentResource extends JsonResource
             'summer_area' => $this->summer_area,
             'bedrooms' => $this->bedrooms,
             'bathrooms' => $this->bathrooms,
-            'has_balcony' => $this->has_balcony,
-            'has_parking' => $this->has_parking,
-            'room_details' => $this->room_details,
+            'has_balcony' => (bool) $this->has_balcony,
+            'is_parking' => (bool) $this->is_parking,
+            'room_details' => $this->room_details ? json_decode($this->room_details, true) : null,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

@@ -10,11 +10,11 @@ class AdminBuildingResource extends JsonResource
     public function toArray(Request $request): array
     {
         $translations = $this->getTranslations('name');
-        
+
         return [
             'id' => $this->id,
             'project_id' => $this->project_id,
-            'name' => $translations,
+            'name' => $translations['ka'] ?? null,
             'name_ka' => $translations['ka'] ?? null,
             'name_en' => $translations['en'] ?? null,
             'name_ru' => $translations['ru'] ?? null,

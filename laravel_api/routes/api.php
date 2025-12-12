@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\AdminInteractiveZoneController;
 use App\Http\Controllers\Admin\AdminZoneImageController;
 use App\Http\Controllers\Admin\AdminBankRateController;
 use App\Http\Controllers\Admin\AdminCalculatorController;
+use App\Http\Controllers\Admin\AdminApartmentDetectionController;
 
 
 /*
@@ -318,6 +319,11 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
         Route::delete('/', 'bulkDelete');              // Delete all zones (with filters)
         Route::put('/{zoneId}', 'update');            // Update zone
         Route::delete('/{zoneId}', 'destroy');        // Delete zone
+    });
+    
+    // Apartment Detection from PDF (AI-powered polygon detection)
+    Route::prefix('admin/detect-apartments')->middleware('role:admin')->controller(AdminApartmentDetectionController::class)->group(function () {
+        Route::post('/', 'detect');  // Upload PDF with red lines, get detected polygons
     });
 
     // Admin Apartment Navigation Management Routes

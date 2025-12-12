@@ -32,6 +32,7 @@ interface ApartmentFilters {
   status?: ApartmentStatus
   min_price?: number
   max_price?: number
+  page?: number
 }
 
 export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
@@ -39,6 +40,13 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
   const currentApartment = ref<Apartment | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+
+  const pagination = ref({
+    total: 0,
+    per_page: 50,
+    current_page: 1,
+    last_page: 1
+  })
 
   /**
    * Fetch all apartments for a building with optional filters
@@ -59,6 +67,16 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
 
       if ('data' in response && response.data) {
         apartments.value = response.data.data || []
+
+        // Capture pagination metadata
+        if (response.data.meta) {
+          pagination.value = {
+            total: response.data.meta.total || 0,
+            per_page: response.data.meta.per_page || 50,
+            current_page: response.data.meta.current_page || 1,
+            last_page: response.data.meta.last_page || 1
+          }
+        }
       } else {
         apartments.value = []
       }
@@ -305,6 +323,7 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
     currentApartment,
     isLoading,
     error,
+    pagination,
     fetchApartments,
     createApartment,
     updateApartment,

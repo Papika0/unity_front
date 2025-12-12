@@ -40,9 +40,10 @@ class AdminApartmentController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        // Sort
-        $query->orderBy('floor_number', 'desc')
-            ->orderBy('apartment_number');
+        // Sort by floor (ascending) and apartment number (ascending)
+        // Use CAST to sort apartment_number numerically instead of alphabetically
+        $query->orderBy('floor_number', 'asc')
+            ->orderByRaw('CAST(apartment_number AS UNSIGNED) asc');
 
         $apartments = $query->paginate($request->input('per_page', 50));
 
@@ -110,8 +111,20 @@ class AdminApartmentController extends Controller
         $worksheet = $spreadsheet->getActiveSheet();
         $rows = $worksheet->toArray();
 
-        // Skip header row
-        $headers = array_shift($rows);
+        // Find the actual header row (smart detection for non-standard Excel files)
+        $headerRowIndex = 0;
+        foreach ($rows as $index => $row) {
+            $rowLower = array_map(function($v) { return strtolower(trim($v ?? '')); }, $row);
+            // Check if row contains typical header keywords
+            if (in_array('area status', $rowLower) || in_array('floor', $rowLower) || in_array('apartment', $rowLower)) {
+                $headerRowIndex = $index;
+                break;
+            }
+        }
+
+        // Extract headers and remove all rows before and including header
+        $headers = $rows[$headerRowIndex];
+        $rows = array_slice($rows, $headerRowIndex + 1);
 
         foreach ($rows as $index => $row) {
             $rowNumber = $index + 2; // +2 because we skipped header and arrays are 0-indexed
@@ -207,12 +220,12 @@ class AdminApartmentController extends Controller
         $data = [];
         $mapping = [
             'floor_number' => ['floor_number', 'floor', 'სართული'],
-            'apartment_number' => ['apartment_number', 'apartment', 'number', 'ბინის ნომერი', 'ნომერი'],
-            'cadastral_code' => ['cadastral_code', 'cadastral'],
-            'area_total' => ['area_total', 'total_area', 'area', 'ფართობი'],
-            'area_living' => ['area_living', 'living_area', 'საცხოვრებელი ფართი'],
+            'apartment_number' => ['apartment_number', 'apartment', 'number', 'area status', 'ბინის ნომერი', 'ნომერი'],
+            'cadastral_code' => ['cadastral_code', 'cadastral', 'individual cadastral code of real estate (if any)', 'individual cadastral code'],
+            'area_total' => ['area_total', 'total_area', 'area', 'total area', 'ფართობი'],
+            'area_living' => ['area_living', 'living_area', 'living space', 'საცხოვრებელი ფართი'],
             'summer_area' => ['summer_area', 'summer/auxiliary area', 'balcony_area'],
-            'bedrooms' => ['bedrooms', 'rooms', 'საძინებელი'],
+            'bedrooms' => ['bedrooms', 'rooms', 'number of bedrooms', 'საძინებელი'],
             'bathrooms' => ['bathrooms', 'bath', 'სააბაზანო'],
             'price' => ['price', 'ფასი'],
             'status' => ['status', 'სტატუსი'],
@@ -227,14 +240,79 @@ class AdminApartmentController extends Controller
             foreach ($mapping as $field => $possibleNames) {
                 if (in_array($header, array_map('strtolower', $possibleNames))) {
                     // Convert boolean fields
-                    if (in_array($field, ['has_balcony', 'has_parking'])) {
+                    if (in_array($field, ['has_balcony', 'is_parking'])) {
                         $data[$field] = in_array(strtolower($value), ['yes', '1', 'true', 'კი', 'ხო']);
+                    } elseif ($field === 'apartment_number' && !empty($value)) {
+                        // Check if this is a parking lot entry (e.g., "Parking lot #1")
+                        if (preg_match('/parking\s+lot\s+#?(\d+)/i', $value, $matches)) {
+                            $data[$field] = 'P' . $matches[1]; // Store as P1, P2, etc.
+                            $data['is_parking'] = true; // Mark as parking lot
+                        }
+                        // Extract number from "Apartment No. X" format
+                        elseif (preg_match('/No\.\s*(\d+)/i', $value, $matches)) {
+                            $data[$field] = $matches[1];
+                            $data['is_parking'] = false;
+                        } elseif (preg_match('/(\d+)/', $value, $matches)) {
+                            $data[$field] = $matches[1];
+                            $data['is_parking'] = false;
+                        } else {
+                            $data[$field] = $value;
+                        }
                     } else {
                         $data[$field] = $value;
                     }
                     break;
                 }
             }
+        }
+
+        // Count bedrooms and bathrooms from individual room columns
+        $bedroomsCount = 0;
+        $bathroomsCount = 0;
+        $roomDetails = [
+            'bedrooms' => [],
+            'bathrooms' => [],
+            'other_rooms' => []
+        ];
+
+        foreach ($headers as $index => $header) {
+            $headerLower = strtolower(trim($header));
+            $value = $row[$index] ?? null;
+
+            // Skip empty values
+            if (empty($value)) {
+                continue;
+            }
+
+            // Count and store bedroom areas
+            if (preg_match('/bedroom\s+(\d+)/i', $headerLower, $matches)) {
+                $bedroomsCount++;
+                $roomDetails['bedrooms']['bedroom_' . $matches[1]] = (float) $value;
+            }
+            // Count and store bathroom areas
+            elseif (preg_match('/bathroom\s+(\d+)/i', $headerLower, $matches)) {
+                $bathroomsCount++;
+                $roomDetails['bathrooms']['bathroom_' . $matches[1]] = (float) $value;
+            }
+            // Store other room areas
+            elseif (preg_match('/(studio|living room|guest room|entrance|dressing room|kitchen|auxiliary room|entrance hall)/i', $headerLower)) {
+                $key = str_replace([' ', '/', '-'], '_', strtolower(trim($headerLower)));
+                $roomDetails['other_rooms'][$key] = (float) $value;
+            }
+        }
+
+        // Set bedroom and bathroom counts
+        $data['bedrooms'] = $bedroomsCount > 0 ? $bedroomsCount : null;
+        $data['bathrooms'] = $bathroomsCount > 0 ? $bathroomsCount : null;
+
+        // Set room details JSON
+        if (!empty($roomDetails['bedrooms']) || !empty($roomDetails['bathrooms']) || !empty($roomDetails['other_rooms'])) {
+            $data['room_details'] = json_encode($roomDetails);
+        }
+
+        // Set has_balcony based on summer_area
+        if (isset($data['summer_area']) && $data['summer_area'] > 0) {
+            $data['has_balcony'] = true;
         }
 
         // Add project and building IDs
@@ -372,20 +450,31 @@ class AdminApartmentController extends Controller
             ->where('id', $buildingId)
             ->firstOrFail();
 
-        $apartment = Apartment::create([
+        $data = [
             'project_id' => $projectId,
             'building_id' => $buildingId,
             'floor_number' => $request->input('floor_number'),
             'apartment_number' => $request->input('apartment_number'),
+            'cadastral_code' => $request->input('cadastral_code'),
             'status' => $request->input('status', 'available'),
             'price' => $request->input('price'),
             'area_total' => $request->input('area_total'),
             'area_living' => $request->input('area_living'),
+            'summer_area' => $request->input('summer_area'),
             'bedrooms' => $request->input('bedrooms'),
             'bathrooms' => $request->input('bathrooms'),
             'has_balcony' => $request->input('has_balcony', false),
-            'has_parking' => $request->input('has_parking', false),
-        ]);
+            'is_parking' => $request->input('is_parking', false),
+        ];
+
+        // Handle room_details as JSON
+        if ($request->has('room_details') && $request->input('room_details')) {
+            $data['room_details'] = is_array($request->input('room_details'))
+                ? json_encode($request->input('room_details'))
+                : $request->input('room_details');
+        }
+
+        $apartment = Apartment::create($data);
 
         return response()->json([
             'success' => true,
@@ -401,7 +490,16 @@ class AdminApartmentController extends Controller
     {
         $apartment = Apartment::findOrFail($apartmentId);
 
-        $apartment->update($request->validated());
+        $data = $request->validated();
+
+        // Handle room_details as JSON
+        if (isset($data['room_details']) && $data['room_details']) {
+            $data['room_details'] = is_array($data['room_details'])
+                ? json_encode($data['room_details'])
+                : $data['room_details'];
+        }
+
+        $apartment->update($data);
 
         return response()->json([
             'success' => true,
