@@ -34,6 +34,11 @@ use App\Http\Controllers\Admin\AdminInteractiveZoneController;
 use App\Http\Controllers\Admin\AdminZoneImageController;
 use App\Http\Controllers\Admin\AdminBankRateController;
 use App\Http\Controllers\Admin\AdminCalculatorController;
+use App\Http\Controllers\Admin\CrmStageController;
+use App\Http\Controllers\Admin\CrmLostReasonController;
+use App\Http\Controllers\Admin\CrmDealController;
+use App\Http\Controllers\Admin\CrmActivityController;
+use App\Http\Controllers\Admin\CrmPaymentController;
 
 
 /*
@@ -268,6 +273,90 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
         Route::post('/{id}/toggle-active', 'toggleActive'); // Toggle active status
         Route::post('/bulk-delete', 'bulkDelete');    // Bulk delete
     });
+
+    // ============================================================
+    // CRM ROUTES (Construction CRM System)
+    // ============================================================
+
+    // CRM Stages (Admin only - configuration)
+    Route::prefix('admin/crm/stages')->middleware('role:admin')->controller(CrmStageController::class)->group(function () {
+        Route::get('/', 'index');                      // Get all stages
+        Route::get('/{id}', 'show');                   // Get single stage
+        Route::post('/', 'store');                     // Create new stage
+        Route::put('/{id}', 'update');                 // Update stage
+        Route::delete('/{id}', 'destroy');             // Delete stage
+        Route::post('/reorder', 'reorder');            // Reorder stages
+    });
+
+    // CRM Lost Reasons (Admin only - configuration)
+    Route::prefix('admin/crm/lost-reasons')->middleware('role:admin')->controller(CrmLostReasonController::class)->group(function () {
+        Route::get('/', 'index');                      // Get all lost reasons
+        Route::get('/{id}', 'show');                   // Get single reason
+        Route::post('/', 'store');                     // Create new reason
+        Route::put('/{id}', 'update');                 // Update reason
+        Route::delete('/{id}', 'destroy');             // Delete reason
+        Route::post('/{id}/toggle-active', 'toggleActive'); // Toggle active status
+        Route::post('/reorder', 'reorder');            // Reorder reasons
+    });
+
+    // CRM Deals - shared between admin and marketing
+    Route::prefix('admin/crm/deals')->group(function () {
+        // Routes accessible by both admin and marketing
+        Route::middleware('role:admin,marketing')->group(function () {
+            Route::get('/', [CrmDealController::class, 'index']);              // Get all deals with filters
+            Route::get('/pipeline', [CrmDealController::class, 'pipeline']);   // Get Kanban pipeline view
+            Route::get('/statistics', [CrmDealController::class, 'statistics']); // Get deal statistics
+            Route::get('/{id}', [CrmDealController::class, 'show']);          // Get single deal
+            Route::post('/', [CrmDealController::class, 'store']);            // Create new deal
+            Route::put('/{id}', [CrmDealController::class, 'update']);        // Update deal
+            Route::put('/{id}/stage', [CrmDealController::class, 'updateStage']); // Move deal on Kanban
+            Route::put('/{id}/assign', [CrmDealController::class, 'assign']); // Assign deal to user
+        });
+
+        // Routes accessible by admin only
+        Route::middleware('role:admin')->group(function () {
+            Route::delete('/{id}', [CrmDealController::class, 'destroy']);    // Delete deal
+        });
+    });
+
+    // CRM Activities (Notes, Calls, Tasks) - shared between admin and marketing
+    Route::prefix('admin/crm')->middleware('role:admin,marketing')->group(function () {
+        Route::get('/tasks', [CrmActivityController::class, 'tasks']);        // Get all scheduled tasks
+        Route::get('/activity-types', [CrmActivityController::class, 'types']); // Get activity types
+
+        Route::prefix('deals/{dealId}/activities')->controller(CrmActivityController::class)->group(function () {
+            Route::get('/', 'index');                  // Get activities for deal
+            Route::post('/', 'store');                 // Create activity (note, call, etc.)
+            Route::put('/{activityId}', 'update');    // Update activity
+            Route::delete('/{activityId}', 'destroy'); // Delete activity
+            Route::post('/{activityId}/complete', 'complete'); // Complete scheduled task
+        });
+    });
+
+    // CRM Payments - shared between admin and marketing
+    Route::prefix('admin/crm')->middleware('role:admin,marketing')->group(function () {
+        Route::get('/payments/dashboard', [CrmPaymentController::class, 'dashboard']); // Payment dashboard stats
+        Route::get('/payments/overdue', [CrmPaymentController::class, 'overdue']); // Overdue payments list
+        Route::get('/payment-methods', [CrmPaymentController::class, 'methods']); // Get payment methods
+
+        Route::prefix('deals/{dealId}/payments')->controller(CrmPaymentController::class)->group(function () {
+            Route::get('/', 'index');                  // Get payments for deal
+            Route::post('/', 'store');                 // Create single payment
+            Route::post('/generate-schedule', 'generateSchedule'); // Generate payment schedule
+        });
+
+        // Payment management (without deal context)
+        Route::prefix('payments')->controller(CrmPaymentController::class)->group(function () {
+            Route::put('/{paymentId}', 'update');     // Update payment
+            Route::post('/{paymentId}/mark-paid', 'markPaid'); // Mark payment as paid
+            Route::post('/{paymentId}/cancel', 'cancel'); // Cancel payment
+            Route::delete('/{paymentId}', 'destroy'); // Delete payment
+        });
+    });
+
+    // CRM Stages list for frontend dropdowns (admin + marketing read access)
+    Route::get('admin/crm/stages-list', [CrmStageController::class, 'index'])->middleware('role:admin,marketing');
+    Route::get('admin/crm/lost-reasons-list', [CrmLostReasonController::class, 'index'])->middleware('role:admin,marketing');
 
     // Protected user management routes (admin only)
     Route::prefix('admin/users')->middleware('role:admin')->controller(AdminUserController::class)->group(function () {
