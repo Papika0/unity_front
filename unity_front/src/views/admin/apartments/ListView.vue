@@ -326,7 +326,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useApartmentsAdminStore } from '@/stores/admin/apartments'
 import { useBuildingsAdminStore } from '@/stores/admin/buildings'
 import { useAdminProjectsStore } from '@/stores/admin/projects'
@@ -351,8 +351,7 @@ const projects = ref<Project[]>([])
 const buildings = ref<Building[]>([])
 
 const totalPages = computed(() => {
-  // Simplified - implement proper pagination based on API response
-  return 1
+  return apartmentsStore.pagination.last_page
 })
 
 onMounted(async () => {
@@ -395,13 +394,18 @@ async function loadApartments() {
       selectedBuildingId.value,
       {
         status: (filterStatus.value as ApartmentStatus) || undefined,
-        // Add other filters if needed
+        page: currentPage.value,
       }
     )
   } catch (error) {
     console.error('Failed to load apartments:', error)
   }
 }
+
+// Watch for pagination changes
+watch(currentPage, () => {
+  loadApartments()
+})
 
 function openCreateModal() {
   if (!selectedProjectId.value) {

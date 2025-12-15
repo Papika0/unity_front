@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\CrmLostReasonController;
 use App\Http\Controllers\Admin\CrmDealController;
 use App\Http\Controllers\Admin\CrmActivityController;
 use App\Http\Controllers\Admin\CrmPaymentController;
+use App\Http\Controllers\Admin\AdminApartmentDetectionController;
 
 
 /*
@@ -420,6 +421,11 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
         Route::delete('/', 'bulkDelete');              // Delete all zones (with filters)
         Route::put('/{zoneId}', 'update');            // Update zone
         Route::delete('/{zoneId}', 'destroy');        // Delete zone
+    });
+    
+    // Apartment Detection from PDF (AI-powered polygon detection)
+    Route::prefix('admin/detect-apartments')->middleware('role:admin')->controller(AdminApartmentDetectionController::class)->group(function () {
+        Route::post('/', 'detect');  // Upload PDF with red lines, get detected polygons
     });
 
     // Admin Apartment Navigation Management Routes

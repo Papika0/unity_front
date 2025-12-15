@@ -32,7 +32,7 @@ class Apartment extends Model
         'bedrooms',
         'bathrooms',
         'has_balcony',
-        'has_parking',
+        'is_parking',
         'is_active',
         'sort_order',
         'room_details',
@@ -49,7 +49,7 @@ class Apartment extends Model
         'area_living' => 'decimal:2',
         'summer_area' => 'decimal:2',
         'has_balcony' => 'boolean',
-        'has_parking' => 'boolean',
+        'is_parking' => 'boolean',
         'is_active' => 'boolean',
         'room_details' => 'array',
     ];

@@ -2,6 +2,12 @@ export type ApartmentStatus = 'available' | 'reserved' | 'sold'
 export type ZoneType = 'building_block' | 'floor_strip' | 'apartment_unit'
 export type NavigationLevel = 'overview' | 'building' | 'floor'
 
+export interface RoomDetails {
+  bedrooms?: Record<string, number>
+  bathrooms?: Record<string, number>
+  other_rooms?: Record<string, number>
+}
+
 export interface Coordinates {
   coords: [number, number][]
   bbox: {
@@ -48,14 +54,17 @@ export interface Apartment {
   building_id: number
   floor_number: number
   apartment_number: string
+  cadastral_code?: string | null
   status: ApartmentStatus
   price: number | null
   area_total: number | null
   area_living: number | null
+  summer_area?: number | null
   bedrooms: number | null
   bathrooms: number | null
+  room_details?: RoomDetails | null
   has_balcony: boolean
-  has_parking: boolean
+  is_parking: boolean
   created_at?: string
   updated_at?: string
 }
