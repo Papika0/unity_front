@@ -215,7 +215,7 @@
             <input v-model="snapToGridEnabled" type="checkbox" class="rounded" />
             <span class="text-gray-700">მიმაგრება ბადეზე</span>
           </label>
-          <select v-model.number="gridSize" class="text-sm border-gray-300 rounded">
+          <select v-model.number="gridSize" class="text-sm border-gray-300 text-black rounded">
             <option :value="10">10px</option>
             <option :value="20">20px</option>
             <option :value="50">50px</option>
@@ -433,11 +433,11 @@
           <select
             v-model="selectedPolygon.entityId"
             class="w-full border-gray-300 rounded text-gray-900"
-            @change="updatePolygon"
+            @change="handleEntityChange"
           >
             <option :value="null">არ არის არჩეული</option>
             <option v-for="entity in entities" :key="entity.id" :value="entity.id">
-              {{ entity.name || entity.label || `#${entity.id}` }}
+              {{ getEntityDisplayName(entity) }}
             </option>
           </select>
         </div>
@@ -542,13 +542,22 @@ const mousePosition = ref<Point | null>(null)
 
 // Watch for initial polygons changes
 watch(() => props.initialPolygons, (newPolygons) => {
+  // Check if content is actually different to avoid resetting state on self-triggered updates
+  if (JSON.stringify(newPolygons) === JSON.stringify(polygons.value)) {
+    return
+  }
+
   console.log('🔄 PolygonEditor - initialPolygons changed:', {
     count: newPolygons.length,
     polygons: newPolygons
   })
   polygons.value = [...newPolygons]
-  // Reset selection when polygons change
-  selectedPolygonId.value = null
+  
+  // Only reset selection if the selected polygon no longer exists
+  if (selectedPolygonId.value && !newPolygons.find(p => p.id === selectedPolygonId.value)) {
+    selectedPolygonId.value = null
+  }
+  
   // Update history
   history.value = [JSON.parse(JSON.stringify(newPolygons))]
   historyIndex.value = 0
@@ -738,6 +747,32 @@ function clearAll() {
 
 function updatePolygon() {
   emit('change', polygons.value)
+}
+
+function getEntityDisplayName(entity: any): string {
+  // Try different property names based on entity type
+  if (entity.apartment_number) {
+    return `ბინა ${entity.apartment_number}`
+  }
+  if (entity.name) {
+    return typeof entity.name === 'object' ? (entity.name.ka || entity.name.en || entity.name) : entity.name
+  }
+  if (entity.label) {
+    return entity.label
+  }
+  return `#${entity.id}`
+}
+
+function handleEntityChange() {
+  if (selectedPolygon.value && selectedPolygon.value.entityId) {
+    // Find the selected entity
+    const entity = props.entities.find(e => e.id === selectedPolygon.value!.entityId)
+    if (entity) {
+      // Auto-update the label with the entity's display name
+      selectedPolygon.value.label = getEntityDisplayName(entity)
+    }
+  }
+  updatePolygon()
 }
 
 function updateCoordinatesFromJSON(event: Event) {

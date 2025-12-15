@@ -103,7 +103,7 @@
           </button>
 
           <button
-            @click="saveZones"
+            @click="console.log('🔘 Save button clicked!', { hasChanges: hasChanges, isSaving: isSaving }); saveZones()"
             :disabled="!hasChanges || isSaving"
             class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
           >
@@ -863,27 +863,48 @@ function goToApartmentEditor(floorNumber: number | null | undefined) {
 }
 
 async function saveZones() {
-  if (!selectedProjectId.value || !selectedBuildingId.value || !hasChanges.value) return
+  console.log('🔍 saveZones called', { 
+    selectedProjectId: selectedProjectId.value, 
+    selectedBuildingId: selectedBuildingId.value, 
+    hasChanges: hasChanges.value,
+    zonesCount: zones.value.length 
+  })
+  
+  if (!selectedProjectId.value || !selectedBuildingId.value || !hasChanges.value) {
+    console.log('❌ Early return - missing required values')
+    return
+  }
 
   // Phase 4: Validate zones before saving
+  console.log('🔍 Starting validation...')
   const validation = validateZones(zones.value, imageWidth.value, imageHeight.value)
+  console.log('🔍 Validation result:', validation)
 
   if (!validation.valid) {
+    console.log('❌ Validation failed:', validation.errors)
+    const errorMessage = validation.errors.join('\n\n')
+    alert('❌ შენახვა შეუძლებელია:\n\n' + errorMessage)
     validation.errors.forEach(err => showError(err, 5000))
     return
   }
 
   if (validation.warnings.length > 0) {
+    console.log('⚠️ Validation warnings:', validation.warnings)
     const proceed = confirm(
       'გაფრთხილებები:\n\n' +
       validation.warnings.join('\n\n') +
       '\n\nგსურთ გაგრძელება?'
     )
-    if (!proceed) return
+    if (!proceed) {
+      console.log('❌ User cancelled due to warnings')
+      return
+    }
   }
 
+  console.log('✅ Validation passed, starting save...')
   isSaving.value = true
   try {
+    console.log('🗑️ Deleting existing zones...')
     // Delete existing floor strip zones for this building
     await api.delete(`/admin/projects/${selectedProjectId.value}/interactive-zones`, {
       params: {
@@ -891,9 +912,12 @@ async function saveZones() {
         building_id: selectedBuildingId.value,
       },
     })
+    console.log('✅ Existing zones deleted')
 
     // Create new zones
+    console.log('➕ Creating new zones...')
     for (const zone of zones.value) {
+      console.log('➕ Creating zone:', zone.label)
       await api.post(`/admin/projects/${selectedProjectId.value}/interactive-zones`, {
         zone_type: 'floor_strip',
         level_type: 'building',
@@ -908,13 +932,15 @@ async function saveZones() {
         },
       })
     }
+    console.log('✅ All zones created')
 
     hasChanges.value = false
     clearDraft() // Clear auto-save draft after successful save
     success('ზონები წარმატებით შეინახა!')
     await loadZones() // Reload zones to get IDs
+    console.log('✅ Save complete!')
   } catch (error) {
-    console.error('Failed to save zones:', error)
+    console.error('❌ Failed to save zones:', error)
     showError('ზონების შენახვა ვერ მოხერხდა')
   } finally {
     isSaving.value = false
