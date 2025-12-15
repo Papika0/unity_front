@@ -43,6 +43,11 @@ class CrmDeal extends Model
 
     protected $with = ['stage'];
 
+    protected $appends = [
+        'is_stale',
+        'days_since_activity',
+    ];
+
     /**
      * Boot the model
      */

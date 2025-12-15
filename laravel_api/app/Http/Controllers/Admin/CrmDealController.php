@@ -164,13 +164,17 @@ class CrmDealController extends Controller
                     ];
                 });
 
+                // Calculate total value from deals
+                $totalValue = $query->sum('budget') ?? 0;
+
                 return [
                     'id' => $stage->id,
                     'name' => $stage->name,
                     'slug' => $stage->slug,
                     'color' => $stage->color,
                     'type' => $stage->type,
-                    'deals_count' => $deals->count(),
+                    'deal_count' => $deals->count(),
+                    'total_value' => (float) $totalValue,
                     'deals' => $deals,
                 ];
             });
@@ -281,6 +285,117 @@ class CrmDealController extends Controller
     }
 
     /**
+     * Create a new lead (customer + deal) from admin panel
+     * This endpoint creates a customer and deal together
+     */
+    public function storeLead(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'surname' => 'nullable|string|max:255',
+            'phone' => 'required|string|max:50',
+            'email' => 'nullable|email|max:255',
+            'project_ids' => 'nullable|array',
+            'project_ids.*' => 'integer|exists:projects,id',
+            'apartment_info' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error($validator->errors()->first(), 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Build full name
+            $fullName = trim($request->name . ' ' . ($request->surname ?? ''));
+
+            // Check if customer exists by phone
+            $customer = Customer::where('phone', $request->phone)->first();
+
+            if ($customer) {
+                // Update existing customer
+                $customer->update([
+                    'name' => $fullName,
+                    'email' => $request->email ?? $customer->email,
+                ]);
+            } else {
+                // Create new customer
+                $customer = Customer::create([
+                    'name' => $fullName,
+                    'phone' => $request->phone,
+                    'email' => $request->email,
+                    'source' => 'admin_panel',
+                    'status' => 'new',
+                ]);
+            }
+
+            // Get the "New Lead" stage
+            $newLeadStage = CrmStage::where('slug', 'new-lead')->first();
+            if (!$newLeadStage) {
+                $newLeadStage = CrmStage::ordered()->first();
+            }
+
+            if (!$newLeadStage) {
+                return $this->error('CRM სტეიჯი ვერ მოიძებნა', 422);
+            }
+
+            // Build notes with project interests
+            $notesArray = [];
+            if ($request->project_ids && count($request->project_ids) > 0) {
+                $projectNames = \App\Models\Projects::whereIn('id', $request->project_ids)
+                    ->pluck('title')
+                    ->toArray();
+                $notesArray[] = 'დაინტერესებული პროექტები: ' . implode(', ', $projectNames);
+            }
+            if ($request->apartment_info) {
+                $notesArray[] = 'ბლოკი/ბინა: ' . $request->apartment_info;
+            }
+            if ($request->notes) {
+                $notesArray[] = $request->notes;
+            }
+
+            // Create the deal
+            $deal = CrmDeal::create([
+                'customer_id' => $customer->id,
+                'stage_id' => $newLeadStage->id,
+                'user_id' => auth()->id(),
+                'title' => CrmDeal::generateTitle($customer),
+                'currency' => 'USD',
+                'priority' => 'medium',
+                'notes' => implode("\n", $notesArray),
+                'last_activity_at' => now(),
+            ]);
+
+            // Store interested projects as metadata (optional: create a pivot table later)
+            if ($request->project_ids && count($request->project_ids) > 0) {
+                // Store in deal notes or create activity
+                CrmActivity::create([
+                    'deal_id' => $deal->id,
+                    'user_id' => auth()->id(),
+                    'type' => 'note',
+                    'description' => 'ლიდი შეიქმნა ადმინ პანელიდან',
+                    'metadata' => [
+                        'project_ids' => $request->project_ids,
+                        'apartment_info' => $request->apartment_info,
+                    ],
+                ]);
+            }
+
+            DB::commit();
+
+            $deal->load(['customer', 'user', 'stage']);
+
+            return $this->success($deal, 'ლიდი წარმატებით შეიქმნა', 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Failed to create lead: ' . $e->getMessage());
+            return $this->error('ლიდის შექმნა ვერ მოხერხდა', 500);
+        }
+    }
+
+    /**
      * Update a deal
      */
     public function update(Request $request, $id)
@@ -352,6 +467,20 @@ class CrmDealController extends Controller
 
             if ($newStage->requires_lost_reason && !$request->lost_reason_id) {
                 return $this->error('გთხოვთ მიუთითოთ წაგების მიზეზი', 422);
+            }
+
+            // Check for apartment double-booking
+            if ($newStage->locks_apartment && $deal->apartment_id) {
+                $existingDeal = CrmDeal::where('apartment_id', $deal->apartment_id)
+                    ->where('id', '!=', $deal->id)
+                    ->whereHas('stage', function($q) {
+                        $q->where('locks_apartment', true);
+                    })
+                    ->first();
+
+                if ($existingDeal) {
+                    return $this->error('ეს ბინა უკვე დაჯავშნილია სხვა გარიგებაზე', 422);
+                }
             }
 
             $updateData = ['stage_id' => $newStage->id];

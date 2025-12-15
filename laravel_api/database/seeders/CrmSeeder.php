@@ -35,8 +35,8 @@ class CrmSeeder extends Seeder
                 'requires_lost_reason' => false,
             ],
             [
-                'name' => 'კვალიფიკაცია',
-                'slug' => 'qualification',
+                'name' => 'დაკავშირებული',
+                'slug' => 'contacted',
                 'type' => 'open',
                 'sort_order' => 2,
                 'color' => '#EAB308', // Yellow
@@ -46,7 +46,7 @@ class CrmSeeder extends Seeder
                 'requires_lost_reason' => false,
             ],
             [
-                'name' => 'ობიექტის დათვალიერება',
+                'name' => 'ობიექტის ნახვა',
                 'slug' => 'site-visit',
                 'type' => 'open',
                 'sort_order' => 3,

@@ -278,25 +278,37 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
     // CRM ROUTES (Construction CRM System)
     // ============================================================
 
-    // CRM Stages (Admin only - configuration)
-    Route::prefix('admin/crm/stages')->middleware('role:admin')->controller(CrmStageController::class)->group(function () {
-        Route::get('/', 'index');                      // Get all stages
-        Route::get('/{id}', 'show');                   // Get single stage
-        Route::post('/', 'store');                     // Create new stage
-        Route::put('/{id}', 'update');                 // Update stage
-        Route::delete('/{id}', 'destroy');             // Delete stage
-        Route::post('/reorder', 'reorder');            // Reorder stages
+    // CRM Stages - Read access for admin and marketing, write access for admin only
+    Route::prefix('admin/crm/stages')->controller(CrmStageController::class)->group(function () {
+        // Read routes - accessible by admin and marketing
+        Route::middleware('role:admin,marketing')->group(function () {
+            Route::get('/', 'index');                      // Get all stages
+            Route::get('/{id}', 'show');                   // Get single stage
+        });
+        // Write routes - admin only
+        Route::middleware('role:admin')->group(function () {
+            Route::post('/', 'store');                     // Create new stage
+            Route::put('/{id}', 'update');                 // Update stage
+            Route::delete('/{id}', 'destroy');             // Delete stage
+            Route::post('/reorder', 'reorder');            // Reorder stages
+        });
     });
 
-    // CRM Lost Reasons (Admin only - configuration)
-    Route::prefix('admin/crm/lost-reasons')->middleware('role:admin')->controller(CrmLostReasonController::class)->group(function () {
-        Route::get('/', 'index');                      // Get all lost reasons
-        Route::get('/{id}', 'show');                   // Get single reason
-        Route::post('/', 'store');                     // Create new reason
-        Route::put('/{id}', 'update');                 // Update reason
-        Route::delete('/{id}', 'destroy');             // Delete reason
-        Route::post('/{id}/toggle-active', 'toggleActive'); // Toggle active status
-        Route::post('/reorder', 'reorder');            // Reorder reasons
+    // CRM Lost Reasons - Read access for admin and marketing, write access for admin only
+    Route::prefix('admin/crm/lost-reasons')->controller(CrmLostReasonController::class)->group(function () {
+        // Read routes - accessible by admin and marketing
+        Route::middleware('role:admin,marketing')->group(function () {
+            Route::get('/', 'index');                      // Get all lost reasons
+            Route::get('/{id}', 'show');                   // Get single reason
+        });
+        // Write routes - admin only
+        Route::middleware('role:admin')->group(function () {
+            Route::post('/', 'store');                     // Create new reason
+            Route::put('/{id}', 'update');                 // Update reason
+            Route::delete('/{id}', 'destroy');             // Delete reason
+            Route::post('/{id}/toggle-active', 'toggleActive'); // Toggle active status
+            Route::post('/reorder', 'reorder');            // Reorder reasons
+        });
     });
 
     // CRM Deals - shared between admin and marketing
@@ -308,6 +320,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
             Route::get('/statistics', [CrmDealController::class, 'statistics']); // Get deal statistics
             Route::get('/{id}', [CrmDealController::class, 'show']);          // Get single deal
             Route::post('/', [CrmDealController::class, 'store']);            // Create new deal
+            Route::post('/lead', [CrmDealController::class, 'storeLead']);    // Create lead (customer + deal)
             Route::put('/{id}', [CrmDealController::class, 'update']);        // Update deal
             Route::put('/{id}/stage', [CrmDealController::class, 'updateStage']); // Move deal on Kanban
             Route::put('/{id}/assign', [CrmDealController::class, 'assign']); // Assign deal to user
