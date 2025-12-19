@@ -8,7 +8,7 @@ import { mergeTranslations } from '@/composables/useTranslations'
 import { usePerformance } from '@/composables/usePerformance'
 
 export const useHomepageStore = defineStore('homepage', () => {
-  // State
+  // ==================== STATE ====================
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const isFetched = ref(false)
@@ -28,7 +28,7 @@ export const useHomepageStore = defineStore('homepage', () => {
   const newsStore = useNewsStore()
   const localeStore = useLocaleStore()
 
-  // Actions
+  // ==================== ACTIONS ====================
   async function loadHomepageData(force = false) {
     // Skip if already loading or data is already loaded (unless forced)
     if (isLoading.value || (!force && isFetched.value)) {
@@ -91,6 +91,18 @@ export const useHomepageStore = defineStore('homepage', () => {
     await loadHomepageData(true)
   }
 
+  // ==================== RESET ====================
+  function $reset() {
+    isLoading.value = false
+    error.value = null
+    isFetched.value = false
+    contactInfo.value = null
+    aboutInfo.value = null
+    footerContact.value = null
+    footerSocialLinks.value = null
+    footerProjects.value = []
+  }
+
   return {
     // State
     isLoading,
@@ -98,14 +110,12 @@ export const useHomepageStore = defineStore('homepage', () => {
     isFetched,
     contactInfo,
     aboutInfo,
-
-    // Footer data
     footerContact,
     footerSocialLinks,
     footerProjects,
-
     // Actions
     loadHomepageData,
     refresh,
+    $reset,
   }
 })

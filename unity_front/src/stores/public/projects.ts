@@ -27,7 +27,7 @@ export interface Project {
 }
 
 export const useProjectsStore = defineStore('projects', () => {
-  // State
+  // ==================== STATE ====================
   const projects = ref<Project[]>([])
   const featuredProjectsData = ref<Project[]>([])
   const homepageProjectsData = ref<Project[]>([])
@@ -35,7 +35,7 @@ export const useProjectsStore = defineStore('projects', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  // Getters
+  // ==================== GETTERS ====================
   const activeProjects = computed(() => projects.value.filter((project) => project.is_active))
 
   const featuredProjects = computed(() => {
@@ -79,7 +79,7 @@ export const useProjectsStore = defineStore('projects', () => {
     return grouped
   })
 
-  // Actions
+  // ==================== ACTIONS ====================
   const getProjectById = (id: number): Project | undefined => {
     return projects.value.find((project) => project.id === id && project.is_active)
   }
@@ -183,6 +183,16 @@ export const useProjectsStore = defineStore('projects', () => {
     }
   }
 
+  // ==================== RESET ====================
+  const $reset = () => {
+    projects.value = []
+    featuredProjectsData.value = []
+    homepageProjectsData.value = []
+    aloneProjectsData.value = null
+    isLoading.value = false
+    error.value = null
+  }
+
   return {
     // State
     projects,
@@ -191,7 +201,6 @@ export const useProjectsStore = defineStore('projects', () => {
     aloneProjectsData,
     isLoading,
     error,
-
     // Getters
     activeProjects,
     featuredProjects,
@@ -200,14 +209,11 @@ export const useProjectsStore = defineStore('projects', () => {
     completedProjects,
     plannedProjects,
     projectsByYear,
-
     // Actions
     getProjectById,
     getProjectsByStatus,
-    // fetchFeaturedProjects,
-    // fetchHomepageProjects,
-    // fetchProjectById,
     clearProjects,
     $patch,
+    $reset,
   }
 })
