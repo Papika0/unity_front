@@ -4,9 +4,11 @@ import { ref } from 'vue'
 export type SupportedLocale = 'ka' | 'en' | 'ru'
 
 export const useLocaleStore = defineStore('locale', () => {
+  // ==================== STATE ====================
   const currentLocale = ref<SupportedLocale>('ka')
   const isSwitching = ref(false)
 
+  // ==================== ACTIONS ====================
   function setLocale(locale: SupportedLocale) {
     if (locale === currentLocale.value) return
 
@@ -28,7 +30,7 @@ export const useLocaleStore = defineStore('locale', () => {
     }, 1200) // Slightly longer to ensure smooth overlay experience
   }
 
-  // Initialize from localStorage
+  // ==================== INITIALIZATION ====================
   try {
     const saved = localStorage.getItem('app_locale') as SupportedLocale | null
     if (saved === 'ka' || saved === 'en' || saved === 'ru') {
@@ -47,5 +49,18 @@ export const useLocaleStore = defineStore('locale', () => {
     }
   } catch {}
 
-  return { currentLocale, setLocale, isSwitching }
+  // ==================== RESET ====================
+  const $reset = () => {
+    currentLocale.value = 'ka'
+    isSwitching.value = false
+  }
+
+  return {
+    // State
+    currentLocale,
+    isSwitching,
+    // Actions
+    setLocale,
+    $reset,
+  }
 })

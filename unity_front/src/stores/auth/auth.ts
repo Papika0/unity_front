@@ -4,15 +4,18 @@ import { login as apiLogin, logout as apiLogout, getUser } from '@/services/auth
 import type { User } from '@/types'
 
 export const useAuthStore = defineStore('auth', () => {
+  // ==================== STATE ====================
   const user = ref<User | null>(null)
   const token = ref(localStorage.getItem('jwt_token'))
   const loading = ref(false)
   const error = ref('')
 
+  // ==================== GETTERS ====================
   const isAuthenticated = computed(() => !!token.value)
   const isAdmin = computed(() => user.value && user.value.role === 'admin')
   const isMarketing = computed(() => user.value && user.value.role === 'marketing')
 
+  // ==================== ACTIONS ====================
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
       loading.value = true
@@ -69,17 +72,30 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // ==================== RESET ====================
+  const $reset = () => {
+    user.value = null
+    token.value = null
+    loading.value = false
+    error.value = ''
+    localStorage.removeItem('jwt_token')
+  }
+
   return {
+    // State
     user,
     token,
     loading,
     error,
+    // Getters
     isAuthenticated,
     isAdmin,
     isMarketing,
+    // Actions
     login,
     logout,
     fetchUser,
     initAuth,
+    $reset,
   }
 })

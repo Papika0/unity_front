@@ -7,7 +7,7 @@ export type TranslationGroup = Record<string, string> // Group name -> translati
 export type PageGroups = Record<string, string[]> // Page name -> array of group names
 
 export const useTranslationsStore = defineStore('translations', () => {
-  // State
+  // ==================== STATE ====================
   const loadedGroups = ref<Set<string>>(new Set())
   const translations = ref<TranslationsRecord>({})
   const translationGroups = ref<Record<string, TranslationGroup>>({}) // Store groups of translations
@@ -34,7 +34,7 @@ export const useTranslationsStore = defineStore('translations', () => {
   const isInitialized = ref(false)
   const isFirstLoad = ref(true) // Track if this is the very first load
 
-  // Getters
+  // ==================== GETTERS ====================
   const currentLocale = computed(() => {
     const localeStore = useLocaleStore()
     return localeStore.currentLocale
@@ -75,8 +75,7 @@ export const useTranslationsStore = defineStore('translations', () => {
     { deep: true, immediate: true },
   )
 
-  // Actions
-
+  // ==================== ACTIONS ====================
   // Check if all groups for a page are loaded
   function arePageGroupsLoaded(pageName: string): boolean {
     const groups = pageGroups[pageName]
@@ -206,10 +205,22 @@ export const useTranslationsStore = defineStore('translations', () => {
     }
   }
 
+  // ==================== WATCHERS ====================
   // Watch for locale changes to load local files
   watch(currentLocale, (newLocale) => {
     loadLocalTranslations(newLocale)
   }, { immediate: true })
+
+  // ==================== RESET ====================
+  const $reset = () => {
+    loadedGroups.value = new Set()
+    translations.value = {}
+    translationGroups.value = {}
+    isLoading.value = false
+    loadError.value = ''
+    isInitialized.value = false
+    isFirstLoad.value = true
+  }
 
   return {
     // State
@@ -221,8 +232,8 @@ export const useTranslationsStore = defineStore('translations', () => {
     loadError,
     isInitialized,
     isFirstLoad,
+    // Getters
     currentLocale,
-
     // Actions
     arePageGroupsLoaded,
     getGroupTranslations,
@@ -236,6 +247,7 @@ export const useTranslationsStore = defineStore('translations', () => {
     clearTranslations,
     hasTranslations,
     tSafe,
-    loadLocalTranslations
+    loadLocalTranslations,
+    $reset,
   }
 })

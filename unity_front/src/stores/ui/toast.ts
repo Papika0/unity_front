@@ -11,8 +11,10 @@ export interface Toast {
 }
 
 export const useToastStore = defineStore('toast', () => {
+  // ==================== STATE ====================
   const toasts = ref<Toast[]>([])
 
+  // ==================== ACTIONS ====================
   const addToast = (toast: Omit<Toast, 'id'>) => {
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9)
     const newToast: Toast = {
@@ -62,8 +64,15 @@ export const useToastStore = defineStore('toast', () => {
     return addToast({ type: 'info', title, message, ...options })
   }
 
+  // ==================== RESET ====================
+  const $reset = () => {
+    toasts.value = []
+  }
+
   return {
+    // State
     toasts,
+    // Actions
     addToast,
     removeToast,
     clearAll,
@@ -71,5 +80,6 @@ export const useToastStore = defineStore('toast', () => {
     error,
     warning,
     info,
+    $reset,
   }
 })
