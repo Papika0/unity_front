@@ -1,0 +1,60 @@
+{
+    "common": {
+        "loading": "ЗАГРУЗКА...",
+        "sqm": "м²",
+        "floor": "Этаж",
+        "back": "Назад",
+        "yes": "Да",
+        "no": "Нет",
+        "price_on_request": "Цена по запросу",
+        "contact_us": "Связаться с нами",
+        "download_pdf": "Скачать PDF"
+    },
+    "status": {
+        "available": "Свободно",
+        "reserved": "Забронировано",
+        "sold": "Продано"
+    },
+    "apartments": {
+        "floor": "Этаж",
+        "total_apartments": "Всего квартир",
+        "available_only": "Только свободные",
+        "available": "Свободно",
+        "error_loading": "Ошибка загрузки данных",
+        "no_apartments": "Квартиры не найдены",
+        "no_apartments_description": "На этом этаже нет квартир",
+        "no_floors": "Этажи не найдены",
+        "no_floors_description": "Данные об этажах для этого здания отсутствуют",
+        "next_floor": "Следующий этаж",
+        "prev_floor": "Предыдущий этаж",
+        "apartment": "Квартира",
+        "area_total": "Общая площадь",
+        "area_living": "Жилая площадь",
+        "price": "Цена",
+        "bedrooms": "Спальни",
+        "bathrooms": "Ванные",
+        "balcony": "Балкон",
+        "no_plan_image": "План этажа недоступен",
+        "detail_coming_soon": "Детали скоро появятся...",
+        "rooms": {
+            "dimensions": "Размеры комнат",
+            "bedroom": "Спальня",
+            "bathroom": "Ванная",
+            "bedroom_1": "Спальня 1",
+            "bedroom_2": "Спальня 2",
+            "bedroom_3": "Спальня 3",
+            "bathroom_1": "Ванная 1",
+            "bathroom_2": "Ванная 2",
+            "studio_living_room": "Студия / Гостиная",
+            "living_room": "Гостиная",
+            "kitchen": "Кухня",
+            "dressing_room": "Гардеробная",
+            "entrance_hall": "Прихожая",
+            "corridor": "Коридор",
+            "balcony": "Балкон"
+        }
+    },
+    "buttons": {
+        "retry": "Повторить"
+    }
+}

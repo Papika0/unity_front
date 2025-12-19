@@ -77,6 +77,7 @@ class ApartmentController extends Controller
                 'bathrooms' => $apartment->bathrooms,
                 'has_balcony' => $apartment->has_balcony,
                 'has_parking' => $apartment->has_parking,
+                'room_details' => is_string($apartment->room_details) ? json_decode($apartment->room_details, true) : $apartment->room_details,
                 'floor_plan_image' => $floorPlanImage?->url,
                 'similar_apartments' => $similar,
             ];

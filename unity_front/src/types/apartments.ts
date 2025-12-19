@@ -151,5 +151,10 @@ export interface ApartmentDetail {
   has_balcony: boolean
   has_parking: boolean
   floor_plan_image?: string
+  room_details?: {
+    bedrooms?: Record<string, number>
+    bathrooms?: Record<string, number>
+    other_rooms?: Record<string, number>
+  } | null
   similar_apartments?: ApartmentDetail[]
 }

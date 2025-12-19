@@ -22,11 +22,10 @@ import { requireAuth, requireAdmin, requireAdminOrMarketing } from './guards'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior(to, from, savedPosition) {
-    // Always scroll to top when navigating to a new route
-    // Don't restore saved position on page refresh/reload
-    if (to.path === from.path) {
-      // Same route (e.g., refresh), always go to top
-      return { top: 0 }
+    // Don't scroll if only query parameters changed (inline apartment viewer)
+    if (to.path === from.path && to.name === from.name) {
+      // Same route, only query params changed - don't scroll
+      return false
     }
     
     if (savedPosition) {

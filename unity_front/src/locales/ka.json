@@ -1,0 +1,60 @@
+{
+    "common": {
+        "loading": "იტვირთება...",
+        "sqm": "მ²",
+        "floor": "სართული",
+        "back": "უკან",
+        "yes": "კი",
+        "no": "არა",
+        "price_on_request": "ფასი მოთხოვნით",
+        "contact_us": "დაგვიკავშირდით",
+        "download_pdf": "PDF ჩამოტვირთვა"
+    },
+    "status": {
+        "available": "თავისუფალი",
+        "reserved": "დაჯავშნილი",
+        "sold": "გაყიდული"
+    },
+    "apartments": {
+        "floor": "სართული",
+        "total_apartments": "სულ ბინები",
+        "available_only": "მხოლოდ ხელმისაწვდომი",
+        "available": "თავისუფალი",
+        "error_loading": "შეცდომა",
+        "no_apartments": "ბინები არ მოიძებნა",
+        "no_apartments_description": "ამ სართულზე ბინები არ არის",
+        "no_floors": "სართულები არ მოიძებნა",
+        "no_floors_description": "ამ შენობაში სართულების მონაცემები არ არსებობს",
+        "next_floor": "შემდეგი სართული",
+        "prev_floor": "წინა სართული",
+        "apartment": "ბინა",
+        "area_total": "საერთო ფართი",
+        "area_living": "საცხოვრებელი ფართი",
+        "price": "ფასი",
+        "bedrooms": "საძინებლები",
+        "bathrooms": "სველი წერტილები",
+        "balcony": "აივანი",
+        "no_plan_image": "გეგმარება არ არის ხელმისაწვდომი",
+        "detail_coming_soon": "დეტალები მალე დაემატება...",
+        "rooms": {
+            "dimensions": "ოთახების ზომები",
+            "bedroom": "საძინებელი",
+            "bathroom": "სველი წერტილი",
+            "bedroom_1": "საძინებელი 1",
+            "bedroom_2": "საძინებელი 2",
+            "bedroom_3": "საძინებელი 3",
+            "bathroom_1": "სველი წერტილი 1",
+            "bathroom_2": "სველი წერტილი 2",
+            "studio_living_room": "სტუდიო / მისაღები",
+            "living_room": "მისაღები ოთახი",
+            "kitchen": "სამზარეულო",
+            "dressing_room": "საგარდერობე",
+            "entrance_hall": "შემოსასვლელი",
+            "corridor": "დერეფანი",
+            "balcony": "აივანი"
+        }
+    },
+    "buttons": {
+        "retry": "თავიდან ცდა"
+    }
+}

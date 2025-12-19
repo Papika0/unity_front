@@ -179,6 +179,38 @@ export const useTranslationsStore = defineStore('translations', () => {
     return text
   }
 
+  // Helper to flatten nested JSON object to dot notation
+  function flattenObject(obj: any, prefix = ''): Record<string, string> {
+    return Object.keys(obj).reduce((acc: any, k) => {
+      const pre = prefix.length ? prefix + '.' : ''
+      if (typeof obj[k] === 'object' && obj[k] !== null) {
+        Object.assign(acc, flattenObject(obj[k], pre + k))
+      } else {
+        acc[pre + k] = obj[k]
+      }
+      return acc
+    }, {})
+  }
+
+  // Load local JSON translations
+  async function loadLocalTranslations(locale: string) {
+    try {
+      // Dynamic import of locale files
+      // @vite-ignore
+      const messages = await import(`../../locales/${locale}.json`)
+      const flat = flattenObject(messages.default || messages)
+      mergeTranslations(flat)
+      isInitialized.value = true
+    } catch (e) {
+      console.error(`Failed to load local translations for ${locale}:`, e)
+    }
+  }
+
+  // Watch for locale changes to load local files
+  watch(currentLocale, (newLocale) => {
+    loadLocalTranslations(newLocale)
+  }, { immediate: true })
+
   return {
     // State
     loadedGroups,
@@ -204,5 +236,6 @@ export const useTranslationsStore = defineStore('translations', () => {
     clearTranslations,
     hasTranslations,
     tSafe,
+    loadLocalTranslations
   }
 })

@@ -21,6 +21,8 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const selectedApartment = ref<ApartmentDetail | null>(null)
+  const minFloor = ref<number | null>(null)
+  const maxFloor = ref<number | null>(null)
 
   // Getters
   const hasMultipleBuildings = computed(() => {
@@ -87,6 +89,17 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
         fullData: data
       })
 
+      // If we loaded building data, cache the min/max floors
+      if (level === 'building' && data.zones) {
+        const floorZones = data.zones.filter(z => z.type === 'floor_strip') as FloorZone[]
+        if (floorZones.length > 0) {
+          const numbers = floorZones.map(z => z.floor_number)
+          minFloor.value = Math.min(...numbers)
+          maxFloor.value = Math.max(...numbers)
+          console.log('🏢 Cached floor limits:', { min: minFloor.value, max: maxFloor.value })
+        }
+      }
+
       navigationData.value = data
       currentLevel.value = level
       currentProjectId.value = projectId
@@ -139,6 +152,8 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
     isLoading.value = false
     error.value = null
     selectedApartment.value = null
+    minFloor.value = null
+    maxFloor.value = null
   }
 
   return {
@@ -151,6 +166,8 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
     isLoading,
     error,
     selectedApartment,
+    minFloor,
+    maxFloor,
 
     // Getters
     hasMultipleBuildings,

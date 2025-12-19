@@ -9,6 +9,9 @@ import type { ProjectApiResponse } from '@/services/projectsApi'
 import type { ProjectFeature } from '@/services/featuresApi'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
 import BuildingSelector from '@/components/apartments/BuildingSelector.vue'
+import InlineApartmentViewer from '@/components/apartments/InlineApartmentViewer.vue'
+import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
+import type { BuildingZone, FloorZone } from '@/types/apartments'
 
 const { t } = useTranslations()
 const route = useRoute()
@@ -25,6 +28,10 @@ const selectedImageIndex = ref(0)
 const isFullscreenGallery = ref(false)
 const projectFeatures = ref<ProjectFeature[]>([])
 const scrollProgress = ref(0)
+
+// Inline apartment viewer state
+const selectedBuilding = ref<BuildingZone | null>(null)
+const selectedFloor = ref<FloorZone | null>(null)
 
 // Scroll animation refs
 const { element: heroElement, isVisible: heroVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
@@ -264,6 +271,82 @@ const getRelatedProjectStatus = (relatedProject: { status: string }) => {
   }
 }
 
+// Inline apartment viewer event handlers
+function handleBuildingSelected(building: BuildingZone) {
+  selectedBuilding.value = building
+  selectedFloor.value = null
+  
+  // Update URL smoothly without page refresh
+  router.replace({
+    query: {
+      building: building.building_identifier
+    }
+  })
+}
+
+function handleBuildingDeselected() {
+  selectedBuilding.value = null
+  selectedFloor.value = null
+  
+  // Clear URL parameters smoothly
+  router.replace({
+    query: {}
+  })
+}
+
+function handleFloorSelected(floor: FloorZone) {
+  selectedFloor.value = floor
+  // URL is handled by InlineApartmentViewer
+}
+
+function handleFloorDeselected() {
+  selectedFloor.value = null
+  // URL is handled by InlineApartmentViewer
+}
+
+// Initialize from URL on mount (deep linking support)
+// Initialize from URL on mount (deep linking support)
+const apartmentStore = useApartmentNavigationStore()
+
+const handleDeepLinking = async () => {
+  const buildingIdentifier = route.query.building
+  
+  if (buildingIdentifier && typeof buildingIdentifier === 'string' && project.value) {
+    // Deep link detected - ensure we have building data
+    if (!apartmentStore.navigationData) {
+      await apartmentStore.loadNavigation(project.value.id, 'overview')
+    }
+    
+    // Find matching building from store
+    const zones = apartmentStore.currentZones as BuildingZone[]
+    const building = zones.find(z => z.building_identifier === buildingIdentifier)
+    
+    if (building) {
+      selectedBuilding.value = building
+    }
+  } else if (!buildingIdentifier) {
+    // No building in URL, clear selection
+    if (selectedBuilding.value && !route.query.floor) {
+      selectedBuilding.value = null
+      selectedFloor.value = null
+    }
+  }
+}
+
+const buildingSelectorKey = computed(() => {
+  return `building-selector-${selectedBuilding.value ? (selectedBuilding.value as BuildingZone).id : 'none'}`
+})
+
+// Watch for route changes to handle direct URL access
+watch(() => route.query.building, handleDeepLinking)
+
+// Also check deep linking when project data is loaded
+watch(() => project.value, (newProject) => {
+  if (newProject) {
+    handleDeepLinking()
+  }
+})
+
 const goBack = () => {
   router.back()
 }
@@ -441,6 +524,43 @@ const goBack = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- Apartment Navigation Section -->
+      <section v-if="hasApartmentNavigation" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+          <div class="text-center mb-12">
+            <h2 class="text-4xl font-light text-zinc-900 mb-4">
+              {{ t('projects.explore_apartments') }}
+            </h2>
+            <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto"></div>
+          </div>
+
+          <!-- Building Selector -->
+          <Transition name="fade-slide" mode="out-in">
+            <BuildingSelector 
+              v-if="!selectedBuilding"
+              :key="buildingSelectorKey"
+              :project-id="project.id" 
+              :auto-navigate="false"
+              @building-selected="handleBuildingSelected"
+            />
+          </Transition>
+
+          <!-- Inline Apartment Viewer (appears below after building selection) -->
+          <Transition name="fade-slide" mode="out-in">
+            <InlineApartmentViewer
+              v-if="selectedBuilding"
+              :key="`viewer-${selectedBuilding?.id}`"
+              :project-id="project.id"
+              :selected-building="selectedBuilding"
+              @building-deselected="handleBuildingDeselected"
+              @floor-selected="handleFloorSelected"
+              @floor-deselected="handleFloorDeselected"
+              class="mt-8"
+            />
+          </Transition>
         </div>
       </section>
 
@@ -653,19 +773,6 @@ const goBack = () => {
         </div>
       </section>
 
-      <!-- Apartment Navigation Section -->
-      <section v-if="hasApartmentNavigation" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-          <div class="text-center mb-12">
-            <h2 class="text-4xl font-light text-zinc-900 mb-4">
-              {{ t('projects.explore_apartments') }}
-            </h2>
-            <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto"></div>
-          </div>
-
-          <BuildingSelector :project-id="project.id" :auto-navigate="false" />
-        </div>
-      </section>
 
       <!-- Features Grid -->
       <section v-if="projectFeatures.length > 0" class="py-20 bg-zinc-50">
@@ -732,131 +839,6 @@ const goBack = () => {
         </div>
       </section>
 
-      <!-- Coming Soon Section -->
-      <section class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-          <div
-            ref="comingSoonElement"
-            class="bg-zinc-50 overflow-hidden hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30"
-            :class="{
-              'opacity-100 translate-y-0 scale-100 blur-0': comingSoonVisible,
-              'opacity-0 translate-y-12 scale-95 blur-sm': !comingSoonVisible,
-            }"
-          >
-            <div class="grid grid-cols-1 lg:grid-cols-2">
-              <!-- Left side - Content -->
-              <div class="p-12 lg:p-16 flex flex-col justify-center">
-                <div
-                  class="inline-flex items-center gap-2 bg-[#FFCD4B]/20 text-zinc-900 px-4 py-2 rounded-full text-sm font-light mb-6 w-fit"
-                >
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"
-                    />
-                  </svg>
-                  {{
-                    localeStore.currentLocale === 'ka'
-                      ? 'მალე გამოჩნდება'
-                      : localeStore.currentLocale === 'en'
-                        ? 'Coming Soon'
-                        : 'Скоро'
-                  }}
-                </div>
-
-                <h2 class="text-4xl md:text-5xl font-light text-zinc-900 mb-6 leading-tight">
-                  {{
-                    localeStore.currentLocale === 'ka'
-                      ? 'ბინის არჩევა'
-                      : localeStore.currentLocale === 'en'
-                        ? 'Apartment Selection'
-                        : 'Выбор квартиры'
-                  }}
-                </h2>
-
-                <p class="text-lg text-zinc-600 mb-8 leading-relaxed font-light">
-                  {{
-                    localeStore.currentLocale === 'ka'
-                      ? 'მალე შეძლებთ ინტერაქტიულად აირჩიოთ თქვენთვის სასურველი ბინა პროექტში.'
-                      : localeStore.currentLocale === 'en'
-                        ? 'Soon you will be able to interactively select your desired apartment in the project.'
-                        : 'Скоро вы сможете интерактивно выбрать желаемую квартиру в проекте.'
-                  }}
-                </p>
-
-                <div class="space-y-4">
-                  <div class="flex items-start gap-3">
-                    <div
-                      class="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-[#FFCD4B] to-[#C89116] rounded-full flex items-center justify-center mt-1"
-                    >
-                      <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fill-rule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <p class="text-zinc-700 flex-1 font-light">
-                      {{
-                        localeStore.currentLocale === 'ka'
-                          ? 'ინტერაქტიული სართულების გეგმა'
-                          : localeStore.currentLocale === 'en'
-                            ? 'Interactive floor plans'
-                            : 'Интерактивные поэтажные планы'
-                      }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Right side - Visual placeholder -->
-              <div
-                class="relative bg-gradient-to-br from-[#FFCD4B] via-[#EBB738] to-[#C89116] p-12 lg:p-16 flex items-center justify-center overflow-hidden"
-              >
-                <!-- Background pattern -->
-                <div class="absolute inset-0 opacity-10">
-                  <svg
-                    class="w-full h-full"
-                    viewBox="0 0 100 100"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                      <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5" />
-                    </pattern>
-                    <rect width="100" height="100" fill="url(#grid)" />
-                  </svg>
-                </div>
-
-                <!-- Floating elements -->
-                <div
-                  class="absolute top-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl animate-float"
-                ></div>
-                <div
-                  class="absolute bottom-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl animate-float-delayed"
-                ></div>
-
-                <!-- Building icon illustration -->
-                <div class="relative z-10">
-                  <svg
-                    class="w-64 h-64 text-white opacity-80"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="1.5"
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- CTA Section -->
       <section class="py-20 bg-zinc-50">
         <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
@@ -908,6 +890,7 @@ const goBack = () => {
           </div>
         </div>
       </section>
+
 
       <!-- Related Projects -->
       <section v-if="relatedProjects.length > 0" class="py-20 bg-white">
@@ -1292,5 +1275,22 @@ h6 {
     font-size: 1rem;
     padding-left: 1.75rem;
   }
+
+  /* Fade slide transitions for inline apartment viewer */
+  .fade-slide-enter-active,
+  .fade-slide-leave-active {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .fade-slide-enter-from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .fade-slide-leave-to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
 }
 </style>
+```
