@@ -342,7 +342,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { adminImageApi, type AdminImage } from '@/services/adminImageApi'
-import { compressImage, type CompressionResult } from '@/utils/imageCompression'
+import { compressImage, type CompressionResult } from '@/utils/image-compression'
 
 interface MultilingualText {
   ka: string
