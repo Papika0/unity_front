@@ -60,7 +60,10 @@
 </template>
 
 <script setup lang="ts">
+import { h } from 'vue'
 import { useToastStore } from '@/stores/ui/toast'
+
+defineOptions({ name: 'ToastContainer' })
 
 const toastStore = useToastStore()
 
@@ -150,13 +153,6 @@ const getIconComponent = (type: string) => {
       ),
   }
   return icons[type as keyof typeof icons] || icons.info
-}
-</script>
-
-<script lang="ts">
-import { h } from 'vue'
-export default {
-  name: 'ToastContainer',
 }
 </script>
 
