@@ -19,14 +19,13 @@ interface BuildingFormData {
 }
 
 export const useBuildingsAdminStore = defineStore('admin-buildings', () => {
+  // ==================== STATE ====================
   const buildings = ref<BuildingWithStats[]>([])
   const currentBuilding = ref<BuildingWithStats | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  /**
-   * Fetch all buildings for a project
-   */
+  // ==================== ACTIONS ====================
   async function fetchBuildings(projectId: number) {
     isLoading.value = true
     error.value = null
@@ -166,9 +165,7 @@ export const useBuildingsAdminStore = defineStore('admin-buildings', () => {
     }
   }
 
-  /**
-   * Reset store state
-   */
+  // ==================== RESET ====================
   function $reset() {
     buildings.value = []
     currentBuilding.value = null

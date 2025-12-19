@@ -36,6 +36,7 @@ interface ApartmentFilters {
 }
 
 export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
+  // ==================== STATE ====================
   const apartments = ref<Apartment[]>([])
   const currentApartment = ref<Apartment | null>(null)
   const isLoading = ref(false)
@@ -48,9 +49,7 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
     last_page: 1
   })
 
-  /**
-   * Fetch all apartments for a building with optional filters
-   */
+  // ==================== ACTIONS ====================
   async function fetchApartments(
     projectId: number,
     buildingId: number,
@@ -308,9 +307,7 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
     }
   }
 
-  /**
-   * Reset store state
-   */
+  // ==================== RESET ====================
   function $reset() {
     apartments.value = []
     currentApartment.value = null
