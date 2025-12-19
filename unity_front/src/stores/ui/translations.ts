@@ -179,13 +179,13 @@ export const useTranslationsStore = defineStore('translations', () => {
   }
 
   // Helper to flatten nested JSON object to dot notation
-  function flattenObject(obj: any, prefix = ''): Record<string, string> {
-    return Object.keys(obj).reduce((acc: any, k) => {
+  function flattenObject(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
+    return Object.keys(obj).reduce((acc: Record<string, string>, k) => {
       const pre = prefix.length ? prefix + '.' : ''
       if (typeof obj[k] === 'object' && obj[k] !== null) {
-        Object.assign(acc, flattenObject(obj[k], pre + k))
+        Object.assign(acc, flattenObject(obj[k] as Record<string, unknown>, pre + k))
       } else {
-        acc[pre + k] = obj[k]
+        acc[pre + k] = String(obj[k])
       }
       return acc
     }, {})

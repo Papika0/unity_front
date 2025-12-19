@@ -98,8 +98,9 @@ const saveEmail = async () => {
     }
     closeModal()
     await loadEmails()
-  } catch (error: any) {
-    console.error('Failed to save email:', error)
+  } catch (err: unknown) {
+    console.error('Failed to save email:', err)
+    const error = err as { response?: { data?: { message?: string } } }
     toastStore.error('შეცდომა', error.response?.data?.message || 'ელ. ფოსტის შენახვა ვერ მოხერხდა')
   }
 }

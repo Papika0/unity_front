@@ -126,7 +126,7 @@ const fetchArticle = async () => {
     
     // Wait for scroll to complete and DOM to update
     await new Promise(resolve => setTimeout(resolve, 100))
-  } catch (err) {
+  } catch {
     error.value = t('errors.loadFailed') || 'Failed to load article'
   }
 }

@@ -520,8 +520,9 @@ const loadProjectSettings = async () => {
     }
 
     originalValues.value = JSON.parse(JSON.stringify(formData.value))
-  } catch (err: any) {
-    error.value = err.response?.data?.message || t.value.errorMessage
+  } catch (err: unknown) {
+    const axiosError = err as { response?: { data?: { message?: string } } }
+    error.value = axiosError.response?.data?.message || t.value.errorMessage
     console.error('Error loading project settings:', err)
   } finally {
     loading.value = false
@@ -603,14 +604,20 @@ const saveSettings = async () => {
     originalValues.value = { ...formData.value }
     emit('saved')
     close()
-  } catch (err: any) {
-    error.value = err.response?.data?.message || t.value.errorMessage
+  } catch (err: unknown) {
+    const axiosError = err as { response?: { data?: { message?: string } } }
+    error.value = axiosError.response?.data?.message || t.value.errorMessage
     console.error('Error saving project settings:', err)
   } finally {
     saving.value = false
   }
 }
 
+/**
+ * Format a date string for display
+ * @internal - Kept for potential future use
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const formatDate = (dateString: string | undefined) => {
   if (!dateString) return ''
   try {

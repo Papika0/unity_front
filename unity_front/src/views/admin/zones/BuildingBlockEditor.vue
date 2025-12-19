@@ -982,7 +982,8 @@ async function uploadImage() {
 
     closeImageModal()
     success('სურათი წარმატებით აიტვირთა!')
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { message?: string } } }
     const errorMessage = error.response?.data?.message || 'სურათის ატვირთვა ვერ მოხერხდა'
     showError(errorMessage)
   } finally {

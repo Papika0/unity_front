@@ -149,7 +149,7 @@ interface Props {
   selectedBuilding: BuildingZone | null
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const emit = defineEmits<{
   'building-deselected': []

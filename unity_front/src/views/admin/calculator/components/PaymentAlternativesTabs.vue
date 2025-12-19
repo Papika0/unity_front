@@ -42,7 +42,7 @@
     <div class="mt-8">
       <AlternativeCalculator
         v-if="selectedTab !== 'bank' && project"
-        :alternative="selectedTab as 1 | 2 | 3 | 4 | 5 | 6"
+        :alternative="numericTab"
         :project="project"
         :basePrice="basePrice"
         :area="area"
@@ -140,6 +140,12 @@ defineEmits<{
 }>()
 
 const selectedTab = ref<1 | 2 | 3 | 4 | 5 | 6 | 'bank'>(1)
+
+// Computed property to avoid inline type assertion in template
+const numericTab = computed((): 1 | 2 | 3 | 4 | 5 | 6 => {
+  if (selectedTab.value === 'bank') return 1 // Fallback, shouldn't be used
+  return selectedTab.value
+})
 
 const alternatives = computed(() => {
   if (!props.project?.calculator_settings) {

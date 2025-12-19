@@ -160,7 +160,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { featuresApi, type Feature } from '@/services/featuresApi'
+import { featuresApi, type Feature, type ProjectFeature } from '@/services/featuresApi'
 import { projectsApi, type ProjectApiResponse } from '@/services/projectsApi'
 
 const router = useRouter()
@@ -198,10 +198,10 @@ const loadProjectFeatures = async (projectId: string) => {
   isLoadingProjectFeatures.value = true
   try {
     const projectFeatures = await featuresApi.getProjectFeatures(parseInt(projectId))
-    selectedFeatures.value = projectFeatures.map((feature: any) => feature.id)
+    selectedFeatures.value = projectFeatures.map((feature: ProjectFeature) => feature.id)
     console.log('Loaded project features:', projectFeatures)
-  } catch (error) {
-    console.error('Failed to load project features:', error)
+  } catch (err: unknown) {
+    console.error('Failed to load project features:', err)
     selectedFeatures.value = []
   } finally {
     isLoadingProjectFeatures.value = false
@@ -235,8 +235,9 @@ const assignFeatures = async () => {
 
     console.log('Features assigned successfully')
     router.push('/admin/features')
-  } catch (error: any) {
-    console.error('Failed to assign features:', error)
+  } catch (err: unknown) {
+    console.error('Failed to assign features:', err)
+    const error = err as { response?: { status?: number; data?: { message?: string } }; message?: string }
     console.error('Error details:', {
       status: error.response?.status,
       data: error.response?.data,

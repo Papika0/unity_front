@@ -6,7 +6,7 @@ import {
   updateTranslation,
   deleteTranslation,
 } from '@/services/translations'
-import type { Translation, PaginatedResponse } from '@/types'
+import type { Translation } from '@/types'
 
 export const useAdminTranslationsStore = defineStore('adminTranslations', () => {
   // State
@@ -55,8 +55,9 @@ export const useAdminTranslationsStore = defineStore('adminTranslations', () => 
       }
 
       searchQuery.value = search
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'თარგმანების ჩატვირთვა ვერ მოხერხდა'
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } }
+      error.value = axiosError.response?.data?.message || 'თარგმანების ჩატვირთვა ვერ მოხერხდა'
       console.error('Error loading translations:', err)
     } finally {
       loading.value = false
@@ -75,8 +76,9 @@ export const useAdminTranslationsStore = defineStore('adminTranslations', () => 
       totalItems.value += 1
 
       return { success: true, translation: newTranslation }
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'თარგმანის დამატება ვერ მოხერხდა'
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } }
+      error.value = axiosError.response?.data?.message || 'თარგმანის დამატება ვერ მოხერხდა'
       console.error('Error creating translation:', err)
       return { success: false, error: error.value }
     } finally {
@@ -109,8 +111,9 @@ export const useAdminTranslationsStore = defineStore('adminTranslations', () => 
       }
 
       return { success: true, translation: updatedTranslation }
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'თარგმანის განახლება ვერ მოხერხდა'
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } }
+      error.value = axiosError.response?.data?.message || 'თარგმანის განახლება ვერ მოხერხდა'
       console.error('Error updating translation:', err)
       return { success: false, error: error.value }
     } finally {
@@ -133,8 +136,9 @@ export const useAdminTranslationsStore = defineStore('adminTranslations', () => 
       }
 
       return { success: true }
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'თარგმანის წაშლა ვერ მოხერხდა'
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } }
+      error.value = axiosError.response?.data?.message || 'თარგმანის წაშლა ვერ მოხერხდა'
       console.error('Error deleting translation:', err)
       return { success: false, error: error.value }
     } finally {

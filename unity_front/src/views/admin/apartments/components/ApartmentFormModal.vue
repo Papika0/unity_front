@@ -272,7 +272,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useApartmentsAdminStore } from '@/stores/admin/apartments'
 import { useToast } from '@/composables/useToast'
-import type { Apartment, Building } from '@/types/apartments'
+import type { Apartment, Building, RoomDetails } from '@/types/apartments'
 
 interface Props {
   apartment?: Apartment | null
@@ -348,7 +348,7 @@ const form = ref({
   summer_area: null as number | null,
   bedrooms: null as number | null,
   bathrooms: null as number | null,
-  room_details: null as any,
+  room_details: null as RoomDetails | null,
   has_balcony: false,
   is_parking: false,
 })
@@ -408,7 +408,7 @@ async function handleSubmit() {
       bathrooms: form.value.bathrooms,
       room_details: form.value.room_details,
       has_balcony: form.value.has_balcony,
-      is_parking: form.value.is_parking,
+      has_parking: form.value.is_parking,
     }
 
     if (isEdit.value && props.apartment) {

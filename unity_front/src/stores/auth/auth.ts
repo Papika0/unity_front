@@ -32,8 +32,9 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       return { success: true }
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Login failed'
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } }
+      error.value = axiosError.response?.data?.message || 'Login failed'
       return { success: false, error: error.value }
     } finally {
       loading.value = false
@@ -43,8 +44,8 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = async () => {
     try {
       await apiLogout()
-    } catch (err) {
-      // Logout error
+    } catch {
+      // Logout error - silently ignore
     } finally {
       token.value = null
       user.value = null
@@ -60,7 +61,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       const response = await getUser()
       user.value = response.data
-    } catch (err) {
+    } catch {
       // If fetching user fails, token might be invalid
       await logout()
     }

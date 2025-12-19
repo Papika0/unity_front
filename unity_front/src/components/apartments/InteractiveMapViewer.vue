@@ -120,10 +120,7 @@ import { ref, computed, watch } from 'vue'
 import type { ZoneImage, BuildingZone, FloorZone, ApartmentZone, ApartmentStatus } from '@/types/apartments'
 import { useTranslations } from '@/composables/useTranslations'
 
-import { useTranslationsStore } from '@/stores/ui/translations'
-
 const { t } = useTranslations()
-const translationsStore = useTranslationsStore()
 
 interface Props {
   image: ZoneImage | null
@@ -140,8 +137,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // Debug logging
-watch(() => props.zones, (newZones) => {
-  /* console.log('InteractiveMapViewer - Zones updated', newZones.length) */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+watch(() => props.zones, (_newZones) => {
+  /* console.log('InteractiveMapViewer - Zones updated', _newZones.length) */
 }, { immediate: true })
 
 // Helper to determine if a zone should be interactive
@@ -342,8 +340,10 @@ const tooltipStyle = computed(() => {
 
 /**
  * Tooltip arrow classes based on position
+ * @internal - Kept for potential future tooltip arrow styling
  */
-const tooltipArrowClass = computed(() => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _tooltipArrowClass = computed(() => {
   const base = 'absolute w-3 h-3 bg-white border-zinc-100 transform rotate-45'
 
   switch (tooltipPosition.value) {

@@ -1395,7 +1395,8 @@ async function autoDetectPolygons() {
       let imageUrl = backgroundImageUrl.value
       if (imageUrl.includes('/storage/')) {
         // Extract path after /storage/ and use proxy route
-        const storagePath = imageUrl.split('/storage/')[1]
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _storagePath = imageUrl.split('/storage/')[1]
         imageUrl = imageUrl.replace('/storage/', '/api/storage-proxy/')
         console.log('Using proxy URL:', imageUrl)
       }

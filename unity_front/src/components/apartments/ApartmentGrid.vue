@@ -121,10 +121,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
 import { useTranslations } from '@/composables/useTranslations'
-import { useTranslationsStore } from '@/stores/ui/translations'
 import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
 import InteractiveMapViewer from './InteractiveMapViewer.vue'
 import type { ApartmentZone, BuildingZone, FloorZone } from '@/types/apartments'
@@ -144,9 +142,7 @@ const emit = defineEmits<{
   'back': []
 }>()
 
-const router = useRouter()
 const { t } = useTranslations()
-const translationsStore = useTranslationsStore()
 const apartmentStore = useApartmentNavigationStore()
 
 const showAvailableOnly = ref(false)

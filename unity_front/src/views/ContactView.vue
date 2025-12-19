@@ -155,7 +155,8 @@ const submitForm = async () => {
     } else {
       throw new Error(response.message || 'დაფიქსირდა შეცდომა')
     }
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as { message?: string }
     toastStore.error(
       t('messages.error_title') || 'შეცდომა',
       error.message || t('messages.error_message') || 'გთხოვთ სცადოთ მოგვიანებით',

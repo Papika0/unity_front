@@ -257,14 +257,14 @@ const roomList = computed(() => {
   }
 
   if (!details) return []
-  const list: { key: string; label: string; area: number; icon: any }[] = []
+  const list: { key: string; label: string; area: number; icon: typeof Maximize }[] = []
   
   // Helper to process room group
   const processGroup = (group: Record<string, number> | undefined) => {
     if (!group) return
     Object.entries(group).forEach(([key, area]) => {
       let label = ''
-      let icon: any = Maximize // Default icon
+      let icon: typeof Maximize = Maximize // Default icon
 
       // Dynamic Bedroom Parsing
       const bedroomMatch = key.match(/^bedroom_?(\d+)$/)

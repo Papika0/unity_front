@@ -111,7 +111,7 @@ export async function detectApartmentPolygons(
 
   // Step 2: For EACH dominant color, find ALL separate regions (not just largest)
   const polygons: DetectedPolygon[] = []
-  let processedColors = 0
+
 
   for (let i = 0; i < dominantColors.length; i++) {
     const color = dominantColors[i]
@@ -180,8 +180,6 @@ export async function detectApartmentPolygons(
         color: color.color,
       })
     }
-
-    processedColors++
   }
 
   // Visualize final contours

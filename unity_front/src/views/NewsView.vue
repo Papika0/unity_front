@@ -82,7 +82,7 @@ const loadArticles = async (page = 1, resetPagination = false, isCategoryChange 
     } else {
       currentPage.value = page
     }
-  } catch (error) {
+  } catch {
     // Error handling
   } finally {
     isLoading.value = false
@@ -93,7 +93,7 @@ const loadArticles = async (page = 1, resetPagination = false, isCategoryChange 
 const loadFeaturedArticle = async () => {
   try {
     await newsStore.loadFeaturedArticles()
-  } catch (error) {
+  } catch {
     // Error handling
   }
 }

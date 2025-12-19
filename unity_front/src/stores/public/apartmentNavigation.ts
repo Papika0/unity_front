@@ -4,9 +4,7 @@ import type {
   NavigationLevel,
   NavigationResponse,
   ApartmentDetail,
-  BuildingZone,
   FloorZone,
-  ApartmentZone,
   ZoneImage,
 } from '@/types/apartments'
 import { apartmentNavigationApi } from '@/services/apartmentNavigationApi'

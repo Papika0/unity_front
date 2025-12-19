@@ -749,13 +749,16 @@ function updatePolygon() {
   emit('change', polygons.value)
 }
 
-function getEntityDisplayName(entity: any): string {
+function getEntityDisplayName(entity: { id: number; apartment_number?: string; name?: string | Record<string, string>; label?: string }): string {
   // Try different property names based on entity type
   if (entity.apartment_number) {
     return `ბინა ${entity.apartment_number}`
   }
   if (entity.name) {
-    return typeof entity.name === 'object' ? (entity.name.ka || entity.name.en || entity.name) : entity.name
+    if (typeof entity.name === 'object') {
+      return entity.name.ka || entity.name.en || Object.values(entity.name)[0] || `#${entity.id}`
+    }
+    return entity.name
   }
   if (entity.label) {
     return entity.label

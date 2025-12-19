@@ -288,8 +288,8 @@ const loadUsers = async () => {
     loading.value = true
     const response = await userApi.getUsers()
     users.value = response.data
-  } catch (error: any) {
-    console.error('Error loading users:', error)
+  } catch (err: unknown) {
+    console.error('Error loading users:', err)
     showToastMessage('მომხმარებლების ჩატვირთვა ვერ მოხერხდა', 'error')
   } finally {
     loading.value = false
@@ -300,8 +300,8 @@ const loadRoles = async () => {
   try {
     const response = await userApi.getRoles()
     roles.value = response.data
-  } catch (error: any) {
-    console.error('Error loading roles:', error)
+  } catch (err: unknown) {
+    console.error('Error loading roles:', err)
   }
 }
 
@@ -366,28 +366,33 @@ const submitForm = async () => {
     submitting.value = true
     formError.value = ''
 
-    const data: any = {
-      name: form.value.name,
-      email: form.value.email,
-      role_id: Number(form.value.role_id),
-    }
-
-    if (form.value.password) {
-      data.password = form.value.password
-    }
-
     if (showEditModal.value && editingUser.value) {
-      await userApi.updateUser(editingUser.value.id, data)
+      const updateData: { name: string; email: string; role_id: number; password?: string } = {
+        name: form.value.name,
+        email: form.value.email,
+        role_id: Number(form.value.role_id),
+      }
+      if (form.value.password) {
+        updateData.password = form.value.password
+      }
+      await userApi.updateUser(editingUser.value.id, updateData)
       showToastMessage('მომხმარებელი წარმატებით განახლდა', 'success')
     } else {
-      await userApi.createUser(data)
+      const createData = {
+        name: form.value.name,
+        email: form.value.email,
+        role_id: Number(form.value.role_id),
+        password: form.value.password,
+      }
+      await userApi.createUser(createData)
       showToastMessage('მომხმარებელი წარმატებით შეიქმნა', 'success')
     }
 
     closeModal()
     loadUsers()
-  } catch (error: any) {
-    console.error('Error submitting form:', error)
+  } catch (err: unknown) {
+    console.error('Error submitting form:', err)
+    const error = err as { response?: { data?: { message?: string } } }
     formError.value = error.response?.data?.message || 'შეცდომა მოხდა'
   } finally {
     submitting.value = false
@@ -404,8 +409,9 @@ const deleteUserConfirmed = async () => {
     showDeleteModal.value = false
     userToDelete.value = null
     loadUsers()
-  } catch (error: any) {
-    console.error('Error deleting user:', error)
+  } catch (err: unknown) {
+    console.error('Error deleting user:', err)
+    const error = err as { response?: { data?: { message?: string } } }
     showToastMessage(error.response?.data?.message || 'წაშლა ვერ მოხერხდა', 'error')
   } finally {
     deleting.value = false

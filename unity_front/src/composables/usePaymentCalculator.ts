@@ -226,7 +226,9 @@ export const usePaymentCalculator = () => {
 
   /**
    * Generate simple monthly schedule (for Alt 5 & 6)
+   * @internal - Kept for potential future use
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const generateMonthlySchedule = (
     monthlyPayment: number,
     numberOfMonths: number,

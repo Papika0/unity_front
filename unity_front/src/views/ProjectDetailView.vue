@@ -39,7 +39,6 @@ const { element: galleryElement, isVisible: galleryVisible } = useScrollAnimatio
 const { element: detailsElement, isVisible: detailsVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
 const { element: descriptionElement, isVisible: descriptionVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
 const { element: featuresElement, isVisible: featuresVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
-const { element: comingSoonElement, isVisible: comingSoonVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
 const { element: ctaElement, isVisible: ctaVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
 const { element: relatedElement, isVisible: relatedVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
 

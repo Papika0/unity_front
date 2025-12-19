@@ -344,7 +344,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { featuresApi, type Feature } from '@/services/featuresApi'
+import { featuresApi } from '@/services/featuresApi'
 import OnlineIconPicker from '@/components/admin/OnlineIconPicker.vue'
 import LanguageField from '@/components/admin/forms/LanguageField.vue'
 import { Translator } from '@/utils/translator'
@@ -470,8 +470,10 @@ const submitForm = async () => {
     await featuresApi.update(featureId, featureData)
 
     router.push('/admin/features')
-  } catch (error: any) {
-    console.error('Failed to update feature:', error)
+  } catch (err: unknown) {
+    console.error('Failed to update feature:', err)
+    
+    const error = err as { response?: { status?: number; data?: { errors?: Record<string, string[]>; message?: string } }; message?: string }
 
     // More detailed error handling
     if (error.response?.status === 401 || error.message?.includes('Unauthenticated')) {

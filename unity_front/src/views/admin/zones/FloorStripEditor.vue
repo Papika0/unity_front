@@ -667,8 +667,7 @@ const {
   showConfirmDialog,
   saveAndNavigate,
   discardAndNavigate,
-  cancelNavigation,
-  confirmNavigationChange
+  cancelNavigation
 } = useUnsavedChanges({
   hasChanges,
   isSaving,

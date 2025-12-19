@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type Ref } from 'vue'
+import { computed } from 'vue'
 import type { ActiveProject } from '@/types/admin/calculator'
 
 interface Props {
