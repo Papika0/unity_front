@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { BankRate } from '@/types/admin/calculator'
+import { useTranslations } from '@/composables/useTranslations'
 
 const props = defineProps<{
   bankRates: BankRate[]
@@ -12,6 +13,8 @@ const emit = defineEmits<{
   moveUp: [index: number]
   moveDown: [index: number]
 }>()
+
+const { t } = useTranslations()
 </script>
 
 <template>
@@ -19,12 +22,12 @@ const emit = defineEmits<{
     <table class="w-full">
       <thead class="bg-gradient-to-r from-amber-500 to-yellow-500 text-white">
         <tr>
-          <th class="px-6 py-4 text-left font-semibold">ბანკი / Bank</th>
-          <th class="px-6 py-4 text-center font-semibold">განაკვეთი / Rate (%)</th>
-          <th class="px-6 py-4 text-center font-semibold">ვადა / Term (years)</th>
-          <th class="px-6 py-4 text-center font-semibold">მინ. შენატანი / Min. Down (%)</th>
-          <th class="px-6 py-4 text-center font-semibold">სტატუსი / Status</th>
-          <th class="px-6 py-4 text-center font-semibold">მოქმედებები / Actions</th>
+          <th class="px-6 py-4 text-left font-semibold">{{ t('admin.bank_rates.bank') }}</th>
+          <th class="px-6 py-4 text-center font-semibold">{{ t('admin.bank_rates.rate') }} (%)</th>
+          <th class="px-6 py-4 text-center font-semibold">{{ t('admin.bank_rates.term') }} ({{ t('admin.bank_rates.years') }})</th>
+          <th class="px-6 py-4 text-center font-semibold">{{ t('admin.bank_rates.min_down') }} (%)</th>
+          <th class="px-6 py-4 text-center font-semibold">{{ t('admin.common.status') }}</th>
+          <th class="px-6 py-4 text-center font-semibold">{{ t('admin.common.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -69,7 +72,7 @@ const emit = defineEmits<{
               ]"
             >
               <span class="w-2 h-2 rounded-full mr-2" :class="bank.is_active ? 'bg-green-500' : 'bg-slate-400'"></span>
-              {{ bank.is_active ? 'აქტიური / Active' : 'არააქტიური / Inactive' }}
+              {{ bank.is_active ? t('admin.common.active') : t('admin.common.inactive') }}
             </button>
           </td>
 
@@ -80,7 +83,7 @@ const emit = defineEmits<{
               <button
                 @click="emit('edit', bank)"
                 class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
-                title="Edit"
+                :title="t('admin.common.edit')"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -91,7 +94,7 @@ const emit = defineEmits<{
               <button
                 @click="emit('delete', bank)"
                 class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                title="Delete"
+                :title="t('admin.common.delete')"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -103,7 +106,6 @@ const emit = defineEmits<{
                 @click="emit('moveUp', idx)"
                 :disabled="idx === 0"
                 class="p-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Move Up"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
@@ -115,7 +117,6 @@ const emit = defineEmits<{
                 @click="emit('moveDown', idx)"
                 :disabled="idx === bankRates.length - 1"
                 class="p-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Move Down"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />

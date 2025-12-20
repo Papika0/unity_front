@@ -3,15 +3,15 @@
     <!-- Header -->
     <div class="flex flex-col gap-4 mb-6 sm:mb-8 lg:flex-row lg:justify-between lg:items-center">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">ფუნქციების მართვა</h1>
-        <p class="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">პროექტის ფუნქციების და მათი თვისებების მართვა</p>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ t('admin.features.title') }}</h1>
+        <p class="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">{{ t('admin.sidebar.features') }}</p>
       </div>
       <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <router-link
           to="/admin/features/assign"
           class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-center"
         >
-          მინიჭება პროექტზე
+          {{ t('admin.features.assign_to_project') }}
         </router-link>
         <router-link
           to="/admin/features/add"
@@ -25,7 +25,7 @@
               d="M12 6v6m0 0v6m0-6h6m-6 0H6"
             />
           </svg>
-          ფუნქციის დამატება
+          {{ t('admin.features.add_feature') }}
         </router-link>
       </div>
     </div>
@@ -42,7 +42,7 @@
         @click="loadFeatures"
         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm sm:text-base"
       >
-        კვლავ სცადეთ
+        {{ t('admin.common.retry') }}
       </button>
     </div>
 
@@ -56,8 +56,10 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
 import { FeaturesTable } from './components'
 import { useFeaturesList } from './composables'
 
+const { t } = useTranslations()
 const { features, isLoading, error, loadFeatures, deleteFeature } = useFeaturesList()
 </script>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Feature } from '@/services/featuresApi'
+import { useTranslations } from '@/composables/useTranslations'
 
 const props = defineProps<{
   feature: Feature
@@ -7,6 +8,7 @@ const props = defineProps<{
 }>()
 
 const model = defineModel<number[]>({ required: true })
+const { t } = useTranslations()
 </script>
 
 <template>
@@ -40,7 +42,7 @@ const model = defineModel<number[]>({ required: true })
               v-if="isSelected"
               class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
             >
-              მინიჭებული
+              {{ t('admin.features.assigned') }}
             </span>
           </div>
           <div class="text-sm text-gray-600">
