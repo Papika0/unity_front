@@ -1,182 +1,33 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import { useTranslations } from '../composables/useTranslations'
-import { useTranslationsStore } from '@/stores/ui/translations'
-import { useNewsStore } from '@/stores/public/news'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useNewsList } from './news/composables'
 
-const { t } = useTranslations()
-const newsStore = useNewsStore()
-const translationsStore = useTranslationsStore()
-
-const scrollProgress = ref(0)
-
-// Scroll animation refs
-const { element: heroElement, isVisible: heroVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
-const { element: searchFilterElement, isVisible: searchFilterVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
-const { element: featuredElement, isVisible: featuredVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
-const { element: articlesHeaderElement, isVisible: articlesHeaderVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
-const { element: articlesGridElement, isVisible: articlesGridVisible } = useScrollAnimation({ once: false, threshold: 0.05, rootMargin: '200px' })
-
-// Scroll progress tracking
-const handleScroll = () => {
-  const scrollTop = window.scrollY
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight
-  scrollProgress.value = (scrollTop / docHeight) * 100
-}
-
-// Check if translations are loaded by checking the store directly
-const hasTranslations = computed(() => {
-  // Check if we have any translations loaded
-  return Object.keys(translationsStore.translations).length > 0
-})
-
-const selectedCategory = ref<string>('all')
-const searchQuery = ref('')
-const isLoading = ref(true)
-const isLoadingCategories = ref(false)
-const isTransitioning = ref(false)
-const currentPage = ref(1)
-
-const categoryLabels = computed(() => ({
-  all: t('news.categories.all'),
-  company: t('news.categories.company'),
-  project: t('news.categories.project'),
-  industry: t('news.categories.industry'),
-  event: t('news.categories.event'),
-}))
-
-const featuredArticle = computed(() => {
-  return newsStore.featuredArticles.find((article) => article.is_featured) || null
-})
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('ka-GE', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
-const loadArticles = async (page = 1, resetPagination = false, isCategoryChange = false) => {
-  try {
-    // Only show main loading for initial load, not for category/search changes
-    if (!isCategoryChange && page === 1 && !resetPagination) {
-      isLoading.value = true
-    } else if (isCategoryChange) {
-      isLoadingCategories.value = true
-    }
-
-    const params = {
-      page,
-      per_page: 9,
-      ...(selectedCategory.value !== 'all' && { category: selectedCategory.value }),
-      ...(searchQuery.value.trim() && { search: searchQuery.value.trim() }),
-    }
-
-    await newsStore.loadArticles(params)
-
-    if (resetPagination) {
-      currentPage.value = 1
-    } else {
-      currentPage.value = page
-    }
-  } catch {
-    // Error handling
-  } finally {
-    isLoading.value = false
-    isLoadingCategories.value = false
-  }
-}
-
-const loadFeaturedArticle = async () => {
-  try {
-    await newsStore.loadFeaturedArticles()
-  } catch {
-    // Error handling
-  }
-}
-
-const handleCategoryChange = async (category: string) => {
-  if (category === selectedCategory.value || isTransitioning.value) return
-
-  // Start transition
-  isTransitioning.value = true
-
-  // Wait for fade-out animation
-  await new Promise((resolve) => setTimeout(resolve, 300))
-
-  // Update category and load articles
-  selectedCategory.value = category
-  await loadArticles(1, true, true)
-
-  // Small delay before fade-in
-  await new Promise((resolve) => setTimeout(resolve, 50))
-
-  // End transition
-  isTransitioning.value = false
-}
-
-const handleSearch = () => {
-  loadArticles(1, true, true)
-}
-
-const handlePageChange = (page: number) => {
-  loadArticles(page)
-  // Smooth scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
-const generatePageNumbers = () => {
-  const current = newsStore.pagination.current_page
-  const last = newsStore.pagination.last_page
-  const delta = 2 // Number of pages to show on each side of current page
-
-  const range = []
-  const rangeWithDots = []
-
-  for (let i = Math.max(2, current - delta); i <= Math.min(last - 1, current + delta); i++) {
-    range.push(i)
-  }
-
-  if (current - delta > 2) {
-    rangeWithDots.push(1, '...')
-  } else {
-    rangeWithDots.push(1)
-  }
-
-  rangeWithDots.push(...range)
-
-  if (current + delta < last - 1) {
-    rangeWithDots.push('...', last)
-  } else if (last > 1) {
-    rangeWithDots.push(last)
-  }
-
-  return rangeWithDots
-}
-
-// Watch for search query changes with debounce
-let searchTimeout: number
-watch(searchQuery, () => {
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    handleSearch()
-  }, 500)
-})
-
-onMounted(async () => {
-  // Load regular articles first (this will load translations)
-  await loadArticles(1)
-  // Then load featured articles (translations should already be loaded)
-  await loadFeaturedArticle()
-  window.addEventListener('scroll', handleScroll)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
+const {
+  t,
+  newsStore,
+  scrollProgress,
+  heroElement,
+  heroVisible,
+  searchFilterElement,
+  searchFilterVisible,
+  featuredElement,
+  featuredVisible,
+  articlesHeaderElement,
+  articlesHeaderVisible,
+  articlesGridElement,
+  articlesGridVisible,
+  selectedCategory,
+  searchQuery,
+  isLoading,
+  isLoadingCategories,
+  isTransitioning,
+  hasTranslations,
+  categoryLabels,
+  featuredArticle,
+  formatDate,
+  handleCategoryChange,
+  handlePageChange,
+  generatePageNumbers,
+} = useNewsList()
 </script>
 
 <template>

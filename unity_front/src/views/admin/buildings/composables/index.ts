@@ -1,0 +1,1 @@
+export { useBuildingsList } from './useBuildingsList'
