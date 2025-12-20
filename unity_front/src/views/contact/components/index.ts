@@ -1,0 +1,6 @@
+export { default as ContactHero } from './ContactHero.vue'
+export { default as ContactFormSection } from './ContactFormSection.vue'
+export { default as ContactInfoSection } from './ContactInfoSection.vue'
+export { default as ContactMap } from './ContactMap.vue'
+export { default as ContactFaq } from './ContactFaq.vue'
+export { default as ContactCta } from './ContactCta.vue'

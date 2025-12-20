@@ -1,0 +1,5 @@
+export { default as NewsHero } from './NewsHero.vue'
+export { default as NewsFilters } from './NewsFilters.vue'
+export { default as NewsFeatured } from './NewsFeatured.vue'
+export { default as NewsGrid } from './NewsGrid.vue'
+export { default as NewsPagination } from './NewsPagination.vue'
