@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import type { Project } from '@/types'
+import { useTranslations } from '@/composables/useTranslations'
 
 const props = defineProps<{
   project: Project
 }>()
+
+const { t } = useTranslations()
 </script>
 
 <template>
   <div class="border-t border-slate-200 pt-8">
-    <h2 class="text-2xl font-semibold text-slate-900 mb-6">გალერია</h2>
+    <h2 class="text-2xl font-semibold text-slate-900 mb-6">{{ t('admin.projects.gallery') }}</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
         v-for="(img, idx) in project.gallery_images"
