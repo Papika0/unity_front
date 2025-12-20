@@ -6,10 +6,10 @@
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-4xl font-light bg-gradient-to-r from-indigo-500 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2 tracking-tight">
-              "ჩვენს შესახებ" გვერდის პარამეტრები
+              {{ t('admin.about.title') }}
             </h1>
             <p class="text-slate-600 text-lg font-light">
-              მართეთ "ჩვენს შესახებ" გვერდის სტატისტიკა და სურათები
+              {{ t('admin.about.description') }}
             </p>
           </div>
         </div>
@@ -29,7 +29,7 @@
             </svg>
           </div>
           <div class="ml-3">
-            <h3 class="text-sm font-medium text-red-800">შეცდომა</h3>
+            <h3 class="text-sm font-medium text-red-800">{{ t('admin.errors.loading_failed') }}</h3>
             <div class="mt-2 text-sm text-red-700">
               <p>{{ error }}</p>
             </div>
@@ -43,60 +43,60 @@
           <!-- Statistics Section -->
           <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
             <div class="mb-6">
-              <h2 class="text-2xl font-semibold text-gray-900 mb-2">სტატისტიკის მონაცემები</h2>
-              <p class="text-gray-600">განაახლეთ სტატისტიკური მონაცემები, რომლებიც ნაჩვენებია ღია გვერდზე</p>
+              <h2 class="text-2xl font-semibold text-gray-900 mb-2">{{ t('admin.about.statistics') }}</h2>
+              <p class="text-gray-600">{{ t('admin.about.statistics_desc') }}</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Successful Projects -->
               <div>
-                <label for="successful_projects" class="block text-sm font-medium text-gray-700 mb-2">წარმატებული პროექტები</label>
+                <label for="successful_projects" class="block text-sm font-medium text-gray-700 mb-2">{{ t('admin.about.successful_projects') }}</label>
                 <input
                   id="successful_projects"
                   v-model="formData.stats.successful_projects"
                   type="text"
                   required
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900"
-                  placeholder="მაგ: 150+"
+                  placeholder="150+"
                 />
               </div>
 
               <!-- Years Experience -->
               <div>
-                <label for="years_experience" class="block text-sm font-medium text-gray-700 mb-2">წლის გამოცდილება</label>
+                <label for="years_experience" class="block text-sm font-medium text-gray-700 mb-2">{{ t('admin.about.years_experience') }}</label>
                 <input
                   id="years_experience"
                   v-model="formData.stats.years_experience"
                   type="text"
                   required
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900"
-                  placeholder="მაგ: 15+"
+                  placeholder="15+"
                 />
               </div>
 
               <!-- Satisfied Clients -->
               <div>
-                <label for="satisfied_clients" class="block text-sm font-medium text-gray-700 mb-2">კმაყოფილი კლიენტი</label>
+                <label for="satisfied_clients" class="block text-sm font-medium text-gray-700 mb-2">{{ t('admin.about.satisfied_clients') }}</label>
                 <input
                   id="satisfied_clients"
                   v-model="formData.stats.satisfied_clients"
                   type="text"
                   required
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900"
-                  placeholder="მაგ: 50+"
+                  placeholder="50+"
                 />
               </div>
 
               <!-- Client Satisfaction -->
               <div>
-                <label for="client_satisfaction" class="block text-sm font-medium text-gray-700 mb-2">კლიენტის კმაყოფილება</label>
+                <label for="client_satisfaction" class="block text-sm font-medium text-gray-700 mb-2">{{ t('admin.about.client_satisfaction') }}</label>
                 <input
                   id="client_satisfaction"
                   v-model="formData.stats.client_satisfaction"
                   type="text"
                   required
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900"
-                  placeholder="მაგ: 98%"
+                  placeholder="98%"
                 />
               </div>
             </div>
@@ -105,8 +105,8 @@
           <!-- Images Section -->
           <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
             <div class="mb-6">
-              <h2 class="text-2xl font-semibold text-gray-900 mb-2">გვერდის სურათები</h2>
-              <p class="text-gray-600">აირჩიეთ სურათები "ჩვენს შესახებ" გვერდის სხვადასხვა სექციებისთვის</p>
+              <h2 class="text-2xl font-semibold text-gray-900 mb-2">{{ t('admin.about.images') }}</h2>
+              <p class="text-gray-600">{{ t('admin.about.images_desc') }}</p>
             </div>
 
             <div class="space-y-8">
@@ -115,8 +115,8 @@
                 <ImageSelector
                   v-model="formData.philosophy_image_id"
                   :image-data="getPhilosophyImageData()"
-                  label="ფილოსოფიის სექციის სურათი"
-                  help-text="სურათი, რომელიც ნაჩვენებია ფილოსოფიის სექციაში"
+                  :label="t('admin.about.philosophy_image')"
+                  :help-text="t('admin.about.philosophy_image_desc')"
                   category="about"
                   :simple-upload="true"
                 />
@@ -135,8 +135,8 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              <span v-if="saving">შენახვა...</span>
-              <span v-else>შენახვა</span>
+              <span v-if="saving">{{ t('admin.common.saving') }}</span>
+              <span v-else>{{ t('admin.common.save') }}</span>
             </button>
           </div>
         </form>
@@ -146,8 +146,11 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
 import ImageSelector from '@/components/admin/ImageSelector.vue'
 import { useAboutSettings } from './composables'
+
+const { t } = useTranslations()
 
 const {
   loading,

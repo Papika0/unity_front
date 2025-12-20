@@ -10,12 +10,12 @@
           <svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
-          უკან დეტალებზე
+          {{ t('admin.projects.back_to_details') }}
         </button>
         <h1 class="text-5xl font-light bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 bg-clip-text text-transparent mb-3 tracking-tight leading-tight py-1">
-          პროექტის რედაქტირება
+          {{ t('admin.projects.edit_project') }}
         </h1>
-        <p class="text-slate-600 text-xl font-light">განაახლეთ პროექტის ინფორმაცია და მედია ფაილები</p>
+        <p class="text-slate-600 text-xl font-light">{{ t('admin.projects.update_info') }}</p>
       </div>
 
       <ProjectForm
@@ -40,8 +40,11 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
 import { ProjectForm } from '@/components/admin'
 import { useProjectEdit } from './composables'
+
+const { t } = useTranslations()
 
 const {
   form,

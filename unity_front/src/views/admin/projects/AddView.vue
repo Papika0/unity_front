@@ -10,24 +10,24 @@
           <svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
-          უკან პროექტებზე
+          {{ t('admin.projects.back_to_projects') }}
         </button>
         <h1 class="text-5xl font-light bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 bg-clip-text text-transparent mb-3 tracking-tight leading-tight py-1">
-          ახალი პროექტის დამატება
+          {{ t('admin.projects.add_project') }}
         </h1>
-        <p class="text-slate-600 text-xl font-light">შექმენით ახალი პროექტი და ატვირთეთ მისი მედია ფაილები</p>
+        <p class="text-slate-600 text-xl font-light">{{ t('admin.projects.create_info') }}</p>
       </div>
 
       <!-- Upload Progress Indicator -->
       <div v-if="isUploading" class="mb-8 bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-slate-700">მიმდინარეობს ატვირთვა...</h3>
+          <h3 class="text-lg font-semibold text-slate-700">{{ t('admin.projects.uploading') }}</h3>
           <span class="text-sm text-slate-500">{{ uploadProgress }}%</span>
         </div>
         <div class="w-full bg-slate-200 rounded-full h-3">
           <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-300 ease-out" :style="{ width: uploadProgress + '%' }"></div>
         </div>
-        <p class="text-sm text-slate-600 mt-2">გთხოვთ, მოიცადოთ. სურათების კომპრესია და ატვირთვა მიმდინარეობს...</p>
+        <p class="text-sm text-slate-600 mt-2">{{ t('admin.projects.upload_info') }}</p>
       </div>
 
       <ProjectForm
@@ -51,8 +51,11 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
 import { ProjectForm } from '@/components/admin'
 import { useProjectAdd } from './composables'
+
+const { t } = useTranslations()
 
 const {
   form,
