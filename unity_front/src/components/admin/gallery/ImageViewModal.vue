@@ -209,7 +209,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { AdminImage, MultilingualText } from '@/services/adminImageApi'
+import type { AdminImage } from '@/services/adminImageApi'
+import type { MultilingualText } from '@/services/contactApi'
 import { useToast } from '@/composables/useToast'
 import { useLocaleStore } from '@/stores/ui/locale'
 

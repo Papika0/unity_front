@@ -1,11 +1,21 @@
 import api from '@/plugins/axios/api'
 
-interface TranslationUpdateData {
+// Two formats are used: flat (stores) and nested (ListView)
+type TranslationDataFlat = {
   key: string
   en: string
   ka: string
   ru?: string
 }
+
+type TranslationDataNested = {
+  key: string
+  text: { en: string; ka: string; ru: string }
+  group: string
+  active: boolean
+}
+
+type TranslationUpdateData = TranslationDataFlat | TranslationDataNested
 
 export const getTranslations = async (page: number, search: string = '', group?: string) =>
   api.post(`/translations`, { page, search, group })

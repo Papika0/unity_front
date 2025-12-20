@@ -1,42 +1,26 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useToastStore } from '@/stores/ui/toast'
-import api from '@/plugins/axios/api'
+import { adminContactInfoApi, type ContactInfoFormData } from '@/services/adminContactInfoApi'
 import type { ContactInfo } from '@/composables/useContactInfo'
 
-interface ContactInfoFormData {
-  email: string
-  phone_numbers: Array<{
-    number: string
-    display: string
-  }>
-  google_maps_url: string
-}
-
 export const useAdminContactInfoStore = defineStore('adminContactInfo', () => {
-  // State
+  // ==================== STATE ====================
   const contactInfo = ref<ContactInfo | null>(null)
   const loading = ref(false)
   const saving = ref(false)
   const error = ref('')
-
-  // Form state
   const showEditModal = ref(false)
 
-  // Getters
+  // ==================== GETTERS ====================
   const hasContactInfo = computed(() => contactInfo.value !== null)
 
-  // Actions
+  // ==================== ACTIONS ====================
   const loadContactInfo = async () => {
     try {
       loading.value = true
       error.value = ''
-
-      const response = await api.get('/admin/contact-info')
-
-      // The response.data.data contains the single contact info object directly
-      const data = response.data?.data
-      contactInfo.value = data || null
+      contactInfo.value = await adminContactInfoApi.get()
     } catch (err) {
       console.error('Error loading contact info:', err)
       error.value = err instanceof Error ? err.message : 'Failed to load contact information'
@@ -52,21 +36,11 @@ export const useAdminContactInfoStore = defineStore('adminContactInfo', () => {
       saving.value = true
       error.value = ''
 
-      const response = await api.put('/admin/contact-info', formData)
-
-      if (!response.data) {
-        throw new Error('Failed to update contact information')
-      }
-
-      const result = response.data
-
-      // Update local state
-      contactInfo.value = result.data
-
+      contactInfo.value = await adminContactInfoApi.update(formData)
       showEditModal.value = false
       toastStore.success('Success', 'Contact information updated successfully')
 
-      return result.data
+      return contactInfo.value
     } catch (err) {
       console.error('Error updating contact info:', err)
       error.value = err instanceof Error ? err.message : 'Failed to update contact information'
@@ -87,6 +61,16 @@ export const useAdminContactInfoStore = defineStore('adminContactInfo', () => {
     error.value = ''
   }
 
+  // ==================== RESET ====================
+  const $reset = () => {
+    contactInfo.value = null
+    loading.value = false
+    saving.value = false
+    error.value = ''
+    showEditModal.value = false
+  }
+
+  // ==================== RETURN ====================
   return {
     // State
     contactInfo,
@@ -94,15 +78,14 @@ export const useAdminContactInfoStore = defineStore('adminContactInfo', () => {
     saving,
     error,
     showEditModal,
-
     // Getters
     hasContactInfo,
-
     // Actions
     loadContactInfo,
     updateContactInfo,
     openEditModal,
     closeModal,
+    $reset,
   }
 })
 

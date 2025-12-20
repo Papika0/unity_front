@@ -9,7 +9,7 @@ import {
 import type { Translation } from '@/types'
 
 export const useAdminTranslationsStore = defineStore('adminTranslations', () => {
-  // State
+  // ==================== STATE ====================
   const translations = ref<Translation[]>([])
   const currentTranslation = ref<Translation | null>(null)
   const loading = ref(false)
@@ -23,14 +23,14 @@ export const useAdminTranslationsStore = defineStore('adminTranslations', () => 
   const perPage = ref(10)
   const totalItems = ref(0)
 
-  // Getters
+  // ==================== GETTERS ====================
   const translationsCount = computed(() => totalItems.value)
 
   const hasTranslations = computed(() => translations.value.length > 0)
 
   const canLoadMore = computed(() => currentPage.value < totalPages.value)
 
-  // Actions
+  // ==================== ACTIONS ====================
   const loadTranslations = async (page: number = 1, search: string = '') => {
     try {
       loading.value = true
@@ -191,6 +191,21 @@ export const useAdminTranslationsStore = defineStore('adminTranslations', () => 
     await loadTranslations()
   }
 
+  // ==================== RESET ====================
+  const $reset = () => {
+    translations.value = []
+    currentTranslation.value = null
+    loading.value = false
+    saving.value = false
+    error.value = ''
+    searchQuery.value = ''
+    currentPage.value = 1
+    totalPages.value = 1
+    perPage.value = 10
+    totalItems.value = 0
+  }
+
+  // ==================== RETURN ====================
   return {
     // State
     translations,
@@ -223,5 +238,6 @@ export const useAdminTranslationsStore = defineStore('adminTranslations', () => 
     clearError,
     refreshTranslations,
     initialize,
+    $reset,
   }
 })

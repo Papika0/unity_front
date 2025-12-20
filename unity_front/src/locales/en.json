@@ -56,5 +56,40 @@
     },
     "buttons": {
         "retry": "Retry"
+    },
+    "admin": {
+        "sidebar": {
+            "title": "Admin Panel",
+            "subtitle": "Management System",
+            "dashboard": "Dashboard",
+            "projects": "Projects",
+            "features": "Features",
+            "news": "News",
+            "gallery": "Gallery",
+            "translations": "Translations",
+            "contact_info": "Contact Info",
+            "about_settings": "\"About Us\" Settings",
+            "buildings": "Buildings",
+            "apartments": "Apartments",
+            "customers": "Customer Requests",
+            "marketing_emails": "Marketing Emails",
+            "users": "User Management",
+            "calculator": "Calculator",
+            "bank_rates": "Bank Rates",
+            "logout": "Logout"
+        },
+        "topbar": {
+            "refresh_data": "Refresh Data",
+            "refreshing": "Refreshing Data..."
+        },
+        "common": {
+            "save": "Save",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "edit": "Edit",
+            "create": "Create",
+            "actions": "Actions",
+            "search": "Search"
+        }
     }
 }

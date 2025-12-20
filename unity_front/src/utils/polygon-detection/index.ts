@@ -11,14 +11,8 @@ export { findApartmentColors, getTwoDominantColors, createColorMask } from './co
 export { cleanupMask, dilate, erode } from './morphology'
 export { findAllConnectedRegions, traceOuterContour } from './contour'
 export { calculateArea, calculateBoundingBox, calculateCentroid, perpendicularDistance } from './calculations'
-export {
-  simplifyPolygon,
-  detectCorners,
-  alignToArchitecturalAngles,
-  removeClosePoints,
-  ramerDouglasPeucker,
-  mergeCollinearPoints,
-} from './simplification'
+export { simplifyPolygon, detectCorners, alignToArchitecturalAngles } from './simplification'
+export { removeClosePoints, ramerDouglasPeucker, mergeCollinearPoints } from './simplification-utils'
 export {
   createCanvas,
   visualizeColorClusters,

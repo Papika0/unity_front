@@ -170,7 +170,7 @@
       >
         <div class="flex justify-end gap-4 mt-8" v-if="currentResult">
           <button
-            @click="calculatorStore.reset()"
+            @click="calculatorStore.$reset()"
             class="px-6 py-3 text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all font-medium flex items-center gap-2"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,12 +217,12 @@ import { useAuthStore } from '@/stores/auth/auth'
 import { useCalculatorExport } from '@/composables/useCalculatorExport'
 import { useCalculatorPrint } from '@/composables/useCalculatorPrint'
 import FormCard from '@/components/admin/forms/FormCard.vue'
-import ProjectSelector from './components/ProjectSelector.vue'
-import ApartmentDetailsInput from './components/ApartmentDetailsInput.vue'
-import PaymentAlternativesTabs from './components/PaymentAlternativesTabs.vue'
-import CalculationResults from './components/CalculationResults.vue'
-import PaymentScheduleTable from './components/PaymentScheduleTable.vue'
-import ProjectSettingsModal from './components/ProjectSettingsModal.vue'
+import ProjectSelector from './components/inputs/ProjectSelector.vue'
+import ApartmentDetailsInput from './components/inputs/ApartmentDetailsInput.vue'
+import PaymentAlternativesTabs from './components/results/PaymentAlternativesTabs.vue'
+import CalculationResults from './components/results/CalculationResults.vue'
+import PaymentScheduleTable from './components/results/PaymentScheduleTable.vue'
+import ProjectSettingsModal from './components/modals/ProjectSettingsModal.vue'
 import type { CalculationResult, BankLoanResult } from '@/types/admin/calculator'
 
 const calculatorStore = useCalculatorStore()

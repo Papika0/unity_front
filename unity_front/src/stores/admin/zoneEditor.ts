@@ -7,6 +7,7 @@ interface Breadcrumb {
 }
 
 export const useZoneEditorStore = defineStore('zoneEditor', () => {
+  // ==================== STATE ====================
   // Navigation context
   const projectId = ref<number | null>(null)
   const projectName = ref<string>('')
@@ -17,6 +18,7 @@ export const useZoneEditorStore = defineStore('zoneEditor', () => {
   // Track where user came from
   const entryPoint = ref<'projects' | 'sidebar' | 'direct'>('direct')
 
+  // ==================== GETTERS ====================
   // Computed breadcrumbs
   const breadcrumbs = computed<Breadcrumb[]>(() => {
     const items: Breadcrumb[] = []
@@ -26,8 +28,8 @@ export const useZoneEditorStore = defineStore('zoneEditor', () => {
         label: projectName.value,
         route: {
           name: 'admin-zones-building-blocks',
-          params: { id: projectId.value.toString() }
-        }
+          params: { id: projectId.value.toString() },
+        },
       })
     }
 
@@ -38,23 +40,23 @@ export const useZoneEditorStore = defineStore('zoneEditor', () => {
           name: 'admin-zones-floor-strips',
           params: {
             id: projectId.value!.toString(),
-            buildingId: buildingId.value.toString()
-          }
-        }
+            buildingId: buildingId.value.toString(),
+          },
+        },
       })
     }
 
     if (floorNumber.value !== null) {
       items.push({
         label: `სართული ${floorNumber.value}`,
-        route: null // Current page
+        route: null, // Current page
       })
     }
 
     return items
   })
 
-  // Actions
+  // ==================== ACTIONS ====================
   function setProject(id: number, name: string) {
     projectId.value = id
     projectName.value = name
@@ -73,7 +75,15 @@ export const useZoneEditorStore = defineStore('zoneEditor', () => {
     entryPoint.value = entry
   }
 
-  function clearContext() {
+  function getBackRoute(): string {
+    if (entryPoint.value === 'projects') {
+      return '/admin/projects'
+    }
+    return '/admin/projects' // Default to projects
+  }
+
+  // ==================== RESET ====================
+  function $reset() {
     projectId.value = null
     projectName.value = ''
     buildingId.value = null
@@ -82,13 +92,12 @@ export const useZoneEditorStore = defineStore('zoneEditor', () => {
     entryPoint.value = 'direct'
   }
 
-  function getBackRoute(): string {
-    if (entryPoint.value === 'projects') {
-      return '/admin/projects'
-    }
-    return '/admin/projects' // Default to projects
+  // Kept for backward compatibility if used elsewhere, but simply calls reset
+  function clearContext() {
+    $reset()
   }
 
+  // ==================== RETURN ====================
   return {
     projectId,
     projectName,
@@ -102,6 +111,7 @@ export const useZoneEditorStore = defineStore('zoneEditor', () => {
     setFloor,
     setEntryPoint,
     clearContext,
-    getBackRoute
+    $reset,
+    getBackRoute,
   }
 })

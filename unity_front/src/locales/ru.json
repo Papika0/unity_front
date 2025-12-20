@@ -56,5 +56,40 @@
     },
     "buttons": {
         "retry": "Повторить"
+    },
+    "admin": {
+        "sidebar": {
+            "title": "Админ панель",
+            "subtitle": "Система управления",
+            "dashboard": "Дашборд",
+            "projects": "Проекты",
+            "features": "Функции",
+            "news": "Новости",
+            "gallery": "Галерея",
+            "translations": "Переводы",
+            "contact_info": "Контактная информация",
+            "about_settings": "Настройки \"О нас\"",
+            "buildings": "Здания",
+            "apartments": "Квартиры",
+            "customers": "Запросы клиентов",
+            "marketing_emails": "Маркетинговые письма",
+            "users": "Управление пользователями",
+            "calculator": "Калькулятор",
+            "bank_rates": "Банковские ставки",
+            "logout": "Выход"
+        },
+        "topbar": {
+            "refresh_data": "Обновить данные",
+            "refreshing": "Обновление данных..."
+        },
+        "common": {
+            "save": "Сохранить",
+            "cancel": "Отмена",
+            "delete": "Удалить",
+            "edit": "Редактировать",
+            "create": "Создать",
+            "actions": "Действия",
+            "search": "Поиск"
+        }
     }
 }

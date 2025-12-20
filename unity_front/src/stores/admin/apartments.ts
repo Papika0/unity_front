@@ -1,39 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Apartment, ApartmentStatus } from '@/types/apartments'
-import api from '@/plugins/axios/api'
-
-interface ApartmentFormData {
-  floor_number: number
-  apartment_number: string
-  status: ApartmentStatus
-  price?: number | null
-  area_total?: number | null
-  area_living?: number | null
-  bedrooms?: number | null
-  bathrooms?: number | null
-  has_balcony: boolean
-  has_parking: boolean
-}
-
-interface BulkImportResult {
-  success: boolean
-  message: string
-  imported_count?: number
-  failed_count?: number
-  errors?: Array<{
-    row: number
-    errors: string[]
-  }>
-}
-
-interface ApartmentFilters {
-  floor_number?: number
-  status?: ApartmentStatus
-  min_price?: number
-  max_price?: number
-  page?: number
-}
+import {
+  adminApartmentsApi,
+  type ApartmentFormData,
+  type ApartmentFilters,
+  type BulkImportResponse,
+} from '@/services/adminApartmentsApi'
 
 export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
   // ==================== STATE ====================
@@ -46,23 +19,20 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
     total: 0,
     per_page: 50,
     current_page: 1,
-    last_page: 1
+    last_page: 1,
   })
 
   // ==================== ACTIONS ====================
   async function fetchApartments(
     projectId: number,
     buildingId: number,
-    filters?: ApartmentFilters
+    filters?: ApartmentFilters,
   ) {
     isLoading.value = true
     error.value = null
 
     try {
-      const response = await api.get(
-        `/admin/projects/${projectId}/buildings/${buildingId}/apartments`,
-        { params: filters }
-      )
+      const response = await adminApartmentsApi.getAll(projectId, buildingId, filters)
 
       if ('data' in response && response.data) {
         apartments.value = response.data.data || []
@@ -73,7 +43,7 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
             total: response.data.meta.total || 0,
             per_page: response.data.meta.per_page || 50,
             current_page: response.data.meta.current_page || 1,
-            last_page: response.data.meta.last_page || 1
+            last_page: response.data.meta.last_page || 1,
           }
         }
       } else {
@@ -95,16 +65,13 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
   async function createApartment(
     projectId: number,
     buildingId: number,
-    data: ApartmentFormData
+    data: ApartmentFormData,
   ) {
     isLoading.value = true
     error.value = null
 
     try {
-      const response = await api.post(
-        `/admin/projects/${projectId}/buildings/${buildingId}/apartments`,
-        data
-      )
+      const response = await adminApartmentsApi.create(projectId, buildingId, data)
 
       if ('data' in response && response.data?.data) {
         const newApartment = response.data.data
@@ -130,7 +97,7 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
     error.value = null
 
     try {
-      const response = await api.put(`/admin/apartments/${apartmentId}`, data)
+      const response = await adminApartmentsApi.update(apartmentId, data)
 
       if ('data' in response && response.data?.data) {
         const updatedApartment = response.data.data
@@ -167,7 +134,7 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
     error.value = null
 
     try {
-      const response = await api.patch(`/admin/apartments/${apartmentId}/status`, { status })
+      const response = await adminApartmentsApi.updateStatus(apartmentId, status)
 
       if ('data' in response && response.data?.data) {
         const updatedApartment = response.data.data
@@ -204,7 +171,7 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
     error.value = null
 
     try {
-      await api.delete(`/admin/apartments/${apartmentId}`)
+      await adminApartmentsApi.delete(apartmentId)
 
       // Remove from list
       apartments.value = apartments.value.filter((a: Apartment) => a.id !== apartmentId)
@@ -230,25 +197,16 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
   async function bulkImport(
     projectId: number,
     buildingId: number,
-    file: File
-  ): Promise<BulkImportResult> {
+    file: File,
+  ): Promise<BulkImportResponse> {
     isLoading.value = true
     error.value = null
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const response = await api.post(
-        `/admin/projects/${projectId}/buildings/${buildingId}/apartments/bulk-import`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
-      )
+      const response = await adminApartmentsApi.bulkImport(projectId, buildingId, file)
 
       if ('data' in response && response.data) {
-        const result: BulkImportResult = {
+        const result: BulkImportResponse = {
           success: response.data.success || false,
           message: response.data.message || 'Import completed',
           imported_count: response.data.imported_count,
@@ -282,10 +240,7 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
     error.value = null
 
     try {
-      const response = await api.get(
-        '/admin/projects/0/buildings/0/apartments/template',
-        { responseType: 'blob' }
-      )
+      const response = await adminApartmentsApi.downloadTemplate()
 
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]))

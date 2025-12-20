@@ -4,8 +4,10 @@
  */
 
 export * from './about'
+export * from './adminAboutInfoApi'
 export * from './adminBankRatesApi'
 export * from './adminCalculatorApi'
+export * from './adminContactInfoApi'
 export * from './adminCustomerApi'
 export * from './adminImageApi'
 export * from './adminMarketingEmailApi'

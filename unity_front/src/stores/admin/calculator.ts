@@ -27,7 +27,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
   const paymentCalculator = usePaymentCalculator()
   const bankCalculator = useBankCalculator()
 
-  // State
+  // ==================== STATE ====================
   const activeProjects = ref<ActiveProject[]>([])
   const selectedProject = ref<ActiveProject | null>(null)
   const usesCustomPrice = ref(false)
@@ -46,7 +46,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
   const calculating = ref(false)
   const error = ref('')
 
-  // Computed
+  // ==================== GETTERS ====================
   const basePrice = computed(() => {
     if (usesCustomPrice.value) {
       return customBasePrice.value
@@ -71,7 +71,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
     return calculationResult.value
   })
 
-  // Actions
+  // ==================== ACTIONS ====================
   const loadActiveProjects = async () => {
     try {
       loading.value = true
@@ -181,7 +181,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
     }
   }
 
-  const reset = () => {
+  const $reset = () => {
     selectedProject.value = null
     usesCustomPrice.value = false
     customBasePrice.value = 0
@@ -238,7 +238,7 @@ export const useCalculatorStore = defineStore('calculator', () => {
     selectBankOption,
     calculatePayment,
     calculateBankLoan,
-    reset,
+    $reset,
     clearError,
     initialize,
   }

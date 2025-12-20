@@ -26,15 +26,13 @@ export { validateCanvasDimensions, isWebPSupported, hasTransparency } from './va
 export { calculateSmartQuality, calculateOptimalDimensions } from './quality'
 
 // Re-export batch utilities
+export { compressBatch, checkTotalPayloadSize, getCompressionStats } from './batch'
 export {
-  compressBatch,
   autoCompressForUpload,
   compressProjectImages,
-  checkTotalPayloadSize,
-  getCompressionStats,
   compressFileIfNeeded,
   compressImageForType,
-} from './batch'
+} from './batch-helpers'
 
 // Import for internal use
 import type { CompressionOptions, CompressionResult } from './types'
