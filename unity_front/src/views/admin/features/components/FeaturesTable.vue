@@ -7,27 +7,27 @@
             <th
               class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40 sm:w-48"
             >
-              ფუნქცია
+              {{ t('admin.features.title') }}
             </th>
             <th
               class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40 sm:w-48"
             >
-              სტატუსი
+              {{ t('admin.common.status') }}
             </th>
             <th
               class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              საკვანძო სიტყვები
+              Keywords
             </th>
             <th
               class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24 sm:w-32"
             >
-              დალაგების რიგი
+              Sort Order
             </th>
             <th
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-80"
             >
-              ქმედებები
+              {{ t('admin.common.actions') }}
             </th>
           </tr>
         </thead>
@@ -52,7 +52,7 @@
                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                 :class="feature.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
               >
-                {{ feature.is_active ? 'აქტიური' : 'არააქტიური' }}
+                {{ feature.is_active ? t('admin.common.active') : t('admin.common.inactive') }}
               </span>
             </td>
 
@@ -87,13 +87,13 @@
                   :to="`/admin/features/edit/${feature.id}`"
                   class="text-blue-600 hover:text-blue-800 transition-colors"
                 >
-                  რედაქტირება
+                  {{ t('admin.common.edit') }}
                 </router-link>
                 <button
                   @click="$emit('delete', feature.id)"
                   class="text-red-600 hover:text-red-800 transition-colors"
                 >
-                  წაშლა
+                  {{ t('admin.common.delete') }}
                 </button>
               </div>
             </td>
@@ -106,6 +106,7 @@
 
 <script setup lang="ts">
 import type { Feature } from '@/services/featuresApi'
+import { useTranslations } from '@/composables/useTranslations'
 
 defineProps<{
   features: Feature[]
@@ -114,4 +115,6 @@ defineProps<{
 defineEmits<{
   (e: 'delete', id: number): void
 }>()
+
+const { t } = useTranslations()
 </script>

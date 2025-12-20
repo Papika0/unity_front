@@ -43,13 +43,13 @@
             />
           </svg>
         </div>
-        <h3 class="text-2xl font-light text-red-800 mb-4">სიახლეების ჩატვირთვის შეცდომა</h3>
+        <h3 class="text-2xl font-light text-red-800 mb-4">{{ t('admin.errors.loading_failed') }}</h3>
         <p class="text-red-600 text-lg mb-8">{{ error }}</p>
         <button
           @click="adminNewsStore.loadArticles()"
           class="bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-3 rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
         >
-          ხელახლა ცდა
+          {{ t('admin.common.retry') }}
         </button>
       </div>
 
@@ -57,7 +57,7 @@
         <!-- Articles Header -->
         <div class="text-center mb-12">
           <h2 class="text-3xl md:text-4xl font-light text-slate-800 mb-4">
-            {{ adminNewsStore.searchQuery ? 'ძებნის შედეგები' : 'ყველა სიახლე' }}
+            {{ adminNewsStore.searchQuery ? t('admin.messages.no_results') : t('admin.news.title') }}
           </h2>
           <div
             class="w-16 h-px bg-gradient-to-r from-transparent via-slate-400 to-transparent mx-auto mb-6"
@@ -122,6 +122,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
 import { useNewsList } from './composables/useNewsList'
 import NewsListHeader from './components/list/NewsListHeader.vue'
 import NewsListFilters from './components/list/NewsListFilters.vue'
@@ -130,6 +131,8 @@ import NewsEmptyState from './components/list/NewsEmptyState.vue'
 import NewsPagination from './components/list/NewsPagination.vue'
 import NewsDeleteModal from './components/modals/NewsDeleteModal.vue'
 import NewsFeaturedModal from './components/modals/NewsFeaturedModal.vue'
+
+const { t } = useTranslations()
 
 const {
   // State
