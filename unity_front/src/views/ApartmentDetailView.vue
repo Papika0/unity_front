@@ -31,18 +31,18 @@
       :class="[isInline ? 'mt-4 lg:mt-8' : 'pt-24 lg:pt-32 pb-12 lg:pb-20 px-4 lg:px-6 min-h-screen']"
     >
       <!-- Loading State -->
-      <div v-if="apartmentStore.isLoading" class="w-full flex flex-col items-center justify-center min-h-[400px]">
+      <div v-if="isLoading" class="w-full flex flex-col items-center justify-center min-h-[400px]">
         <div class="w-12 h-12 border-2 border-zinc-200 border-t-[#FFCD4B] rounded-full animate-spin mb-4"></div>
         <p class="text-zinc-400 font-light tracking-widest uppercase text-sm">{{ t('common.loading') }}</p>
       </div>
 
       <!-- Error State -->
-      <div v-else-if="apartmentStore.error" class="w-full text-center py-20">
+      <div v-else-if="error" class="w-full text-center py-20">
         <div class="inline-block p-4 rounded-full bg-red-50 text-red-500 mb-4">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
         </div>
         <h2 class="text-xl font-light mb-2 text-zinc-900">{{ t('apartments.error_loading') }}</h2>
-        <p class="text-zinc-500 mb-6">{{ apartmentStore.error }}</p>
+        <p class="text-zinc-500 mb-6">{{ error }}</p>
         <button @click="loadData" class="px-6 py-2 bg-zinc-900 text-white hover:bg-[#FFCD4B] hover:text-black transition-colors rounded-full uppercase tracking-wider text-xs font-medium">
           {{ t('buttons.retry') }}
         </button>
@@ -199,22 +199,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useTranslations } from '@/composables/useTranslations'
-import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
-import type { ApartmentStatus } from '@/types/apartments'
-import { 
-  BedDouble, 
-  Bath, 
-  ChefHat, 
-  Sofa, 
-  DoorOpen, 
-  Shirt, 
-  Maximize,
-  Wind,
-  Box
-} from 'lucide-vue-next'
+import { useApartmentDetail } from './apartments/composables'
 
 interface Props {
   projectId: number
@@ -232,141 +217,18 @@ const emit = defineEmits<{
   'back': []
 }>()
 
-const router = useRouter()
-const { t } = useTranslations()
-const apartmentStore = useApartmentNavigationStore()
-
-// Computed apartment data
-const apartment = computed(() => apartmentStore.selectedApartment)
-
-
-
-// ... existing code ...
-
-const roomList = computed(() => {
-  let details = apartment.value?.room_details
-  
-  // Handle stringified JSON from backend
-  if (typeof details === 'string') {
-    try {
-      details = JSON.parse(details)
-    } catch (e) {
-      console.error('Failed to parse room_details', e)
-      return []
-    }
-  }
-
-  if (!details) return []
-  const list: { key: string; label: string; area: number; icon: typeof Maximize }[] = []
-  
-  // Helper to process room group
-  const processGroup = (group: Record<string, number> | undefined) => {
-    if (!group) return
-    Object.entries(group).forEach(([key, area]) => {
-      let label = ''
-      let icon: typeof Maximize = Maximize // Default icon
-
-      // Dynamic Bedroom Parsing
-      const bedroomMatch = key.match(/^bedroom_?(\d+)$/)
-      if (bedroomMatch) {
-         label = `${t('apartments.rooms.bedroom')} ${bedroomMatch[1]}`
-         icon = BedDouble
-      } 
-      // Dynamic Bathroom Parsing
-      else if (key.match(/^bathroom_?(\d+)$/)) {
-         const match = key.match(/^bathroom_?(\d+)$/)
-         label = `${t('apartments.rooms.bathroom')} ${match ? match[1] : ''}`
-         icon = Bath
-      }
-      // Specific Known Rooms
-      else if (key.includes('living') || key.includes('studio')) {
-          label = t(`apartments.rooms.${key}`)
-          icon = Sofa
-      }
-      else if (key.includes('kitchen')) {
-          label = t(`apartments.rooms.${key}`)
-          icon = ChefHat
-      }
-      else if (key.includes('hall') || key.includes('corridor') || key.includes('entrance')) {
-          label = t(`apartments.rooms.${key}`)
-          icon = DoorOpen
-      }
-      else if (key.includes('dressing') || key.includes('wardrobe')) {
-          label = t(`apartments.rooms.${key}`)
-          icon = Shirt
-      }
-      else if (key.includes('balcony')) {
-          label = t(`apartments.rooms.${key}`)
-          icon = Wind
-      }
-      else {
-          // Fallback
-          label = t(`apartments.rooms.${key}`)
-          icon = Box
-      }
-
-      list.push({ key, label, area, icon })
-    })
-  }
-
-  processGroup(details.bedrooms)
-  processGroup(details.bathrooms)
-  processGroup(details.other_rooms)
-  
-  return list
-})
-
-// Load data on mount
-async function loadData() {
-  await apartmentStore.loadApartmentDetail(props.apartmentId)
-}
-
-onMounted(() => {
-  loadData()
-})
-
-// Watch for prop changes
-watch(() => props.apartmentId, () => {
-  loadData()
-})
-
-function goBack() {
-  if (props.isInline) {
-    emit('back')
-  } else {
-    router.push({
-      name: 'apartment-selection', 
-      params: {
-        id: props.projectId,
-        buildingIdentifier: props.buildingIdentifier,
-        floorNumber: props.floorNumber,
-      },
-    })
-  }
-}
-
-function formatPrice(price: number): string {
-    return new Intl.NumberFormat('en-US').format(price)
-}
-
-function getStatusClasses(status: ApartmentStatus) {
-    if (props.isInline) {
-        // Light mode status
-         switch (status) {
-            case 'available': return 'bg-emerald-50 text-emerald-600 border-emerald-200'
-            case 'reserved': return 'bg-orange-50 text-orange-600 border-orange-200'
-            case 'sold': return 'bg-red-50 text-red-600 border-red-200'
-            default: return 'bg-zinc-50 text-zinc-500 border-zinc-200'
-        }
-    }
-    // Dark mode status (legacy support if page used standalone in dark mode)
-    switch (status) {
-        case 'available': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-        case 'reserved': return 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-        case 'sold': return 'bg-red-500/20 text-red-400 border-red-500/30'
-        default: return 'bg-zinc-800 text-zinc-400 border-zinc-700'
-    }
-}
+const {
+  t,
+  apartmentStore,
+  apartment,
+  isLoading,
+  error,
+  roomList,
+  loadData,
+  goBack,
+  formatPrice,
+  getStatusClasses,
+} = useApartmentDetail(props, () => emit('back'))
 </script>
 
 <style scoped>

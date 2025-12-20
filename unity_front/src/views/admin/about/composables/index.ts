@@ -1,0 +1,1 @@
+export { useAboutSettings } from './useAboutSettings'
