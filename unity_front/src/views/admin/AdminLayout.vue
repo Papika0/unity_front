@@ -66,6 +66,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth/auth'
 import { dashboardApi } from '@/services/dashboardApi'
+import { useTranslations } from '@/composables/useTranslations'
 
 // Sub-components
 import AdminSidebar from './layout/AdminSidebar.vue'
@@ -78,6 +79,7 @@ import {
   CALCULATOR_NAV_ITEMS,
 } from './layout/navigation'
 
+const { t } = useTranslations()
 const router = useRouter()
 const authStore = useAuthStore()
 const mobileMenuOpen = ref(false)
@@ -113,7 +115,7 @@ const handleClearCache = async () => {
     userMenuOpen.value = false
   } catch (error) {
     console.error('Error clearing cache:', error)
-    toastMessage.value = 'მონაცემების განახლება ვერ მოხერხდა'
+    toastMessage.value = t('admin.errors.save_failed')
     showToast.value = true
     setTimeout(() => { showToast.value = false }, 3000)
   } finally {

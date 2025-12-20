@@ -1,12 +1,13 @@
 <template>
   <div class="flex justify-between items-center">
     <div>
-      <h1 class="text-2xl font-bold text-slate-800">კლიენტები</h1>
-      <p class="text-sm text-slate-600 mt-1">მომხმარებლების მოთხოვნების მართვა</p>
+      <h1 class="text-2xl font-bold text-slate-800">{{ t('admin.sidebar.customers') }}</h1>
+      <p class="text-sm text-slate-600 mt-1">{{ t('admin.sidebar.customers') }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// No logic needed here for now
+import { useTranslations } from '@/composables/useTranslations'
+const { t } = useTranslations()
 </script>

@@ -18,7 +18,7 @@
             <div class="h-8 w-8 bg-white rounded-lg flex items-center justify-center border border-slate-200">
               <img src="@/assets/logo_black.png" alt="Unity Logo" class="h-full w-full object-contain" />
             </div>
-            <h1 class="ml-3 text-lg font-bold text-slate-800">ადმინისტრაციული პანელი</h1>
+            <h1 class="ml-3 text-lg font-bold text-slate-800">{{ t('admin.sidebar.title') }}</h1>
           </div>
           <nav class="mt-5 px-4 space-y-2">
             <MobileNavLink
@@ -44,7 +44,7 @@
 
             <!-- Calculator Section -->
             <div v-if="isAdmin || isMarketing" class="pt-4 mt-4 border-t border-slate-200">
-              <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">გადახდის კალკულატორი</p>
+              <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{{ t('admin.sidebar.calculator') }}</p>
               <MobileNavLink
                 v-for="item in calculatorItems"
                 :key="item.id"
@@ -62,8 +62,11 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
 import MobileNavLink from './MobileNavLink.vue'
 import type { NavItem } from './navigation'
+
+const { t } = useTranslations()
 
 defineProps<{
   isAdmin: boolean

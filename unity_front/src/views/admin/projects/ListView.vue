@@ -5,23 +5,23 @@
       <div class="flex flex-col gap-4 mb-6 sm:mb-8 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex-1">
           <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600">
-            პროექტების მართვა
+            {{ t('admin.projects.title') }}
           </h1>
-          <p class="mt-2 text-slate-600 text-sm sm:text-base md:text-lg">პროექტების მართვა, შექმნა, რედაქტირება და წაშლა.</p>
+          <p class="mt-2 text-slate-600 text-sm sm:text-base md:text-lg">{{ t('admin.sidebar.projects') }}</p>
         </div>
         <div class="flex-shrink-0 flex flex-col gap-2 sm:gap-3">
           <button @click="goToAddProject" class="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl hover:shadow-amber-200/50 transition-all duration-300 font-medium flex items-center justify-center gap-2 text-sm sm:text-base">
             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            ახალი პროექტის დამატება
+            {{ t('admin.projects.add_project') }}
           </button>
           <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <button @click="openFeaturedModal" class="bg-white/80 backdrop-blur border border-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-xl hover:bg-yellow-50 hover:border-yellow-400 transition-all font-medium text-sm sm:text-base">
-              რჩეული პროექტები
+              {{ t('admin.common.featured') }}
             </button>
             <button @click="openHomepageModal" class="bg-white/80 backdrop-blur border border-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-xl hover:bg-blue-50 hover:border-blue-400 transition-all font-medium text-sm sm:text-base">
-              მთავარი პროექტები
+              {{ t('admin.sidebar.projects') }}
             </button>
           </div>
         </div>
@@ -45,7 +45,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
         <p class="text-red-600 text-sm sm:text-base">{{ error }}</p>
-        <button @click="initialize" class="mt-3 sm:mt-4 bg-red-100 text-red-800 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors text-sm sm:text-base">ხელახლა ცდა</button>
+        <button @click="initialize" class="mt-3 sm:mt-4 bg-red-100 text-red-800 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors text-sm sm:text-base">{{ t('admin.common.retry') }}</button>
       </div>
 
       <!-- Projects Grid -->
@@ -63,7 +63,7 @@
       <div v-if="showFeaturedModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4" @click.self="cancelFeaturedSelection">
         <div class="bg-white/95 rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 border border-slate-200/50 max-h-[90vh] flex flex-col">
           <div class="p-4 sm:p-6 md:p-8 border-b border-slate-200/50 flex items-center justify-between flex-shrink-0">
-            <h2 class="text-base sm:text-lg md:text-xl font-bold text-slate-800">რჩეული პროექტების არჩევა</h2>
+            <h2 class="text-base sm:text-lg md:text-xl font-bold text-slate-800">{{ t('admin.common.featured') }}</h2>
             <button @click="cancelFeaturedSelection" class="text-slate-400 hover:text-slate-600 text-xl sm:text-2xl">✕</button>
           </div>
           <div class="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1">
@@ -83,8 +83,8 @@
             </div>
           </div>
           <div class="p-4 sm:p-6 md:p-8 border-t border-slate-200/50 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-end flex-shrink-0">
-            <button @click="cancelFeaturedSelection" class="px-4 sm:px-6 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm sm:text-base order-2 sm:order-1">გაუქმება</button>
-            <button @click="saveFeaturedProjects" :disabled="savingFeatured" class="px-4 sm:px-6 py-2 rounded-xl bg-yellow-500 text-white font-bold shadow hover:bg-yellow-600 text-sm sm:text-base order-1 sm:order-2">შენახვა</button>
+            <button @click="cancelFeaturedSelection" class="px-4 sm:px-6 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm sm:text-base order-2 sm:order-1">{{ t('admin.common.cancel') }}</button>
+            <button @click="saveFeaturedProjects" :disabled="savingFeatured" class="px-4 sm:px-6 py-2 rounded-xl bg-yellow-500 text-white font-bold shadow hover:bg-yellow-600 text-sm sm:text-base order-1 sm:order-2">{{ t('admin.common.save') }}</button>
           </div>
         </div>
       </div>
@@ -93,7 +93,7 @@
       <div v-if="showHomepageModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4" @click.self="cancelHomepageSelection">
         <div class="bg-white/95 rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 border border-slate-200/50 max-h-[90vh] flex flex-col">
           <div class="p-4 sm:p-6 md:p-8 border-b border-slate-200/50 flex items-center justify-between flex-shrink-0">
-            <h2 class="text-base sm:text-lg md:text-xl font-bold text-slate-800">მთავარი პროექტების არჩევა</h2>
+            <h2 class="text-base sm:text-lg md:text-xl font-bold text-slate-800">{{ t('admin.sidebar.projects') }}</h2>
             <button @click="cancelHomepageSelection" class="text-slate-400 hover:text-slate-600 text-xl sm:text-2xl">✕</button>
           </div>
           <div class="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1">
@@ -113,8 +113,8 @@
             </div>
           </div>
           <div class="p-4 sm:p-6 md:p-8 border-t border-slate-200/50 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-end flex-shrink-0">
-            <button @click="cancelHomepageSelection" class="px-4 sm:px-6 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm sm:text-base order-2 sm:order-1">გაუქმება</button>
-            <button @click="saveHomepageProjects" :disabled="savingHomepage" class="px-4 sm:px-6 py-2 rounded-xl bg-blue-500 text-white font-bold shadow hover:bg-blue-600 text-sm sm:text-base order-1 sm:order-2">შენახვა</button>
+            <button @click="cancelHomepageSelection" class="px-4 sm:px-6 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm sm:text-base order-2 sm:order-1">{{ t('admin.common.cancel') }}</button>
+            <button @click="saveHomepageProjects" :disabled="savingHomepage" class="px-4 sm:px-6 py-2 rounded-xl bg-blue-500 text-white font-bold shadow hover:bg-blue-600 text-sm sm:text-base order-1 sm:order-2">{{ t('admin.common.save') }}</button>
           </div>
         </div>
       </div>
@@ -123,9 +123,12 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
 import { getImageUrl } from '@/utils/imageUrl'
 import { ProjectCard } from './components'
 import { useProjectsList } from './composables'
+
+const { t } = useTranslations()
 
 const {
   projects,
