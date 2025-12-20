@@ -7,29 +7,15 @@
           @click="goBack"
           class="inline-flex items-center text-amber-600 hover:text-amber-700 transition-all duration-300 mb-6 group font-medium text-sm bg-white/80 px-4 py-2 rounded-full border border-slate-300 hover:border-amber-500/50 shadow-sm"
         >
-          <svg
-            class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform duration-300"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            ></path>
+          <svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
           უკან დეტალებზე
         </button>
-        <h1
-          class="text-5xl font-light bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 bg-clip-text text-transparent mb-3 tracking-tight leading-tight py-1"
-        >
+        <h1 class="text-5xl font-light bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 bg-clip-text text-transparent mb-3 tracking-tight leading-tight py-1">
           პროექტის რედაქტირება
         </h1>
-        <p class="text-slate-600 text-xl font-light">
-          განაახლეთ პროექტის ინფორმაცია და მედია ფაილები
-        </p>
+        <p class="text-slate-600 text-xl font-light">განაახლეთ პროექტის ინფორმაცია და მედია ფაილები</p>
       </div>
 
       <ProjectForm
@@ -54,89 +40,23 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useAdminProjectsStore } from '@/stores/admin/projects'
-import { useProjectForm } from '@/composables/useProjectForm'
 import { ProjectForm } from '@/components/admin'
-
-const route = useRoute()
-const router = useRouter()
-const adminProjectsStore = useAdminProjectsStore()
-const id = Number(route.params.id)
-
-const backendUrl = import.meta.env.VITE_BACKEND_URL
+import { useProjectEdit } from './composables'
 
 const {
+  form,
+  previews,
   submitting,
   translating,
-  createInitialForm,
-  createInitialPreviews,
-  handleTranslate: baseHandleTranslate,
-  handleFileChange: baseHandleFileChange,
-  handleGalleryChange: baseHandleGalleryChange,
-  removeGalleryImage: baseRemoveGalleryImage,
-  prepareFormData,
-  loadProjectData,
-} = useProjectForm()
-
-const form = reactive(createInitialForm(true))
-const previews = reactive(createInitialPreviews())
-
-function goBack() {
-  router.push({ name: 'admin-project-detail', params: { id } })
-}
-
-function updateForm(updatedForm: Partial<typeof form>) {
-  Object.assign(form, updatedForm)
-}
-
-async function load() {
-  try {
-    const result = await adminProjectsStore.fetchProject(id)
-    if (result.success && result.data) {
-      loadProjectData(form, previews, result.data as unknown as Record<string, unknown>, backendUrl)
-    }
-  } catch (error) {
-    console.error('Failed to load project:', error)
-  }
-}
-
-function handleTranslate(fieldName: string, fromLang: string, toLang: string) {
-  baseHandleTranslate(form, fieldName, fromLang, toLang)
-}
-
-function handleFileChange(fieldName: 'main_image' | 'render_image', files: FileList | null) {
-  baseHandleFileChange(form, previews, fieldName, files)
-}
-
-function handleGalleryChange(files: FileList | null) {
-  baseHandleGalleryChange(form, previews, files, true)
-}
-
-function removeGalleryImage(index: number) {
-  baseRemoveGalleryImage(form, previews, index, true)
-}
-
-async function onSubmit() {
-  try {
-    submitting.value = true
-    const formData = await prepareFormData(form, true)
-
-    const result = await adminProjectsStore.editProject(id, formData)
-    if (result.success) {
-      router.push({ name: 'admin-project-detail', params: { id } })
-    } else {
-      console.error('Update failed:', result.error)
-    }
-  } catch (error) {
-    console.error('Update failed:', error)
-  } finally {
-    submitting.value = false
-  }
-}
-
-onMounted(load)
+  backendUrl,
+  goBack,
+  updateForm,
+  handleTranslate,
+  handleFileChange,
+  handleGalleryChange,
+  removeGalleryImage,
+  onSubmit,
+} = useProjectEdit()
 </script>
 
 <style scoped>
@@ -144,7 +64,6 @@ onMounted(load)
   max-width: 1200px;
 }
 
-/* Custom select styling for light theme */
 select {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
   background-position: right 1rem center;
@@ -153,7 +72,6 @@ select {
   padding-right: 3rem;
 }
 
-/* Enhanced focus styles for light theme */
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
@@ -162,7 +80,6 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-/* Custom scrollbar for light theme */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -179,64 +96,5 @@ select:focus-visible {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.8);
-}
-
-/* Smooth animations for form elements */
-input[type='file']::-webkit-file-upload-button {
-  background: rgb(237, 233, 254);
-  color: rgb(109, 40, 217);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-input[type='file']::-webkit-file-upload-button:hover {
-  background: rgb(221, 214, 254);
-  transform: translateY(-1px);
-}
-
-/* Checkbox styling for light theme */
-input[type='checkbox']:checked {
-  background-size: 16px 16px;
-}
-
-/* Enhanced hover effects */
-.group:hover .group-hover\:scale-105 {
-  transform: scale(1.05);
-}
-
-/* Gradient text animation */
-@keyframes gradient-shift {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-.bg-gradient-to-r.from-amber-500.via-amber-400.to-yellow-400 {
-  background-size: 200% 200%;
-  animation: gradient-shift 6s ease-in-out infinite;
-}
-
-/* Card hover effects */
-.bg-white:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-}
-
-/* Button glow effect */
-button[type='submit']:not(:disabled):hover {
-  box-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
-}
-
-/* File input area styling */
-.border-dashed:hover {
-  background-color: rgba(248, 250, 252, 0.8);
 }
 </style>

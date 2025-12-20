@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useProjects } from './projects/composables'
+import { ProjectCard, ProjectsHero, ProjectsFilter } from './projects/components'
 
 const {
   t,
@@ -22,6 +23,10 @@ const {
   getStatusColor,
   getStatusText,
 } = useProjects()
+
+function handleCategoryChange(value: string) {
+  selectedCategory.value = value
+}
 </script>
 
 <template>
@@ -35,81 +40,17 @@ const {
     </div>
 
     <!-- Hero Section -->
-    <section class="relative h-[45vh] min-h-[350px] overflow-hidden bg-black">
-      <div
-        class="absolute inset-0 bg-gradient-to-br from-[#FFCD4B]/10 via-transparent to-transparent transition-opacity duration-1000 delay-200"
-        :class="{ 'opacity-100': heroVisible, 'opacity-0': !heroVisible }"
-      ></div>
-
-      <!-- Decorative corners -->
-      <div
-        class="absolute top-0 right-0 w-64 h-64 opacity-20 transition-all duration-1000 delay-300"
-        :class="{
-          'opacity-20 translate-x-0 translate-y-0': heroVisible,
-          'opacity-0 translate-x-8 -translate-y-8': !heroVisible,
-        }"
-      >
-        <div class="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-[#FFCD4B]"></div>
-      </div>
-      <div
-        class="absolute bottom-0 left-0 w-64 h-64 opacity-20 transition-all duration-1000 delay-400"
-        :class="{
-          'opacity-20 translate-x-0 translate-y-0': heroVisible,
-          'opacity-0 -translate-x-8 translate-y-8': !heroVisible,
-        }"
-      >
-        <div class="absolute bottom-0 left-0 w-24 h-24 border-b-2 border-l-2 border-[#FFCD4B]"></div>
-      </div>
-
-      <div class="relative z-10 h-full flex flex-col justify-center">
-        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32 w-full">
-          <div
-            class="max-w-3xl transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-100"
-            :class="{
-              'opacity-100 translate-y-0 blur-0': heroVisible,
-              'opacity-0 translate-y-12 blur-sm': !heroVisible,
-            }"
-          >
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-light mb-6 leading-tight text-white">
-              {{ t('projects.title') }}
-            </h1>
-            <div
-              class="w-20 h-1 bg-gradient-to-r from-[#FFCD4B] to-transparent mb-6 transition-all duration-1000 delay-300"
-              :class="{ 'scale-x-100': heroVisible, 'scale-x-0': !heroVisible }"
-              style="transform-origin: left"
-            ></div>
-            <p class="text-lg md:text-xl text-[#FFCD4B] font-light leading-relaxed max-w-2xl">
-              {{ t('projects.subtitle') }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
+    <ProjectsHero :hero-visible="heroVisible" />
 
     <!-- Filter Section -->
-    <section ref="filterSectionRef" class="py-16 bg-zinc-50 border-b border-zinc-100">
-      <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-        <div class="flex flex-wrap gap-3 justify-center">
-          <button
-            v-for="(category, index) in categories"
-            :key="category.value"
-            @click="selectedCategory = category.value"
-            class="px-6 py-2.5 text-sm uppercase tracking-wider font-light transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] transform hover:scale-105"
-            :class="[
-              selectedCategory === category.value
-                ? 'bg-black text-[#FFCD4B] shadow-lg'
-                : 'bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-200 hover:border-zinc-300',
-              filterSectionVisible
-                ? 'opacity-100 translate-y-0 scale-100 blur-0'
-                : 'opacity-0 translate-y-8 scale-95 blur-sm',
-            ]"
-            :style="{ transitionDelay: `${index * 100}ms` }"
-          >
-            {{ category.label }}
-          </button>
-        </div>
-      </div>
-    </section>
+    <div ref="filterSectionRef">
+      <ProjectsFilter
+        :categories="categories"
+        :selected-category="selectedCategory"
+        :is-visible="filterSectionVisible"
+        @update:selected-category="handleCategoryChange"
+      />
+    </div>
 
     <!-- Projects Grid -->
     <section ref="projectsGridRef" class="py-16 lg:py-20 bg-white">
@@ -170,77 +111,16 @@ const {
             'opacity-100 scale-100': !isTransitioning,
           }"
         >
-          <div
+          <ProjectCard
             v-for="(project, index) in filteredProjects"
             :key="project.id"
-            class="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30"
-            :class="{
-              'opacity-100 translate-y-0 scale-100 blur-0': projectsGridVisible && !isTransitioning,
-              'opacity-0 translate-y-12 scale-95 blur-sm': !projectsGridVisible || isTransitioning,
-            }"
-            :style="{ transitionDelay: isTransitioning ? '0ms' : `${index * 80}ms` }"
-          >
-            <!-- Project Image -->
-            <div class="relative h-72 bg-zinc-100 overflow-hidden">
-              <img
-                v-if="project.main_image"
-                :src="project.main_image.url"
-                :alt="project.main_image.alt_text || project.title"
-                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
-              />
-              <div v-else class="w-full h-full flex items-center justify-center">
-                <svg class="w-16 h-16 text-zinc-300" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
-                </svg>
-              </div>
-
-              <!-- Gradient overlay -->
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-              <!-- Golden accent line -->
-              <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FFCD4B] via-[#EBB738] to-[#C89116] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-
-              <!-- Status badge -->
-              <div class="absolute top-4 left-4 flex gap-2">
-                <span
-                  class="px-3 py-1 text-xs font-light uppercase tracking-wider backdrop-blur-sm"
-                  :class="getStatusColor(project.status)"
-                >
-                  {{ getStatusText(project.status) }}
-                </span>
-              </div>
-
-              <!-- Year badge -->
-              <div class="absolute top-4 right-4">
-                <span class="px-3 py-1 text-xs font-light bg-white/90 text-zinc-900 backdrop-blur-sm">
-                  {{ project.year }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Project Content -->
-            <div class="p-6 bg-white relative overflow-hidden">
-              <div class="absolute top-0 right-0 w-32 h-32 bg-[#FFCD4B]/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-              <h3 class="text-lg font-light text-zinc-900 mb-3 line-clamp-1 relative z-10 group-hover:text-[#C89116] transition-colors duration-300">
-                {{ project.title }}
-              </h3>
-
-              <div class="flex items-center gap-2 mb-5 text-zinc-500 relative z-10">
-                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-sm font-light line-clamp-1">{{ project.location }}</span>
-              </div>
-
-              <router-link
-                :to="{ name: 'project-detail', params: { id: project.id } }"
-                class="block w-full bg-gradient-to-b from-[#FFCD4B] via-[#EBB738] to-[#C89116] text-black py-3 text-center text-sm uppercase tracking-wider font-light hover:opacity-90 transition-all duration-300 relative z-10 group-hover:shadow-lg transform group-hover:-translate-y-0.5"
-              >
-                {{ t('projects.details') }}
-              </router-link>
-            </div>
-          </div>
+            :project="project"
+            :index="index"
+            :is-visible="projectsGridVisible"
+            :is-transitioning="isTransitioning"
+            :get-status-color="getStatusColor"
+            :get-status-text="getStatusText"
+          />
         </div>
 
         <!-- Pagination Info -->
@@ -269,14 +149,6 @@ const {
 </template>
 
 <style scoped>
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
