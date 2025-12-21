@@ -6,10 +6,10 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '@/plugins/axios/api'
-import { useToast } from '@/composables/useToast'
-import { useZoneValidation } from '@/composables/useZoneValidation'
-import { useUnsavedChanges } from '@/composables/useUnsavedChanges'
-import { useAutoSave } from '@/composables/useAutoSave'
+import { useToast } from '@/composables/ui/useToast'
+import { useZoneValidation } from '@/composables/zone/useZoneValidation'
+import { useUnsavedChanges } from '@/composables/ui/useUnsavedChanges'
+import { useAutoSave } from '@/composables/ui/useAutoSave'
 import type { Polygon } from '@/utils/polygon'
 
 export interface ZoneResponse {

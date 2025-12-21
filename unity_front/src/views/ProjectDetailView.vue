@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { watch, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTranslations } from '@/composables/useTranslations'
-import { useProjectDetail } from '@/composables/useProjectDetail'
+import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useProjectDetail } from '@/composables/pages/useProjectDetail'
 
 // Components
 import ProjectHero from '@/components/project-detail/ProjectHero.vue'

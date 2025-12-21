@@ -210,7 +210,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useApartmentsAdminStore } from '@/stores/admin/apartments'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import type { Building } from '@/types/apartments'
 
 interface Props {

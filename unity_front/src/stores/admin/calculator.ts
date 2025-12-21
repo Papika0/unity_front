@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { adminCalculatorApi } from '@/services/adminCalculatorApi'
-import { usePaymentCalculator } from '@/composables/usePaymentCalculator'
-import { useBankCalculator } from '@/composables/useBankCalculator'
+import { usePaymentCalculator } from '@/composables/calculator/usePaymentCalculator'
+import { useBankCalculator } from '@/composables/calculator/useBankCalculator'
 import type {
   ActiveProject,
   CalculationResult,

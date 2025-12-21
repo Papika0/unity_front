@@ -5,7 +5,7 @@
 
 import { ref, computed, type Ref } from 'vue'
 import type { BuildingZone, FloorZone, ApartmentZone, ApartmentStatus } from '@/types/apartments'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 export type ZoneType = BuildingZone | FloorZone | ApartmentZone
 

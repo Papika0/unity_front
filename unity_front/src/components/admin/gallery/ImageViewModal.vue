@@ -211,7 +211,7 @@
 import { ref } from 'vue'
 import type { AdminImage } from '@/services/adminImageApi'
 import type { MultilingualText } from '@/services/contactApi'
-import { useToast } from '@/composables/useToast'
+import { useToast } from '@/composables/ui/useToast'
 import { useLocaleStore } from '@/stores/ui/locale'
 
 interface Props {

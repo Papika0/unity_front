@@ -135,7 +135,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Building, Apartment } from '@/types/apartments'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t, currentLocale } = useTranslations()
 

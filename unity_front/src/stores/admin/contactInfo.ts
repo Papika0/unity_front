@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useToastStore } from '@/stores/ui/toast'
 import { adminContactInfoApi, type ContactInfoFormData } from '@/services/adminContactInfoApi'
-import type { ContactInfo } from '@/composables/useContactInfo'
+import type { ContactInfo } from '@/composables/pages/useContactInfo'
 
 export const useAdminContactInfoStore = defineStore('adminContactInfo', () => {
   // ==================== STATE ====================

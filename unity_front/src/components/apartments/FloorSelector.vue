@@ -74,9 +74,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 import InteractiveMapViewer from './InteractiveMapViewer.vue'
 import type { FloorZone, BuildingZone, ApartmentZone } from '@/types/apartments'
 

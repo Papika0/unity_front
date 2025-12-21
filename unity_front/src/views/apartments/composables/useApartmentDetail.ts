@@ -5,7 +5,7 @@
 
 import { onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
 import type { ApartmentStatus } from '@/types/apartments'
 import { 

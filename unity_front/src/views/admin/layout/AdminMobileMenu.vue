@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import MobileNavLink from './MobileNavLink.vue'
 import type { NavItem } from './navigation'
 

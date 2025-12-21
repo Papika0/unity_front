@@ -217,7 +217,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ProjectFormData, ProjectPreviews } from '@/composables/useProjectForm'
+import type { ProjectFormData, ProjectPreviews } from '@/composables/forms/useProjectForm'
 import FormCard from '../forms/FormCard.vue'
 import FormSection from '../forms/FormSection.vue'
 import MultiLanguageField from '../forms/MultiLanguageField.vue'

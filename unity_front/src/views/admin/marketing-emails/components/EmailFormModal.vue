@@ -94,7 +94,7 @@
 
 <script setup lang="ts">
 import type { MarketingEmailFormData } from '@/services/adminMarketingEmailApi'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

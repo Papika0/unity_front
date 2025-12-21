@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 import type { ProjectApiResponse } from '@/services/projectsApi'
 
 defineProps<{

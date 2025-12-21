@@ -135,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import ApartmentFormModal from './components/ApartmentFormModal.vue'
 import ApartmentImportModal from './components/ApartmentImportModal.vue'
 import { useApartmentsList } from './composables'

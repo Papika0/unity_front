@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useNewsList } from './news/composables'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 import {
   NewsHero,
   NewsFilters,

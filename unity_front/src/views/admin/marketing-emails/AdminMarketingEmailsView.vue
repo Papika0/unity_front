@@ -55,7 +55,7 @@
 import { computed } from 'vue'
 import { EmailsTable, EmailsFilters, EmailFormModal } from './components'
 import { useMarketingEmails } from './composables'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

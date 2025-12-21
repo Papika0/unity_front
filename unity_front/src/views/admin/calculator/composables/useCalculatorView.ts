@@ -6,8 +6,8 @@
 import { computed, ref, onMounted } from 'vue'
 import { useCalculatorStore } from '@/stores/admin/calculator'
 import { useAuthStore } from '@/stores/auth/auth'
-import { useCalculatorExport } from '@/composables/useCalculatorExport'
-import { useCalculatorPrint } from '@/composables/useCalculatorPrint'
+import { useCalculatorExport } from '@/composables/calculator/useCalculatorExport'
+import { useCalculatorPrint } from '@/composables/calculator/useCalculatorPrint'
 import type { CalculationResult, BankLoanResult } from '@/types/admin/calculator'
 
 type Language = 'ka' | 'en' | 'ru'

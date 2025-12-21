@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
 import InteractiveMapViewer from './InteractiveMapViewer.vue'
 import type { BuildingZone, ApartmentZone, FloorZone } from '@/types/apartments'

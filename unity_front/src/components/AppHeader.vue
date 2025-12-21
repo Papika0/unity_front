@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTranslations } from '../composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useLocaleStore } from '@/stores/ui/locale'
 import IconPhone from './icons/IconPhone.vue'
 

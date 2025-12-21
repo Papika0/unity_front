@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useTranslations } from '../composables/useTranslations'
-import { useNavigationLinks } from '../composables/useNavigationLinks'
-import { useContactInfo } from '../composables/useContactInfo'
+import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useNavigationLinks } from '@/composables/navigation/useNavigationLinks'
+import { useContactInfo } from '@/composables/pages/useContactInfo'
 import { useToastStore } from '../stores/ui/toast'
 import { customerApi, type CustomerData } from '../services/customerApi'
 import BaseButton from './ui/BaseButton.vue'

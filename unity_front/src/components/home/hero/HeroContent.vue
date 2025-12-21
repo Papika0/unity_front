@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import type { Project } from '@/stores/public/projects'
 
 interface Props {

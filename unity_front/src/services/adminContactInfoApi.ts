@@ -4,7 +4,7 @@
  */
 
 import api from '@/plugins/axios/api'
-import type { ContactInfo } from '@/composables/useContactInfo'
+import type { ContactInfo } from '@/composables/pages/useContactInfo'
 
 export interface ContactInfoFormData {
   email: string

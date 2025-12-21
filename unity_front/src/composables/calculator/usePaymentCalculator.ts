@@ -10,7 +10,7 @@ import {
   generateBalloonSchedule,
   generateOneTimeSchedule,
   generateNegotiatedSchedule,
-} from './calculator/scheduleGenerators'
+} from './scheduleGenerators'
 
 export const usePaymentCalculator = () => {
   // ==================== HELPERS ====================

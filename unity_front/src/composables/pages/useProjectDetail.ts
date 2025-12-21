@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTranslations } from './useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useLocaleStore } from '@/stores/ui/locale'
 import { useTranslationsStore } from '@/stores/ui/translations'
 import { projectsApi } from '@/services/projectsApi'

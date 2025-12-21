@@ -209,7 +209,7 @@
 
 <script setup lang="ts">
 import type { AdminNewsArticle } from '@/types/index'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 defineProps<{
   article: AdminNewsArticle

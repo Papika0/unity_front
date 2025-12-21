@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Feature } from '@/services/featuresApi'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 defineProps<{
   feature: Feature

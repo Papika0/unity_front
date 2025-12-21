@@ -7,7 +7,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { format } from 'date-fns'
 import type { CalculationResult, BankLoanResult } from '@/types/admin/calculator'
-import { pdfTranslations, getDescriptionByLanguage, type PDFLanguage } from './calculator/pdfTranslations'
+import { pdfTranslations, getDescriptionByLanguage, type PDFLanguage } from './pdfTranslations'
 
 export const useCalculatorExport = () => {
   // ==================== FORMATTERS ====================

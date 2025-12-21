@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import ContactSettingsForm from '@/components/admin/ContactSettingsForm.vue'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 </script>

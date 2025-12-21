@@ -95,7 +95,7 @@
 
 <script setup lang="ts">
 import { getImageUrl } from '@/utils/imageUrl'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 interface ProjectMainImage {
   id: number

@@ -139,7 +139,7 @@
 <script setup lang="ts">
 import type { Project } from '@/types'
 import ZoneEditorBreadcrumbs from '@/components/admin/ZoneEditorBreadcrumbs.vue'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t, currentLocale } = useTranslations()
 

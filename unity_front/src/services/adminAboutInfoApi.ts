@@ -4,7 +4,7 @@
  */
 
 import api from '@/plugins/axios/api'
-import type { AboutInfo } from '@/composables/useAboutInfo'
+import type { AboutInfo } from '@/composables/pages/useAboutInfo'
 
 export interface AboutInfoFormData {
   stats: {

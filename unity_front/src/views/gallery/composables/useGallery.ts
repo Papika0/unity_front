@@ -4,9 +4,9 @@
  */
 
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useTranslations } from '@/composables/useTranslations'
-import { useGalleryPage } from '@/composables/useGalleryPage'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useGalleryPage } from '@/composables/pages/useGalleryPage'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 
 export function useGallery() {
   // ============================================

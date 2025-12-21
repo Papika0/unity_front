@@ -35,7 +35,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useZoneEditorStore } from '@/stores/admin/zoneEditor'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 const store = useZoneEditorStore()

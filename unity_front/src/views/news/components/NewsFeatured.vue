@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 
 interface NewsArticle {
   id: number

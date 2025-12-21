@@ -122,7 +122,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
 import InteractiveMapViewer from './InteractiveMapViewer.vue'
 import type { ApartmentZone, BuildingZone, FloorZone } from '@/types/apartments'

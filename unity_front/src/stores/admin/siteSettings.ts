@@ -3,8 +3,8 @@ import { ref, computed } from 'vue'
 import { useToastStore } from '@/stores/ui/toast'
 import { adminContactInfoApi, type ContactInfoFormData } from '@/services/adminContactInfoApi'
 import { adminAboutInfoApi, type AboutInfoFormData } from '@/services/adminAboutInfoApi'
-import type { ContactInfo } from '@/composables/useContactInfo'
-import type { AboutInfo } from '@/composables/useAboutInfo'
+import type { ContactInfo } from '@/composables/pages/useContactInfo'
+import type { AboutInfo } from '@/composables/pages/useAboutInfo'
 
 export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => {
   // ==================== STATE ====================

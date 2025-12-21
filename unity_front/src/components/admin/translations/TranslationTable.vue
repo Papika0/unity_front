@@ -198,7 +198,7 @@
 import type { Translation } from '@/types'
 import GroupBadge from '../ui/GroupBadge.vue'
 import StatusBadge from '../ui/StatusBadge.vue'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

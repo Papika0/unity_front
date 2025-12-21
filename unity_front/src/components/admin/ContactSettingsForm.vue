@@ -141,7 +141,7 @@
 import { onMounted, computed, ref } from 'vue'
 import { useContactSettingsAdminStore } from '@/stores/admin/contactSettings'
 import { Translator } from '@/utils/translator'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 
@@ -340,60 +340,3 @@ const handleSave = async () => {
 }
 </style>
 
-<style scoped>
-/* Enhanced Tab Navigation Effects */
-.group:hover .material-icons {
-  transform: scale(1.1);
-}
-
-.backdrop-blur-sm {
-  backdrop-filter: blur(4px);
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.bg-gradient-to-br {
-  background-size: 200% 200%;
-  animation: gradientShift 6s ease infinite;
-}
-
-.shadow-blue-500\/25 {
-  box-shadow: 0 10px 25px -3px rgba(59, 130, 246, 0.25), 0 4px 6px -2px rgba(59, 130, 246, 0.1);
-}
-
-.transform {
-  will-change: transform;
-}
-
-.group .material-icons {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
-  50% { box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.3); }
-}
-
-.bg-gradient-to-br.text-white {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-@media (max-width: 768px) {
-  .text-xs {
-    font-size: 0.7rem;
-    line-height: 0.9rem;
-  }
-}
-
-.group:hover {
-  transform: translateY(-2px) scale(1.05);
-}
-
-.group:active {
-  transform: translateY(0) scale(1.02);
-}
-</style>

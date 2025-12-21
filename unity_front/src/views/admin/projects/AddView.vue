@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { ProjectForm } from '@/components/admin'
 import { useProjectAdd } from './composables'
 

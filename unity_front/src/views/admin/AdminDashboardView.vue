@@ -264,7 +264,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from 'vue'
 import { dashboardApi, type DashboardStatistics } from '@/services/dashboardApi'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import {
   Chart,
   CategoryScale,

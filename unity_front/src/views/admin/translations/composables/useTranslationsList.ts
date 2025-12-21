@@ -12,7 +12,7 @@ import {
 } from '@/services/translations'
 import type { Translation } from '@/types'
 import { Translator } from '@/utils/translator'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 export function useTranslationsList() {
   const { t } = useTranslations()

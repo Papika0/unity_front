@@ -129,8 +129,8 @@
 </template>
 
 <script setup lang="ts">
-import { useTranslations } from '@/composables/useTranslations'
-import type { GalleryImage } from '../../composables/useGalleryList'
+import { useTranslations } from '@/composables/i18n/useTranslations'
+import type { GalleryImage } from '@/views/admin/gallery/composables/useGalleryList'
 import type { MultilingualText } from '@/services/contactApi'
 
 const { t, currentLocale } = useTranslations()

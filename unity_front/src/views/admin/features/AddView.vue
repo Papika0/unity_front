@@ -144,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import OnlineIconPicker from '@/components/admin/OnlineIconPicker.vue'
 import LanguageField from '@/components/admin/forms/LanguageField.vue'
 import { useFeatureForm } from './composables'

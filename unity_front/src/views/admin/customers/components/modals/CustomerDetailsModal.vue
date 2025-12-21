@@ -146,7 +146,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { Customer } from '@/services/adminCustomerApi'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

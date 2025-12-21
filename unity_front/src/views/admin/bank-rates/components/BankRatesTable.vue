@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { BankRate } from '@/types/admin/calculator'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 defineProps<{
   bankRates: BankRate[]

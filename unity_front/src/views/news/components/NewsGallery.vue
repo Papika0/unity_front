@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ImageData } from '@/types/common'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 defineProps<{
   images: ImageData[]

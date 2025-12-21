@@ -171,7 +171,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { usePaymentCalculator } from '@/composables/usePaymentCalculator'
+import { usePaymentCalculator } from '@/composables/calculator/usePaymentCalculator'
 import type { ActiveProject, CalculationResult } from '@/types/admin/calculator'
 
 interface Props {

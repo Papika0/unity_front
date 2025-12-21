@@ -6,7 +6,7 @@
 import { ref } from 'vue'
 import { compressImage } from '@/utils/image-compression'
 import { adminZoneApi } from '@/services/adminZoneApi'
-import { useToast } from '@/composables/useToast'
+import { useToast } from '@/composables/ui/useToast'
 
 export interface ImageUploadOptions {
   projectId: number | string

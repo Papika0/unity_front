@@ -122,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useNewsList } from './composables/useNewsList'
 import NewsListHeader from './components/list/NewsListHeader.vue'
 import NewsListFilters from './components/list/NewsListFilters.vue'

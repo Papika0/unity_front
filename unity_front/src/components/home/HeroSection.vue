@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useHeroSlideshow } from '@/composables/useHeroSlideshow'
+import { useHeroSlideshow } from '@/composables/ui/useHeroSlideshow'
 import { useProjectsStore } from '@/stores/public/projects'
 import { getImageUrl, preloadImages } from '@/utils/imageUrl'
 import { HeroSlide, HeroContent, HeroNavigation } from './hero'

@@ -1,7 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import { adminImageApi } from '@/services/adminImageApi'
 import type { MultilingualText } from '@/services/contactApi'
-import { useToast } from '@/composables/useToast'
+import { useToast } from '@/composables/ui/useToast'
 
 export interface GalleryImage {
   id: number

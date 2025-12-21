@@ -440,7 +440,7 @@
 
 <script setup lang="ts">
 import { useContactSettingsAdminStore } from '@/stores/admin/contactSettings'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

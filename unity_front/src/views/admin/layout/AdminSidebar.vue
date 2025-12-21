@@ -137,7 +137,7 @@
 <script setup lang="ts">
 import SidebarLink from './SidebarLink.vue'
 import type { NavItem } from './navigation'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

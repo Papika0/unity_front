@@ -124,7 +124,7 @@ import BuildingBlockEditorToolbar from './components/building-block-editor/Build
 import BuildingBlockEditorSidebar from './components/building-block-editor/BuildingBlockEditorSidebar.vue'
 import BuildingBlockEditorImageModal from './components/building-block-editor/BuildingBlockEditorImageModal.vue'
 import { useBuildingBlockEditor } from './composables/useBuildingBlockEditor'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

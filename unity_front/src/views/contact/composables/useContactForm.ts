@@ -4,9 +4,9 @@
  */
 
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useTranslations } from '@/composables/useTranslations'
-import { useContactPage } from '@/composables/useContactPage'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useContactPage } from '@/composables/pages/useContactPage'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 import { useToastStore } from '@/stores/ui/toast'
 import { customerApi, type CustomerData } from '@/services/customerApi'
 

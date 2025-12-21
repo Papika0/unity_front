@@ -67,9 +67,9 @@
 </template>
 
 <script setup lang="ts">
-import type { GalleryImage } from '../../composables/useGalleryList'
+import type { GalleryImage } from '@/views/admin/gallery/composables/useGalleryList'
 import GalleryCard from './GalleryCard.vue'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

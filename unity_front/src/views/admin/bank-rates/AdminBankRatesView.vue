@@ -72,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import BankRateFormModal from './components/BankRateFormModal.vue'
 import BankRatesTable from './components/BankRatesTable.vue'
 import { useBankRatesList } from './composables'

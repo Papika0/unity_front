@@ -123,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { getImageUrl } from '@/utils/imageUrl'
 import { ProjectCard } from './components'
 import { useProjectsList } from './composables'

@@ -137,7 +137,7 @@ import ApartmentEditorSidebar from './components/apartment-editor/ApartmentEdito
 import ApartmentEditorImageModal from './components/apartment-editor/ApartmentEditorImageModal.vue'
 import ApartmentEditorPdfModal from './components/apartment-editor/ApartmentEditorPdfModal.vue'
 import { useApartmentEditor } from './composables/useApartmentEditor'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

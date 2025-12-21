@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { RelatedArticle } from '@/types/news'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 import { useLocaleStore } from '@/stores/ui/locale'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 defineProps<{
   articles: RelatedArticle[]

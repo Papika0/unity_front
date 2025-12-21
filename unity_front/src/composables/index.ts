@@ -1,32 +1,32 @@
 /**
  * Composables barrel export
- * All reusable composition functions
+ * All reusable composition functions organized by category
  */
 
-export * from './useAboutInfo'
-export * from './useAutoSave'
-export * from './useBankCalculator'
-export * from './useCalculatorExport'
-export * from './useCalculatorPrint'
-export * from './useContactInfo'
-export * from './useContactPage'
-export * from './useGalleryPage'
-export * from './useNavigationLinks'
-export * from './usePageTitle'
-export * from './usePaymentCalculator'
-export * from './usePerformance'
-export * from './useProjectForm'
-export * from './useProjectsPage'
-export * from './useScrollAnimation'
-export * from './useToast'
-export * from './useTranslationLoader'
-export * from './useTranslations'
-export * from './useUnsavedChanges'
-export * from './useZoneValidation'
-export * from './useInteractiveMap'
-export * from './useHeroSlideshow'
-export * from './useImageUpload'
-export * from './usePdfDetection'
-export * from './useZoneEditor'
-export * from './useProjectDetail'
+// ============================================
+// CATEGORY EXPORTS (Grouped by folder)
+// ============================================
 
+// Animation composables (scroll, parallax, stagger effects)
+export * from './animations'
+
+// Calculator composables (payment, bank, export, print)
+export * from './calculator'
+
+// Zone/Polygon editor composables (editor, validation, image upload)
+export * from './zone'
+
+// Page-level composables (about, contact, gallery, projects)
+export * from './pages'
+
+// UI composables (toast, page title, performance, auto-save)
+export * from './ui'
+
+// Navigation composables (links, interactive map)
+export * from './navigation'
+
+// Form composables (project form)
+export * from './forms'
+
+// i18n composables (translations)
+export * from './i18n'

@@ -271,8 +271,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useApartmentsAdminStore } from '@/stores/admin/apartments'
-import { useToast } from '@/composables/useToast'
-import { useTranslations } from '@/composables/useTranslations'
+import { useToast } from '@/composables/ui/useToast'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import type { Apartment, Building, RoomDetails } from '@/types/apartments'
 
 interface Props {

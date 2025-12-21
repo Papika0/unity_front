@@ -6,7 +6,7 @@
 import { reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAdminProjectsStore } from '@/stores/admin/projects'
-import { useProjectForm } from '@/composables/useProjectForm'
+import { useProjectForm } from '@/composables/forms/useProjectForm'
 
 export function useProjectEdit() {
   // ============================================

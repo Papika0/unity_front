@@ -6,7 +6,7 @@
 import { ref } from 'vue'
 import { adminZoneApi } from '@/services/adminZoneApi'
 import { compressImage } from '@/utils/image-compression'
-import { useToast } from '@/composables/useToast'
+import { useToast } from '@/composables/ui/useToast'
 import type { Polygon } from '@/utils/polygon'
 
 export interface PDFDetectionResult {

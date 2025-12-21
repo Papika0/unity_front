@@ -4,9 +4,9 @@
  */
 
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useTranslations } from '@/composables/useTranslations'
-import { useAboutInfo } from '@/composables/useAboutInfo'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useAboutInfo } from '@/composables/pages/useAboutInfo'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 
 export function useAbout() {
   // ============================================

@@ -18,7 +18,7 @@ import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
 import PhoneModal from '../components/ui/PhoneModal.vue'
 import { useToastStore } from '../stores/ui/toast'
-import { useTranslations } from '../composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { customerApi, type CustomerData } from '../services/customerApi'
 
 const route = useRoute()

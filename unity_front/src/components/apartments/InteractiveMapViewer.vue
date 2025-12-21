@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import { ref, toRef } from 'vue'
 import type { ZoneImage, BuildingZone, FloorZone, ApartmentZone } from '@/types/apartments'
-import { useInteractiveMap } from '@/composables/useInteractiveMap'
+import { useInteractiveMap } from '@/composables/navigation/useInteractiveMap'
 import MapTooltip from './MapTooltip.vue'
 
 interface Props {

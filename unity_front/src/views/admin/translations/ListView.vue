@@ -165,7 +165,7 @@ import {
   CustomDropdown,
 } from '@/components/admin'
 import { useTranslationsList } from './composables'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

@@ -4,10 +4,10 @@
  */
 
 import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
-import { useTranslations } from '@/composables/useTranslations'
-import { useProjectsPage } from '@/composables/useProjectsPage'
+import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useProjectsPage } from '@/composables/pages/useProjectsPage'
 import { useProjectsStore } from '@/stores/public/projects'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 
 export function useProjects() {
   // ============================================

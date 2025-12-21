@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useProjectDetail } from './composables'
 import {
   ProjectHeroImage,

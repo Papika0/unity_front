@@ -335,7 +335,7 @@
 import { computed } from 'vue'
 import LanguageField from '../forms/LanguageField.vue'
 import { CustomDropdown } from '../ui'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

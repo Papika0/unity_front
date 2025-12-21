@@ -66,7 +66,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth/auth'
 import { dashboardApi } from '@/services/dashboardApi'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 // Sub-components
 import AdminSidebar from './layout/AdminSidebar.vue'

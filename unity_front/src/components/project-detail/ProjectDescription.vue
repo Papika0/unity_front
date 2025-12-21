@@ -31,8 +31,8 @@
 </template>
 
 <script setup lang="ts">
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
-import { useTranslations } from '@/composables/useTranslations'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { formatDescription } from '@/utils/formatters'
 
 const { t } = useTranslations()

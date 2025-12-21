@@ -4,10 +4,10 @@
  */
 
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useTranslationsStore } from '@/stores/ui/translations'
 import { useNewsStore } from '@/stores/public/news'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 
 export function useNewsList() {
   // ============================================

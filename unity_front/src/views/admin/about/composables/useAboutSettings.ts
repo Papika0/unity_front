@@ -6,7 +6,7 @@
 import { ref, onMounted } from 'vue'
 import { useToastStore } from '@/stores/ui/toast'
 import { type AboutInfoFormData, useAdminSiteSettingsStore } from '@/stores/admin/siteSettings'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 export function useAboutSettings() {
   // ============================================

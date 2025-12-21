@@ -202,8 +202,8 @@
 import { toRef, computed } from 'vue'
 import type { Polygon } from '@/utils/polygon'
 import { calculatePolygonArea } from '@/utils/polygon'
-import { usePolygonEditor } from '@/composables/usePolygonEditor'
-import { useTranslations } from '@/composables/useTranslations'
+import { usePolygonEditor } from '@/composables/zone/usePolygonEditor'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

@@ -118,7 +118,7 @@ import FloorStripEditorSidebar from './components/floor-strip-editor/FloorStripE
 import FloorStripEditorWizard from './components/floor-strip-editor/FloorStripEditorWizard.vue'
 import FloorStripEditorImageModal from './components/floor-strip-editor/FloorStripEditorImageModal.vue'
 import { useFloorStripEditor } from './composables/useFloorStripEditor'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const { t } = useTranslations()
 

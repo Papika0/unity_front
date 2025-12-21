@@ -1,5 +1,5 @@
 import { computed, ref, onMounted } from 'vue'
-import { useTranslations } from './useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useFooterStore } from '@/stores/public/footer'
 
 // Simple type for navigation project data

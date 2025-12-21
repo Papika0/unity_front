@@ -1,6 +1,6 @@
 import { watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useTranslations } from './useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 // Map route names to translation keys for page titles
 const routeTitleMap: Record<string, string> = {

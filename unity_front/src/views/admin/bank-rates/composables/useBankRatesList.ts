@@ -6,7 +6,7 @@
 import { ref, onMounted } from 'vue'
 import { useBankRatesStore } from '@/stores/admin/bankRates'
 import type { BankRate, BankRateFormData } from '@/types/admin/calculator'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 export function useBankRatesList() {
   const { t } = useTranslations()

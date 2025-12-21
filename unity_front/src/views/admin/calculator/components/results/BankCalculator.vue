@@ -96,7 +96,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useBankCalculator } from '@/composables/useBankCalculator'
+import { useBankCalculator } from '@/composables/calculator/useBankCalculator'
 import { useBankRatesStore } from '@/stores/admin/bankRates'
 import type { BankLoanResult, BankRate } from '@/types/admin/calculator'
 

@@ -5,10 +5,10 @@
 
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useNewsStore } from '@/stores/public/news'
 import { useLocaleStore } from '@/stores/ui/locale'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 
 export function useNewsDetail() {
   // ============================================

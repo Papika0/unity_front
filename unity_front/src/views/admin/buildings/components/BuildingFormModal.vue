@@ -117,7 +117,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useBuildingsAdminStore } from '@/stores/admin/buildings'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import type { Building } from '@/types/apartments'
 
 const { t } = useTranslations()
