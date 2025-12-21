@@ -9,13 +9,16 @@
         : `text-slate-600 hover:bg-${color}-50 hover:text-${color}-700`
     ]"
   >
-    {{ name }}
+    {{ t(name) }}
   </router-link>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 const props = defineProps<{
   to: string

@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-2xl font-bold text-slate-800">მარკეტინგის ელ. ფოსტები</h1>
-        <p class="text-sm text-slate-600 mt-1">ელ. ფოსტების მართვა, რომლებზეც მოდის შეტყობინებები</p>
+        <h1 class="text-2xl font-bold text-slate-800">{{ t('admin.marketing_emails.title') }}</h1>
+        <p class="text-sm text-slate-600 mt-1">{{ t('admin.marketing_emails.subtitle') }}</p>
       </div>
       <button
         @click="openCreateModal"
@@ -13,7 +13,7 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        <span>დამატება</span>
+        <span>{{ t('admin.common.add') }}</span>
       </button>
     </div>
 
@@ -21,7 +21,7 @@
     <EmailsFilters
       :search="filters.search"
       :active="filters.active"
-      :active-filter-options="activeFilterOptions"
+      :active-filter-options="translatedActiveFilterOptions"
       @update:search="filters.search = $event"
       @update:active="filters.active = $event"
       @apply="applyFilters"
@@ -52,8 +52,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { EmailsTable, EmailsFilters, EmailFormModal } from './components'
 import { useMarketingEmails } from './composables'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 const {
   // State
@@ -77,4 +81,15 @@ const {
   resetFilters,
   changePage,
 } = useMarketingEmails()
+
+const translatedActiveFilterOptions = computed(() => {
+  return activeFilterOptions.map((option: { value: string; label: string }) => ({
+    ...option,
+    label: option.value === 'all' 
+      ? t('admin.common.all') 
+      : (option.value === 'true' 
+        ? t('admin.marketing_emails.table.active') 
+        : t('admin.marketing_emails.table.inactive'))
+  }))
+})
 </script>

@@ -8,9 +8,9 @@
             <h1
               class="text-2xl sm:text-3xl md:text-4xl font-light bg-gradient-to-r from-indigo-500 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-1 sm:mb-2 tracking-tight"
             >
-              თარგმანების მართვა
+              {{ t('admin.translations.title') }}
             </h1>
-            <p class="text-slate-600 text-sm sm:text-base md:text-lg font-light">მართეთ აპლიკაციის თარგმანები სამ ენაზე</p>
+            <p class="text-slate-600 text-sm sm:text-base md:text-lg font-light">{{ t('admin.translations.subtitle') }}</p>
           </div>
           <button
             @click="showCreateModal = true"
@@ -24,7 +24,7 @@
                 d="M12 4v16m8-8H4"
               ></path>
             </svg>
-            ახალი თარგმანი
+            {{ t('admin.translations.add_new') }}
           </button>
         </div>
       </div>
@@ -34,7 +34,7 @@
         <!-- Search Bar -->
         <SearchBar
           v-model="searchQuery"
-          placeholder="ძიება თარგმანებში..."
+          :placeholder="t('admin.translations.search_placeholder')"
           @update:model-value="debounceSearch"
         />
 
@@ -43,13 +43,13 @@
           class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4"
         >
           <label class="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap"
-            >ჯგუფის ფილტრი:</label
+            >{{ t('admin.translations.group_filter') }}</label
           >
           <div class="w-full sm:w-64">
             <CustomDropdown
               v-model="selectedGroup"
               :options="groupOptions"
-              placeholder="ყველა ჯგუფი"
+              :placeholder="t('admin.translations.all_groups')"
               @update:model-value="handleGroupFilter"
             />
           </div>
@@ -66,7 +66,7 @@
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-            გასუფთავება
+            {{ t('admin.translations.clear_filter') }}
           </button>
         </div>
       </div>
@@ -76,11 +76,11 @@
         <!-- Filter Summary -->
         <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
           <div class="text-xs sm:text-sm text-slate-700 font-medium">
-            <span v-if="totalPages > 1"> გვერდი {{ currentPage }} / {{ totalPages }} </span>
-            <span> სულ {{ translations.length }} თარგმანი </span>
+            <span v-if="totalPages > 1"> {{ t('admin.translations.filter_summary', { current: currentPage, total: totalPages }) }} </span>
+            <span> {{ t('admin.translations.total_count', { count: translations.length }) }} </span>
           </div>
           <div v-if="searchQuery || selectedGroup" class="flex items-center gap-2">
-            <span class="text-xs text-slate-500">აქტიური ფილტრები:</span>
+            <span class="text-xs text-slate-500">{{ t('admin.translations.active_filters') }}</span>
             <span
               v-if="searchQuery"
               class="inline-flex items-center gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
@@ -115,7 +115,7 @@
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            <span class="text-slate-700 font-medium">იტვირთება...</span>
+            <span class="text-slate-700 font-medium">{{ t('admin.translations.loading') }}</span>
           </div>
         </div>
 
@@ -165,6 +165,9 @@ import {
   CustomDropdown,
 } from '@/components/admin'
 import { useTranslationsList } from './composables'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 const {
   translations,
@@ -194,6 +197,57 @@ const {
   goToPage,
 } = useTranslationsList()
 </script>
+
+<style scoped>
+.container {
+  max-width: 1200px;
+}
+
+/* Custom scrollbar for light theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.8);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
+}
+
+/* Gradient text animation */
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.bg-gradient-to-r {
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease-in-out infinite;
+}
+
+/* Button hover effects */
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.2s ease-in-out;
+}
+</style>
 
 <style scoped>
 .container {

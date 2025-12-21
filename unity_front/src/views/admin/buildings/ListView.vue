@@ -4,22 +4,22 @@
       <!-- Header Section -->
       <div class="flex flex-col gap-4 mb-6 sm:mb-8 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex-1">
-          <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent break-words leading-tight py-1">შენობების მართვა</h1>
-          <p class="mt-2 text-slate-600 text-sm sm:text-base md:text-lg">პროექტის შენობების შექმნა, რედაქტირება და წაშლა.</p>
+          <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent break-words leading-tight py-1">{{ t('admin.buildings.title') }}</h1>
+          <p class="mt-2 text-slate-600 text-sm sm:text-base md:text-lg">{{ t('admin.sidebar.buildings') }}</p>
         </div>
         <div class="flex-shrink-0">
           <button @click="openCreateModal" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base w-full sm:w-auto">
             <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-            ახალი შენობის დამატება
+            {{ t('admin.buildings.add_building') }}
           </button>
         </div>
       </div>
 
       <!-- Project Selector -->
       <div class="mb-6">
-        <label class="block text-sm font-medium text-slate-700 mb-2">აირჩიეთ პროექტი</label>
+        <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('admin.features.select_project') }}</label>
         <select v-model="selectedProjectId" @change="loadBuildings" class="w-full sm:w-64 px-4 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900">
-          <option :value="null">-- აირჩიეთ პროექტი --</option>
+          <option :value="null">-- {{ t('admin.features.select_project') }} --</option>
           <option v-for="project in projects" :key="project.id" :value="project.id">{{ project.title }}</option>
         </select>
       </div>
@@ -42,15 +42,13 @@
       <!-- Empty State: No Project -->
       <div v-else-if="!selectedProjectId" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
         <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-        <p class="text-slate-500 text-lg">პროექტი არ არის არჩეული</p>
-        <p class="text-slate-400 mt-2">გთხოვთ აირჩიოთ პროექტი ზემოთ</p>
+        <p class="text-slate-500 text-lg">{{ t('admin.features.select_project') }}</p>
       </div>
 
       <!-- Empty State: No Buildings -->
       <div v-else-if="buildingsStore.buildings.length === 0" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
         <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-        <p class="text-slate-500 text-lg">შენობები არ მოიძებნა</p>
-        <p class="text-slate-400 mt-2">დაამატეთ პირველი შენობა ამ პროექტისთვის</p>
+        <p class="text-slate-500 text-lg">{{ t('admin.messages.no_results') }}</p>
       </div>
 
       <!-- Buildings Grid -->
@@ -67,19 +65,19 @@
             <p v-if="building.description" class="text-slate-600 text-sm mb-4 line-clamp-2">{{ building.description }}</p>
             <div class="flex items-center gap-2 mb-4 text-slate-600">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-              <span class="text-sm"><span class="font-semibold">{{ building.apartments_count || 0 }}</span> ბინა</span>
+              <span class="text-sm"><span class="font-semibold">{{ building.apartments_count || 0 }}</span> {{ t('apartments.apartment') }}</span>
             </div>
             <div class="space-y-2">
               <div class="flex gap-2">
-                <button @click="viewApartments(building)" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 font-medium text-sm">ბინები</button>
-                <button @click="editBuilding(building)" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all duration-300 font-medium text-sm">რედაქტირება</button>
+                <button @click="viewApartments(building)" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 font-medium text-sm">{{ t('admin.sidebar.apartments') }}</button>
+                <button @click="editBuilding(building)" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all duration-300 font-medium text-sm">{{ t('admin.common.edit') }}</button>
                 <button @click="deleteBuilding(building)" class="bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-rose-700 transition-all duration-300 font-medium text-sm">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
               </div>
               <button @click="editFloorZones(building)" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 font-medium text-sm">
                 <svg class="w-4 h-4 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7H4V5zm0 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zm0 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>
-                სართულების რედაქტორი
+                {{ t('admin.zones.floor_strip') }}
               </button>
             </div>
           </div>
@@ -93,8 +91,11 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
 import BuildingFormModal from './components/BuildingFormModal.vue'
 import { useBuildingsList } from './composables'
+
+const { t } = useTranslations()
 
 const {
   buildingsStore,

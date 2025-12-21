@@ -25,7 +25,7 @@
           <svg v-else class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
           </svg>
-          {{ project.is_active ? 'აქტიური' : 'არააქტიური' }}
+          {{ project.is_active ? t('admin.common.active') : t('admin.common.inactive') }}
         </span>
       </div>
 
@@ -35,7 +35,7 @@
           <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
-          რჩეული
+          {{ t('admin.common.featured') }}
         </span>
       </div>
 
@@ -55,7 +55,7 @@
       <div class="bg-slate-50 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 flex-none space-y-2 sm:space-y-3">
         <div class="grid grid-cols-1 gap-2 sm:gap-3 text-xs sm:text-sm">
           <div>
-            <span class="font-medium text-slate-700">სტატუსი:</span>
+            <span class="font-medium text-slate-700">{{ t('admin.common.status') }}:</span>
             <div class="mt-1">
               <span :class="getStatusClass(project.status)" class="px-2 py-1 rounded-full text-xs font-medium">
                 {{ project.status_name }}
@@ -63,11 +63,11 @@
             </div>
           </div>
           <div v-if="project.location">
-            <span class="font-medium text-slate-700">მდებარეობა:</span>
+            <span class="font-medium text-slate-700">{{ t('admin.projects.location') }}:</span>
             <div class="text-slate-600 mt-1">{{ project.location }}</div>
           </div>
           <div>
-            <span class="font-medium text-slate-700">შექმნის თარიღი:</span>
+            <span class="font-medium text-slate-700">{{ t('admin.projects.start_date') }}:</span>
             <div class="text-slate-600 mt-1">{{ formatDate(project.created_at) }}</div>
           </div>
         </div>
@@ -80,13 +80,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
-          დეტალურად ნახვა
+          {{ t('admin.common.details') }}
         </button>
         <button @click.stop="$emit('editZones', project.id)" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg hover:from-purple-600 hover:to-indigo-700 text-xs sm:text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-md">
           <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
           </svg>
-          შენობების ბლოკების რედაქტორი
+          {{ t('admin.zones.building_block') }}
         </button>
       </div>
     </div>
@@ -95,6 +95,7 @@
 
 <script setup lang="ts">
 import { getImageUrl } from '@/utils/imageUrl'
+import { useTranslations } from '@/composables/useTranslations'
 
 interface ProjectMainImage {
   id: number
@@ -126,6 +127,8 @@ defineEmits<{
   (e: 'editZones', id: number): void
 }>()
 
+const { t } = useTranslations()
+
 const getStatusClass = (status: string) => {
   if (status === 'completed') return 'bg-green-100 text-green-800'
   if (status === 'in_progress') return 'bg-blue-100 text-blue-800'
@@ -139,10 +142,6 @@ const truncate = (str: string, len: number) => {
 
 const formatDate = (dateString: string) => {
   const dt = new Date(dateString)
-  const months = [
-    'იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი',
-    'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი',
-  ]
-  return `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`
+  return `${dt.getDate()}/${dt.getMonth() + 1}/${dt.getFullYear()}`
 }
 </script>

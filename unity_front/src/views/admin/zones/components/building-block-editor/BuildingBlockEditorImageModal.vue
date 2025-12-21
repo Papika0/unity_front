@@ -13,7 +13,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <h2 class="text-xl font-semibold text-gray-900">ზონის სურათის ატვირთვა</h2>
+            <h2 class="text-xl font-semibold text-gray-900">{{ t('admin.zones.upload_image') }}</h2>
           </div>
           <button
             @click="$emit('close')"
@@ -38,7 +38,7 @@
             <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            სურათის ფაილი
+            {{ t('admin.zones.image_file') }}
           </label>
           <div
             class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200 cursor-pointer group"
@@ -70,8 +70,8 @@
               </svg>
             </div>
             <p class="text-base text-gray-700">
-              <span class="font-semibold text-indigo-600">დააჭირეთ ატვირთვისთვის</span>
-              <span class="text-gray-500"> ან გადმოიტანეთ ფაილი</span>
+              <span class="font-semibold text-indigo-600">{{ t('admin.zones.click_to_upload') }}</span>
+              <span class="text-gray-500"> {{ t('admin.zones.or_drag_drop') }}</span>
             </p>
             <p class="text-xs text-gray-500 mt-2 flex items-center justify-center space-x-4">
               <span class="flex items-center">
@@ -85,7 +85,7 @@
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                მაქს. 10MB
+                {{ t('admin.zones.max_size_10mb') }}
               </span>
             </p>
           </div>
@@ -107,7 +107,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
-                <span>წაშლა</span>
+                <span>{{ t('admin.common.delete') }}</span>
               </button>
             </div>
           </div>
@@ -119,7 +119,7 @@
             <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            ViewBox (ავტომატური განსაზღვრა)
+            {{ t('admin.zones.viewbox_auto') }}
           </label>
           <input
             :value="viewBox"
@@ -132,7 +132,7 @@
             <svg class="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
             </svg>
-            <span>ViewBox ავტომატურად განისაზღვრება სურათის ზომის მიხედვით</span>
+            <span>{{ t('admin.zones.viewbox_auto_desc') }}</span>
           </p>
         </div>
       </div>
@@ -142,7 +142,7 @@
           @click="$emit('close')"
           class="px-5 py-2.5 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-white hover:border-gray-400 transition-all duration-200"
         >
-          გაუქმება
+          {{ t('admin.common.cancel') }}
         </button>
         <button
           @click="$emit('upload')"
@@ -167,7 +167,7 @@
           >
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
-          <span>{{ isUploading ? 'ატვირთვა...' : 'ატვირთვა' }}</span>
+          <span>{{ isUploading ? t('admin.common.uploading') : t('admin.common.upload') }}</span>
         </button>
       </div>
     </div>
@@ -176,6 +176,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 defineProps<{
   show: boolean

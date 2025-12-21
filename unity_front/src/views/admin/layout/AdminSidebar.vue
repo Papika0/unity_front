@@ -10,14 +10,14 @@
                 <img src="@/assets/logo_black.png" alt="Unity Logo" class="h-full w-full object-contain" />
               </div>
               <div class="min-w-0 flex-1">
-                <h1 class="text-sm font-bold text-slate-800 leading-tight break-words">{{ translationsStore.t('admin.sidebar.title') || 'ადმინისტრაციული პანელი' }}</h1>
-                <p class="text-xs text-slate-500 leading-tight break-words">{{ translationsStore.t('admin.sidebar.subtitle') || 'მართვის სისტემა' }}</p>
+                <h1 class="text-sm font-bold text-slate-800 leading-tight break-words">{{ t('admin.sidebar.title') }}</h1>
+                <p class="text-xs text-slate-500 leading-tight break-words">{{ t('admin.sidebar.subtitle') }}</p>
               </div>
             </div>
             <button
               @click="emit('update:sidebarOpen', false)"
               class="group relative p-1.5 hover:bg-gradient-to-br hover:from-amber-50 hover:to-orange-50 rounded-lg transition-all duration-200 hover:shadow-md flex-shrink-0 border border-slate-200 hover:border-amber-400"
-              :title="translationsStore.t('admin.sidebar.collapse') || 'შეკუმშვა'"
+              :title="t('admin.sidebar.collapse')"
             >
               <div class="absolute inset-0 bg-gradient-to-br from-amber-400/0 to-orange-400/0 group-hover:from-amber-400/10 group-hover:to-orange-400/10 rounded-lg transition-all duration-200"></div>
               <svg class="relative w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,7 +30,7 @@
             v-else
             @click="emit('update:sidebarOpen', true)"
             class="group relative p-2 hover:bg-gradient-to-br hover:from-amber-50 hover:to-orange-50 rounded-lg transition-all duration-200 hover:shadow-md flex-shrink-0 border border-slate-200 hover:border-amber-400 mx-auto"
-            :title="translationsStore.t('admin.sidebar.expand') || 'გაშლა'"
+            :title="t('admin.sidebar.expand')"
           >
             <div class="absolute inset-0 bg-gradient-to-br from-amber-400/0 to-orange-400/0 group-hover:from-amber-400/10 group-hover:to-orange-400/10 rounded-lg transition-all duration-200"></div>
             <svg class="relative w-5 h-5 text-slate-400 group-hover:text-amber-600 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +56,7 @@
           <div v-if="isAdmin" class="pt-4 mt-4 border-t border-slate-200">
             <transition name="fade">
               <p v-if="sidebarOpen" class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                {{ translationsStore.t('admin.sidebar.apartments_nav') || 'ბინების ნავიგაცია' }}
+                {{ t('admin.sidebar.apartments_nav') }}
               </p>
             </transition>
             <SidebarLink
@@ -74,7 +74,7 @@
           <div :class="isAdmin ? 'pt-4 mt-4 border-t border-slate-200' : ''">
             <transition name="fade">
               <p v-if="sidebarOpen" class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                {{ translationsStore.t('admin.sidebar.customers') || 'კლიენტები' }}
+                {{ t('admin.sidebar.customers') }}
               </p>
             </transition>
             <SidebarLink
@@ -92,7 +92,7 @@
           <div v-if="isAdmin || isMarketing" class="pt-4 mt-4 border-t border-slate-200">
             <transition name="fade">
               <p v-if="sidebarOpen" class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                {{ translationsStore.t('admin.sidebar.calculator') || 'გადახდის კალკულატორი' }}
+                {{ t('admin.sidebar.calculator') }}
               </p>
             </transition>
             <SidebarLink
@@ -123,7 +123,7 @@
               <div v-if="sidebarOpen" class="ml-3 min-w-0">
                 <p class="text-sm font-medium text-slate-700 truncate">{{ user?.name || user?.email }}</p>
                 <button @click="emit('logout')" class="text-xs text-slate-500 hover:text-amber-600 transition-colors">
-                  {{ translationsStore.t('admin.sidebar.logout') || 'გასვლა' }}
+                  {{ t('admin.sidebar.logout') }}
                 </button>
               </div>
             </transition>
@@ -137,9 +137,9 @@
 <script setup lang="ts">
 import SidebarLink from './SidebarLink.vue'
 import type { NavItem } from './navigation'
-import { useTranslationsStore } from '@/stores/ui/translations'
+import { useTranslations } from '@/composables/useTranslations'
 
-const translationsStore = useTranslationsStore()
+const { t } = useTranslations()
 
 defineProps<{
   sidebarOpen: boolean

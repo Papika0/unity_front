@@ -20,7 +20,7 @@
         <!-- Header -->
         <div class="bg-gradient-to-r from-amber-500 to-yellow-500 px-8 py-6">
           <h3 class="text-2xl font-light text-white">
-            {{ isEdit ? 'ბანკის რედაქტირება / Edit Bank' : 'ახალი ბანკი / Add Bank' }}
+            {{ isEdit ? t('admin.bank_rates.edit_bank') : t('admin.bank_rates.add_bank') }}
           </h3>
         </div>
 
@@ -29,45 +29,45 @@
           <!-- Bank Name (Multi-language) -->
           <div class="space-y-4">
             <h4 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-              ბანკის სახელი / Bank Name
+              {{ t('admin.bank_rates.bank_name') }}
             </h4>
 
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-2">
-                🇬🇪 ქართული / Georgian
+                🇬🇪 {{ t('admin.translations.form.ka') }}
               </label>
               <input
                 v-model="form.bank_name_ka"
                 type="text"
                 required
                 class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-slate-900"
-                placeholder="თიბისი ბანკი"
+                :placeholder="t('admin.translations.form.ka')"
               />
             </div>
 
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-2">
-                🇬🇧 English
+                🇬🇧 {{ t('admin.translations.form.en') }}
               </label>
               <input
                 v-model="form.bank_name_en"
                 type="text"
                 required
                 class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-slate-900"
-                placeholder="TBC Bank"
+                :placeholder="t('admin.translations.form.en')"
               />
             </div>
 
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-2">
-                🇷🇺 Русский / Russian
+                🇷🇺 {{ t('admin.translations.form.ru') }}
               </label>
               <input
                 v-model="form.bank_name_ru"
                 type="text"
                 required
                 class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-slate-900"
-                placeholder="TBC Банк"
+                :placeholder="t('admin.translations.form.ru')"
               />
             </div>
           </div>
@@ -75,7 +75,7 @@
           <!-- Interest Rate -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2">
-              საპროცენტო განაკვეთი (%) / Interest Rate (%)
+              {{ t('admin.bank_rates.interest_rate_percent') }}
             </label>
             <input
               v-model.number="form.interest_rate"
@@ -93,7 +93,7 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-2">
-                მინ. ვადა (წლები) / Min. Term (years)
+                {{ t('admin.bank_rates.min_term_years') }}
               </label>
               <input
                 v-model.number="form.min_loan_term_years"
@@ -107,7 +107,7 @@
 
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-2">
-                მაქს. ვადა (წლები) / Max. Term (years)
+                {{ t('admin.bank_rates.max_term_years') }}
               </label>
               <input
                 v-model.number="form.max_loan_term_years"
@@ -123,7 +123,7 @@
           <!-- Min Down Payment -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2">
-              მინ. შენატანი (%) / Min. Down Payment (%)
+              {{ t('admin.bank_rates.min_down_payment_percent') }}
             </label>
             <input
               v-model.number="form.min_down_payment_percent"
@@ -145,7 +145,7 @@
               class="w-5 h-5 text-amber-600 border-slate-300 rounded focus:ring-amber-500"
             />
             <label for="is_active" class="ml-3 text-sm font-medium text-slate-700">
-              აქტიური / Active
+              {{ t('admin.common.active') }}
             </label>
           </div>
 
@@ -156,13 +156,13 @@
               @click="closeModal"
               class="px-6 py-3 text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all font-medium"
             >
-              გაუქმება / Cancel
+              {{ t('admin.common.cancel') }}
             </button>
             <button
               type="submit"
               class="px-6 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-xl hover:from-amber-600 hover:to-yellow-600 transition-all shadow-lg hover:shadow-xl font-medium"
             >
-              შენახვა / Save
+              {{ t('admin.common.save') }}
             </button>
           </div>
         </form>
@@ -174,6 +174,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { BankRate, BankRateFormData } from '@/types/admin/calculator'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 interface Props {
   modelValue: boolean

@@ -2,7 +2,7 @@
 import type { ImageData } from '@/types/common'
 import { useTranslations } from '@/composables/useTranslations'
 
-const props = defineProps<{
+defineProps<{
   images: ImageData[]
   articleTitle: string
   isVisible: boolean

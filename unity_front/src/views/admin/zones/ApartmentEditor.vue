@@ -20,11 +20,14 @@
     <!-- Confirm Dialog -->
     <ConfirmDialog
       :show="showConfirmDialog"
-      title="შეუნახავი ცვლილებები"
-      message="გაქვთ შეუნახავი ზონები. გსურთ მათი შენახვა?"
+      :title="t('admin.zones.editor_common.unsaved_changes')"
+      :message="t('admin.zones.editor_common.unsaved_changes_msg')"
+      :confirm-text="t('admin.zones.editor_common.save_and_exit')"
+      :destructive-text="t('admin.zones.editor_common.discard_and_exit')"
+      :cancel-text="t('admin.zones.editor_common.stay')"
       :is-saving="isSaving"
-      @save="saveAndNavigate"
-      @discard="discardAndNavigate"
+      @confirm="saveAndNavigate"
+      @destructive="discardAndNavigate"
       @cancel="cancelNavigation"
     />
 
@@ -48,7 +51,7 @@
           :image-height="imageHeight"
           :initial-polygons="zones"
           :entities="apartments"
-          entity-label="ბინა"
+          :entity-label="t('admin.zones.apartment_editor.apartment')"
           @change="handleZonesChange"
         />
         <div
@@ -73,10 +76,10 @@
               </svg>
             </div>
             <h3 class="mt-6 text-xl font-semibold text-gray-900">
-              სართულის გეგმა არ არის ატვირთული
+              {{ t('admin.zones.apartment_editor.not_uploaded') }}
             </h3>
             <p class="mt-3 text-sm text-gray-600 leading-relaxed">
-              ასატვირთად სართულის გეგმა, რომელზეც დახატავთ ბინების ინტერაქტიულ ზონებს
+              {{ t('admin.zones.apartment_editor.upload_instruction') }}
             </p>
             <button
               @click="openImageUpload"
@@ -90,7 +93,7 @@
                   d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                 />
               </svg>
-              <span class="font-medium">სურათის ატვირთვა</span>
+              <span class="font-medium">{{ t('admin.zones.editor_common.image_upload') }}</span>
             </button>
           </div>
         </div>
@@ -134,6 +137,9 @@ import ApartmentEditorSidebar from './components/apartment-editor/ApartmentEdito
 import ApartmentEditorImageModal from './components/apartment-editor/ApartmentEditorImageModal.vue'
 import ApartmentEditorPdfModal from './components/apartment-editor/ApartmentEditorPdfModal.vue'
 import { useApartmentEditor } from './composables/useApartmentEditor'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 const {
   // State

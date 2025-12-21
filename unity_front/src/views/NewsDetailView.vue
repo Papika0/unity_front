@@ -185,15 +185,17 @@ const {
       </div>
 
       <!-- Gallery Modal -->
-      <NewsGalleryModal
-        v-if="showGalleryModal && article && article.gallery_images"
-        :images="article.gallery_images"
-        :current-index="currentGalleryIndex"
-        :article-title="article.title"
-        @close="closeGallery"
-        @next="nextImage"
-        @prev="prevImage"
-      />
+      <Transition name="modal">
+        <NewsGalleryModal
+          v-if="showGalleryModal && article && article.gallery_images"
+          :images="article.gallery_images"
+          :current-index="currentGalleryIndex"
+          :article-title="article.title"
+          @close="closeGallery"
+          @next="nextImage"
+          @prev="prevImage"
+        />
+      </Transition>
     </div>
 
     <!-- Related Articles -->

@@ -6,20 +6,20 @@
         <div
           class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"
         ></div>
-        <p class="text-gray-600">Loading images...</p>
+        <p class="text-gray-600">{{ t('admin.gallery.loading_images') }}</p>
       </div>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="text-center py-16">
       <div class="text-red-500 text-6xl mb-4">⚠️</div>
-      <h2 class="text-2xl font-semibold text-gray-800 mb-2">Error Loading Images</h2>
+      <h2 class="text-2xl font-semibold text-gray-800 mb-2">{{ t('admin.gallery.error_loading') }}</h2>
       <p class="text-gray-600 mb-4">{{ error }}</p>
       <button
         @click="$emit('refresh')"
         class="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
       >
-        Try Again
+        {{ t('admin.common.retry') }}
       </button>
     </div>
 
@@ -41,12 +41,12 @@
     <!-- Empty State -->
     <div v-else class="text-center py-16">
       <div class="text-gray-400 text-6xl mb-4">📷</div>
-      <h2 class="text-2xl font-semibold text-gray-800 mb-2">No Images Found</h2>
+      <h2 class="text-2xl font-semibold text-gray-800 mb-2">{{ t('admin.gallery.no_images') }}</h2>
       <p class="text-gray-600 mb-4">
         {{
           hasFilters
-            ? 'No images match your filters.'
-            : 'No images available yet.'
+            ? t('admin.gallery.no_images_filter')
+            : t('admin.gallery.no_images_yet')
         }}
       </p>
       <button
@@ -54,13 +54,13 @@
         @click="$emit('clearFilters')"
         class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors mr-4"
       >
-        Clear Filters
+        {{ t('admin.gallery.clear_filters') }}
       </button>
       <button
         @click="$emit('openUpload')"
         class="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
       >
-        Upload First Image
+        {{ t('admin.gallery.upload_first') }}
       </button>
     </div>
   </div>
@@ -69,6 +69,9 @@
 <script setup lang="ts">
 import type { GalleryImage } from '../../composables/useGalleryList'
 import GalleryCard from './GalleryCard.vue'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 defineProps<{
   images: GalleryImage[]

@@ -1,7 +1,7 @@
 <template>
   <div v-if="store.data">
     <div class="mb-8">
-      <h3 class="text-3xl font-bold text-gray-800 mb-4">კონტაქტის ინფორმაცია</h3>
+      <h3 class="text-3xl font-bold text-gray-800 mb-4">{{ t('admin.contact_settings.tabs.contact_info') }}</h3>
       <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
     </div>
 
@@ -9,28 +9,28 @@
       <!-- Address -->
       <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
         <h4 class="text-lg font-semibold text-gray-700 mb-6">
-          მისამართი <span class="text-red-500">*</span>
+          {{ t('admin.contact_settings.fields.address') }} <span class="text-red-500">*</span>
         </h4>
 
         <!-- Address Value -->
         <div class="mb-6">
-          <h5 class="text-md font-semibold text-gray-700 mb-3">მისამართი</h5>
+          <h5 class="text-md font-semibold text-gray-700 mb-3">{{ t('admin.contact_settings.fields.address') }}</h5>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">მისამართი ქართულად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.name_ka') }}</label>
               </div>
               <input
                 v-model="store.data.contact_info.address.value.ka"
                 type="text"
-                placeholder="კომპანიის მისამართი"
+                :placeholder="t('admin.contact_settings.fields.address')"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">მისამართი ინგლისურად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.name_en') }}</label>
                 <button
                   v-if="store.data.contact_info.address.value.ka && !translating"
                   @click="emit('translate', 'address', 'ka', 'en')"
@@ -39,20 +39,20 @@
                   :disabled="translating"
                 >
                   <i class="material-icons text-xs">translate</i>
-                  თარგმნა
+                  {{ t('admin.common.translate') }}
                 </button>
               </div>
               <input
                 v-model="store.data.contact_info.address.value.en"
                 type="text"
-                placeholder="Company address"
+                :placeholder="t('admin.contact_settings.fields.address') + ' (EN)'"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">მისამართი რუსულად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.name_ru') }}</label>
                 <button
                   v-if="store.data.contact_info.address.value.ka && !translating"
                   @click="emit('translate', 'address', 'ka', 'ru')"
@@ -61,13 +61,13 @@
                   :disabled="translating"
                 >
                   <i class="material-icons text-xs">translate</i>
-                  თარგმნა
+                  {{ t('admin.common.translate') }}
                 </button>
               </div>
               <input
                 v-model="store.data.contact_info.address.value.ru"
                 type="text"
-                placeholder="Адрес компании"
+                :placeholder="t('admin.contact_settings.fields.address') + ' (RU)'"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
@@ -77,23 +77,23 @@
 
         <!-- Address Subtitle -->
         <div>
-          <h5 class="text-md font-semibold text-gray-700 mb-3">ქვეწარწერა</h5>
+          <h5 class="text-md font-semibold text-gray-700 mb-3">{{ t('admin.contact_settings.fields.hours') }}</h5>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">ქვეწარწერა ქართულად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_ka') }}</label>
               </div>
               <input
                 v-model="store.data.contact_info.address.subtitle.ka"
                 type="text"
-                placeholder="მისამართის ქვეწარწერა"
+                :placeholder="t('admin.contact_settings.fields.subtitle_ka')"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">ქვეწარწერა ინგლისურად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_en') }}</label>
                 <button
                   v-if="store.data.contact_info.address.subtitle.ka && !translating"
                   @click="emit('translate', 'address_subtitle', 'ka', 'en')"
@@ -102,20 +102,20 @@
                   :disabled="translating"
                 >
                   <i class="material-icons text-xs">translate</i>
-                  თარგმნა
+                  {{ t('admin.common.translate') }}
                 </button>
               </div>
               <input
                 v-model="store.data.contact_info.address.subtitle.en"
                 type="text"
-                placeholder="Address subtitle"
+                :placeholder="t('admin.contact_settings.fields.subtitle_en')"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">ქვეწარწერა რუსულად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_ru') }}</label>
                 <button
                   v-if="store.data.contact_info.address.subtitle.ka && !translating"
                   @click="emit('translate', 'address_subtitle', 'ka', 'ru')"
@@ -124,13 +124,13 @@
                   :disabled="translating"
                 >
                   <i class="material-icons text-xs">translate</i>
-                  თარგმნა
+                  {{ t('admin.common.translate') }}
                 </button>
               </div>
               <input
                 v-model="store.data.contact_info.address.subtitle.ru"
                 type="text"
-                placeholder="Подзаголовок адреса"
+                :placeholder="t('admin.contact_settings.fields.subtitle_ru')"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
@@ -142,12 +142,12 @@
       <!-- Phone Numbers -->
       <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
         <h4 class="text-lg font-semibold text-gray-700 mb-4">
-          ტელეფონი <span class="text-red-500">*</span>
+          {{ t('admin.contact_settings.fields.phone') }} <span class="text-red-500">*</span>
         </h4>
         <div class="space-y-4">
           <!-- Phone 1 -->
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-2">ძირითადი ნომერი</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">{{ t('admin.contact_settings.fields.main_number') }}</label>
             <input
               v-model="store.data.contact_info.phone.value"
               type="tel"
@@ -158,7 +158,7 @@
           </div>
           <!-- Phone 2 -->
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-2">დამატებითი ნომერი</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">{{ t('admin.contact_settings.fields.secondary_number') }}</label>
             <input
               v-model="store.data.contact_info.phone2.value"
               type="tel"
@@ -171,19 +171,19 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">ქვეწარწერა ქართულად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_ka') }}</label>
               </div>
               <input
                 v-model="store.data.contact_info.phone.subtitle.ka"
                 type="text"
-                placeholder="ტელეფონის ქვეწარწერა"
+                :placeholder="t('admin.contact_settings.fields.subtitle_ka')"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">ქვეწარწერა ინგლისურად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_en') }}</label>
                 <button
                   v-if="store.data.contact_info.phone.subtitle.ka && !translating"
                   @click="emit('translate', 'phone_subtitle', 'ka', 'en')"
@@ -192,20 +192,20 @@
                   :disabled="translating"
                 >
                   <i class="material-icons text-xs">translate</i>
-                  თარგმნა
+                  {{ t('admin.common.translate') }}
                 </button>
               </div>
               <input
                 v-model="store.data.contact_info.phone.subtitle.en"
                 type="text"
-                placeholder="Phone subtitle"
+                :placeholder="t('admin.contact_settings.fields.subtitle_en')"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">ქვეწარწერა რუსულად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_ru') }}</label>
                 <button
                   v-if="store.data.contact_info.phone.subtitle.ka && !translating"
                   @click="emit('translate', 'phone_subtitle', 'ka', 'ru')"
@@ -214,13 +214,13 @@
                   :disabled="translating"
                 >
                   <i class="material-icons text-xs">translate</i>
-                  თარგმნა
+                  {{ t('admin.common.translate') }}
                 </button>
               </div>
               <input
                 v-model="store.data.contact_info.phone.subtitle.ru"
                 type="text"
-                placeholder="Подзаголовок телефона"
+                :placeholder="t('admin.contact_settings.fields.subtitle_ru')"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
@@ -232,10 +232,10 @@
       <!-- Email -->
       <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
         <h4 class="text-lg font-semibold text-gray-700 mb-4">
-          ელ. ფოსტა <span class="text-red-500">*</span>
+          {{ t('admin.contact_settings.fields.email') }} <span class="text-red-500">*</span>
         </h4>
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-600 mb-2">ელ. ფოსტის მისამართი</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">{{ t('admin.contact_settings.fields.email_address') }}</label>
           <input
             v-model="store.data.contact_info.email.value"
             type="email"
@@ -247,19 +247,19 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <label class="block text-sm font-medium text-gray-600">ქვეწარწერა ქართულად</label>
+              <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_ka') }}</label>
             </div>
             <input
               v-model="store.data.contact_info.email.subtitle.ka"
               type="text"
-              placeholder="ელ. ფოსტის ქვეწარწერა"
+              :placeholder="t('admin.contact_settings.fields.subtitle_ka')"
               @input="store.markDirty()"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
             />
           </div>
           <div>
             <div class="flex items-center justify-between mb-2">
-              <label class="block text-sm font-medium text-gray-600">ქვეწარწერა ინგლისურად</label>
+              <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_en') }}</label>
               <button
                 v-if="store.data.contact_info.email.subtitle.ka && !translating"
                 @click="emit('translate', 'email_subtitle', 'ka', 'en')"
@@ -268,20 +268,20 @@
                 :disabled="translating"
               >
                 <i class="material-icons text-xs">translate</i>
-                თარგმნა
+                {{ t('admin.common.translate') }}
               </button>
             </div>
             <input
               v-model="store.data.contact_info.email.subtitle.en"
               type="text"
-              placeholder="Email subtitle"
+              :placeholder="t('admin.contact_settings.fields.subtitle_en')"
               @input="store.markDirty()"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
             />
           </div>
           <div>
             <div class="flex items-center justify-between mb-2">
-              <label class="block text-sm font-medium text-gray-600">ქვეწარწერა რუსულად</label>
+              <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_ru') }}</label>
               <button
                 v-if="store.data.contact_info.email.subtitle.ka && !translating"
                 @click="emit('translate', 'email_subtitle', 'ka', 'ru')"
@@ -290,13 +290,13 @@
                 :disabled="translating"
               >
                 <i class="material-icons text-xs">translate</i>
-                თარგმნა
+                {{ t('admin.common.translate') }}
               </button>
             </div>
             <input
               v-model="store.data.contact_info.email.subtitle.ru"
               type="text"
-              placeholder="Подзаголовок email"
+              :placeholder="t('admin.contact_settings.fields.subtitle_ru')"
               @input="store.markDirty()"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
             />
@@ -306,15 +306,15 @@
 
       <!-- Hours -->
       <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-        <h4 class="text-lg font-semibold text-gray-700 mb-6">სამუშაო საათები</h4>
+        <h4 class="text-lg font-semibold text-gray-700 mb-6">{{ t('admin.contact_settings.fields.working_hours') }}</h4>
 
         <!-- Hours Value -->
         <div class="mb-6">
-          <h5 class="text-md font-semibold text-gray-700 mb-3">საათები</h5>
+          <h5 class="text-md font-semibold text-gray-700 mb-3">{{ t('admin.contact_settings.fields.hours') }}</h5>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">საათები ქართულად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.hours_ka') }}</label>
               </div>
               <input
                 v-model="store.data.contact_info.hours.value.ka"
@@ -326,7 +326,7 @@
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">საათები ინგლისურად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.hours_en') }}</label>
                 <button
                   v-if="store.data.contact_info.hours.value.ka && !translating"
                   @click="emit('translate', 'hours_value', 'ka', 'en')"
@@ -335,7 +335,7 @@
                   :disabled="translating"
                 >
                   <i class="material-icons text-xs">translate</i>
-                  თარგმნა
+                  {{ t('admin.common.translate') }}
                 </button>
               </div>
               <input
@@ -348,7 +348,7 @@
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">საათები რუსულად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.hours_ru') }}</label>
                 <button
                   v-if="store.data.contact_info.hours.value.ka && !translating"
                   @click="emit('translate', 'hours_value', 'ka', 'ru')"
@@ -357,7 +357,7 @@
                   :disabled="translating"
                 >
                   <i class="material-icons text-xs">translate</i>
-                  თარგმნა
+                  {{ t('admin.common.translate') }}
                 </button>
               </div>
               <input
@@ -373,23 +373,23 @@
 
         <!-- Hours Subtitle -->
         <div>
-          <h5 class="text-md font-semibold text-gray-700 mb-3">ქვეწარწერა</h5>
+          <h5 class="text-md font-semibold text-gray-700 mb-3">{{ t('admin.contact_settings.fields.subtitle_ka') }}</h5>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">ქვეწარწერა ქართულად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_ka') }}</label>
               </div>
               <input
                 v-model="store.data.contact_info.hours.subtitle.ka"
                 type="text"
-                placeholder="საათების ქვეწარწერა"
+                :placeholder="t('admin.contact_settings.fields.subtitle_ka')"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">ქვეწარწერა ინგლისურად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_en') }}</label>
                 <button
                   v-if="store.data.contact_info.hours.subtitle.ka && !translating"
                   @click="emit('translate', 'hours_subtitle', 'ka', 'en')"
@@ -398,20 +398,20 @@
                   :disabled="translating"
                 >
                   <i class="material-icons text-xs">translate</i>
-                  თარგმნა
+                  {{ t('admin.common.translate') }}
                 </button>
               </div>
               <input
                 v-model="store.data.contact_info.hours.subtitle.en"
                 type="text"
-                placeholder="Hours subtitle"
+                :placeholder="t('admin.contact_settings.fields.subtitle_en')"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-gray-600">ქვეწარწერა რუსულად</label>
+                <label class="block text-sm font-medium text-gray-600">{{ t('admin.contact_settings.fields.subtitle_ru') }}</label>
                 <button
                   v-if="store.data.contact_info.hours.subtitle.ka && !translating"
                   @click="emit('translate', 'hours_subtitle', 'ka', 'ru')"
@@ -420,13 +420,13 @@
                   :disabled="translating"
                 >
                   <i class="material-icons text-xs">translate</i>
-                  თარგმნა
+                  {{ t('admin.common.translate') }}
                 </button>
               </div>
               <input
                 v-model="store.data.contact_info.hours.subtitle.ru"
                 type="text"
-                placeholder="Подзаголовок часов"
+                :placeholder="t('admin.contact_settings.fields.subtitle_ru')"
                 @input="store.markDirty()"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               />
@@ -440,6 +440,9 @@
 
 <script setup lang="ts">
 import { useContactSettingsAdminStore } from '@/stores/admin/contactSettings'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 defineProps({
   translating: {

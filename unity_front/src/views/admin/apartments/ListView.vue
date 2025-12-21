@@ -4,17 +4,17 @@
       <!-- Header Section -->
       <div class="flex flex-col gap-4 mb-6 sm:mb-8 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex-1">
-          <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent break-words leading-tight py-1">ბინების მართვა</h1>
-          <p class="mt-2 text-slate-600 text-sm sm:text-base md:text-lg">ბინების შექმნა, რედაქტირება, ბლოკური იმპორტი.</p>
+          <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent break-words leading-tight py-1">{{ t('admin.sidebar.apartments') }}</h1>
+          <p class="mt-2 text-slate-600 text-sm sm:text-base md:text-lg">{{ t('admin.sidebar.apartments') }}</p>
         </div>
         <div class="flex-shrink-0 flex gap-2">
           <button @click="showImportModal = true" :disabled="!selectedProjectId" class="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base disabled:opacity-50">
             <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-            იმპორტი
+            {{ t('admin.common.upload') }}
           </button>
           <button @click="openCreateModal" :disabled="!selectedProjectId" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base disabled:opacity-50">
             <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-            ახალი ბინის დამატება
+            {{ t('admin.common.add') }}
           </button>
         </div>
       </div>
@@ -22,31 +22,31 @@
       <!-- Filters -->
       <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">პროექტი</label>
+          <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('admin.sidebar.projects') }}</label>
           <select v-model="selectedProjectId" @change="onProjectChange" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-gray-900">
-            <option :value="null">-- აირჩიეთ პროექტი --</option>
+            <option :value="null">-- {{ t('admin.features.select_project') }} --</option>
             <option v-for="project in projects" :key="project.id" :value="project.id">{{ project.title }}</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">შენობა</label>
+          <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('admin.sidebar.buildings') }}</label>
           <select v-model="selectedBuildingId" @change="loadApartments" :disabled="!selectedProjectId" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all disabled:opacity-50 text-gray-900">
-            <option :value="null">-- ყველა შენობა --</option>
+            <option :value="null">-- {{ t('admin.common.select_all') }} --</option>
             <option v-for="building in buildings" :key="building.id" :value="building.id">{{ building.name_ka || building.name }}</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">სტატუსი</label>
+          <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('admin.common.status') }}</label>
           <select v-model="filterStatus" @change="loadApartments" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-gray-900">
-            <option :value="null">-- ყველა სტატუსი --</option>
-            <option value="available">ხელმისაწვდომი</option>
-            <option value="reserved">დაჯავშნილი</option>
-            <option value="sold">გაყიდული</option>
+            <option :value="null">-- {{ t('admin.common.select_all') }} --</option>
+            <option value="available">{{ t('status.available') }}</option>
+            <option value="reserved">{{ t('status.reserved') }}</option>
+            <option value="sold">{{ t('status.sold') }}</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">ძებნა</label>
-          <input v-model="searchQuery" @input="loadApartments" type="text" placeholder="ბინის ნომერი..." class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-gray-900" />
+          <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('admin.common.search') }}</label>
+          <input v-model="searchQuery" @input="loadApartments" type="text" :placeholder="t('apartments.apartment') + '...'" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-gray-900" />
         </div>
       </div>
 
@@ -72,8 +72,7 @@
         <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
-        <p class="text-slate-500 text-lg">პროექტი არ არის არჩეული</p>
-        <p class="text-slate-400 mt-2">გთხოვთ აირჩიოთ პროექტი ზემოთ</p>
+        <p class="text-slate-500 text-lg">{{ t('admin.features.select_project') }}</p>
       </div>
 
       <!-- Empty State: No Apartments -->
@@ -81,8 +80,7 @@
         <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
-        <p class="text-slate-500 text-lg">ბინები არ მოიძებნა</p>
-        <p class="text-slate-400 mt-2">დაამატეთ პირველი ბინა ან გამოიყენეთ იმპორტი</p>
+        <p class="text-slate-500 text-lg">{{ t('apartments.no_apartments') }}</p>
       </div>
 
       <!-- Apartments Grid -->
@@ -92,7 +90,7 @@
             <div class="flex items-start justify-between mb-4">
               <div class="flex-1">
                 <h3 class="text-xl font-bold text-slate-800">{{ apartment.apartment_number }}</h3>
-                <p class="text-sm text-slate-500">სართული: {{ apartment.floor_number }}</p>
+                <p class="text-sm text-slate-500">{{ t('apartments.floor') }}: {{ apartment.floor_number }}</p>
               </div>
               <span :class="getStatusClass(apartment.status)" class="px-3 py-1 rounded-lg text-sm font-medium">{{ getStatusLabel(apartment.status) }}</span>
             </div>
@@ -103,15 +101,15 @@
               </div>
               <div v-if="apartment.area_total" class="flex items-center gap-2 text-slate-600">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z" /></svg>
-                <span class="text-sm">{{ apartment.area_total }} მ²</span>
+                <span class="text-sm">{{ apartment.area_total }} {{ t('common.sqm') }}</span>
               </div>
               <div v-if="apartment.bedrooms" class="flex items-center gap-2 text-slate-600">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                <span class="text-sm">{{ apartment.bedrooms }} ოთახი</span>
+                <span class="text-sm">{{ apartment.bedrooms }} {{ t('apartments.bedrooms') }}</span>
               </div>
             </div>
             <div class="flex gap-2">
-              <button @click="editApartment(apartment)" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all duration-300 font-medium text-sm">რედაქტირება</button>
+              <button @click="editApartment(apartment)" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all duration-300 font-medium text-sm">{{ t('admin.common.edit') }}</button>
               <button @click="deleteApartment(apartment)" class="bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-rose-700 transition-all duration-300 font-medium text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
               </button>
@@ -137,9 +135,12 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
 import ApartmentFormModal from './components/ApartmentFormModal.vue'
 import ApartmentImportModal from './components/ApartmentImportModal.vue'
 import { useApartmentsList } from './composables'
+
+const { t } = useTranslations()
 
 const {
   apartmentsStore,

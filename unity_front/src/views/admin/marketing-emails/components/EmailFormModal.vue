@@ -12,7 +12,7 @@
         >
           <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-semibold text-slate-800">
-              {{ isEdit ? 'ელ. ფოსტის რედაქტირება' : 'ახალი ელ. ფოსტა' }}
+              {{ isEdit ? t('admin.marketing_emails.edit_email') : t('admin.marketing_emails.add_email') }}
             </h3>
             <button
               @click="$emit('close')"
@@ -26,36 +26,36 @@
 
           <form @submit.prevent="$emit('save')" class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">ელ. ფოსტა *</label>
+              <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('admin.marketing_emails.table.email') }} *</label>
               <input
                 :value="formData.email"
                 @input="updateField('email', ($event.target as HTMLInputElement).value)"
                 type="email"
                 required
                 class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-slate-900"
-                placeholder="example@unity.ge"
+                :placeholder="t('admin.marketing_emails.form.email_placeholder')"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">სახელი</label>
+              <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('admin.common.name') }}</label>
               <input
                 :value="formData.name"
                 @input="updateField('name', ($event.target as HTMLInputElement).value)"
                 type="text"
                 class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-slate-900"
-                placeholder="მაგ: მარკეტინგის განყოფილება"
+                :placeholder="t('admin.marketing_emails.form.name_placeholder')"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-2">აღწერა</label>
+              <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('admin.marketing_emails.table.description') }}</label>
               <textarea
                 :value="formData.description"
                 @input="updateField('description', ($event.target as HTMLTextAreaElement).value)"
                 rows="3"
                 class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none text-slate-900"
-                placeholder="დამატებითი ინფორმაცია..."
+                :placeholder="t('admin.marketing_emails.form.description_placeholder')"
               ></textarea>
             </div>
 
@@ -67,7 +67,7 @@
                 id="is_active"
                 class="rounded border-slate-300 text-amber-500 focus:ring-amber-500"
               />
-              <label for="is_active" class="ml-2 text-sm text-slate-700">აქტიური</label>
+              <label for="is_active" class="ml-2 text-sm text-slate-700">{{ t('admin.marketing_emails.table.active') }}</label>
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
@@ -76,13 +76,13 @@
                 @click="$emit('close')"
                 class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
               >
-                გაუქმება
+                {{ t('admin.common.cancel') }}
               </button>
               <button
                 type="submit"
                 class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
               >
-                {{ isEdit ? 'განახლება' : 'დამატება' }}
+                {{ isEdit ? t('admin.common.update') : t('admin.common.add') }}
               </button>
             </div>
           </form>
@@ -94,6 +94,9 @@
 
 <script setup lang="ts">
 import type { MarketingEmailFormData } from '@/services/adminMarketingEmailApi'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 const props = defineProps<{
   show: boolean

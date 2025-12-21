@@ -5,7 +5,7 @@
         <button
           @click="$emit('back')"
           class="p-2 hover:bg-gray-100 rounded transition-colors"
-          title="უკან დაბრუნება"
+          :title="t('admin.common.back')"
         >
           <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -17,9 +17,9 @@
           </svg>
         </button>
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">ბინების ზონების რედაქტორი</h1>
+          <h1 class="text-2xl font-bold text-gray-900">{{ t('admin.zones.apartment_editor.title') }}</h1>
           <p class="text-sm text-gray-500 mt-1">
-            {{ (selectedBuilding?.name as any)?.ka || selectedBuilding?.name || 'შენობა' }} - სართული {{ floorNumber }} - ბინების ხატვა
+            {{ getBuildingName() }} - {{ t('admin.apartments.form.floor') }} {{ floorNumber }} - {{ t('admin.zones.draw_polygon') }}
           </p>
         </div>
         <ZoneEditorBreadcrumbs class="ml-4" />
@@ -31,7 +31,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
           </svg>
-          <span class="text-sm font-medium">შეუნახავი ცვლილებები</span>
+          <span class="text-sm font-medium">{{ t('admin.zones.editor_common.unsaved_changes') }}</span>
         </div>
 
         <!-- Discard Button -->
@@ -39,19 +39,19 @@
           v-if="hasChanges"
           @click="$emit('discard')"
           class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors flex items-center space-x-2"
-          title="ცვლილებების გაუქმება"
+          :title="t('admin.common.cancel')"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
-          <span class="hidden md:inline">გაუქმება</span>
+          <span class="hidden md:inline">{{ t('admin.common.cancel') }}</span>
         </button>
 
         <button
           @click="$emit('autoDetect')"
           :disabled="!backgroundImageUrl || isDetecting"
           class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
-          title="ავტომატური გამოვლენა"
+          :title="t('admin.zones.apartment_editor.auto_detect')"
         >
           <svg v-if="!isDetecting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -65,13 +65,13 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span class="hidden md:inline">{{ isDetecting ? 'გამოვლენა...' : 'ავტო-გამოვლენა' }}</span>
+          <span class="hidden md:inline">{{ isDetecting ? t('admin.common.detecting') : t('admin.zones.apartment_editor.auto_detect') }}</span>
         </button>
         <button
           @click="$emit('openPdfModal')"
           :disabled="isPdfDetecting"
           class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
-          title="PDF-ით გამოვლენა (წითელი ხაზებით)"
+          :title="t('admin.zones.apartment_editor.pdf_detection')"
         >
           <svg v-if="!isPdfDetecting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -85,7 +85,7 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span class="hidden md:inline">{{ isPdfDetecting ? 'გამოვლენა...' : 'PDF დეტექცია' }}</span>
+          <span class="hidden md:inline">{{ isPdfDetecting ? t('admin.common.detecting') : t('admin.zones.apartment_editor.pdf_detection') }}</span>
         </button>
         <button
           @click="$emit('openImageUpload')"
@@ -99,7 +99,7 @@
               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <span class="hidden md:inline">სურათის ატვირთვა</span>
+          <span class="hidden md:inline">{{ t('admin.zones.editor_common.image_upload') }}</span>
         </button>
         <button
           @click="$emit('save')"
@@ -134,7 +134,7 @@
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>
-          <span class="hidden md:inline">{{ isSaving ? 'შენახვა...' : 'შენახვა' }}</span>
+          <span class="hidden md:inline">{{ isSaving ? t('admin.common.saving') : t('admin.common.save') }}</span>
         </button>
 
         <span class="hidden lg:inline text-xs text-gray-400 ml-2">Ctrl+S</span>
@@ -146,8 +146,11 @@
 <script setup lang="ts">
 import type { Building } from '@/types/apartments'
 import ZoneEditorBreadcrumbs from '@/components/admin/ZoneEditorBreadcrumbs.vue'
+import { useTranslations } from '@/composables/useTranslations'
 
-defineProps<{
+const { t, currentLocale } = useTranslations()
+
+const props = defineProps<{
   selectedBuilding: Building | null
   floorNumber: number
   hasChanges: boolean
@@ -165,4 +168,14 @@ defineEmits<{
   (e: 'openImageUpload'): void
   (e: 'save'): void
 }>()
+
+function getBuildingName(): string {
+  if (!props.selectedBuilding) return t('admin.zones.building_block_editor.building')
+  const name = props.selectedBuilding.name
+  if (typeof name === 'object' && name !== null) {
+    const nameObj = name as unknown as Record<string, string>
+    return nameObj[currentLocale] || nameObj.ka || nameObj.en || '#' + props.selectedBuilding.id
+  }
+  return name as string
+}
 </script>

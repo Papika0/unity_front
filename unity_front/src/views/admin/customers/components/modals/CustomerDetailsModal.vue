@@ -11,7 +11,7 @@
           @click.stop
         >
           <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-slate-800">კლიენტის დეტალები</h3>
+            <h3 class="text-lg font-semibold text-slate-800">{{ t('admin.customers.details_modal.title') }}</h3>
             <button
               @click="$emit('close')"
               class="text-slate-400 hover:text-slate-600 transition-colors"
@@ -24,31 +24,31 @@
 
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">სახელი</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">{{ t('admin.common.name') }}</label>
               <p class="text-slate-900">{{ customer.name }}</p>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">ელ. ფოსტა</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">{{ t('admin.login.email') }}</label>
               <a :href="`mailto:${customer.email}`" class="text-blue-600 hover:text-blue-800">
                 {{ customer.email }}
               </a>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">ტელეფონი</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">{{ t('admin.common.phone') }}</label>
               <a :href="`tel:${customer.phone}`" class="text-blue-600 hover:text-blue-800">
                 {{ customer.phone }}
               </a>
             </div>
 
             <div v-if="customer.subject">
-              <label class="block text-sm font-medium text-slate-700 mb-1">თემა</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">{{ t('admin.common.subject') }}</label>
               <p class="text-slate-900">{{ customer.subject }}</p>
             </div>
 
             <div v-if="customer.message">
-              <label class="block text-sm font-medium text-slate-700 mb-1">შეტყობინება</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">{{ t('admin.common.message') }}</label>
               <p class="text-slate-900 whitespace-pre-wrap bg-slate-50 p-4 rounded-lg">
                 {{ customer.message }}
               </p>
@@ -56,7 +56,7 @@
 
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">წყარო</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">{{ t('admin.customers.table.source') }}</label>
                 <span
                   class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                   :class="getSourceBadgeClass(customer.source)"
@@ -66,7 +66,7 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">სტატუსი</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">{{ t('admin.common.status') }}</label>
                 <span
                   class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                   :class="getStatusBadgeClass(customer.status)"
@@ -77,20 +77,20 @@
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">შექმნის თარიღი</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">{{ t('admin.common.created_at') }}</label>
               <p class="text-slate-900">{{ formatDate(customer.created_at) }}</p>
             </div>
 
             <!-- Notes Section -->
             <div class="border-t border-slate-200 pt-4">
               <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-medium text-slate-700">შენიშვნები</label>
+                <label class="block text-sm font-medium text-slate-700">{{ t('admin.customers.details_modal.notes') }}</label>
                 <button
                   v-if="!editingNotes"
                   @click="startEditing"
                   class="text-sm text-blue-600 hover:text-blue-800 transition-colors"
                 >
-                  {{ customer.notes ? 'რედაქტირება' : 'დამატება' }}
+                  {{ customer.notes ? t('admin.customers.details_modal.edit_notes') : t('admin.customers.details_modal.add_notes') }}
                 </button>
               </div>
               
@@ -98,7 +98,7 @@
                 <textarea
                   v-model="localNotes"
                   rows="4"
-                  placeholder="დაწერეთ შენიშვნები..."
+                  :placeholder="t('admin.customers.details_modal.notes_placeholder')"
                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 resize-none"
                 ></textarea>
                 <div class="flex justify-end space-x-2 mt-2">
@@ -106,13 +106,13 @@
                     @click="cancelEditing"
                     class="px-3 py-1.5 text-sm bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
                   >
-                    გაუქმება
+                    {{ t('admin.common.cancel') }}
                   </button>
                   <button
                     @click="saveNotes"
                     class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    შენახვა
+                    {{ t('admin.common.save') }}
                   </button>
                 </div>
               </div>
@@ -124,7 +124,7 @@
                 >
                   {{ customer.notes }}
                 </p>
-                <p v-else class="text-slate-500 italic">შენიშვნები არ არის დამატებული</p>
+                <p v-else class="text-slate-500 italic">{{ t('admin.customers.details_modal.no_notes') }}</p>
               </div>
             </div>
           </div>
@@ -134,7 +134,7 @@
               @click="$emit('close')"
               class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
             >
-              დახურვა
+              {{ t('admin.common.close') }}
             </button>
           </div>
         </div>
@@ -146,6 +146,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { Customer } from '@/services/adminCustomerApi'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 const props = defineProps<{
   show: boolean
@@ -202,22 +205,15 @@ const getSourceBadgeClass = (source: string) => {
 }
 
 const getStatusLabel = (status: string) => {
-  const labels: Record<string, string> = {
-    new: 'ახალი',
-    contacted: 'დაკავშირებული',
-    in_progress: 'მიმდინარე',
-    completed: 'დასრულებული',
-    cancelled: 'გაუქმებული',
-  }
-  return labels[status] || status
+  return t(`admin.customers.status.${status}`)
 }
 
 const getSourceLabel = (source: string) => {
-  return source === 'contact_form' ? 'კონტაქტის ფორმა' : 'ზარის მოთხოვნა'
+  return source === 'contact_form' ? t('admin.customers.stats.contact_form') : t('admin.customers.stats.call_request')
 }
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString('ka-GE', {
+  return new Date(dateString).toLocaleString(undefined, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

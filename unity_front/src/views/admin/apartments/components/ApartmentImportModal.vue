@@ -8,8 +8,8 @@
       <div
         class="sticky top-0 bg-gradient-to-r from-amber-500 to-orange-600 text-white p-6 rounded-t-2xl z-10"
       >
-        <h2 class="text-2xl font-bold">ბინების ბლოკური იმპორტი</h2>
-        <p class="text-amber-100 text-sm mt-1">CSV ან Excel ფაილიდან</p>
+        <h2 class="text-2xl font-bold">{{ t('admin.apartments.import.title') }}</h2>
+        <p class="text-amber-100 text-sm mt-1">{{ t('admin.apartments.import.subtitle') }}</p>
       </div>
 
       <!-- Content -->
@@ -17,13 +17,13 @@
         <!-- Building Selection -->
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-2">
-            აირჩიეთ შენობა <span class="text-red-500">*</span>
+            {{ t('admin.apartments.form.building') }} <span class="text-red-500">*</span>
           </label>
           <select
             v-model="selectedBuildingId"
             class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent text-gray-900"
           >
-            <option :value="null">-- აირჩიეთ შენობა --</option>
+            <option :value="null">-- {{ t('admin.apartments.form.building') }} --</option>
             <option v-for="building in buildings" :key="building.id" :value="building.id">
               {{ building.name }}
             </option>
@@ -37,16 +37,16 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <div class="flex-1">
-              <h3 class="font-semibold text-slate-900 mb-1">ჯერ ჩამოტვირთეთ შაბლონი</h3>
+              <h3 class="font-semibold text-slate-900 mb-1">{{ t('admin.apartments.import.template_info') }}</h3>
               <p class="text-slate-600 text-sm mb-3">
-                შევსებული შაბლონის ატვირთვამდე, ჩამოტვირთეთ CSV შაბლონი სწორი ფორმატისთვის.
+                {{ t('admin.apartments.import.template_desc') }}
               </p>
               <button
                 @click="downloadTemplate"
                 :disabled="isDownloading"
                 class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 font-medium text-sm disabled:opacity-50"
               >
-                {{ isDownloading ? 'იტვირთება...' : 'CSV შაბლონის ჩამოტვირთვა' }}
+                {{ isDownloading ? t('admin.common.loading') : t('admin.apartments.import.download_template') }}
               </button>
             </div>
           </div>
@@ -55,7 +55,7 @@
         <!-- File Upload -->
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-2">
-            ატვირთეთ ფაილი <span class="text-red-500">*</span>
+            {{ t('admin.apartments.import.upload_file') }} <span class="text-red-500">*</span>
           </label>
           <div
             @dragover.prevent="isDragging = true"
@@ -90,14 +90,14 @@
                   d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                 ></path>
               </svg>
-              <p class="text-slate-600 font-medium mb-2">ჩააგდეთ ფაილი აქ ან დააკლიკეთ ასარჩევად</p>
-              <p class="text-slate-500 text-sm">CSV, XLSX ან XLS (მაქს 10MB)</p>
+              <p class="text-slate-600 font-medium mb-2">{{ t('admin.apartments.import.drag_drop') }}</p>
+              <p class="text-slate-500 text-sm">{{ t('admin.apartments.import.file_types') }}</p>
               <button
                 @click="fileInput?.click()"
                 type="button"
                 class="mt-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-2 rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all duration-300 font-medium"
               >
-                ფაილის არჩევა
+                {{ t('admin.common.select') }}
               </button>
             </div>
 
@@ -138,7 +138,7 @@
               <div>
                 <p class="font-semibold text-green-900">{{ importResult.message }}</p>
                 <p class="text-green-700 text-sm">
-                  იმპორტირებულია: {{ importResult.imported_count }} ბინა
+                  {{ t('admin.apartments.import.imported', { count: importResult.imported_count ?? 0 }) }}
                 </p>
               </div>
             </div>
@@ -153,14 +153,14 @@
               <div class="flex-1">
                 <p class="font-semibold text-red-900 mb-2">{{ importResult.message }}</p>
                 <div v-if="importResult.errors && importResult.errors.length > 0" class="space-y-2">
-                  <p class="text-red-700 text-sm">შეცდომები:</p>
+                  <p class="text-red-700 text-sm">{{ t('admin.apartments.import.errors') }}:</p>
                   <div class="max-h-40 overflow-y-auto bg-red-100 rounded p-3 text-sm">
                     <div
                       v-for="(err, idx) in importResult.errors"
                       :key="idx"
                       class="mb-2 last:mb-0"
                     >
-                      <span class="font-medium">რიგი {{ err.row }}:</span>
+                      <span class="font-medium">{{ t('admin.apartments.import.row') }} {{ err.row }}:</span>
                       <ul class="list-disc list-inside ml-2">
                         <li v-for="(error, errIdx) in err.errors" :key="errIdx" class="text-red-800">
                           {{ error }}
@@ -182,7 +182,7 @@
             :disabled="isImporting"
             class="flex-1 px-6 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all duration-300 font-medium disabled:opacity-50"
           >
-            {{ importResult?.success ? 'დახურვა' : 'გაუქმება' }}
+            {{ importResult?.success ? t('admin.common.close') : t('admin.common.cancel') }}
           </button>
           <button
             v-if="!importResult?.success"
@@ -191,7 +191,7 @@
             type="button"
             class="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl disabled:opacity-50"
           >
-            {{ isImporting ? 'იმპორტირდება...' : 'იმპორტი' }}
+            {{ isImporting ? t('admin.apartments.import.importing') : t('admin.common.import') }}
           </button>
           <button
             v-else
@@ -199,7 +199,7 @@
             type="button"
             class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
           >
-            დასრულება
+            {{ t('admin.apartments.import.finish') }}
           </button>
         </div>
       </div>
@@ -210,6 +210,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useApartmentsAdminStore } from '@/stores/admin/apartments'
+import { useTranslations } from '@/composables/useTranslations'
 import type { Building } from '@/types/apartments'
 
 interface Props {
@@ -237,6 +238,7 @@ const props = defineProps<Props>()
 defineEmits<Emits>()
 
 const apartmentsStore = useApartmentsAdminStore()
+const { t } = useTranslations()
 
 const selectedBuildingId = ref<number | null>(null)
 const selectedFile = ref<File | null>(null)
@@ -262,7 +264,7 @@ function handleDrop(event: DragEvent) {
 
 async function downloadTemplate() {
   if (!props.projectId || !selectedBuildingId.value) {
-    alert('გთხოვთ აირჩიოთ შენობა')
+    alert(t('admin.apartments.form.building'))
     return
   }
 
@@ -271,7 +273,7 @@ async function downloadTemplate() {
     await apartmentsStore.downloadTemplate()
   } catch (error: unknown) {
     const apiError = error as { message?: string }
-    alert('შეცდომა: ' + (apiError.message || 'Template download failed'))
+    alert(t('admin.errors.loading_failed') + ': ' + (apiError.message || 'Template download failed'))
   } finally {
     isDownloading.value = false
   }
@@ -303,7 +305,7 @@ async function handleImport() {
     }
     importResult.value = {
       success: false,
-      message: apiError.response?.data?.message || apiError.message || 'Import failed',
+      message: apiError.response?.data?.message || apiError.message || t('admin.errors.unknown_error'),
       errors: apiError.response?.data?.errors || [],
     }
   } finally {

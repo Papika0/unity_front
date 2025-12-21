@@ -2,7 +2,7 @@
 import type { ProjectApiResponse } from '@/services/projectsApi'
 import { useTranslations } from '@/composables/useTranslations'
 
-const props = defineProps<{
+defineProps<{
   project: ProjectApiResponse
   index: number
   isVisible: boolean

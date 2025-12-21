@@ -2,7 +2,7 @@
 import type { BankRate } from '@/types/admin/calculator'
 import { useTranslations } from '@/composables/useTranslations'
 
-const props = defineProps<{
+defineProps<{
   bankRates: BankRate[]
 }>()
 
@@ -40,7 +40,6 @@ const { t } = useTranslations()
           <!-- Bank Name -->
           <td class="px-6 py-4">
             <div class="font-medium text-slate-900">{{ bank.bank_name }}</div>
-            <div class="text-sm text-slate-500 mt-1">🇬🇪 {{ bank.bank_name_ka }}</div>
           </td>
 
           <!-- Interest Rate -->

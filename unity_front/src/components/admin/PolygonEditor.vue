@@ -156,13 +156,13 @@
         <!-- Mode Instructions -->
         <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-4 py-2 rounded-lg text-sm">
           <span v-if="currentMode === 'draw'">
-            {{ currentPolygon.length === 0 ? 'დააჭირეთ დასაწყებად' : 'დააჭირეთ წერტილების დასამატებლად, ორმაგი დაჭერა დასასრულებლად' }}
+            {{ currentPolygon.length === 0 ? t('admin.polygon_editor.draw_start') : t('admin.polygon_editor.draw_continue') }}
           </span>
           <span v-else-if="currentMode === 'edit'">
-            წერტილების გადასატანად გადაათრიეთ
+            {{ t('admin.polygon_editor.edit_instruction') }}
           </span>
           <span v-else>
-            პოლიგონის ასარჩევად დააჭირეთ
+            {{ t('admin.polygon_editor.select_instruction') }}
           </span>
         </div>
       </div>
@@ -174,7 +174,7 @@
         v-if="selectedPolygon && isPropertiesPanelOpen"
         :polygon="selectedPolygon"
         :entities="entities"
-        :entity-label="entityLabel"
+        :entity-label="effectiveEntityLabel"
         :bounding-box="selectedPolygonBoundingBox"
         :area="calculatePolygonArea(selectedPolygon.points)"
         @close="isPropertiesPanelOpen = false"
@@ -189,7 +189,7 @@
       v-if="selectedPolygon && !isPropertiesPanelOpen"
       @click="isPropertiesPanelOpen = true"
       class="fixed right-0 top-1/2 transform -translate-y-1/2 bg-white border border-gray-300 rounded-l-lg shadow-lg p-2 hover:bg-gray-50 transition-all z-10"
-      title="თვისებების ფანელის გახსნა"
+      :title="t('admin.polygon_editor.open_properties')"
     >
       <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -199,10 +199,13 @@
 </template>
 
 <script setup lang="ts">
-import { toRef } from 'vue'
+import { toRef, computed } from 'vue'
 import type { Polygon } from '@/utils/polygon'
 import { calculatePolygonArea } from '@/utils/polygon'
 import { usePolygonEditor } from '@/composables/usePolygonEditor'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 // Sub-components
 import { PolygonList, PolygonToolbar, PolygonProperties } from './polygon-editor'
@@ -222,8 +225,10 @@ const props = withDefaults(defineProps<Props>(), {
   imageHeight: 800,
   initialPolygons: () => [],
   entities: () => [],
-  entityLabel: 'დაკავშირებული ელემენტი',
+  entityLabel: '',
 })
+
+const effectiveEntityLabel = computed(() => props.entityLabel || t('admin.polygon_editor.linked_item'))
 
 const emit = defineEmits<{
   save: [polygons: Polygon[]]

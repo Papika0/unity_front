@@ -18,7 +18,7 @@
           </svg>
         </div>
         <div class="ml-3 sm:ml-4 min-w-0">
-          <p class="text-xs sm:text-sm font-medium text-gray-600 truncate">სულ სურათები</p>
+          <p class="text-xs sm:text-sm font-medium text-gray-600 truncate">{{ t('admin.gallery.total_images') }}</p>
           <p class="text-lg sm:text-2xl font-bold text-gray-900">{{ totalImages }}</p>
         </div>
       </div>
@@ -42,7 +42,7 @@
           </svg>
         </div>
         <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">აქტიური</p>
+          <p class="text-sm font-medium text-gray-600">{{ t('admin.gallery.active_images') }}</p>
           <p class="text-2xl font-bold text-gray-900">{{ activeImages }}</p>
         </div>
       </div>
@@ -66,7 +66,7 @@
           </svg>
         </div>
         <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">კატეგორიები</p>
+          <p class="text-sm font-medium text-gray-600">{{ t('admin.gallery.categories') }}</p>
           <p class="text-2xl font-bold text-gray-900">{{ categoryCount }}</p>
         </div>
       </div>
@@ -90,7 +90,7 @@
           </svg>
         </div>
         <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">პროექტები</p>
+          <p class="text-sm font-medium text-gray-600">{{ t('admin.gallery.projects') }}</p>
           <p class="text-2xl font-bold text-gray-900">{{ projectCount }}</p>
         </div>
       </div>
@@ -99,6 +99,10 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
+
 defineProps<{
   totalImages: number
   activeImages: number

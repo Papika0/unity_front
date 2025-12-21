@@ -3,7 +3,7 @@
  * Handles CRUD operations, search, filtering, and pagination
  */
 
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import {
   getTranslations,
   addTranslation,
@@ -12,8 +12,11 @@ import {
 } from '@/services/translations'
 import type { Translation } from '@/types'
 import { Translator } from '@/utils/translator'
+import { useTranslations } from '@/composables/useTranslations'
 
 export function useTranslationsList() {
+  const { t } = useTranslations()
+
   // ============================================
   // STATE
   // ============================================
@@ -32,23 +35,23 @@ export function useTranslationsList() {
   // ============================================
   // CONSTANTS
   // ============================================
-  const groupOptions = [
-    { value: '', label: 'ყველა ჯგუფი', icon: '📁' },
-    { value: 'header', label: 'ნავიგაცია(ზედა)', icon: '🧭' },
-    { value: 'footer', label: 'ნავიგაცია(ქვედა)', icon: '🔻' },
-    { value: 'home', label: 'მთავარი გვერდი', icon: '🏠' },
-    { value: 'about', label: 'ჩვენს შესახებ', icon: 'ℹ️' },
-    { value: 'projects', label: 'პროექტები', icon: '🏗️' },
-    { value: 'gallery', label: 'გალერეა', icon: '🖼️' },
-    { value: 'faq', label: 'FAQ', icon: '❓' },
-    { value: 'contact', label: 'კონტაქტი', icon: '📞' },
-    { value: 'buttons', label: 'ღილაკები', icon: '🔘' },
-    { value: 'messages', label: 'შეტყობინებები', icon: '💬' },
-    { value: 'errors', label: 'შეცდომები', icon: '⚠️' },
-    { value: 'admin', label: 'ადმინისტრაცია', icon: '👨‍💼' },
-    { value: 'auth', label: 'ავთენტიფიკაცია', icon: '🔐' },
-    { value: 'testimonials', label: 'რეკომენდაციები', icon: '💭' },
-  ]
+  const groupOptions = computed(() => [
+    { value: '', label: t('admin.translations.all_groups'), icon: '📁' },
+    { value: 'header', label: t('admin.translations.groups.header'), icon: '🧭' },
+    { value: 'footer', label: t('admin.translations.groups.footer'), icon: '🔻' },
+    { value: 'home', label: t('admin.translations.groups.home'), icon: '🏠' },
+    { value: 'about', label: t('admin.translations.groups.about'), icon: 'ℹ️' },
+    { value: 'projects', label: t('admin.translations.groups.projects'), icon: '🏗️' },
+    { value: 'gallery', label: t('admin.translations.groups.gallery'), icon: '🖼️' },
+    { value: 'faq', label: t('admin.translations.groups.faq'), icon: '❓' },
+    { value: 'contact', label: t('admin.translations.groups.contact'), icon: '📞' },
+    { value: 'buttons', label: t('admin.translations.groups.buttons'), icon: '🔘' },
+    { value: 'messages', label: t('admin.translations.groups.messages'), icon: '💬' },
+    { value: 'errors', label: t('admin.translations.groups.errors'), icon: '⚠️' },
+    { value: 'admin', label: t('admin.translations.groups.admin'), icon: '👨‍💼' },
+    { value: 'auth', label: t('admin.translations.groups.auth'), icon: '🔐' },
+    { value: 'testimonials', label: t('admin.translations.groups.testimonials'), icon: '💭' },
+  ])
 
   // ============================================
   // FORM STATE
@@ -105,7 +108,7 @@ export function useTranslationsList() {
   // ============================================
   // SEARCH & FILTER
   // ============================================
-  let searchTimeout: number
+  let searchTimeout: ReturnType<typeof setTimeout> | undefined
 
   const debounceSearch = () => {
     clearTimeout(searchTimeout)
@@ -216,7 +219,7 @@ export function useTranslationsList() {
   }
 
   const deleteTranslationConfirm = async (translation: Translation) => {
-    if (confirm(`დარწმუნებული ხართ, რომ გსურთ თარგმანის "${translation.key}" წაშლა?`)) {
+    if (confirm(t('admin.common.confirm_delete_named', { name: translation.key }))) {
       try {
         await deleteTranslation(translation.id)
         await loadTranslations()

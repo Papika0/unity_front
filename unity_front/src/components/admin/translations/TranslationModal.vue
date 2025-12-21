@@ -30,11 +30,11 @@
               <h3
                 class="text-3xl font-light bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"
               >
-                {{ isEdit ? 'თარგმანის რედაქტირება' : 'ახალი თარგმანის შექმნა' }}
+                {{ isEdit ? t('admin.common.edit') : t('admin.common.create') }}
               </h3>
               <p class="text-slate-500 text-sm mt-1">
                 {{
-                  isEdit ? 'განაახლეთ არსებული თარგმანი' : 'დაამატეთ ახალი მრავალენოვანი თარგმანი'
+                  isEdit ? t('admin.translations.edit_desc') : t('admin.translations.create_desc')
                 }}
               </p>
             </div>
@@ -86,17 +86,17 @@
                   ></path>
                 </svg>
               </div>
-              <span>ჯგუფი</span>
+              <span>{{ t('admin.translations.form.group') }}</span>
               <span
                 v-if="!isEdit"
                 class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full"
-                >პირველი ნაბიჯი</span
+                >{{ t('admin.common.step_1') }}</span
               >
             </label>
             <CustomDropdown
               v-model="formGroup"
               :options="groupOptions"
-              placeholder="აირჩიეთ ჯგუფი..."
+              :placeholder="t('admin.translations.form.select_group')"
             />
           </div>
 
@@ -123,11 +123,11 @@
                   ></path>
                 </svg>
               </div>
-              <span>იდენტიფიკატორი (Key)</span>
+              <span>{{ t('admin.translations.form.key') }}</span>
               <span
                 v-if="!isEdit"
                 class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full"
-                >მეორე ნაბიჯი</span
+                >{{ t('admin.common.step_2') }}</span
               >
             </label>
             <div class="relative">
@@ -159,14 +159,14 @@
               <h4
                 class="text-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2 flex items-center justify-center gap-2"
               >
-                მრავალენოვანი თარგმანი
+                {{ t('admin.translations.form.multilingual') }}
                 <span
                   v-if="!isEdit"
                   class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full"
-                  >მესამე ნაბიჯი</span
+                  >{{ t('admin.common.step_3') }}</span
                 >
               </h4>
-              <p class="text-slate-600 text-sm">შეავსეთ თარგმანი სამივე ენაზე</p>
+              <p class="text-slate-600 text-sm">{{ t('admin.translations.form.fill_all') }}</p>
 
               <!-- Translate Both Button -->
               <div v-if="formTextKa && (!formTextEn || !formTextRu)" class="mt-4">
@@ -204,7 +204,7 @@
                       d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
                     ></path>
                   </svg>
-                  {{ translating ? '🔄 თარგმნა...' : '🌐 ორივე ენაზე თარგმნა' }}
+                  {{ translating ? t('admin.common.translating') : t('admin.translations.form.translate_all') }}
                 </button>
               </div>
             </div>
@@ -213,8 +213,8 @@
             <LanguageField
               v-model="formTextKa"
               language="ka"
-              label="🇬🇪 ქართული"
-              placeholder="ქართული თარგმანი"
+              :label="`🇬🇪 ${t('admin.translations.form.ka')}`"
+              :placeholder="t('admin.translations.form.ka')"
               :required="true"
             />
 
@@ -222,8 +222,8 @@
             <LanguageField
               v-model="formTextEn"
               language="en"
-              label="🇬🇧 English"
-              placeholder="English translation"
+              :label="`🇬🇧 ${t('admin.translations.form.en')}`"
+              :placeholder="t('admin.translations.form.en')"
               :required="true"
               :can-translate="!!formTextKa"
               :translating="translating"
@@ -234,8 +234,8 @@
             <LanguageField
               v-model="formTextRu"
               language="ru"
-              label="🇷🇺 русский"
-              placeholder="русский перевод"
+              :label="`🇷🇺 ${t('admin.translations.form.ru')}`"
+              :placeholder="t('admin.translations.form.ru')"
               :required="false"
               :can-translate="!!formTextKa"
               :translating="translating"
@@ -267,8 +267,8 @@
                   </svg>
                 </div>
                 <div>
-                  <h4 class="text-sm font-semibold text-slate-900">სტატუსი</h4>
-                  <p class="text-xs text-slate-600">თარგმანის გამოყენება</p>
+                  <h4 class="text-sm font-semibold text-slate-900">{{ t('admin.common.status') }}</h4>
+                  <p class="text-xs text-slate-600">{{ t('admin.translations.form.usage') }}</p>
                 </div>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
@@ -277,7 +277,7 @@
                   class="w-12 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-indigo-500 peer-checked:to-purple-500 shadow-inner"
                 ></div>
                 <span class="ml-3 text-sm font-medium text-slate-800">
-                  {{ formActive ? 'აქტიური' : 'არააქტიური' }}
+                  {{ formActive ? t('admin.common.active') : t('admin.common.inactive') }}
                 </span>
               </label>
             </div>
@@ -292,7 +292,7 @@
               @click="$emit('close')"
               class="order-2 sm:order-1 px-8 py-4 text-base font-semibold text-slate-800 bg-white/80 backdrop-blur-sm border-2 border-slate-300 rounded-2xl hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-500/20 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
             >
-              🚫 გაუქმება
+              🚫 {{ t('admin.common.cancel') }}
             </button>
             <button
               type="submit"
@@ -322,7 +322,7 @@
                   d="M5 13l4 4L19 7"
                 ></path>
               </svg>
-              {{ saving ? '🔄 შენახვა...' : '✅ შენახვა' }}
+              {{ saving ? t('admin.common.saving') : t('admin.common.save') }}
             </button>
           </div>
         </form>
@@ -335,6 +335,9 @@
 import { computed } from 'vue'
 import LanguageField from '../forms/LanguageField.vue'
 import { CustomDropdown } from '../ui'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 interface TranslationForm {
   key: string
@@ -409,39 +412,40 @@ const formActive = computed({
 
 // Group options for the dropdown
 const groupOptions = [
-  { value: 'header', label: 'ნავიგაცია(ზედა)', icon: '🧭' },
-  { value: 'footer', label: 'ნავიგაცია(ქვედა)', icon: '🔻' },
-  { value: 'home', label: 'მთავარი გვერდი', icon: '🏠' },
-  { value: 'about', label: 'ჩვენს შესახებ', icon: 'ℹ️' },
-  { value: 'projects', label: 'პროექტები', icon: '🏗️' },
-  { value: 'gallery', label: 'გალერეა', icon: '🖼️' },
-  { value: 'news', label: 'სიახლეები', icon: '📰' },
-  { value: 'faq', label: 'FAQ', icon: '❓' },
-  { value: 'contact', label: 'კონტაქტი', icon: '📞' },
-  { value: 'buttons', label: 'ღილაკები', icon: '🔘' },
-  { value: 'messages', label: 'შეტყობინებები', icon: '💬' },
-  { value: 'errors', label: 'შეცდომები', icon: '⚠️' },
-  { value: 'admin', label: 'ადმინისტრაცია', icon: '👨‍💼' },
-  { value: 'auth', label: 'ავთენტიფიკაცია', icon: '🔐' },
-  { value: 'testimonials', label: 'რეკომენდაციები', icon: '💭' },
+  { value: 'header', label: t('admin.translations.groups.header'), icon: '🧭' },
+  { value: 'footer', label: t('admin.translations.groups.footer'), icon: '🔻' },
+  { value: 'home', label: t('admin.translations.groups.home'), icon: '🏠' },
+  { value: 'about', label: t('admin.translations.groups.about'), icon: 'ℹ️' },
+  { value: 'projects', label: t('admin.translations.groups.projects'), icon: '🏗️' },
+  { value: 'gallery', label: t('admin.translations.groups.gallery'), icon: '🖼️' },
+  { value: 'news', label: t('admin.translations.groups.news'), icon: '📰' },
+  { value: 'faq', label: t('admin.translations.groups.faq'), icon: '❓' },
+  { value: 'contact', label: t('admin.translations.groups.contact'), icon: '📞' },
+  { value: 'buttons', label: t('admin.translations.groups.buttons'), icon: '🔘' },
+  { value: 'messages', label: t('admin.translations.groups.messages'), icon: '💬' },
+  { value: 'errors', label: t('admin.translations.groups.errors'), icon: '⚠️' },
+  { value: 'admin', label: t('admin.translations.groups.admin'), icon: '👨‍💼' },
+  { value: 'auth', label: t('admin.translations.groups.auth'), icon: '🔐' },
+  { value: 'testimonials', label: t('admin.translations.groups.testimonials'), icon: '💭' },
 ]
 
 // Method to get placeholder text based on selected group
+// Method to get placeholder text based on selected group
 const getKeyPlaceholder = () => {
-  const placeholders = {
-    header: 'მაგ. menu_item',
-    footer: 'მაგ. copyright_text',
-    home: 'მაგ. welcome_message',
-    about: 'მაგ. company_description',
-    projects: 'მაგ. project_title',
-    gallery: 'მაგ. image_caption',
-    news: 'მაგ. news_title',
-    faq: 'მაგ. question_answer',
-    contact: 'მაგ. contact_form_label',
-    buttons: 'მაგ. submit_button',
-    messages: 'მაგ. success_message',
+  const placeholders: Record<string, string> = {
+    header: t('admin.translations.placeholders.header'),
+    footer: t('admin.translations.placeholders.footer'),
+    home: t('admin.translations.placeholders.home'),
+    about: t('admin.translations.placeholders.about'),
+    projects: t('admin.translations.placeholders.projects'),
+    gallery: t('admin.translations.placeholders.gallery'),
+    news: t('admin.translations.placeholders.news'),
+    faq: t('admin.translations.placeholders.faq'),
+    contact: t('admin.translations.placeholders.contact'),
+    buttons: t('admin.translations.placeholders.buttons'),
+    messages: t('admin.translations.placeholders.messages'),
   }
-  return placeholders[props.form.group as keyof typeof placeholders] || 'მაგ. unique_identifier'
+  return placeholders[props.form.group] || 'e.g. unique_identifier'
 }
 
 // Method to translate both English and Russian from Georgian
@@ -449,6 +453,30 @@ const translateBoth = () => {
   emit('translateBoth')
 }
 </script>
+
+<style scoped>
+/* Modal backdrop blur */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+/* Enhanced focus styles */
+input:focus,
+textarea:focus,
+select:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+/* Custom select arrow */
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 3rem;
+}
+</style>
 
 <style scoped>
 /* Modal backdrop blur */

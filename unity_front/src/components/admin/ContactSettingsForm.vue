@@ -22,7 +22,7 @@
       <div
         class="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"
       ></div>
-      <p class="text-gray-600">კონტაქტის პარამეტრების ჩატვირთვა...</p>
+      <p class="text-gray-600">{{ t('admin.contact_settings.loading') }}</p>
     </div>
 
     <!-- Main Form -->
@@ -73,7 +73,7 @@
                   : 'text-gray-700 group-hover:text-gray-800',
               ]"
             >
-              {{ tab.nameGeorgian }}
+              {{ t(`admin.contact_settings.tabs.${tab.id}`) }}
             </span>
           </button>
         </div>
@@ -109,7 +109,7 @@
           @click="store.resetForm()"
           class="px-6 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
         >
-          ცვლილებების გაუქმება
+          {{ t('admin.common.cancel') }}
         </button>
 
         <button
@@ -118,20 +118,20 @@
           @click="handleSave"
           class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
         >
-          <span v-if="store.isSaving">შენახვა...</span>
-          <span v-else>ცვლილებების შენახვა</span>
+          <span v-if="store.isSaving">{{ t('admin.common.saving') }}</span>
+          <span v-else>{{ t('admin.common.save') }}</span>
         </button>
       </div>
     </div>
 
     <!-- Error State -->
     <div v-else class="text-center py-16">
-      <p class="text-gray-600 mb-4">კონტაქტის პარამეტრების ჩატვირთვა ვერ მოხერხდა.</p>
+      <p class="text-gray-600 mb-4">{{ t('admin.contact_settings.load_error') }}</p>
       <button
         @click="store.loadSettings()"
         class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
       >
-        ხელახლა ცდა
+        {{ t('admin.common.retry') }}
       </button>
     </div>
   </div>
@@ -141,6 +141,9 @@
 import { onMounted, computed, ref } from 'vue'
 import { useContactSettingsAdminStore } from '@/stores/admin/contactSettings'
 import { Translator } from '@/utils/translator'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 // Sub-components
 import ContactInfoTab from './contact-settings/ContactInfoTab.vue'
@@ -160,12 +163,12 @@ const toastType = ref<'success' | 'error'>('success')
 const translating = ref(false)
 
 const availableTabs = computed(() => [
-  { id: 'contact_info', nameGeorgian: 'კონტაქტი', icon: 'contact_mail' },
-  { id: 'social_links', nameGeorgian: 'სოც. ბმულები', icon: 'share' },
-  { id: 'map_settings', nameGeorgian: 'რუკა', icon: 'map' },
-  { id: 'form_subjects', nameGeorgian: 'ფორმა', icon: 'list' },
-  { id: 'faqs', nameGeorgian: 'კითხვები', icon: 'help' },
-  { id: 'office_days', nameGeorgian: 'განრიგი', icon: 'schedule' },
+  { id: 'contact_info', icon: 'contact_mail' },
+  { id: 'social_links', icon: 'share' },
+  { id: 'map_settings', icon: 'map' },
+  { id: 'form_subjects', icon: 'list' },
+  { id: 'faqs', icon: 'help' },
+  { id: 'office_days', icon: 'schedule' },
 ])
 
 onMounted(() => {
@@ -228,7 +231,7 @@ async function handleTranslate(
     store.markDirty()
   } catch (error) {
     console.error('Translation failed:', error)
-    showToast('თარგმნა ვერ მოხერხდა', 'error')
+    showToast(t('admin.contact_settings.translation_error'), 'error')
   } finally {
     translating.value = false
   }
@@ -242,21 +245,21 @@ const validateForm = (): boolean => {
 
   // Check required contact info fields
   if (!store.data.contact_info.address.value.ka) {
-    errors.push('მისამართი (ქართული) აუცილებელია')
+    errors.push(t('admin.contact_settings.validation.address_required'))
   }
   if (!store.data.contact_info.phone.value) {
-    errors.push('ტელეფონის ნომერი აუცილებელია')
+    errors.push(t('admin.contact_settings.validation.phone_required'))
   }
   if (!store.data.contact_info.email.value) {
-    errors.push('ელ. ფოსტა აუცილებელია')
+    errors.push(t('admin.contact_settings.validation.email_required'))
   }
 
   // Check map settings
   if (!store.data.map_settings.latitude) {
-    errors.push('რუკის განედი აუცილებელია')
+    errors.push(t('admin.contact_settings.validation.lat_required'))
   }
   if (!store.data.map_settings.longitude) {
-    errors.push('რუკის გრძედი აუცილებელია')
+    errors.push(t('admin.contact_settings.validation.long_required'))
   }
 
   if (errors.length > 0) {
@@ -272,12 +275,70 @@ const handleSave = async () => {
 
   const success = await store.saveSettings()
   if (success) {
-    showToast('პარამეტრები წარმატებით შეინახა', 'success')
+    showToast(t('admin.contact_settings.save_success'), 'success')
   } else {
-    showToast('პარამეტრების შენახვა ვერ მოხერხდა', 'error')
+    showToast(t('admin.contact_settings.save_error'), 'error')
   }
 }
 </script>
+
+<style scoped>
+/* Enhanced Tab Navigation Effects */
+.group:hover .material-icons {
+  transform: scale(1.1);
+}
+
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.bg-gradient-to-br {
+  background-size: 200% 200%;
+  animation: gradientShift 6s ease infinite;
+}
+
+.shadow-blue-500\/25 {
+  box-shadow: 0 10px 25px -3px rgba(59, 130, 246, 0.25), 0 4px 6px -2px rgba(59, 130, 246, 0.1);
+}
+
+.transform {
+  will-change: transform;
+}
+
+.group .material-icons {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+  50% { box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.3); }
+}
+
+.bg-gradient-to-br.text-white {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+  .text-xs {
+    font-size: 0.7rem;
+    line-height: 0.9rem;
+  }
+}
+
+.group:hover {
+  transform: translateY(-2px) scale(1.05);
+}
+
+.group:active {
+  transform: translateY(0) scale(1.02);
+}
+</style>
 
 <style scoped>
 /* Enhanced Tab Navigation Effects */

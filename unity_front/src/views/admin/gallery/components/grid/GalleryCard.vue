@@ -6,7 +6,7 @@
     <div class="aspect-square relative overflow-hidden">
       <img
         :src="image.url"
-        :alt="getGeorgianText(image.alt_text) || getGeorgianText(image.title)"
+        :alt="getLocalizedText(image.alt_text) || getLocalizedText(image.title)"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       />
 
@@ -20,7 +20,7 @@
           <button
             @click="$emit('view', image)"
             class="p-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors"
-            title="View"
+            :title="t('admin.common.view')"
           >
             <svg
               class="w-5 h-5 text-white"
@@ -45,7 +45,7 @@
           <button
             @click="$emit('edit', image)"
             class="p-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors"
-            title="Edit"
+            :title="t('admin.common.edit')"
           >
             <svg
               class="w-5 h-5 text-white"
@@ -64,7 +64,7 @@
           <button
             @click="$emit('delete', image)"
             class="p-2 bg-red-500 bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors"
-            title="Delete"
+            :title="t('admin.common.delete')"
           >
             <svg
               class="w-5 h-5 text-white"
@@ -89,16 +89,16 @@
           :class="image.is_active ? 'bg-green-500' : 'bg-red-500'"
           class="px-2 py-1 text-xs font-medium text-white rounded-full"
         >
-          {{ image.is_active ? 'აქტიური' : 'არააქტიური' }}
+          {{ image.is_active ? t('admin.common.active') : t('admin.common.inactive') }}
         </span>
       </div>
     </div>
 
     <!-- Image Info -->
     <div class="p-4">
-      <h3 class="font-semibold text-gray-900 mb-2 truncate">{{ getGeorgianText(image.title) }}</h3>
+      <h3 class="font-semibold text-gray-900 mb-2 truncate">{{ getLocalizedText(image.title) }}</h3>
       <div class="space-y-1 text-sm text-gray-600">
-        <div v-if="getGeorgianText(image.project)" class="flex items-center">
+        <div v-if="getLocalizedText(image.project as any)" class="flex items-center">
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -107,7 +107,7 @@
               d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
             />
           </svg>
-          {{ getGeorgianText(image.project) }}
+          {{ getLocalizedText(image.project as any) }}
         </div>
         <div v-if="image.category" class="flex items-center">
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,8 +129,11 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
 import type { GalleryImage } from '../../composables/useGalleryList'
 import type { MultilingualText } from '@/services/contactApi'
+
+const { t, currentLocale } = useTranslations()
 
 defineProps<{
   image: GalleryImage
@@ -142,27 +145,28 @@ defineEmits<{
   (e: 'delete', image: GalleryImage): void
 }>()
 
-const getGeorgianText = (value: string | null | MultilingualText): string => {
+const getLocalizedText = (value: string | null | MultilingualText | Record<string, unknown>): string => {
   if (!value) return ''
   if (typeof value === 'string') return value
-  return value.ka || ''
+  const val = value as Record<string, string>
+  return val[currentLocale] || val.ka || Object.values(val)[0] || ''
 }
 
 const getCategoryLabel = (category: string): string => {
   const labels: Record<string, string> = {
-    exterior: 'ფასადები',
-    interior: 'ინტერიერი',
-    landscape: 'ლანდშაფტი',
-    commercial: 'კომერციული',
-    residential: 'საცხოვრებელი',
-    about: 'ჩვენ შესახებ',
-    projects: 'პროექტები',
-    news: 'სიახლეები',
+    exterior: t('admin.gallery.category_exterior'),
+    interior: t('admin.gallery.category_interior'),
+    landscape: t('admin.gallery.category_landscape'),
+    commercial: t('admin.gallery.category_commercial'),
+    residential: t('admin.gallery.category_residential'),
+    about: t('admin.gallery.category_about'),
+    projects: t('admin.gallery.category_projects'),
+    news: t('admin.gallery.category_news'),
   }
   return labels[category] || category
 }
 
 const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('ka-GE')
+  return new Date(dateString).toLocaleDateString(currentLocale === 'ka' ? 'ka-GE' : (currentLocale === 'ru' ? 'ru-RU' : 'en-US'))
 }
 </script>

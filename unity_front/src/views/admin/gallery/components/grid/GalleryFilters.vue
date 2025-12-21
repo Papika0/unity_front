@@ -24,7 +24,7 @@
             :value="searchQuery"
             @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
             type="text"
-            placeholder="ძებნა სურათების მიხედვით..."
+            :placeholder="t('admin.gallery.search_placeholder')"
             class="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
           />
         </div>
@@ -37,7 +37,7 @@
             @change="$emit('update:selectedCategory', ($event.target as HTMLSelectElement).value)"
             class="px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 font-medium text-gray-900 bg-white text-sm sm:text-base"
           >
-            <option value="" class="text-gray-500">ყველა კატეგორია</option>
+            <option value="" class="text-gray-500">{{ t('admin.gallery.all_categories') }}</option>
             <option v-for="category in categories" :key="category" :value="category" class="text-gray-900">
               {{ getCategoryLabel(category) }}
             </option>
@@ -49,7 +49,7 @@
             @change="$emit('update:selectedProject', ($event.target as HTMLSelectElement).value)"
             class="px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 font-medium text-gray-900 bg-white text-sm sm:text-base"
           >
-            <option value="" class="text-gray-500">ყველა პროექტი</option>
+            <option value="" class="text-gray-500">{{ t('admin.gallery.all_projects') }}</option>
             <option v-for="project in projects" :key="project" :value="project" class="text-gray-900">
               {{ project }}
             </option>
@@ -77,7 +77,7 @@
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>
-          განახლება
+          {{ t('admin.common.refresh') }}
         </button>
         <button
           @click="$emit('openUpload')"
@@ -96,7 +96,7 @@
               d="M12 6v6m0 0v6m0-6h6m-6 0H6"
             />
           </svg>
-          ახალი სურათი
+          {{ t('admin.gallery.new_image') }}
         </button>
       </div>
     </div>
@@ -104,6 +104,9 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 defineProps<{
   searchQuery: string
@@ -122,23 +125,16 @@ defineEmits<{
   (e: 'openUpload'): void
 }>()
 
-// Use the helper, but since we are in a component, we can just import it or pass it.
-// To avoid circular dependency or context issues, I'll allow importing the composable purely for utility function or duplicate it.
-// Duplicating it is safer if `useGalleryList` has state.
-// Actually `useGalleryList` exports `getCategoryLabel`.
-// But `useGalleryList` creates state. I cannot destructure it here without creating a new instance.
-// So I will recreate the helper or expect it as prop? Recreating is easier for now.
-
 const getCategoryLabel = (category: string): string => {
   const labels: Record<string, string> = {
-    exterior: 'ფასადები',
-    interior: 'ინტერიერი',
-    landscape: 'ლანდშაფტი',
-    commercial: 'კომერციული',
-    residential: 'საცხოვრებელი',
-    about: 'ჩვენ შესახებ',
-    projects: 'პროექტები',
-    news: 'სიახლეები',
+    exterior: t('admin.gallery.category_exterior'),
+    interior: t('admin.gallery.category_interior'),
+    landscape: t('admin.gallery.category_landscape'),
+    commercial: t('admin.gallery.category_commercial'),
+    residential: t('admin.gallery.category_residential'),
+    about: t('admin.gallery.category_about'),
+    projects: t('admin.gallery.category_projects'),
+    news: t('admin.gallery.category_news'),
   }
   return labels[category] || category
 }

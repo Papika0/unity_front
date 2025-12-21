@@ -23,13 +23,13 @@
             />
           </svg>
         </div>
-        <h2 class="text-2xl font-light text-slate-800 mb-4">სიახლე ვერ მოიძებნა</h2>
-        <p class="text-slate-600 mb-8">მითითებული სიახლე არ არსებობს ან წაშლილია.</p>
+        <h2 class="text-2xl font-light text-slate-800 mb-4">{{ t('admin.news.article_not_found') }}</h2>
+        <p class="text-slate-600 mb-8">{{ t('admin.news.article_not_found_desc') }}</p>
         <button
           @click="goBack"
           class="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-6 py-3 rounded-2xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
         >
-          უკან სიახლეებზე
+          {{ t('admin.news.back_to_news') }}
         </button>
       </div>
     </div>
@@ -55,7 +55,7 @@
               d="M15 19l-7-7 7-7"
             ></path>
           </svg>
-          უკან სიახლეებზე
+          {{ t('admin.news.back_to_news') }}
         </button>
 
         <!-- Title and Actions -->
@@ -74,13 +74,13 @@
                     article.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800',
                   ]"
                 >
-                  {{ article.is_active ? 'აქტიური' : 'არააქტიური' }}
+                  {{ article.is_active ? t('admin.common.active') : t('admin.common.inactive') }}
                 </span>
                 <span
                   v-if="article.is_featured"
                   class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium"
                 >
-                  რჩეული
+                  {{ t('admin.common.featured') }}
                 </span>
               </div>
             </div>
@@ -88,9 +88,9 @@
               {{ getCategoryName(article.category) }}
             </p>
             <div class="flex items-center gap-4 text-sm text-slate-500">
-              <span>გამოქვეყნებულია: {{ article.formatted_publish_date }}</span>
+              <span>{{ t('admin.news.publish_date') }}: {{ article.formatted_publish_date }}</span>
               <span>•</span>
-              <span>ნახვები: {{ article.views }}</span>
+              <span>{{ t('admin.news.views') }}: {{ article.views }}</span>
             </div>
           </div>
 
@@ -108,7 +108,7 @@
                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                 ></path>
               </svg>
-              რედაქტირება
+              {{ t('admin.common.edit') }}
             </button>
             <button
               @click="showDeleteModal = true"
@@ -122,7 +122,7 @@
                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                 ></path>
               </svg>
-              წაშლა
+              {{ t('admin.common.delete') }}
             </button>
           </div>
         </div>
@@ -132,7 +132,7 @@
       <div v-if="article.main_image" class="mb-12">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
-            <h2 class="text-xl font-semibold text-white">მთავარი სურათი</h2>
+            <h2 class="text-xl font-semibold text-white">{{ t('admin.news.main_image') }}</h2>
           </div>
           <div class="p-6">
             <img
@@ -149,7 +149,7 @@
         <!-- Excerpt -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4">
-            <h2 class="text-xl font-semibold text-white">მოკლე აღწერა</h2>
+            <h2 class="text-xl font-semibold text-white">{{ t('admin.news.brief_desc') }}</h2>
           </div>
           <div class="p-6">
             <div class="space-y-4">
@@ -172,7 +172,7 @@
         <!-- Full Content -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
-            <h2 class="text-xl font-semibold text-white">სრული შინაარსი</h2>
+            <h2 class="text-xl font-semibold text-white">{{ t('admin.news.full_content') }}</h2>
           </div>
           <div class="p-6">
             <div class="space-y-6">
@@ -210,7 +210,7 @@
           class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
         >
           <div class="bg-gradient-to-r from-violet-500 to-violet-600 px-6 py-4">
-            <h2 class="text-xl font-semibold text-white">გალერეის სურათები</h2>
+            <h2 class="text-xl font-semibold text-white">{{ t('admin.news.gallery_images') }}</h2>
           </div>
           <div class="p-6">
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -238,7 +238,7 @@
             class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
           >
             <div class="bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-4">
-              <h2 class="text-xl font-semibold text-white">ტეგები</h2>
+              <h2 class="text-xl font-semibold text-white">{{ t('admin.news.tags') }}</h2>
             </div>
             <div class="p-6">
               <div class="flex flex-wrap gap-2">
@@ -259,7 +259,7 @@
             class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
           >
             <div class="bg-gradient-to-r from-teal-500 to-teal-600 px-6 py-4">
-              <h2 class="text-xl font-semibold text-white">SEO</h2>
+              <h2 class="text-xl font-semibold text-white">{{ t('admin.news.seo') }}</h2>
             </div>
             <div class="p-6 space-y-4">
               <div v-if="article.meta_title">
@@ -277,16 +277,16 @@
         <!-- Meta Information -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div class="bg-gradient-to-r from-slate-500 to-slate-600 px-6 py-4">
-            <h2 class="text-xl font-semibold text-white">მეტა ინფორმაცია</h2>
+            <h2 class="text-xl font-semibold text-white">{{ t('admin.news.meta_info') }}</h2>
           </div>
           <div class="p-6">
             <div class="grid grid-cols-2 gap-6">
               <div>
-                <h4 class="font-medium text-slate-700 mb-2">შეიქმნა</h4>
+                <h4 class="font-medium text-slate-700 mb-2">{{ t('admin.news.created_at') }}</h4>
                 <p class="text-slate-600 text-sm">{{ formatDate(article.created_at) }}</p>
               </div>
               <div>
-                <h4 class="font-medium text-slate-700 mb-2">განახლდა</h4>
+                <h4 class="font-medium text-slate-700 mb-2">{{ t('admin.news.updated_at') }}</h4>
                 <p class="text-slate-600 text-sm">{{ formatDate(article.updated_at) }}</p>
               </div>
             </div>
@@ -301,7 +301,7 @@
         <div
           class="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"
         ></div>
-        <p class="text-slate-600">იტვირთება...</p>
+        <p class="text-slate-600">{{ t('admin.common.loading') }}</p>
       </div>
     </div>
 
@@ -322,24 +322,24 @@
               ></path>
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-gray-900">სიახლის წაშლა</h3>
+          <h3 class="text-lg font-semibold text-gray-900">{{ t('admin.news.delete_news_title') }}</h3>
         </div>
         <p class="text-gray-600 mb-6">
-          დარწმუნებული ხართ, რომ გსურთ ამ სიახლის წაშლა? ეს მოქმედება უკუღმაშია.
+          {{ t('admin.news.delete_confirm') }}
         </p>
         <div class="flex justify-end gap-3">
           <button
             @click="showDeleteModal = false"
             class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
-            გაუქმება
+            {{ t('admin.common.cancel') }}
           </button>
           <button
             @click="deleteArticle"
             :disabled="deleting"
             class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
           >
-            {{ deleting ? 'იშლება...' : 'წაშლა' }}
+            {{ deleting ? t('admin.news.deleting') : t('admin.common.delete') }}
           </button>
         </div>
       </div>
@@ -366,12 +366,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useTranslations } from '@/composables/useTranslations'
 import { useAdminNewsStore } from '@/stores/admin/news'
 import type { AdminNewsArticle, ImageData } from '@/types'
 
+const { t } = useTranslations()
 const route = useRoute()
 const router = useRouter()
 const adminNewsStore = useAdminNewsStore()
+
+// ... rest of the script ...
 
 // Data
 const article = ref<AdminNewsArticle | null>(null)

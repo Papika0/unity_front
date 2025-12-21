@@ -4,7 +4,7 @@ interface Category {
   label: string
 }
 
-const props = defineProps<{
+defineProps<{
   categories: Category[]
   selectedCategory: string
   isVisible: boolean

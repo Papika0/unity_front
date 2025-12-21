@@ -6,6 +6,7 @@
 import { ref, onMounted } from 'vue'
 import { useToastStore } from '@/stores/ui/toast'
 import { type AboutInfoFormData, useAdminSiteSettingsStore } from '@/stores/admin/siteSettings'
+import { useTranslations } from '@/composables/useTranslations'
 
 export function useAboutSettings() {
   // ============================================
@@ -13,6 +14,7 @@ export function useAboutSettings() {
   // ============================================
   const toastStore = useToastStore()
   const siteSettingsStore = useAdminSiteSettingsStore()
+  const { t } = useTranslations()
 
   // ============================================
   // STATE
@@ -54,7 +56,7 @@ export function useAboutSettings() {
         }
       }
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'მონაცემების ჩატვირთვა ვერ მოხერხდა'
+      error.value = err instanceof Error ? err.message : t('admin.about.load_failed')
     } finally {
       loading.value = false
     }
@@ -77,7 +79,7 @@ export function useAboutSettings() {
           : aboutInfo.philosophy_image.alt_text || undefined,
         title: typeof aboutInfo.philosophy_image.title === 'string'
           ? aboutInfo.philosophy_image.title
-          : aboutInfo.philosophy_image.title || 'ფილოსოფიის სექციის სურათი',
+          : aboutInfo.philosophy_image.title || t('admin.about.philosophy_image'),
       }
     }
 
@@ -86,7 +88,7 @@ export function useAboutSettings() {
       return {
         id: aboutInfo.philosophy_image_id,
         url: aboutInfo.philosophy_image_url,
-        title: 'ფილოსოფიის სექციის სურათი',
+        title: t('admin.about.philosophy_image'),
       }
     }
 
@@ -102,13 +104,13 @@ export function useAboutSettings() {
 
       await siteSettingsStore.updateAboutInfo(formData.value)
 
-      toastStore.success('წარმატება', 'პარამეტრები წარმატებით განახლდა')
+      toastStore.success(t('admin.common.success'), t('admin.about.update_success'))
 
       // Reload data to show updated values
       await loadData()
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'პარამეტრების განახლება ვერ მოხერხდა'
-      toastStore.error('შეცდომა', message)
+      const message = err instanceof Error ? err.message : t('admin.about.update_failed')
+      toastStore.error(t('admin.common.error'), message)
     } finally {
       saving.value = false
     }

@@ -2,7 +2,7 @@
 import type { Project } from '@/types'
 import { useTranslations } from '@/composables/useTranslations'
 
-const props = defineProps<{
+defineProps<{
   project: Project
   formatDate: (dateStr: string) => string
 }>()

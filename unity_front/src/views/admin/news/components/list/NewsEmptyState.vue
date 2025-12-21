@@ -10,12 +10,12 @@
         />
       </svg>
     </div>
-    <h3 class="text-2xl font-light text-slate-700 mb-4">სიახლეები ვერ მოიძებნა</h3>
+    <h3 class="text-2xl font-light text-slate-700 mb-4">{{ t('admin.news.no_search_results') }}</h3>
     <p class="text-slate-500 text-lg mb-8">
       {{
         hasSearchQuery
-          ? 'სცადეთ სხვა საძიებო სიტყვები'
-          : 'ჯერ არცერთი სიახლე არ არის დამატებული'
+          ? t('admin.news.try_different_search')
+          : t('admin.news.empty_state_desc')
       }}
     </p>
     <button
@@ -23,12 +23,15 @@
       @click="$emit('addFirst')"
       class="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 px-8 py-4 rounded-2xl font-medium shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300"
     >
-      პირველი სიახლის დამატება
+      {{ t('admin.news.add_first_article') }}
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
+const { t } = useTranslations()
+
 defineProps<{
   hasSearchQuery: boolean
 }>()

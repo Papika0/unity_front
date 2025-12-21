@@ -2,7 +2,7 @@
 import type { ImageData } from '@/types/common'
 import { useTranslations } from '@/composables/useTranslations'
 
-const props = defineProps<{
+defineProps<{
   images: ImageData[]
   currentIndex: number
   articleTitle: string
@@ -19,7 +19,6 @@ const { t } = useTranslations()
 
 <template>
   <Teleport to="body">
-    <Transition name="modal">
       <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
         @click="emit('close')"
@@ -83,7 +82,6 @@ const { t } = useTranslations()
           </svg>
         </button>
       </div>
-    </Transition>
   </Teleport>
 </template>
 

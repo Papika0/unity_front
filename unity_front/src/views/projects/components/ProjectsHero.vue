@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
 import { useTranslations } from '@/composables/useTranslations'
 
-const props = defineProps<{
+defineProps<{
   heroVisible: boolean
 }>()
 

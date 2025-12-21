@@ -9,7 +9,7 @@
         class="sticky top-0 bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6 rounded-t-2xl z-10"
       >
         <h2 class="text-2xl font-bold">
-          {{ isEdit ? 'ბინის რედაქტირება' : 'ახალი ბინის დამატება' }}
+          {{ isEdit ? t('admin.apartments.edit_apartment') : t('admin.apartments.add_apartment') }}
         </h2>
       </div>
 
@@ -18,7 +18,7 @@
         <!-- Building Selection -->
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-2">
-            შენობა <span class="text-red-500">*</span>
+            {{ t('admin.apartments.form.building') }} <span class="text-red-500">*</span>
           </label>
           <select
             v-model="form.building_id"
@@ -26,7 +26,7 @@
             :disabled="isEdit"
             class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:opacity-50 text-gray-900"
           >
-            <option :value="null">-- აირჩიეთ შენობა --</option>
+            <option :value="null">-- {{ t('admin.apartments.form.building') }} --</option>
             <option v-for="building in buildings" :key="building.id" :value="building.id">
               {{ building.name }}
             </option>
@@ -36,7 +36,7 @@
         <!-- Floor Number -->
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-2">
-            სართული <span class="text-red-500">*</span>
+            {{ t('admin.apartments.form.floor') }} <span class="text-red-500">*</span>
           </label>
           <input
             v-model.number="form.floor_number"
@@ -44,62 +44,62 @@
             required
             min="1"
             class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-            placeholder="მაგ: 5"
+            :placeholder="t('admin.apartments.form.floor')"
           />
         </div>
 
         <!-- Apartment Number -->
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-2">
-            ბინის ნომერი <span class="text-red-500">*</span>
+            {{ t('admin.apartments.form.number') }} <span class="text-red-500">*</span>
           </label>
           <input
             v-model="form.apartment_number"
             type="text"
             required
             class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-            placeholder="მაგ: 501"
+            :placeholder="t('admin.apartments.form.number')"
           />
         </div>
 
         <!-- Cadastral Code -->
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-2">
-            საკადასტრო კოდი
+            {{ t('admin.apartments.form.cadastral_code') }}
           </label>
           <input
             v-model="form.cadastral_code"
             type="text"
             class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-            placeholder="მაგ: 01.11.13.011.723.01.01.001"
+            :placeholder="t('admin.apartments.form.cadastral_code')"
           />
         </div>
 
         <!-- Status -->
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-2">
-            სტატუსი <span class="text-red-500">*</span>
+            {{ t('admin.common.status') }} <span class="text-red-500">*</span>
           </label>
           <select
             v-model="form.status"
             required
             class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
           >
-            <option value="available">ხელმისაწვდომი</option>
-            <option value="reserved">დაჯავშნილი</option>
-            <option value="sold">გაყიდული</option>
+            <option value="available">{{ t('status.available') }}</option>
+            <option value="reserved">{{ t('status.reserved') }}</option>
+            <option value="sold">{{ t('status.sold') }}</option>
           </select>
         </div>
 
         <!-- Price -->
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">ფასი (₾)</label>
+          <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('admin.apartments.form.price') }}</label>
           <input
             v-model.number="form.price"
             type="number"
             step="0.01"
             class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-            placeholder="მაგ: 120000"
+            :placeholder="t('admin.apartments.form.price')"
           />
         </div>
 
@@ -107,63 +107,63 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2">
-              მთლიანი ფართობი (მ²)
+              {{ t('admin.apartments.form.area_total') }}
             </label>
             <input
               v-model.number="form.area_total"
               type="number"
               step="0.01"
               class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-              placeholder="მაგ: 75.5"
+              placeholder="75.5"
             />
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2">
-              საცხოვრებელი ფართობი (მ²)
+              {{ t('admin.apartments.form.area_living') }}
             </label>
             <input
               v-model.number="form.area_living"
               type="number"
               step="0.01"
               class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-              placeholder="მაგ: 65.5"
+              placeholder="65.5"
             />
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2">
-              ზაფხულის ფართი (მ²)
+              {{ t('admin.apartments.form.summer_area') }}
             </label>
             <input
               v-model.number="form.summer_area"
               type="number"
               step="0.01"
               class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-              placeholder="მაგ: 14.40"
+              placeholder="14.40"
             />
-            <small class="text-sm text-slate-500">ბალკონი, ტერასა ან დამხმარე ფართი</small>
+            <small class="text-sm text-slate-500">{{ t('admin.apartments.form.summer_area_desc') }}</small>
           </div>
         </div>
 
         <!-- Rooms Row -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">ოთახების რაოდენობა</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('admin.apartments.form.rooms') }}</label>
             <input
               v-model.number="form.bedrooms"
               type="number"
               min="0"
               class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-              placeholder="მაგ: 2"
+              placeholder="2"
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">სველი წერტილები</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('admin.apartments.form.bathrooms') }}</label>
             <input
               v-model.number="form.bathrooms"
               type="number"
               min="0"
               class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-              placeholder="მაგ: 1"
+              placeholder="1"
             />
           </div>
         </div>
@@ -172,21 +172,21 @@
         <div class="grid grid-cols-2 gap-4">
           <label class="flex items-center gap-2 cursor-pointer">
             <input v-model="form.has_balcony" type="checkbox" class="w-5 h-5 text-emerald-600" />
-            <span class="text-sm font-medium text-slate-700">აქვს აივანი</span>
+            <span class="text-sm font-medium text-slate-700">{{ t('admin.apartments.form.has_balcony') }}</span>
           </label>
           <label class="flex items-center gap-2 cursor-pointer">
             <input v-model="form.is_parking" type="checkbox" class="w-5 h-5 text-emerald-600" />
-            <span class="text-sm font-medium text-slate-700">პარკინგია</span>
+            <span class="text-sm font-medium text-slate-700">{{ t('admin.apartments.form.is_parking') }}</span>
           </label>
         </div>
 
         <!-- Room Details (Editable) -->
         <div v-if="form.room_details" class="border border-slate-200 rounded-xl p-4 bg-slate-50">
-          <label class="block text-sm font-medium text-slate-700 mb-3">ოთახების დეტალები</label>
+          <label class="block text-sm font-medium text-slate-700 mb-3">{{ t('admin.apartments.form.room_details') }}</label>
           <div class="space-y-4">
             <!-- Bedrooms -->
             <div v-if="form.room_details.bedrooms" class="bg-white p-4 rounded-lg">
-              <strong class="text-slate-700 block mb-3">საძინებლები:</strong>
+              <strong class="text-slate-700 block mb-3">{{ t('admin.apartments.form.bedrooms') }}:</strong>
               <div class="space-y-2">
                 <div v-for="(area, room) in form.room_details.bedrooms" :key="room" class="flex items-center gap-3">
                   <label class="text-sm text-slate-600 min-w-[120px]">{{ translateRoomName(room) }}:</label>
@@ -195,16 +195,16 @@
                     type="number"
                     step="0.01"
                     class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-                    placeholder="მ²"
+                    :placeholder="t('common.sqm')"
                   />
-                  <span class="text-sm text-slate-500">მ²</span>
+                  <span class="text-sm text-slate-500">{{ t('common.sqm') }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Bathrooms -->
             <div v-if="form.room_details.bathrooms" class="bg-white p-4 rounded-lg">
-              <strong class="text-slate-700 block mb-3">სააბაზანოები:</strong>
+              <strong class="text-slate-700 block mb-3">{{ t('admin.apartments.form.bathrooms') }}:</strong>
               <div class="space-y-2">
                 <div v-for="(area, room) in form.room_details.bathrooms" :key="room" class="flex items-center gap-3">
                   <label class="text-sm text-slate-600 min-w-[120px]">{{ translateRoomName(room) }}:</label>
@@ -213,16 +213,16 @@
                     type="number"
                     step="0.01"
                     class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-                    placeholder="მ²"
+                    :placeholder="t('common.sqm')"
                   />
-                  <span class="text-sm text-slate-500">მ²</span>
+                  <span class="text-sm text-slate-500">{{ t('common.sqm') }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Other Rooms -->
             <div v-if="form.room_details.other_rooms" class="bg-white p-4 rounded-lg">
-              <strong class="text-slate-700 block mb-3">სხვა ოთახები:</strong>
+              <strong class="text-slate-700 block mb-3">{{ t('admin.apartments.form.other_rooms') }}:</strong>
               <div class="space-y-2">
                 <div v-for="(area, room) in form.room_details.other_rooms" :key="room" class="flex items-center gap-3">
                   <label class="text-sm text-slate-600 min-w-[120px]">{{ translateRoomName(room) }}:</label>
@@ -231,9 +231,9 @@
                     type="number"
                     step="0.01"
                     class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-                    placeholder="მ²"
+                    :placeholder="t('common.sqm')"
                   />
-                  <span class="text-sm text-slate-500">მ²</span>
+                  <span class="text-sm text-slate-500">{{ t('common.sqm') }}</span>
                 </div>
               </div>
             </div>
@@ -253,14 +253,14 @@
             :disabled="isSubmitting"
             class="flex-1 px-6 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all duration-300 font-medium disabled:opacity-50"
           >
-            გაუქმება
+            {{ t('admin.common.cancel') }}
           </button>
           <button
             type="submit"
             :disabled="isSubmitting || !form.building_id"
             class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl disabled:opacity-50"
           >
-            {{ isSubmitting ? 'იტვირთება...' : isEdit ? 'შენახვა' : 'დამატება' }}
+            {{ isSubmitting ? t('admin.common.loading') : isEdit ? t('admin.common.save') : t('admin.common.add') }}
           </button>
         </div>
       </form>
@@ -272,6 +272,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useApartmentsAdminStore } from '@/stores/admin/apartments'
 import { useToast } from '@/composables/useToast'
+import { useTranslations } from '@/composables/useTranslations'
 import type { Apartment, Building, RoomDetails } from '@/types/apartments'
 
 interface Props {
@@ -290,6 +291,7 @@ const emit = defineEmits<Emits>()
 
 const apartmentsStore = useApartmentsAdminStore()
 const { success, error: showError } = useToast()
+const { t } = useTranslations()
 
 // Keyboard handler for ESC to close
 function handleKeydown(e: KeyboardEvent) {
@@ -298,40 +300,22 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-// Format room name from snake_case to Title Case
+// Format room name from snake_case to Title Case as fallback
 function formatRoomName(key: string): string {
   return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
-// Translate room names to Georgian
+// Translate room names
 function translateRoomName(key: string): string {
-  const translations: Record<string, string> = {
-    'bedroom_1': 'საძინებელი 1',
-    'bedroom_2': 'საძინებელი 2',
-    'bedroom_3': 'საძინებელი 3',
-    'bedroom_4': 'საძინებელი 4',
-    'bathroom_1': 'სააბაზანო 1',
-    'bathroom_2': 'სააბაზანო 2',
-    'bathroom_3': 'სააბაზანო 3',
-    'studio_living_room': 'სტუდიო/საცხოვრებელი ოთახი',
-    'living_room': 'საცხოვრებელი ოთახი',
-    'entrance_hall': 'შესასვლელი',
-    'entrance': 'შესასვლელი',
-    'kitchen': 'სამზარეულო',
-    'dining_room': 'სასადილო ოთახი',
-    'dressing_room': 'გარდერობი',
-    'auxiliary_room': 'დამხმარე ოთახი',
-    'storage_room': 'საწყობი',
-    'laundry_room': 'სამრეცხაო',
-    'guest_room': 'სასტუმრო ოთახი',
-    'study': 'კაბინეტი',
-    'balcony': 'აივანი',
-    'terrace': 'ტერასა',
-    'corridor': 'დერეფანი',
-    'hallway': 'დერეფანი'
+  const translationKey = `apartments.rooms.${key}`
+  const translated = t(translationKey)
+  
+  // If translation same as key, it means it's missing in locales
+  if (translated === translationKey) {
+    return formatRoomName(key)
   }
-
-  return translations[key] || formatRoomName(key)
+  
+  return translated
 }
 
 const isEdit = computed(() => !!props.apartment)
@@ -386,8 +370,9 @@ onUnmounted(() => {
 
 async function handleSubmit() {
   if (!props.projectId || !form.value.building_id) {
-    error.value = 'პროექტი ან შენობა არ არის არჩეული'
-    showError('პროექტი ან შენობა არ არის არჩეული')
+    const errorMsg = t('admin.errors.validation_error')
+    error.value = errorMsg
+    showError(errorMsg)
     return
   }
 
@@ -413,15 +398,15 @@ async function handleSubmit() {
 
     if (isEdit.value && props.apartment) {
       await apartmentsStore.updateApartment(props.apartment.id, payload)
-      success('ბინა წარმატებით განახლდა!')
+      success(t('admin.messages.update_success'))
     } else {
       await apartmentsStore.createApartment(props.projectId, form.value.building_id, payload)
-      success('ბინა წარმატებით დაემატა!')
+      success(t('admin.messages.create_success'))
     }
     emit('saved')
   } catch (err: unknown) {
     const apiError = err as { response?: { data?: { message?: string } }; message?: string }
-    error.value = apiError.response?.data?.message || apiError.message || 'დაფიქსირდა შეცდომა'
+    error.value = apiError.response?.data?.message || apiError.message || t('admin.errors.unknown_error')
     showError(error.value)
   } finally {
     isSubmitting.value = false

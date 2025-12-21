@@ -1,6 +1,6 @@
 <template>
   <div v-if="store.data">
-    <h3 class="text-3xl font-bold text-gray-800 mb-8 pb-4 relative">ოფისის განრიგი</h3>
+    <h3 class="text-3xl font-bold text-gray-800 mb-8 pb-4 relative">{{ t('admin.contact_settings.fields.office_schedule') }}</h3>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Working Days -->
@@ -9,7 +9,7 @@
           <div class="p-2 bg-blue-100 rounded-lg">
             <i class="material-icons text-blue-600">work</i>
           </div>
-          <h4 class="text-lg font-bold text-gray-800">სამუშაო დღეები</h4>
+          <h4 class="text-lg font-bold text-gray-800">{{ t('admin.contact_settings.fields.working_days') }}</h4>
         </div>
 
         <div class="grid grid-cols-1 gap-3">
@@ -43,7 +43,7 @@
           <div class="p-2 bg-purple-100 rounded-lg">
             <i class="material-icons text-purple-600">event_busy</i>
           </div>
-          <h4 class="text-lg font-bold text-gray-800">დასვენების დღეები</h4>
+          <h4 class="text-lg font-bold text-gray-800">{{ t('admin.contact_settings.fields.off_days') }}</h4>
         </div>
 
         <div class="grid grid-cols-1 gap-3">
@@ -74,15 +74,17 @@
 
     <!-- Language Selector for Days Display -->
     <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-      <label class="block text-sm font-medium text-gray-600 mb-2">დღეების ჩვენების ენა</label>
-      <select
-        v-model="currentLanguage"
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-      >
-        <option value="ka">ქართული</option>
-        <option value="en">English</option>
-        <option value="ru">Русский</option>
-      </select>
+      <label class="block text-sm font-medium text-gray-600 mb-2">{{ t('admin.contact_settings.fields.display_language') }}</label>
+      <div class="flex gap-4">
+        <select
+          v-model="currentLanguage"
+          class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+        >
+          <option value="ka">{{ t('admin.common.ka') }}</option>
+          <option value="en">{{ t('admin.common.en') }}</option>
+          <option value="ru">{{ t('admin.common.ru') }}</option>
+        </select>
+      </div>
     </div>
   </div>
 </template>
@@ -90,6 +92,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useContactSettingsAdminStore } from '@/stores/admin/contactSettings'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 const store = useContactSettingsAdminStore()
 

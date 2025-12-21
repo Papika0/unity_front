@@ -27,16 +27,14 @@
             </svg>
           </div>
           <div class="ml-4">
-            <h3 class="text-xl font-semibold text-slate-900">სიახლის წაშლა</h3>
-            <p class="text-slate-600 text-sm mt-1">შეუქცევადი მოქმედება</p>
+            <h3 class="text-xl font-semibold text-slate-900">{{ t('admin.news.delete_news_title') }}</h3>
+            <p class="text-slate-600 text-sm mt-1">{{ t('admin.news.irreversible_action') }}</p>
           </div>
         </div>
 
         <div class="bg-slate-50 rounded-2xl p-4 mb-6 border border-slate-200">
           <p class="text-slate-700 leading-relaxed">
-            დარწმუნებული ხართ, რომ გსურთ
-            <strong class="text-slate-900">"{{ articleTitle }}"</strong>
-            სიახლის წაშლა?
+            <span v-html="t('admin.news.delete_confirm_named', { name: `<strong class='text-slate-900'>&quot;${articleTitle}&quot;</strong>` })"></span>
           </p>
         </div>
 
@@ -46,7 +44,7 @@
             :disabled="saving"
             class="flex-1 bg-gradient-to-r from-slate-100 to-slate-50 text-slate-700 px-6 py-3 rounded-2xl hover:from-slate-200 hover:to-slate-100 transition-all duration-300 font-medium disabled:opacity-50 border border-slate-200"
           >
-            გაუქმება
+            {{ t('admin.common.cancel') }}
           </button>
           <button
             @click="$emit('confirm')"
@@ -68,7 +66,7 @@
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            {{ saving ? 'იშლება...' : 'წაშლა' }}
+            {{ saving ? t('admin.news.deleting') : t('admin.common.delete') }}
           </button>
         </div>
       </div>
@@ -77,6 +75,8 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
+const { t } = useTranslations()
 
 defineProps<{
   show: boolean

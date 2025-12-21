@@ -29,9 +29,9 @@
               </svg>
             </div>
             <div class="ml-4">
-              <h3 class="text-2xl font-semibold text-slate-900">რჩეული სიახლეების მართვა</h3>
+              <h3 class="text-2xl font-semibold text-slate-900">{{ t('admin.news.manage_featured') }}</h3>
               <p class="text-slate-600 text-sm mt-1">
-                აირჩიეთ მაქსიმუმ 2 სიახლე როგორც რჩეული ({{ selectedNewsIds.length }}/2)
+                {{ t('admin.news.select_featured_desc', { count: selectedNewsIds.length, max: 2 }) }}
               </p>
             </div>
           </div>
@@ -61,7 +61,7 @@
                 d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
               />
             </svg>
-            მიმდინარე რჩეული სიახლეები
+            {{ t('admin.news.current_featured') }}
           </h4>
           <div class="grid gap-3">
             <div
@@ -100,7 +100,7 @@
 
         <!-- Available News List -->
         <div>
-          <h4 class="text-lg font-semibold text-slate-900 mb-4">ყველა სიახლე</h4>
+          <h4 class="text-lg font-semibold text-slate-900 mb-4">{{ t('admin.news.all_news') }}</h4>
           <div class="grid gap-3 max-h-96 overflow-y-auto">
             <div
               v-for="article in allArticles"
@@ -190,13 +190,13 @@
                         : 'bg-red-100 text-red-800'
                     "
                   >
-                    {{ article.is_active ? 'აქტიური' : 'არააქტიური' }}
+                    {{ article.is_active ? t('admin.common.active') : t('admin.common.inactive') }}
                   </span>
                   <span
                     v-if="article.is_featured"
                     class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-amber-100 text-amber-800"
                   >
-                    ⭐ რჩეული
+                    ⭐ {{ t('admin.common.featured') }}
                   </span>
                 </div>
               </div>
@@ -213,7 +213,7 @@
             :disabled="saving"
             class="flex-1 bg-gradient-to-r from-slate-100 to-slate-50 text-slate-700 px-6 py-3 rounded-2xl hover:from-slate-200 hover:to-slate-100 transition-all duration-300 font-medium disabled:opacity-50 border border-slate-200"
           >
-            გაუქმება
+            {{ t('admin.common.cancel') }}
           </button>
           <button
             @click="$emit('confirm')"
@@ -248,7 +248,7 @@
                 d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
               />
             </svg>
-            {{ saving ? 'ინახება...' : `რჩეულად მონიშვნა (${selectedNewsIds.length})` }}
+            {{ saving ? t('admin.common.saving') : t('admin.news.mark_as_featured', { count: selectedNewsIds.length }) }}
           </button>
         </div>
       </div>
@@ -258,6 +258,9 @@
 
 <script setup lang="ts">
 import type { AdminNewsArticle } from '@/types/index'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 defineProps<{
   show: boolean

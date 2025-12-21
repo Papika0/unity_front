@@ -46,13 +46,13 @@
           v-if="article.is_featured"
           class="px-3 py-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white text-xs font-medium rounded-full shadow-lg"
         >
-          ⭐ რჩეული
+          ⭐ {{ t('admin.common.featured') }}
         </span>
         <span
           v-if="!article.is_active"
           class="px-3 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-medium rounded-full shadow-lg"
         >
-          🚫 არააქტიური
+          🚫 {{ t('admin.common.inactive') }}
         </span>
       </div>
 
@@ -96,7 +96,7 @@
               d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
             />
           </svg>
-          <span class="font-medium">{{ article.views }} ნახვა</span>
+          <span class="font-medium">{{ article.views }} {{ t('admin.news.views') }}</span>
         </div>
       </div>
 
@@ -156,7 +156,7 @@
                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
               />
             </svg>
-            <span class="hidden sm:inline">ნახვა</span>
+            <span class="hidden sm:inline">{{ t('admin.common.view') }}</span>
             <span class="sm:hidden">👁</span>
           </button>
           <button
@@ -176,7 +176,7 @@
                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
               />
             </svg>
-            <span class="hidden sm:inline">რედაქტირება</span>
+            <span class="hidden sm:inline">{{ t('admin.common.edit') }}</span>
             <span class="sm:hidden">✏️</span>
           </button>
         </div>
@@ -199,8 +199,8 @@
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
             />
           </svg>
-          <span>წაშლა</span>
-          <span class="text-xs opacity-75">(საშიში)</span>
+          <span>{{ t('admin.common.delete') }}</span>
+          <span class="text-xs opacity-75">({{ t('admin.common.dangerous') }})</span>
         </button>
       </div>
     </div>
@@ -209,6 +209,7 @@
 
 <script setup lang="ts">
 import type { AdminNewsArticle } from '@/types/index'
+import { useTranslations } from '@/composables/useTranslations'
 
 defineProps<{
   article: AdminNewsArticle
@@ -220,6 +221,8 @@ defineEmits<{
   (e: 'delete', article: AdminNewsArticle): void
 }>()
 
+const { t } = useTranslations()
+
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   return date.toLocaleDateString('ka-GE', {
@@ -230,13 +233,8 @@ const formatDate = (dateString: string) => {
 }
 
 const getCategoryLabel = (category: string) => {
-  const labels: Record<string, string> = {
-    company: 'კომპანია',
-    project: 'პროექტი',
-    industry: 'ინდუსტრია',
-    event: 'ღონისძიება',
-  }
-  return labels[category] || category
+  const key = `admin.news.category_${category}`
+  return t(key) !== key ? t(key) : category
 }
 </script>
 

@@ -5,7 +5,7 @@
         <button
           @click="$emit('back')"
           class="p-2 hover:bg-gray-100 rounded transition-colors"
-          title="უკან დაბრუნება"
+          :title="t('admin.common.back')"
         >
           <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -17,9 +17,9 @@
           </svg>
         </button>
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">შენობის ბლოკების რედაქტორი</h1>
+          <h1 class="text-2xl font-bold text-gray-900">{{ t('admin.zones.building_block_editor.title') }}</h1>
           <p class="text-sm text-gray-500 mt-1">
-            {{ selectedProject?.title || 'პროექტი' }} - ზონების ხატვა
+            {{ getProjectTitle() }} - {{ t('admin.zones.draw_polygon') }}
           </p>
         </div>
         <ZoneEditorBreadcrumbs class="ml-4" />
@@ -36,7 +36,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            <span>შეუნახავი ცვლილებები</span>
+            <span>{{ t('admin.zones.editor_common.unsaved_changes') }}</span>
           </div>
         </Transition>
 
@@ -46,13 +46,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>ბოლო დრაფტი: {{ lastSavedTime }}</span>
+          <span>{{ t('admin.zones.editor_common.last_saved', { time: lastSavedTime }) }}</span>
         </div>
 
         <!-- Keyboard Shortcut Hint -->
         <div class="text-xs text-gray-500 hidden lg:flex items-center space-x-1">
           <kbd class="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl+S</kbd>
-          <span>შენახვა</span>
+          <span>{{ t('admin.common.save') }}</span>
         </div>
 
         <button
@@ -67,7 +67,7 @@
               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <span class="hidden md:inline">სურათის ატვირთვა</span>
+          <span class="hidden md:inline">{{ t('admin.zones.editor_common.image_upload') }}</span>
         </button>
 
         <!-- Discard Changes Button -->
@@ -75,13 +75,13 @@
           @click="$emit('discard')"
           :disabled="!hasChanges || isSaving"
           class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
-          title="ცვლილებების გაუქმება და ბოლო შენახული მდგომარეობის აღდგენა"
+          :title="t('admin.zones.editor_common.discard_and_exit')"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          <span class="hidden md:inline">გაუქმება</span>
+          <span class="hidden md:inline">{{ t('admin.common.cancel') }}</span>
         </button>
 
         <button
@@ -117,7 +117,7 @@
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>
-          <span class="hidden md:inline">{{ isSaving ? 'შენახვა...' : 'შენახვა' }}</span>
+          <span class="hidden md:inline">{{ isSaving ? t('admin.common.saving') : t('admin.common.save') }}</span>
         </button>
       </div>
     </div>
@@ -139,8 +139,11 @@
 <script setup lang="ts">
 import type { Project } from '@/types'
 import ZoneEditorBreadcrumbs from '@/components/admin/ZoneEditorBreadcrumbs.vue'
+import { useTranslations } from '@/composables/useTranslations'
 
-defineProps<{
+const { t, currentLocale } = useTranslations()
+
+const props = defineProps<{
   selectedProject: Project | undefined
   hasChanges: boolean
   isSaving: boolean
@@ -153,4 +156,14 @@ defineEmits<{
   (e: 'save'): void
   (e: 'openImage'): void
 }>()
+
+function getProjectTitle(): string {
+  if (!props.selectedProject) return t('admin.projects.title')
+  const title = props.selectedProject.title
+  if (typeof title === 'object' && title !== null) {
+    const titleObj = title as unknown as Record<string, string>
+    return titleObj[currentLocale] || titleObj.ka || titleObj.en || 'Untitled'
+  }
+  return title as string || 'Untitled'
+}
 </script>

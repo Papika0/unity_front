@@ -1,6 +1,6 @@
 <template>
   <div v-if="store.data">
-    <h3 class="text-3xl font-bold text-gray-800 mb-8 pb-4 relative">სოციალური ბმულები</h3>
+    <h3 class="text-3xl font-bold text-gray-800 mb-8 pb-4 relative">{{ t('admin.contact_settings.fields.social_links_title') }}</h3>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div>
@@ -30,6 +30,8 @@
 
 <script setup lang="ts">
 import { useContactSettingsAdminStore } from '@/stores/admin/contactSettings'
+import { useTranslations } from '@/composables/useTranslations'
 
+const { t } = useTranslations()
 const store = useContactSettingsAdminStore()
 </script>

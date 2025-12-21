@@ -33,7 +33,7 @@
           :image-height="imageHeight"
           :initial-polygons="zones"
           :entities="buildings"
-          entity-label="შენობა"
+          :entity-label="t('admin.zones.building_block_editor.building')"
           @change="handleZonesChange"
           @polygon-click="navigateToFloorEditor"
         />
@@ -59,13 +59,13 @@
               </svg>
             </div>
             <h3 class="mt-6 text-xl font-semibold text-gray-900">
-              {{ selectedProjectId ? 'ზონის სურათი არ არის ატვირთული' : 'დაიწყეთ პროექტის არჩევით' }}
+              {{ selectedProjectId ? t('admin.zones.building_block_editor.not_uploaded') : t('admin.zones.building_block_editor.select_project_instruction') }}
             </h3>
             <p class="mt-3 text-sm text-gray-600 leading-relaxed">
               {{
                 selectedProjectId
-                  ? 'ასატვირთად ზონის სურათი, რომელზეც დახატავთ შენობის ბლოკების ინტერაქტიულ ზონებს'
-                  : 'პროექტის არჩევის შემდეგ შეძლებთ ზონის სურათის ატვირთვას და შენობის ბლოკების დახატვას'
+                  ? t('admin.zones.building_block_editor.upload_instruction')
+                  : t('admin.zones.building_block_editor.select_project_instruction_desc')
               }}
             </p>
             <button
@@ -81,7 +81,7 @@
                   d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                 />
               </svg>
-              <span class="font-medium">სურათის ატვირთვა</span>
+              <span class="font-medium">{{ t('admin.zones.editor_common.image_upload') }}</span>
             </button>
           </div>
         </div>
@@ -104,11 +104,11 @@
     <!-- Confirm Dialog -->
     <ConfirmDialog
       :show="showConfirmDialog"
-      title="შეუნახავი ცვლილებები"
-      message="გაქვთ შეუნახავი ზონები. გსურთ მათი შენახვა?"
-      confirm-text="შენახვა და გასვლა"
-      destructive-text="გაუქმება და გასვლა"
-      cancel-text="დარჩენა"
+      :title="t('admin.zones.editor_common.unsaved_changes')"
+      :message="t('admin.zones.editor_common.unsaved_changes_msg')"
+      :confirm-text="t('admin.zones.editor_common.save_and_exit')"
+      :destructive-text="t('admin.zones.editor_common.discard_and_exit')"
+      :cancel-text="t('admin.zones.editor_common.stay')"
       :is-loading="isSaving"
       @confirm="saveAndNavigate"
       @destructive="discardAndNavigate"
@@ -124,6 +124,9 @@ import BuildingBlockEditorToolbar from './components/building-block-editor/Build
 import BuildingBlockEditorSidebar from './components/building-block-editor/BuildingBlockEditorSidebar.vue'
 import BuildingBlockEditorImageModal from './components/building-block-editor/BuildingBlockEditorImageModal.vue'
 import { useBuildingBlockEditor } from './composables/useBuildingBlockEditor'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 const {
   // State

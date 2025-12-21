@@ -7,7 +7,7 @@
     <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
       <div class="p-6 border-b border-gray-200">
         <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-gray-900">სართულების გეგმის ატვირთვა</h2>
+          <h2 class="text-xl font-semibold text-gray-900">{{ t('admin.zones.upload_plan') }}</h2>
           <button @click="$emit('close')" class="p-2 hover:bg-gray-100 rounded transition-colors">
             <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -23,7 +23,7 @@
 
       <div class="p-6 space-y-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">სურათის ფაილი</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('admin.zones.image_file') }}</label>
           <div
             class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-500 transition-colors cursor-pointer"
             @drop.prevent="handleDrop"
@@ -51,24 +51,24 @@
               />
             </svg>
             <p class="mt-2 text-sm text-gray-600">
-              <span class="font-medium text-indigo-600">დააჭირეთ ატვირთვისთვის</span>
-              ან გადმოიტანეთ ფაილი
+              <span class="font-medium text-indigo-600">{{ t('admin.zones.click_to_upload') }}</span>
+              {{ t('admin.zones.or_drag_drop') }}
             </p>
-            <p class="text-xs text-gray-500 mt-1">PNG, JPG, WebP - მაქს. 10MB</p>
+            <p class="text-xs text-gray-500 mt-1">PNG, JPG, WebP - {{ t('admin.zones.max_size_10mb') }}</p>
           </div>
 
           <div v-if="previewImageUrl" class="mt-4">
             <img :src="previewImageUrl" alt="Preview" class="w-full rounded-lg border border-gray-300" />
             <div class="mt-2 flex items-center justify-between text-sm text-gray-600">
               <span>{{ previewImageFile?.name }}</span>
-              <button @click="clearPreview" class="text-red-600 hover:text-red-700">წაშლა</button>
+              <button @click="clearPreview" class="text-red-600 hover:text-red-700">{{ t('admin.common.delete') }}</button>
             </div>
           </div>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            ViewBox (ავტომატური განსაზღვრა)
+            {{ t('admin.zones.viewbox_auto') }}
           </label>
           <input
             :value="viewBox"
@@ -85,14 +85,14 @@
           @click="$emit('close')"
           class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
         >
-          გაუქმება
+          {{ t('admin.common.cancel') }}
         </button>
         <button
           @click="$emit('upload')"
           :disabled="!previewImageFile || isUploading"
           class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
         >
-          {{ isUploading ? 'ატვირთვა...' : 'ატვირთვა' }}
+          {{ isUploading ? t('admin.common.uploading') : t('admin.common.upload') }}
         </button>
       </div>
     </div>
@@ -101,6 +101,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 defineProps<{
   show: boolean

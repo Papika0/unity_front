@@ -1,11 +1,11 @@
 <template>
   <div v-if="store.data">
-    <h3 class="text-3xl font-bold text-gray-800 mb-8 pb-4 relative">რუკის კონფიგურაცია</h3>
+    <h3 class="text-3xl font-bold text-gray-800 mb-8 pb-4 relative">{{ t('admin.contact_settings.fields.map_config') }}</h3>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>
         <label class="block text-sm font-medium text-gray-600 mb-2">
-          განედი (Latitude) <span class="text-red-500">*</span>
+          {{ t('admin.contact_settings.fields.latitude') }} <span class="text-red-500">*</span>
         </label>
         <input
           v-model.number="store.data.map_settings.latitude"
@@ -19,7 +19,7 @@
 
       <div>
         <label class="block text-sm font-medium text-gray-600 mb-2">
-          გრძედი (Longitude) <span class="text-red-500">*</span>
+          {{ t('admin.contact_settings.fields.longitude') }} <span class="text-red-500">*</span>
         </label>
         <input
           v-model.number="store.data.map_settings.longitude"
@@ -32,7 +32,7 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-600 mb-2">ზუმის დონე</label>
+        <label class="block text-sm font-medium text-gray-600 mb-2">{{ t('admin.contact_settings.fields.zoom_level') }}</label>
         <input
           v-model.number="store.data.map_settings.zoom"
           type="number"
@@ -49,6 +49,8 @@
 
 <script setup lang="ts">
 import { useContactSettingsAdminStore } from '@/stores/admin/contactSettings'
+import { useTranslations } from '@/composables/useTranslations'
 
+const { t } = useTranslations()
 const store = useContactSettingsAdminStore()
 </script>

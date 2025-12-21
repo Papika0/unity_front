@@ -6,16 +6,16 @@
         <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
-        პროექტი
+        {{ t('admin.sidebar.projects') }}
       </h3>
       <select
         :value="selectedProjectId"
         @change="$emit('update:selectedProjectId', ($event.target as HTMLSelectElement).value); $emit('projectChange')"
         class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
       >
-        <option value="">აირჩიეთ პროექტი</option>
+        <option value="">{{ t('admin.zones.building_block_editor.select_project_instruction') }}</option>
         <option v-for="project in projects" :key="project.id" :value="project.id">
-          {{ project.title }}
+          {{ getLocalizedProjectTitle(project) }}
         </option>
       </select>
     </div>
@@ -27,7 +27,7 @@
           <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
-          შენობები
+          {{ t('admin.buildings.title') }}
         </h3>
         <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
           {{ buildings.length }}
@@ -39,14 +39,14 @@
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <p class="text-sm text-gray-500 mt-2">იტვირთება...</p>
+        <p class="text-sm text-gray-500 mt-2">{{ t('admin.common.loading') }}</p>
       </div>
       
       <div v-else-if="buildings.length === 0" class="text-center py-8">
         <svg class="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
-        <p class="text-sm text-gray-500">არ არის შენობები</p>
+        <p class="text-sm text-gray-500">{{ t('admin.buildings.no_buildings') }}</p>
       </div>
       
       <div v-else class="space-y-2">
@@ -59,7 +59,7 @@
           <div class="flex items-start justify-between">
             <div class="flex-1">
               <div class="text-sm font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors">
-                {{ (building.name as any)?.ka || building.name }}
+                {{ getLocalizedBuildingName(building) }}
               </div>
               <div class="text-xs text-gray-500 mt-1 flex items-center">
                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,28 +84,28 @@
         <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        ინსტრუქციები
+        {{ t('admin.zones.instructions') }}
       </h4>
       <ol class="text-xs text-gray-700 space-y-2">
         <li class="flex items-start">
           <span class="flex-shrink-0 w-5 h-5 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-semibold mr-2">1</span>
-          <span>აირჩიეთ პროექტი</span>
+          <span>{{ t('admin.zones.building_block_editor.select_project_instruction') }}</span>
         </li>
         <li class="flex items-start">
           <span class="flex-shrink-0 w-5 h-5 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-semibold mr-2">2</span>
-          <span>ატვირთეთ ზონის სურათი</span>
+          <span>{{ t('admin.zones.building_block_editor.upload_instruction') }}</span>
         </li>
         <li class="flex items-start">
           <span class="flex-shrink-0 w-5 h-5 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-semibold mr-2">3</span>
-          <span>დახატეთ შენობის ბლოკები</span>
+          <span>{{ t('admin.zones.building_block_editor.draw_building_blocks') }}</span>
         </li>
         <li class="flex items-start">
           <span class="flex-shrink-0 w-5 h-5 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-semibold mr-2">4</span>
-          <span>დააკავშირეთ ისინი შენობებთან</span>
+          <span>{{ t('admin.zones.building_block_editor.connect_buildings') }}</span>
         </li>
         <li class="flex items-start">
           <span class="flex-shrink-0 w-5 h-5 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-semibold mr-2">5</span>
-          <span>შეინახეთ ცვლილებები</span>
+          <span>{{ t('admin.zones.step4') }}</span>
         </li>
       </ol>
     </div>
@@ -115,6 +115,9 @@
 <script setup lang="ts">
 import type { Project } from '@/types'
 import type { Building } from '@/types/apartments'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t, currentLocale } = useTranslations()
 
 defineProps<{
   selectedProjectId: string | number
@@ -128,4 +131,20 @@ defineEmits<{
   (e: 'projectChange'): void
   (e: 'selectBuilding', buildingId: number): void
 }>()
+
+const getLocalizedProjectTitle = (project: Project) => {
+  if (typeof project.title === 'object' && project.title !== null) {
+    const titleObj = project.title as unknown as Record<string, string>
+    return titleObj[currentLocale] || titleObj.ka || 'N/A'
+  }
+  return project.title || 'N/A'
+}
+
+const getLocalizedBuildingName = (building: Building) => {
+  if (typeof building.name === 'object' && building.name !== null) {
+    const nameObj = building.name as unknown as Record<string, string>
+    return nameObj[currentLocale] || nameObj.ka || 'N/A'
+  }
+  return building.name || 'N/A'
+}
 </script>

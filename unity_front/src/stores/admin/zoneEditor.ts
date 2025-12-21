@@ -48,7 +48,7 @@ export const useZoneEditorStore = defineStore('zoneEditor', () => {
 
     if (floorNumber.value !== null) {
       items.push({
-        label: `სართული ${floorNumber.value}`,
+        label: `floor_key:${floorNumber.value}`, // Pass a marker that the component will translate
         route: null, // Current page
       })
     }

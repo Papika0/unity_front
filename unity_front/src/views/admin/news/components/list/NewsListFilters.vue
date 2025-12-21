@@ -12,7 +12,7 @@
               :value="searchQuery"
               @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value); $emit('search')"
               type="text"
-              placeholder="ძებნა სიახლეებში..."
+              :placeholder="t('admin.news.search_placeholder')"
               class="w-full px-4 sm:px-6 py-3 sm:py-4 pl-10 sm:pl-14 bg-white/80 backdrop-blur-sm border-2 border-slate-200 rounded-xl sm:rounded-2xl focus:ring-4 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-300 text-slate-800 placeholder-slate-500 shadow-sm hover:shadow-md text-sm sm:text-base"
             />
             <svg
@@ -39,7 +39,7 @@
               for="category-filter"
               class="text-slate-600 font-medium text-xs sm:text-sm whitespace-nowrap"
             >
-              კატეგორია:
+              {{ t('admin.news.category') }}
             </label>
             <div class="relative custom-dropdown-container flex-1 sm:flex-initial">
               <!-- Custom Dropdown Button -->
@@ -132,7 +132,7 @@
                 />
               </svg>
               <span class="text-slate-600 font-medium text-xs sm:text-sm whitespace-nowrap"
-                >სულ: {{ articlesCount }} სიახლე</span
+                >{{ t('admin.news.total_articles', { count: articlesCount }) }}</span
               >
             </div>
 
@@ -180,6 +180,9 @@
 
 <script setup lang="ts">
 import { ref, onBeforeUnmount } from 'vue'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 const props = defineProps<{
   searchQuery: string
@@ -255,17 +258,12 @@ const selectCategory = (value: string) => {
 
 const getCategoryDisplayText = (value: string) => {
   const option = props.categoryOptions.find((opt) => opt.value === value)
-  return option ? option.label : 'ყველა კატეგორია'
+  return option ? option.label : t('admin.news.all_categories')
 }
 
 const getCategoryLabel = (category: string) => {
-  const labels: Record<string, string> = {
-    company: 'კომპანია',
-    project: 'პროექტი',
-    industry: 'ინდუსტრია',
-    event: 'ღონისძიება',
-  }
-  return labels[category] || category
+  const key = `admin.news.category_${category}`
+  return t(key) !== key ? t(key) : category
 }
 
 onBeforeUnmount(() => {

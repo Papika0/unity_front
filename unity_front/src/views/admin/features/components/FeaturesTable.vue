@@ -17,12 +17,12 @@
             <th
               class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Keywords
+              {{ t('admin.features.keywords') }}
             </th>
             <th
               class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24 sm:w-32"
             >
-              Sort Order
+              {{ t('admin.features.sort_order') }}
             </th>
             <th
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-80"

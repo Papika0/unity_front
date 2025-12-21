@@ -4,7 +4,7 @@
     <div v-if="selectedIds.length > 0 && isAdmin" class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
       <div class="flex items-center justify-between">
         <span class="text-sm font-medium text-blue-900">
-          არჩეულია {{ selectedIds.length }} კლიენტი
+          {{ t('admin.customers.table.selected_count', { count: selectedIds.length }) }}
         </span>
       </div>
       <div class="mt-3 flex space-x-3">
@@ -12,17 +12,17 @@
           @change="handleBulkUpdate"
           class="px-3 py-1.5 text-sm border border-blue-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="">სტატუსის შეცვლა</option>
-          <option value="contacted">დაკავშირებული</option>
-          <option value="in_progress">მიმდინარე</option>
-          <option value="completed">დასრულებული</option>
-          <option value="cancelled">გაუქმებული</option>
+          <option value="">{{ t('admin.customers.table.change_status') }}</option>
+          <option value="contacted">{{ t('admin.customers.status.contacted') }}</option>
+          <option value="in_progress">{{ t('admin.customers.status.in_progress') }}</option>
+          <option value="completed">{{ t('admin.customers.status.completed') }}</option>
+          <option value="cancelled">{{ t('admin.customers.status.cancelled') }}</option>
         </select>
         <button
           @click="$emit('bulkDelete')"
           class="px-4 py-1.5 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
         >
-          წაშლა
+          {{ t('admin.common.delete') }}
         </button>
       </div>
     </div>
@@ -41,20 +41,20 @@
                   class="rounded border-slate-300 text-amber-500 focus:ring-amber-500"
                 />
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">სახელი</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">კონტაქტი</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">წყარო</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">სტატუსი</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">თარიღი</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-slate-700 uppercase tracking-wider">მოქმედებები</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">{{ t('admin.common.name') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">{{ t('admin.customers.table.contact') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">{{ t('admin.customers.table.source') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">{{ t('admin.common.status') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">{{ t('admin.common.date') }}</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-slate-700 uppercase tracking-wider">{{ t('admin.customers.table.actions') }}</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-slate-200">
             <tr v-if="loading">
-              <td :colspan="isAdmin ? 7 : 6" class="px-6 py-12 text-center text-slate-500">იტვირთება...</td>
+              <td :colspan="isAdmin ? 7 : 6" class="px-6 py-12 text-center text-slate-500">{{ t('admin.common.loading') }}</td>
             </tr>
             <tr v-else-if="customers.length === 0">
-              <td :colspan="isAdmin ? 7 : 6" class="px-6 py-12 text-center text-slate-500">კლიენტები არ მოიძებნა</td>
+              <td :colspan="isAdmin ? 7 : 6" class="px-6 py-12 text-center text-slate-500">{{ t('admin.customers.table.not_found') }}</td>
             </tr>
             <tr
               v-for="customer in customers"
@@ -91,11 +91,11 @@
                   class="px-2 py-1 text-xs font-semibold rounded-full border-0"
                   :class="getStatusBadgeClass(customer.status)"
                 >
-                  <option value="new">ახალი</option>
-                  <option value="contacted">დაკავშირებული</option>
-                  <option value="in_progress">მიმდინარე</option>
-                  <option value="completed">დასრულებული</option>
-                  <option value="cancelled">გაუქმებული</option>
+                  <option value="new">{{ t('admin.customers.status.new') }}</option>
+                  <option value="contacted">{{ t('admin.customers.status.contacted') }}</option>
+                  <option value="in_progress">{{ t('admin.customers.status.in_progress') }}</option>
+                  <option value="completed">{{ t('admin.customers.status.completed') }}</option>
+                  <option value="cancelled">{{ t('admin.customers.status.cancelled') }}</option>
                 </select>
               </td>
               <td class="px-6 py-4 text-sm text-slate-500">
@@ -105,7 +105,7 @@
                 <button
                   @click="$emit('viewDetails', customer)"
                   class="text-blue-600 hover:text-blue-800 transition-colors"
-                  title="დეტალები"
+                  :title="t('admin.customers.table.details')"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -116,7 +116,7 @@
                   v-if="isAdmin"
                   @click="$emit('delete', customer.id)"
                   class="text-red-600 hover:text-red-800 transition-colors"
-                  title="წაშლა"
+                  :title="t('admin.common.delete')"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -132,22 +132,24 @@
       <div v-if="pagination.total > 0" class="bg-slate-50 px-6 py-4 border-t border-slate-200">
         <div class="flex items-center justify-between">
           <div class="text-sm text-slate-700 font-medium">
-            ნაჩვენებია {{ pagination.from }}-{{ pagination.to }} სულ {{ pagination.total }}-დან
+            {{ t('admin.common.pagination_info', { from: pagination.from, to: pagination.to, total: pagination.total }) }}
           </div>
           <div class="flex space-x-2">
             <button
               :disabled="pagination.current_page === 1"
               @click="$emit('changePage', pagination.current_page - 1)"
-              class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
-              წინა
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+              {{ t('admin.common.prev') }}
             </button>
             <button
               :disabled="pagination.current_page === pagination.last_page"
               @click="$emit('changePage', pagination.current_page + 1)"
-              class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
-              შემდეგი
+              {{ t('admin.common.next') }}
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
             </button>
           </div>
         </div>
@@ -158,6 +160,9 @@
 
 <script setup lang="ts">
 import type { Customer } from '@/services/adminCustomerApi'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 const props = defineProps<{
   customers: Customer[]
@@ -220,11 +225,11 @@ const getSourceBadgeClass = (source: string) => {
 }
 
 const getSourceLabel = (source: string) => {
-  return source === 'contact_form' ? 'კონტაქტის ფორმა' : 'ზარის მოთხოვნა'
+  return source === 'contact_form' ? t('admin.customers.stats.contact_form') : t('admin.customers.stats.call_request')
 }
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString('ka-GE', {
+  return new Date(dateString).toLocaleString(undefined, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

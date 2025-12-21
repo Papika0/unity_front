@@ -4,8 +4,7 @@
       <!-- Pagination Info -->
       <div class="text-center">
         <p class="text-slate-600 text-sm">
-          ნაჩვენებია {{ from }}-{{ to }} სიახლე
-          {{ totalItems }}-დან
+          {{ t('admin.news.showing_range', { from, to, total: totalItems }) }}
         </p>
       </div>
 
@@ -25,7 +24,7 @@
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          წინა
+          {{ t('admin.common.prev') }}
         </button>
 
         <!-- Page Numbers -->
@@ -86,7 +85,7 @@
           :disabled="!hasNext || loading"
           class="px-4 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-slate-700 font-medium"
         >
-          შემდეგი
+          {{ t('admin.common.next') }}
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -102,6 +101,9 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
+const { t } = useTranslations()
+
 const props = defineProps<{
   currentPage: number
   totalPages: number

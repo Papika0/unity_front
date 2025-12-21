@@ -219,7 +219,6 @@ const emit = defineEmits<{
 
 const {
   t,
-  apartmentStore,
   apartment,
   isLoading,
   error,

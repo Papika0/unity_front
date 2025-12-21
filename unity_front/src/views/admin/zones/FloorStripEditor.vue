@@ -38,7 +38,7 @@
           :image-height="imageHeight"
           :initial-polygons="zones"
           :entities="floorEntities"
-          entity-label="სართული"
+          :entity-label="t('admin.zones.floor_strip_editor.floor')"
           @change="handleZonesChange"
         />
         <div v-else class="flex items-center justify-center h-full bg-gray-50">
@@ -57,13 +57,13 @@
               />
             </svg>
             <h3 class="mt-4 text-lg font-medium text-gray-900">
-              {{ selectedBuildingId ? 'სართულების გეგმა არ არის ატვირთული' : 'აირჩიეთ შენობა' }}
+              {{ selectedBuildingId ? t('admin.zones.floor_strip_editor.not_uploaded') : t('admin.zones.floor_strip_editor.select_building') }}
             </h3>
             <p class="mt-2 text-sm text-gray-500">
               {{
                 selectedBuildingId
-                  ? 'დაწკაპეთ "სურათის ატვირთვა" ღილაკზე სართულების გეგმის ასატვირთად'
-                  : 'შენობის არჩევის შემდეგ შეძლებთ სართულების ზონების დახატვას'
+                  ? t('admin.zones.floor_strip_editor.upload_instruction')
+                  : t('admin.zones.floor_strip_editor.select_building_instruction')
               }}
             </p>
           </div>
@@ -97,11 +97,11 @@
     <!-- Confirm Dialog -->
     <ConfirmDialog
       :show="showConfirmDialog"
-      title="შეუნახავი ცვლილებები"
-      message="გაქვთ შეუნახავი ზონები. გსურთ მათი შენახვა?"
-      confirm-text="შენახვა და გასვლა"
-      destructive-text="გაუქმება და გასვლა"
-      cancel-text="დარჩენა"
+      :title="t('admin.zones.editor_common.unsaved_changes')"
+      :message="t('admin.zones.editor_common.unsaved_changes_msg')"
+      :confirm-text="t('admin.zones.editor_common.save_and_exit')"
+      :destructive-text="t('admin.zones.editor_common.discard_and_exit')"
+      :cancel-text="t('admin.zones.editor_common.stay')"
       :is-loading="isSaving"
       @confirm="saveAndNavigate"
       @destructive="discardAndNavigate"
@@ -118,6 +118,9 @@ import FloorStripEditorSidebar from './components/floor-strip-editor/FloorStripE
 import FloorStripEditorWizard from './components/floor-strip-editor/FloorStripEditorWizard.vue'
 import FloorStripEditorImageModal from './components/floor-strip-editor/FloorStripEditorImageModal.vue'
 import { useFloorStripEditor } from './composables/useFloorStripEditor'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 // Initialize composable
 const {

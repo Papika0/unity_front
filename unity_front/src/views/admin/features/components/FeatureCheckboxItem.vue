@@ -2,13 +2,13 @@
 import type { Feature } from '@/services/featuresApi'
 import { useTranslations } from '@/composables/useTranslations'
 
-const props = defineProps<{
+defineProps<{
   feature: Feature
   isSelected: boolean
 }>()
 
 const model = defineModel<number[]>({ required: true })
-const { t } = useTranslations()
+const { t, currentLocale } = useTranslations()
 </script>
 
 <template>
@@ -37,7 +37,7 @@ const { t } = useTranslations()
         </div>
         <div class="flex-1">
           <div class="font-medium text-gray-900 flex items-center gap-2">
-            {{ feature.title.ka || feature.title.en || feature.name }}
+            {{ feature.title[currentLocale] || feature.title.ka || feature.name }}
             <span
               v-if="isSelected"
               class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
@@ -46,7 +46,7 @@ const { t } = useTranslations()
             </span>
           </div>
           <div class="text-sm text-gray-600">
-            {{ feature.description.ka || feature.description.en || '' }}
+            {{ feature.description[currentLocale] || feature.description.ka || '' }}
           </div>
         </div>
       </div>

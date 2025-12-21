@@ -2,7 +2,7 @@
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
 import { useTranslations } from '@/composables/useTranslations'
 
-const props = defineProps<{
+defineProps<{
   stats: { number: string; label: string }[]
 }>()
 

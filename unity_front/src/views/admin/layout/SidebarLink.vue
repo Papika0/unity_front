@@ -8,13 +8,13 @@
         : `text-slate-600 ${hoverBgColor} ${hoverTextColor}`,
       sidebarOpen ? 'px-4 py-3' : 'px-2 py-3 justify-center'
     ]"
-    :title="!sidebarOpen ? name : ''"
+    :title="!sidebarOpen ? t(name) : ''"
   >
     <svg class="h-5 w-5 flex-shrink-0" :class="sidebarOpen ? 'mr-3' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="icon"></path>
     </svg>
     <transition name="fade">
-      <span v-if="sidebarOpen" class="text-sm font-medium">{{ name }}</span>
+      <span v-if="sidebarOpen" class="text-sm font-medium">{{ t(name) }}</span>
     </transition>
   </router-link>
 </template>
@@ -22,6 +22,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 const props = defineProps<{
   to: string

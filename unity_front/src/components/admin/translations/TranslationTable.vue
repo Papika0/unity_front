@@ -26,15 +26,15 @@
           <!-- Languages -->
           <div class="space-y-2">
             <div v-if="translation.text_ka" class="text-xs">
-              <span class="font-medium text-slate-600">🇬🇪 ქართული:</span>
+              <span class="font-medium text-slate-600">🇬🇪 {{ t('admin.translations.language_ka') }}:</span>
               <p class="mt-1 text-slate-800 line-clamp-2">{{ translation.text_ka }}</p>
             </div>
             <div v-if="translation.text_en" class="text-xs">
-              <span class="font-medium text-slate-600">🇬🇧 English:</span>
+              <span class="font-medium text-slate-600">🇬🇧 {{ t('admin.translations.language_en') }}:</span>
               <p class="mt-1 text-slate-800 line-clamp-2">{{ translation.text_en }}</p>
             </div>
             <div v-if="translation.text_ru" class="text-xs">
-              <span class="font-medium text-slate-600">🇷🇺 русский:</span>
+              <span class="font-medium text-slate-600">🇷🇺 {{ t('admin.translations.language_ru') }}:</span>
               <p class="mt-1 text-slate-800 line-clamp-2">{{ translation.text_ru }}</p>
             </div>
           </div>
@@ -53,7 +53,7 @@
                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                 ></path>
               </svg>
-              რედაქტირება
+              {{ t('admin.common.edit') }}
             </button>
             <button
               @click="$emit('delete', translation)"
@@ -67,7 +67,7 @@
                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                 ></path>
               </svg>
-              წაშლა
+              {{ t('admin.common.delete') }}
             </button>
           </div>
         </div>
@@ -82,35 +82,35 @@
             <th
               class="px-3 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider w-1/6"
             >
-              იდენტიფიკატორი
+              {{ t('admin.translations.key') }}
             </th>
             <th
               class="px-3 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider w-20"
             >
-              ჯგუფი
+              {{ t('admin.translations.group') }}
             </th>
             <th
               class="px-3 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider w-1/4"
             >
-              🇬🇪 ქართული
+              🇬🇪 {{ t('admin.translations.language_ka') }}
             </th>
             <th
               class="px-3 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider w-1/4"
             >
-              🇬🇧 English
+              🇬🇧 {{ t('admin.translations.language_en') }}
             </th>
             <th
               class="px-3 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider w-1/6"
             >
-              🇷🇺 русский
+              🇷🇺 {{ t('admin.translations.language_ru') }}
             </th>
             <th
               class="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider w-16"
             >
-              სტატუსი
+              {{ t('admin.translations.status') }}
             </th>
             <th class="relative px-3 py-3 w-24">
-              <span class="sr-only">მოქმედებები</span>
+              <span class="sr-only">{{ t('admin.translations.actions') }}</span>
             </th>
           </tr>
         </thead>
@@ -147,7 +147,7 @@
             <td class="px-3 py-3">
               <div
                 class="text-sm text-slate-800 leading-snug break-words max-h-16 overflow-hidden"
-                :title="translation.text_ru || 'არ არის'"
+                :title="translation.text_ru || '—'"
               >
                 {{ translation.text_ru || '—' }}
               </div>
@@ -160,7 +160,7 @@
                 <button
                   @click="$emit('edit', translation)"
                   class="inline-flex items-center justify-center w-8 h-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-all duration-200"
-                  :title="`რედაქტირება: ${translation.key}`"
+                  :title="t('admin.translations.edit_item', { item: translation.key })"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -174,7 +174,7 @@
                 <button
                   @click="$emit('delete', translation)"
                   class="inline-flex items-center justify-center w-8 h-8 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
-                  :title="`წაშლა: ${translation.key}`"
+                  :title="t('admin.translations.delete_item', { item: translation.key })"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -198,6 +198,9 @@
 import type { Translation } from '@/types'
 import GroupBadge from '../ui/GroupBadge.vue'
 import StatusBadge from '../ui/StatusBadge.vue'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 interface Props {
   translations: Translation[]

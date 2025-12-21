@@ -121,8 +121,10 @@ export const useTranslationsStore = defineStore('translations', () => {
 
     const missing = requiredGroups.filter((group) => !loadedGroups.includes(group))
     return missing
-  } // Translation function
-  function t(key: string): string {
+  }
+
+  // Translation function with support for parameters
+  function t(key: string, params?: Record<string, string | number>): string {
     const localeStore = useLocaleStore()
 
     // If we're switching languages, return empty to prevent key flashing
@@ -135,7 +137,15 @@ export const useTranslationsStore = defineStore('translations', () => {
       return ''
     }
 
-    const result = translations.value[key] || ''
+    let result = translations.value[key] || ''
+
+    // Simple parameter replacement
+    if (params && result) {
+      Object.entries(params).forEach(([k, v]) => {
+        result = result.replace(`{${k}}`, String(v))
+      })
+    }
+
     return result
   }
 

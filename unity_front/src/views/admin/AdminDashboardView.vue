@@ -2,9 +2,9 @@
   <div class="p-4 sm:p-6 lg:p-8">
     <div class="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
       <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">მთავარი პანელი</h1>
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">{{ t('admin.dashboard.title') }}</h1>
         <p class="mt-1 text-xs sm:text-sm text-gray-600">
-          მართეთ თქვენი პროექტები, თარგმანები და კლიენტები
+          {{ t('admin.dashboard.subtitle') }}
         </p>
       </div>
       <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -21,8 +21,8 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span class="hidden sm:inline">{{ warmingCache ? 'გაცხელება...' : 'მონაცემების შევსება' }}</span>
-          <span class="sm:hidden">{{ warmingCache ? 'გაცხელება' : 'გაცხელება' }}</span>
+          <span class="hidden sm:inline">{{ warmingCache ? t('admin.dashboard.warming_cache') : t('admin.dashboard.warm_cache') }}</span>
+          <span class="sm:hidden">{{ warmingCache ? t('admin.dashboard.warming_cache') : t('admin.dashboard.warm_cache') }}</span>
         </button>
         <button
           @click="clearCache"
@@ -36,8 +36,8 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span class="hidden sm:inline">{{ clearingCache ? 'იწმინდება...' : 'მონაცემების განახლება' }}</span>
-          <span class="sm:hidden">{{ clearingCache ? 'იწმინდება' : 'გასუფთავება' }}</span>
+          <span class="hidden sm:inline">{{ clearingCache ? t('admin.dashboard.clearing_cache') : t('admin.dashboard.clear_cache') }}</span>
+          <span class="sm:hidden">{{ clearingCache ? t('admin.dashboard.clearing_cache') : t('admin.dashboard.clear_cache') }}</span>
         </button>
       </div>
     </div>
@@ -55,7 +55,7 @@
             </div>
             <div class="ml-4 sm:ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">სულ კლიენტები</dt>
+                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">{{ t('admin.dashboard.total_customers') }}</dt>
                 <dd class="text-base sm:text-lg font-medium text-gray-900">
                   {{ loading ? '...' : stats.customer_stats.total }}
                 </dd>
@@ -66,7 +66,7 @@
         <div class="bg-gray-50 px-4 sm:px-5 py-2 sm:py-3">
           <div class="text-xs sm:text-sm">
             <router-link to="/admin/customers" class="font-medium text-blue-600 hover:text-blue-500">
-              ყველას ნახვა
+              {{ t('admin.dashboard.view_all') }}
             </router-link>
           </div>
         </div>
@@ -83,7 +83,7 @@
             </div>
             <div class="ml-4 sm:ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">ახალი კლიენტები</dt>
+                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">{{ t('admin.dashboard.new_customers') }}</dt>
                 <dd class="text-base sm:text-lg font-medium text-gray-900">
                   {{ loading ? '...' : stats.customer_stats.new }}
                 </dd>
@@ -93,7 +93,7 @@
         </div>
         <div class="bg-gray-50 px-4 sm:px-5 py-2 sm:py-3">
           <div class="text-xs sm:text-sm">
-            <span class="font-medium text-green-600">დღეს: {{ loading ? '...' : stats.customer_stats.today }}</span>
+            <span class="font-medium text-green-600">{{ t('admin.dashboard.today', { count: loading ? '...' : stats.customer_stats.today }) }}</span>
           </div>
         </div>
       </div>
@@ -109,7 +109,7 @@
             </div>
             <div class="ml-4 sm:ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">სულ პროექტები</dt>
+                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">{{ t('admin.dashboard.total_projects') }}</dt>
                 <dd class="text-base sm:text-lg font-medium text-gray-900">
                   {{ loading ? '...' : stats.projects_count }}
                 </dd>
@@ -120,7 +120,7 @@
         <div class="bg-gray-50 px-4 sm:px-5 py-2 sm:py-3">
           <div class="text-xs sm:text-sm">
             <router-link to="/admin/projects" class="font-medium text-indigo-600 hover:text-indigo-500">
-              პროექტების მართვა
+              {{ t('admin.dashboard.new_project_desc') }}
             </router-link>
           </div>
         </div>
@@ -137,7 +137,7 @@
             </div>
             <div class="ml-4 sm:ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">სულ თარგმანები</dt>
+                <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">{{ t('admin.dashboard.total_translations') }}</dt>
                 <dd class="text-base sm:text-lg font-medium text-gray-900">
                   {{ loading ? '...' : stats.translations_count }}
                 </dd>
@@ -148,7 +148,7 @@
         <div class="bg-gray-50 px-4 sm:px-5 py-2 sm:py-3">
           <div class="text-xs sm:text-sm">
             <router-link to="/admin/translations" class="font-medium text-purple-600 hover:text-purple-500">
-              თარგმანების მართვა
+              {{ t('admin.dashboard.manage_translations_desc') }}
             </router-link>
           </div>
         </div>
@@ -158,14 +158,14 @@
     <!-- Customer Activity Chart -->
     <div class="mt-6 sm:mt-8 bg-white shadow rounded-lg">
       <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
-        <h2 class="text-base sm:text-lg font-medium text-gray-900">კლიენტების აქტივობა (ბოლო 30 დღე)</h2>
+        <h2 class="text-base sm:text-lg font-medium text-gray-900">{{ t('admin.dashboard.activity_chart') }}</h2>
       </div>
       <div class="p-4 sm:p-6">
         <div v-if="loading" class="flex items-center justify-center h-48 sm:h-64">
-          <div class="text-gray-400">იტვირთება...</div>
+          <div class="text-gray-400">{{ t('admin.common.loading') }}</div>
         </div>
         <div v-else-if="!stats.chart_data || stats.chart_data.length === 0" class="flex items-center justify-center h-48 sm:h-64">
-          <div class="text-gray-400">მონაცემები არ არის</div>
+          <div class="text-gray-400">{{ t('admin.common.no_data') }}</div>
         </div>
         <div v-else class="h-48 sm:h-64">
           <canvas ref="chartCanvas" class="w-full h-full"></canvas>
@@ -175,7 +175,7 @@
 
     <!-- Quick Actions -->
     <div class="mt-6 sm:mt-8">
-      <h2 class="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">სწრაფი მოქმედებები</h2>
+      <h2 class="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">{{ t('admin.dashboard.quick_actions') }}</h2>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Customers -->
         <div class="relative group bg-white p-5 sm:p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-500 rounded-lg shadow hover:shadow-lg transition-shadow">
@@ -190,11 +190,11 @@
             <h3 class="text-base sm:text-lg font-medium text-gray-900">
               <router-link to="/admin/customers" class="focus:outline-none">
                 <span class="absolute inset-0" aria-hidden="true"></span>
-                კლიენტების მართვა
+                {{ t('admin.dashboard.manage_customers') }}
               </router-link>
             </h3>
             <p class="mt-2 text-xs sm:text-sm text-gray-500">
-              იხილეთ და მართეთ მიღებული მოთხოვნები
+              {{ t('admin.dashboard.manage_customers_desc') }}
             </p>
           </div>
         </div>
@@ -212,11 +212,11 @@
             <h3 class="text-base sm:text-lg font-medium text-gray-900">
               <router-link to="/admin/projects" class="focus:outline-none">
                 <span class="absolute inset-0" aria-hidden="true"></span>
-                ახალი პროექტი
+                {{ t('admin.dashboard.new_project') }}
               </router-link>
             </h3>
             <p class="mt-2 text-xs sm:text-sm text-gray-500">
-              შექმენით და მართეთ პროექტები
+              {{ t('admin.dashboard.new_project_desc') }}
             </p>
           </div>
         </div>
@@ -234,11 +234,11 @@
             <h3 class="text-base sm:text-lg font-medium text-gray-900">
               <router-link to="/admin/translations" class="focus:outline-none">
                 <span class="absolute inset-0" aria-hidden="true"></span>
-                თარგმანების მართვა
+                {{ t('admin.dashboard.manage_translations') }}
               </router-link>
             </h3>
             <p class="mt-2 text-xs sm:text-sm text-gray-500">
-              დაამატეთ და ორგანიზება გაუწიეთ თარგმანებს
+              {{ t('admin.dashboard.manage_translations_desc') }}
             </p>
           </div>
         </div>
@@ -264,6 +264,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from 'vue'
 import { dashboardApi, type DashboardStatistics } from '@/services/dashboardApi'
+import { useTranslations } from '@/composables/useTranslations'
 import {
   Chart,
   CategoryScale,
@@ -290,6 +291,7 @@ Chart.register(
   Filler
 )
 
+const { t } = useTranslations()
 const stats = ref<DashboardStatistics>({
   customer_stats: {
     total: 0,
@@ -388,7 +390,7 @@ const renderChart = () => {
         }),
         datasets: [
           {
-            label: 'კლიენტები',
+            label: t('admin.dashboard.manage_customers'),
             data: stats.value.chart_data.map((d) => d.count),
             borderColor: 'rgb(59, 130, 246)',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -411,7 +413,7 @@ const renderChart = () => {
             intersect: false,
             callbacks: {
               label: function(context) {
-                return `კლიენტები: ${context.parsed.y}`
+                return `${t('admin.dashboard.manage_customers')}: ${context.parsed.y}`
               }
             }
           },
@@ -458,7 +460,7 @@ const clearCache = async () => {
     await loadStats()
   } catch (error) {
     console.error('Error clearing cache:', error)
-    toastMessage.value = 'მონაცემების განახლება ვერ მოხერხდა'
+    toastMessage.value = t('admin.dashboard.cache_clear_failed')
     showToast.value = true
 
     setTimeout(() => {
@@ -485,7 +487,7 @@ const warmCache = async () => {
     await loadStats()
   } catch (error) {
     console.error('Error warming cache:', error)
-    toastMessage.value = 'მონაცემების შევსება ვერ მოხერხდა'
+    toastMessage.value = t('admin.dashboard.cache_warm_failed')
     showToast.value = true
 
     setTimeout(() => {

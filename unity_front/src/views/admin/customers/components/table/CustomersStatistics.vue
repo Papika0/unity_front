@@ -3,7 +3,7 @@
     <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm text-slate-600">სულ კლიენტი</p>
+          <p class="text-sm text-slate-600">{{ t('admin.customers.stats.total') }}</p>
           <p class="text-2xl font-bold text-slate-800 mt-1">{{ statistics.total }}</p>
         </div>
         <div class="bg-blue-100 p-3 rounded-lg">
@@ -17,7 +17,7 @@
     <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm text-slate-600">ახალი</p>
+          <p class="text-sm text-slate-600">{{ t('admin.customers.stats.new') }}</p>
           <p class="text-2xl font-bold text-blue-600 mt-1">{{ statistics.new }}</p>
         </div>
         <div class="bg-green-100 p-3 rounded-lg">
@@ -31,7 +31,7 @@
     <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm text-slate-600">კონტაქტის ფორმა</p>
+          <p class="text-sm text-slate-600">{{ t('admin.customers.stats.contact_form') }}</p>
           <p class="text-2xl font-bold text-indigo-600 mt-1">{{ statistics.contact_form }}</p>
         </div>
         <div class="bg-indigo-100 p-3 rounded-lg">
@@ -45,7 +45,7 @@
     <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm text-slate-600">ზარის მოთხოვნა</p>
+          <p class="text-sm text-slate-600">{{ t('admin.customers.stats.call_request') }}</p>
           <p class="text-2xl font-bold text-emerald-600 mt-1">{{ statistics.call_request }}</p>
         </div>
         <div class="bg-emerald-100 p-3 rounded-lg">
@@ -60,6 +60,9 @@
 
 <script setup lang="ts">
 import type { CustomerStatistics } from '@/services/adminCustomerApi'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 defineProps<{
   statistics: CustomerStatistics

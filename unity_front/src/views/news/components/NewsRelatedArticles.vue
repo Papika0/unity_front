@@ -4,7 +4,7 @@ import { useScrollAnimation } from '@/composables/useScrollAnimation'
 import { useLocaleStore } from '@/stores/ui/locale'
 import { useTranslations } from '@/composables/useTranslations'
 
-const props = defineProps<{
+defineProps<{
   articles: RelatedArticle[]
 }>()
 

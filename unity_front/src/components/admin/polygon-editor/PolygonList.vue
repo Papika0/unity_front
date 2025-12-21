@@ -1,11 +1,17 @@
 <template>
   <div class="w-64 lg:w-56 xl:w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
     <div class="p-4 border-b border-gray-200">
-      <h3 class="text-sm font-semibold text-gray-700">პოლიგონები</h3>
-      <p class="text-sm text-gray-500 mt-1">{{ polygons.length }} ელემენტი</p>
+      <h3 class="text-sm font-semibold text-gray-700">{{ t('admin.polygon_editor.polygons') }}</h3>
+      <p class="text-sm text-gray-500 mt-1">{{ t('admin.polygon_editor.items_count', { count: polygons.length }) }}</p>
     </div>
 
     <div class="flex-1 overflow-y-auto p-2 space-y-1">
+      <div
+        v-if="polygons.length === 0"
+        class="py-8 text-center text-gray-400 text-sm"
+      >
+        {{ t('admin.polygon_editor.no_polygons') }}
+      </div>
       <div
         v-for="(polygon, index) in polygons"
         :key="polygon.id"
@@ -23,14 +29,14 @@
               :style="{ backgroundColor: polygon.fillColor, borderColor: polygon.strokeColor }"
             />
             <span class="text-sm font-medium text-gray-700 truncate">
-              {{ polygon.label || `პოლიგონი ${index + 1}` }}
+              {{ polygon.label || `${t('admin.polygon_editor.polygons')} ${index + 1}` }}
             </span>
           </div>
           <div class="flex items-center space-x-1 flex-shrink-0">
             <button
               @click.stop="emit('toggle-visibility', polygon.id)"
               class="p-1 hover:bg-gray-200 rounded"
-              :title="polygon.visible ? 'დამალვა' : 'ჩვენება'"
+              :title="polygon.visible ? t('admin.polygon_editor.hide') : t('admin.polygon_editor.show')"
             >
               <svg
                 v-if="polygon.visible"
@@ -70,7 +76,7 @@
             <button
               @click.stop="emit('delete', polygon.id)"
               class="p-1 hover:bg-red-100 rounded text-red-600"
-              title="წაშლა"
+              :title="t('admin.polygon_editor.delete')"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -92,13 +98,13 @@
         :disabled="!hasSelection"
         class="w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        დუბლირება
+        {{ t('admin.polygon_editor.duplicate') }}
       </button>
       <button
         @click="emit('clear-all')"
         class="w-full px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-300 rounded hover:bg-red-50"
       >
-        ყველას წაშლა
+        {{ t('admin.polygon_editor.clear_all') }}
       </button>
     </div>
   </div>
@@ -106,6 +112,9 @@
 
 <script setup lang="ts">
 import type { Polygon } from '@/utils/polygon'
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
 
 defineProps<{
   polygons: Polygon[]

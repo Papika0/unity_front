@@ -10,9 +10,9 @@
             'bg-white text-blue-600 shadow-sm': mode === 'draw',
             'text-gray-600 hover:text-gray-900': mode !== 'draw',
           }"
-          title="დახატვის რეჟიმი"
+          :title="t('admin.polygon_editor.mode.draw_title')"
         >
-          ✏️ დახატვა
+          {{ t('admin.polygon_editor.mode.draw') }}
         </button>
         <button
           @click="emit('update:mode', 'edit')"
@@ -21,9 +21,9 @@
             'bg-white text-blue-600 shadow-sm': mode === 'edit',
             'text-gray-600 hover:text-gray-900': mode !== 'edit',
           }"
-          title="რედაქტირების რეჟიმი"
+          :title="t('admin.polygon_editor.mode.edit_title')"
         >
-          📝 რედაქტირება
+          {{ t('admin.polygon_editor.mode.edit') }}
         </button>
         <button
           @click="emit('update:mode', 'select')"
@@ -32,9 +32,9 @@
             'bg-white text-blue-600 shadow-sm': mode === 'select',
             'text-gray-600 hover:text-gray-900': mode !== 'select',
           }"
-          title="არჩევის რეჟიმი (Shift+გადატანა = პანორამა)"
+          :title="t('admin.polygon_editor.mode.select_title')"
         >
-          👆 არჩევა
+          {{ t('admin.polygon_editor.mode.select') }}
         </button>
         <button
           @click="emit('update:mode', 'pan')"
@@ -43,9 +43,9 @@
             'bg-white text-blue-600 shadow-sm': mode === 'pan',
             'text-gray-600 hover:text-gray-900': mode !== 'pan',
           }"
-          title="პანორამის რეჟიმი - სურათის გადატანა"
+          :title="t('admin.polygon_editor.mode.pan_title')"
         >
-          ✋ პანორამა
+          {{ t('admin.polygon_editor.mode.pan') }}
         </button>
       </div>
 
@@ -54,7 +54,7 @@
         <button
           @click="emit('zoom-in')"
           class="p-2 hover:bg-gray-100 rounded"
-          title="Zoom In (Ctrl + +)"
+          :title="t('admin.polygon_editor.tools.zoom_in')"
         >
           <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -68,7 +68,7 @@
         <button
           @click="emit('zoom-out')"
           class="p-2 hover:bg-gray-100 rounded"
-          title="Zoom Out (Ctrl + -)"
+          :title="t('admin.polygon_editor.tools.zoom_out')"
         >
           <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -82,7 +82,7 @@
         <button
           @click="emit('zoom-reset')"
           class="p-2 hover:bg-gray-100 rounded"
-          title="Reset Zoom (Ctrl + 0)"
+          :title="t('admin.polygon_editor.tools.zoom_reset')"
         >
           <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -98,23 +98,23 @@
       <div class="border-l border-gray-300 h-6 mx-2" />
 
       <!-- Grid Controls -->
-      <label class="flex items-center space-x-2 text-sm">
+      <label class="flex items-center space-x-2 text-sm cursor-pointer">
         <input
           :checked="showGrid"
           @change="emit('update:showGrid', ($event.target as HTMLInputElement).checked)"
           type="checkbox"
           class="rounded"
         />
-        <span class="text-gray-700">ბადე</span>
+        <span class="text-gray-700">{{ t('admin.polygon_editor.tools.grid') }}</span>
       </label>
-      <label class="flex items-center space-x-2 text-sm">
+      <label class="flex items-center space-x-2 text-sm cursor-pointer">
         <input
           :checked="snapToGrid"
           @change="emit('update:snapToGrid', ($event.target as HTMLInputElement).checked)"
           type="checkbox"
           class="rounded"
         />
-        <span class="text-gray-700">მიმაგრება ბადეზე</span>
+        <span class="text-gray-700">{{ t('admin.polygon_editor.tools.snap_to_grid') }}</span>
       </label>
       <select
         :value="gridSize"
@@ -133,7 +133,7 @@
         @click="emit('undo')"
         :disabled="canUndo === false"
         class="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-        title="Undo (Ctrl + Z)"
+        :title="t('admin.polygon_editor.tools.undo')"
       >
         <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -148,7 +148,7 @@
         @click="emit('redo')"
         :disabled="canRedo === false"
         class="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-        title="Redo (Ctrl + Y)"
+        :title="t('admin.polygon_editor.tools.redo')"
       >
         <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -165,7 +165,7 @@
       <!-- Pan hint -->
       <div class="ml-4 px-3 py-1 bg-blue-50 border border-blue-200 rounded-lg hidden lg:block">
         <span class="text-xs text-blue-700">
-          💡 გადასატანად: ✋ პანორამა ღილაკი ან Shift + გადატანა
+          {{ t('admin.polygon_editor.tools.pan_hint') }}
         </span>
       </div>
     </div>
@@ -173,6 +173,10 @@
 </template>
 
 <script setup lang="ts">
+import { useTranslations } from '@/composables/useTranslations'
+
+const { t } = useTranslations()
+
 defineProps<{
   mode: 'draw' | 'edit' | 'select' | 'pan'
   zoom: number

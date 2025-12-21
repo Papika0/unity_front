@@ -6,8 +6,11 @@
 import { ref, onMounted } from 'vue'
 import { useBankRatesStore } from '@/stores/admin/bankRates'
 import type { BankRate, BankRateFormData } from '@/types/admin/calculator'
+import { useTranslations } from '@/composables/useTranslations'
 
 export function useBankRatesList() {
+  const { t } = useTranslations()
+
   // ============================================
   // STORES
   // ============================================
@@ -54,7 +57,7 @@ export function useBankRatesList() {
   }
 
   const confirmDelete = async (bank: BankRate) => {
-    if (confirm(`დარწმუნებული ხართ, რომ გსურთ წაშალოთ ${bank.bank_name}?\n\nAre you sure you want to delete ${bank.bank_name}?`)) {
+    if (confirm(t('admin.common.confirm_delete_named', { name: bank.bank_name }))) {
       await bankRatesStore.deleteBankRate(bank.id)
     }
   }
