@@ -16,15 +16,7 @@ defineProps<Props>()
 </script>
 
 <template>
-  <div
-    class="absolute inset-0 transition-all duration-[1800ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
-    :class="{
-      'opacity-100 z-10 scale-100': index === currentSlide,
-      'opacity-0 z-0 scale-105': index !== currentSlide && index === previousSlide && slideDirection === 'next',
-      'opacity-0 z-0 scale-95': index !== currentSlide && index === previousSlide && slideDirection === 'prev',
-      'opacity-0 z-0 scale-100': index !== currentSlide && index !== previousSlide,
-    }"
-  >
+  <div class="absolute inset-0">
     <!-- Background Image with enhanced animations -->
     <div
       class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-[2500ms] ease-out will-change-transform"
