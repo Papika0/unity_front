@@ -31,13 +31,15 @@
             { 'zone-interactive': !readonly && isZoneInteractive(zone), 'zone-selected': isSelected(zone) },
           ]"
           :aria-label="getZoneLabel(zone)"
+          :data-zone-id="zone.id"
           role="button"
           :tabindex="(readonly || !isZoneInteractive(zone)) ? -1 : 0"
           @click="handleZoneClick(zone)"
           @mouseenter="handleZoneHover(zone)"
           @mouseleave="handleZoneLeave()"
-          @touchstart="handleTouchStart(zone)"
-          @touchend="handleTouchEnd(zone)"
+          @touchstart.passive="handleTouchStart(zone)"
+          @touchmove.passive="handleTouchMove"
+          @touchend="handleTouchEnd($event, zone)"
           @keydown.enter="handleZoneClick(zone)"
           @keydown.space.prevent="handleZoneClick(zone)"
         />
@@ -74,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, toRef } from 'vue'
+import { ref, toRef, onMounted, onUnmounted } from 'vue'
 import type { ZoneImage, BuildingZone, FloorZone, ApartmentZone } from '@/types/apartments'
 import { useInteractiveMap } from '@/composables/navigation/useInteractiveMap'
 import MapTooltip from './MapTooltip.vue'
@@ -100,6 +102,7 @@ const emit = defineEmits<{
 
 const svgElement = ref<SVGSVGElement | null>(null)
 const touchStartZoneId = ref<number | null>(null)
+const isTouchDragging = ref(false)
 
 // Use the composable for all zone logic
 const {
@@ -132,12 +135,20 @@ function handleZoneClick(zone: BuildingZone | FloorZone | ApartmentZone) {
 
 function handleZoneHover(zone: BuildingZone | FloorZone | ApartmentZone) {
   if (props.readonly) return
+  
+  // Don't interfere if we are in the middle of a touch interaction
+  if (isTouchDragging.value) return
+  
   localHoveredZoneId.value = zone.id
   emit('zone-hover', zone)
 }
 
 function handleZoneLeave() {
   if (props.readonly) return
+  
+  // Don't interact if touch dragging
+  if (isTouchDragging.value) return
+
   localHoveredZoneId.value = null
   emit('zone-hover', null)
 }
@@ -145,18 +156,94 @@ function handleZoneLeave() {
 function handleTouchStart(zone: BuildingZone | FloorZone | ApartmentZone) {
   if (props.readonly) return
   touchStartZoneId.value = zone.id
-  localHoveredZoneId.value = zone.id
-  emit('zone-hover', zone)
+  isTouchDragging.value = false
 }
 
-function handleTouchEnd(zone: BuildingZone | FloorZone | ApartmentZone) {
+function handleTouchMove(e: TouchEvent) {
   if (props.readonly) return
-  if (touchStartZoneId.value === zone.id) {
-    handleZoneClick(zone)
+  isTouchDragging.value = true
+
+  // Find element under finger
+  const touch = e.touches[0]
+  const element = document.elementFromPoint(touch.clientX, touch.clientY)
+  
+  if (element) {
+    // Check if it's one of our polygons
+    const zoneId = element.getAttribute('data-zone-id')
+    if (zoneId) {
+      const id = parseInt(zoneId)
+      // Only update if changed
+      if (localHoveredZoneId.value !== id) {
+        const zone = props.zones.find(z => z.id === id)
+        if (zone) {
+          localHoveredZoneId.value = id
+          emit('zone-hover', zone)
+        }
+      }
+    } else {
+      // Finger moved off any zone
+      if (localHoveredZoneId.value !== null) {
+        localHoveredZoneId.value = null
+        emit('zone-hover', null)
+      }
+    }
   }
-  handleZoneLeave()
+}
+
+function handleTouchEnd(e: TouchEvent, zone: BuildingZone | FloorZone | ApartmentZone) {
+  if (props.readonly) return
+  
+  // Prevent ghost click
+  if (e.cancelable) e.preventDefault()
+  
+  if (isTouchDragging.value) {
+    // End of a drag operation
+    isTouchDragging.value = false
+    touchStartZoneId.value = null
+    // We leave the last hovered zone active so user can see what they landed on
+    return
+  }
+
+  // Tap interaction
+  if (touchStartZoneId.value === zone.id) {
+    if (localHoveredZoneId.value === zone.id) {
+      // Second tap on the SAME zone (it was already hovered) -> CLICK
+      handleZoneClick(zone)
+    } else {
+      // First tap (was not hovered) -> HOVER / PREVIEW
+      localHoveredZoneId.value = zone.id
+      emit('zone-hover', zone)
+    }
+  }
+  
+  touchStartZoneId.value = null
   touchStartZoneId.value = null
 }
+
+// ==================== CLICK OUTSIDE ====================
+function handleGlobalClick(e: Event) {
+  if (localHoveredZoneId.value === null) return
+
+  const target = e.target as HTMLElement
+  // Check if click is on a zone polygon or the tooltip
+  const isZone = target.closest('.zone-polygon')
+  const isTooltip = target.closest('.tooltip-container')
+
+  if (!isZone && !isTooltip) {
+    localHoveredZoneId.value = null
+    emit('zone-hover', null)
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleGlobalClick)
+  document.addEventListener('touchstart', handleGlobalClick)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleGlobalClick)
+  document.removeEventListener('touchstart', handleGlobalClick)
+})
 </script>
 
 <style scoped>

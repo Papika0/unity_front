@@ -52,7 +52,7 @@
       <div v-else-if="apartment" class="w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-20 items-start">
         
         <!-- Left Column: Visuals (Floor Plan) -->
-        <div class="lg:col-span-7 relative order-2 lg:order-1">
+        <div class="lg:col-span-7 relative order-1">
           <div class="bg-zinc-50 border border-zinc-100 rounded-2xl p-6 lg:p-12 relative overflow-hidden group transition-all duration-500 hover:shadow-xl hover:shadow-zinc-200/50">
              
              <!-- Back Button (Inline Only) -->
@@ -64,16 +64,6 @@
              >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" /></svg>
              </button>
-
-             <!-- Compass / Meta -->
-             <div class="absolute top-4 right-4 lg:top-6 lg:right-6 flex flex-col gap-2 items-end z-10">
-                <div 
-                  class="px-4 py-1.5 rounded-full bg-white border border-zinc-200 uppercase tracking-widest text-[10px] font-bold shadow-sm"
-                  :class="getStatusClasses(apartment.status)"
-                >
-                  {{ t(`status.${apartment.status}`) }}
-                </div>
-             </div>
 
              <!-- 2D/3D Toggle (only show if both images exist) -->
              <div v-if="apartment.image_2d?.url || apartment.image_3d?.url" class="absolute top-4 left-4 lg:top-6 lg:left-6 z-10 flex gap-1 bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-sm border border-zinc-200" :class="{ 'left-16 lg:left-20': isInline }">
@@ -132,14 +122,20 @@
         </div>
 
         <!-- Right Column: Info -->
-        <div class="lg:col-span-5 space-y-6 lg:space-y-10 py-0 lg:py-4 order-1 lg:order-2">
+        <div class="lg:col-span-5 space-y-6 lg:space-y-10 py-0 lg:py-4 order-2">
           
           <!-- Identity -->
           <div>
-            <div class="flex items-center gap-3 mb-2">
+            <div class="flex items-center gap-3 mb-2 flex-wrap">
               <span class="text-[#FFCD4B] text-xss lg:text-xs font-bold uppercase tracking-widest">
                 {{ apartment.building.name }} &bull; {{ t('apartments.floor') }} {{ apartment.floor_number }}
               </span>
+              <div 
+                class="px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider"
+                :class="getStatusClasses(apartment.status)"
+              >
+                {{ t(`status.${apartment.status}`) }}
+              </div>
             </div>
             <h1 class="text-4xl lg:text-6xl font-extralight tracking-tight text-zinc-900 mb-4 lg:mb-6">
               <span class="text-zinc-300 text-2xl lg:text-3xl mr-1 font-thin">N.</span>{{ apartment.apartment_number }}

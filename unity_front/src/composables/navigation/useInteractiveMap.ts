@@ -161,9 +161,17 @@ export function useInteractiveMap(
     const isFloorStrip = 'floor_number' in zone
     const isBuildingBlock = 'building_identifier' in zone
 
+    // Helper to keep tooltip on screen
+    // We assume a max tooltip width of ~200px (half 100px) + padding
+    const clampX = (x: number) => {
+      const halfWidth = 100 
+      const padding = 10
+      return Math.max(halfWidth + padding, Math.min(window.innerWidth - halfWidth - padding, x))
+    }
+
     if (isFloorStrip) {
       return {
-        left: `${center.x}px`,
+        left: `${clampX(center.x)}px`,
         top: `${topEdge.y - 20}px`,
         transform: 'translate(-50%, -100%)',
       }
@@ -176,6 +184,13 @@ export function useInteractiveMap(
           transform: 'translateY(-50%)',
         }
       } else {
+        // Check if space on left is enough, otherwise clamp/flip?
+        // For building blocks, vertical centering is used.
+        // We'll trust the logic but clamp the result for horizontal overflow if needed.
+        // Actually building block tooltips are side-by-side. 
+        // If it overflows right, we put it left. If it overflows left (rare), we put it right?
+        // Let's stick to the existing logic but maybe force it back if offscreen?
+        // Simpler: Just rely on the side-switching logic for blocks, but for general zones (apartments) clamp it.
         const leftEdge = svgToScreenCoordinates(bbox.min_x, centerY)
         return {
           left: `${leftEdge.x - 20}px`,
@@ -187,15 +202,27 @@ export function useInteractiveMap(
       const isHorizontal = width > height * 2
       if (isHorizontal) {
         return {
-          left: `${center.x}px`,
+          left: `${clampX(center.x)}px`,
           top: `${topEdge.y - 20}px`,
           transform: 'translate(-50%, -100%)',
         }
       } else {
-        return {
-          left: `${rightEdge.x + 20}px`,
-          top: `${center.y}px`,
-          transform: 'translateY(-50%)',
+        // Vertical apartments - check right side space
+        const spaceOnRight = window.innerWidth - rightEdge.x
+        if (spaceOnRight > 160) {
+           return {
+            left: `${rightEdge.x + 20}px`,
+            top: `${center.y}px`,
+            transform: 'translateY(-50%)',
+          }
+        } else {
+          // Put it on the left
+          const leftEdge = svgToScreenCoordinates(bbox.min_x, centerY)
+          return {
+            left: `${leftEdge.x - 20}px`,
+            top: `${center.y}px`,
+            transform: 'translate(-100%, -50%)',
+          }
         }
       }
     }

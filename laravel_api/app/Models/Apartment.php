@@ -152,6 +152,9 @@ class Apartment extends Model
     public function markAsAvailable(): void
     {
         $this->update(['status' => 'available']);
+    }
+
+    /**
      * Get all images for the apartment.
      */
     public function images(): MorphToMany

@@ -37,7 +37,7 @@
     </div>
 
     <!-- Main Content -->
-    <div v-else-if="floorZones.length > 0" class="w-full max-w-[1400px] mx-auto px-4">
+    <div v-else-if="floorZones.length > 0" class="w-full max-w-[1400px] mx-auto px-0 lg:px-4">
       <!-- Interactive Map -->
       <div
         ref="mapElement"

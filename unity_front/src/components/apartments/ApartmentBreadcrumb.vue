@@ -2,7 +2,7 @@
   <Transition name="fade-slide">
     <nav 
       v-if="selectedBuilding || selectedFloor"
-      class="breadcrumb-nav overflow-x-auto whitespace-nowrap scrollbar-hide -mx-4 px-4 py-2 lg:mx-0 lg:p-0"
+      class="breadcrumb-nav overflow-x-auto overflow-y-hidden whitespace-nowrap scrollbar-hide -mx-4 px-4 py-2 lg:mx-0 lg:p-0"
     >
       <div class="flex items-center gap-2 text-sm min-w-max">
         <!-- Home Button -->
@@ -159,5 +159,15 @@ const { t } = useTranslations()
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 </style>
