@@ -3,7 +3,7 @@
     <div
       v-if="show"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      @click.self="$emit('close')"
+      @click.self="!uploading && $emit('close')"
     >
       <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" @click.stop>
         <!-- Header -->
@@ -11,8 +11,9 @@
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold">{{ t('apartments.batch_upload_images') }}</h2>
             <button
-              @click="$emit('close')"
-              class="p-2 hover:bg-white/20 rounded-full transition-colors"
+              @click="!uploading && $emit('close')"
+              :disabled="uploading"
+              class="p-2 hover:bg-white/20 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -34,7 +35,7 @@
           </div>
 
           <!-- Folder Input -->
-          <div>
+          <div v-if="!uploading && !result">
             <label class="block text-sm font-medium text-slate-700 mb-2">
               {{ t('admin.apartments.batch_upload.select_folder') }}
             </label>
@@ -49,7 +50,7 @@
           </div>
 
           <!-- Selected Files Preview -->
-          <div v-if="selectedFiles.length > 0" class="border border-slate-200 rounded-xl p-4">
+          <div v-if="selectedFiles.length > 0 && !uploading && !result" class="border border-slate-200 rounded-xl p-4">
             <div class="flex items-center justify-between mb-3">
               <h4 class="font-medium text-slate-700">
                 {{ t('admin.apartments.batch_upload.files_selected', { count: selectedFiles.length }) }}
@@ -78,6 +79,31 @@
             </div>
           </div>
 
+          <!-- Progress Bar -->
+          <div v-if="uploading" class="border border-slate-200 rounded-xl p-6">
+            <h4 class="font-medium text-slate-700 mb-4 text-center">
+              {{ t('admin.apartments.batch_upload.processing_count', { current: processedCount + 1, total: totalFiles }) }}
+            </h4>
+            
+            <div class="w-full bg-slate-100 rounded-full h-4 mb-2 overflow-hidden">
+              <div 
+                class="bg-emerald-500 h-4 rounded-full transition-all duration-300 ease-out flex items-center justify-end"
+                :style="{ width: `${progressPercentage}%` }"
+              >
+              </div>
+            </div>
+            
+            <div class="flex justify-between text-xs text-slate-500 mt-2">
+               <span>0%</span>
+               <span>{{ Math.round(progressPercentage) }}%</span>
+               <span>100%</span>
+            </div>
+
+            <p class="text-sm text-slate-500 text-center mt-4 animate-pulse">
+              {{ t('admin.apartments.batch_upload.optimizing_and_uploading') }}
+            </p>
+          </div>
+
           <!-- Upload Result -->
           <div v-if="result" class="border rounded-xl p-4" :class="result.failed > 0 ? 'border-amber-200 bg-amber-50' : 'border-green-200 bg-green-50'">
             <h4 class="font-medium mb-2" :class="result.failed > 0 ? 'text-amber-800' : 'text-green-800'">
@@ -90,8 +116,19 @@
             <div v-if="result.errors?.length" class="mt-3 max-h-32 overflow-y-auto">
               <p class="text-xs font-medium text-slate-500 mb-1">{{ t('admin.apartments.batch_upload.errors') }}:</p>
               <ul class="text-xs text-red-600 space-y-0.5">
-                <li v-for="(err, i) in result.errors" :key="i">{{ err }}</li>
+              <!-- Show only first 10 errors to preserve performance if many fail -->
+                <li v-for="(err, i) in result.errors.slice(0, 50)" :key="i">{{ err }}</li>
+                <li v-if="result.errors.length > 50">... {{ result.errors.length - 50 }} more errors</li>
               </ul>
+            </div>
+            
+            <div class="mt-4 flex justify-end">
+              <button 
+                @click="clearSelection" 
+                class="text-sm bg-white border border-slate-300 px-4 py-2 rounded-lg hover:bg-slate-50 text-slate-700 transition"
+              >
+                {{ t('admin.common.upload_more') }}
+              </button>
             </div>
           </div>
 
@@ -106,14 +143,15 @@
           <button
             @click="$emit('close')"
             :disabled="uploading"
-            class="flex-1 px-6 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-medium disabled:opacity-50"
+            class="flex-1 px-6 py-3 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {{ t('admin.common.close') }}
           </button>
           <button
+            v-if="!result"
             @click="uploadBatch"
             :disabled="uploading || selectedFiles.length === 0"
-            class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all font-medium shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
+            class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all font-medium shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2 disabled:cursor-not-allowed"
           >
             <svg v-if="uploading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -128,10 +166,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { adminApartmentsApi } from '@/services/adminApartmentsApi'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useToast } from '@/composables/ui/useToast'
+import { compressImage } from '@/utils/image-compression'
 
 interface Props {
   show: boolean
@@ -156,6 +195,14 @@ const uploading = ref(false)
 const error = ref('')
 const result = ref<{ uploaded: number; failed: number; errors: string[] } | null>(null)
 
+// Progress tracking
+const processedCount = ref(0)
+const totalFiles = ref(0)
+const progressPercentage = computed(() => {
+  if (totalFiles.value === 0) return 0
+  return Math.min(Math.round((processedCount.value / totalFiles.value) * 100), 100)
+})
+
 function handleFolderSelect(event: Event) {
   const target = event.target as HTMLInputElement
   const files = target.files
@@ -167,6 +214,8 @@ function handleFolderSelect(event: Event) {
     )
     result.value = null
     error.value = ''
+    totalFiles.value = selectedFiles.value.length
+    processedCount.value = 0
   }
 }
 
@@ -174,6 +223,8 @@ function clearSelection() {
   selectedFiles.value = []
   result.value = null
   error.value = ''
+  processedCount.value = 0
+  totalFiles.value = 0
   if (folderInput.value) {
     folderInput.value.value = ''
   }
@@ -187,26 +238,70 @@ async function uploadBatch() {
 
   uploading.value = true
   error.value = ''
-  result.value = null
+  processedCount.value = 0
+  totalFiles.value = selectedFiles.value.length
+  
+  // Initialize result
+  result.value = {
+    uploaded: 0,
+    failed: 0,
+    errors: []
+  }
 
   try {
-    // Create a FileList-like object from our array
-    const dataTransfer = new DataTransfer()
-    selectedFiles.value.forEach(file => dataTransfer.items.add(file))
+    for (const file of selectedFiles.value) {
+      try {
+        // 1. Compress image
+        const compressionResult = await compressImage(file, {
+          imageType: 'gallery', // content type for apartment images
+          maxWidth: 1920,
+          quality: 0.8
+        })
+
+        // 2. Prepare for upload
+        // We need to preserve the relative path. 
+        // When we compress, we get a new File object which might lose webkitRelativePath.
+        // We explicitly pass the original path.
+        const originalPath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name
+        
+        // 3. Upload single file
+        await adminApartmentsApi.uploadBatchImage(
+          props.projectId,
+          props.buildingId,
+          compressionResult.file,
+          originalPath
+        )
+        
+        // 4. Update success count
+        if (result.value) {
+          result.value.uploaded++
+        }
+      } catch (err: unknown) {
+        // Collect errors but continue uploading other files
+        if (result.value) {
+          result.value.failed++
+          const fileName = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name
+          const apiError = err as { response?: { data?: { message?: string } }; message?: string }
+          const errorMessage = apiError.response?.data?.message || apiError.message || 'Unknown error'
+          result.value.errors.push(`${fileName}: ${errorMessage}`)
+        }
+        console.error(`Failed to upload ${file.name}:`, err)
+      } finally {
+        processedCount.value++
+      }
+    }
     
-    const response = await adminApartmentsApi.batchUploadImages(
-      props.projectId,
-      props.buildingId,
-      dataTransfer.files
-    )
-    
-    result.value = response.data?.data || response.data
-    
+    // Final notification
     if (result.value && result.value.uploaded > 0) {
       success(t('admin.messages.upload_success'))
       emit('uploaded')
+    } else if (result.value && result.value.failed > 0 && result.value.uploaded === 0) {
+       showError(t('admin.errors.all_uploads_failed'))
     }
+    
   } catch (err: unknown) {
+    // This should mostly not allow to happen anymore as we catch inside loop, 
+    // but just in case of catastrophic failure outside loop
     const apiError = err as { response?: { data?: { message?: string } }; message?: string }
     error.value = apiError.response?.data?.message || apiError.message || t('admin.errors.unknown_error')
     showError(error.value)

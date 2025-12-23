@@ -115,4 +115,23 @@ export const adminApartmentsApi = {
       },
     )
   },
+
+  /**
+   * Upload a single image for batch processing (used for sequential uploads)
+   */
+  uploadBatchImage: async (projectId: number, buildingId: number, file: File, path: string) => {
+    const formData = new FormData()
+    // Backend expects array structure even for single file to maintain compatibility
+    formData.append('files[0]', file, path)
+    // Send path separately as well, because some environments strip it from the file object
+    formData.append('paths[0]', path)
+
+    return api.post(
+      `/admin/projects/${projectId}/buildings/${buildingId}/apartments/batch-images`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      },
+    )
+  },
 }

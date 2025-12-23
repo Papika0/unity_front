@@ -704,10 +704,13 @@ class AdminApartmentController extends Controller
         $request->validate([
             'files' => 'required|array',
             'files.*' => 'image|mimes:jpeg,png,jpg,webp|max:20480',
+            'paths' => 'nullable|array', // Allow explicit paths
+            'paths.*' => 'nullable|string',
         ]);
 
         $building = Building::where('project_id', $projectId)
             ->where('id', $buildingId)
+            ->with(['project']) // Eager load project for folder definition
             ->firstOrFail();
 
         $uploaded = 0;
@@ -717,14 +720,19 @@ class AdminApartmentController extends Controller
         try {
             DB::beginTransaction();
 
-            foreach ($request->file('files', []) as $file) {
-                $path = $file->getClientOriginalName();
+            $files = $request->file('files', []);
+            $paths = $request->input('paths', []);
+
+            foreach ($files as $index => $file) {
+                // Use explicit path if provided (preferred), otherwise fallback to filename
+                // This fixes the issue where browsers/servers strip directory paths from filenames
+                $path = $paths[$index] ?? $file->getClientOriginalName();
 
                 // Try to parse the path for floor/apartment/type
                 $parsed = $this->parseBatchImagePath($path);
 
                 if (!$parsed) {
-                    $errors[] = "Could not parse path: {$path}";
+                    $errors[] = "Could not parse path information (Type/Floor/Apt) from: {$path}";
                     $failed++;
                     continue;
                 }
@@ -736,16 +744,23 @@ class AdminApartmentController extends Controller
                     ->first();
 
                 if (!$apartment) {
-                    $errors[] = "Apartment not found: Floor {$parsed['floor']}, Apt {$parsed['apartment']}";
+                    $errors[] = "Apartment not found: Floor {$parsed['floor']}, Apt {$parsed['apartment']} (Path: {$path})";
                     $failed++;
                     continue;
                 }
+
+                // Construct organized storage path
+                // Structure: apartments/project_name/building_name/floor_X/apt_Y/type
+                $projectName = str_replace(['/', '\\', ' '], '_', $building->project->name ?? 'project_' . $projectId);
+                $buildingName = str_replace(['/', '\\', ' '], '_', $building->name ?? 'building_' . $buildingId);
+
+                $storagePath = "apartments/{$projectName}/{$buildingName}/floor_{$parsed['floor']}/apt_{$apartment->apartment_number}";
 
                 // Upload the image
                 $image = $this->imageService->uploadImage(
                     $file,
                     "Apartment {$apartment->apartment_number} - " . strtoupper($parsed['type']),
-                    'apartments'
+                    $storagePath
                 );
 
                 // Remove existing image of the same type
@@ -814,11 +829,17 @@ class AdminApartmentController extends Controller
 
         // First try to extract from filename (e.g., "7. bina 70 sul 58.05.png")
         $filename = basename($path);
+
+        // Priority 1: Explicit "bina/apartment" keyword followed by number (handles "5. bina 54 ...")
         if (preg_match('/(?:ბინა|bina|apartment)\s*(\d+)/i', $filename, $matches)) {
             $apartment = $matches[1];
-        } elseif (preg_match('/^\d+\.\s*(?:ბინა|bina)?\s*(\d+)/i', $filename, $matches)) {
+        }
+        // Priority 2: "Number. Number" format (e.g. "5. 54.png" -> 54)
+        elseif (preg_match('/^\d+\.\s*(\d+)/i', $filename, $matches)) {
             $apartment = $matches[1];
-        } elseif (preg_match('/^(\d+)\.(?:png|jpg|jpeg|webp)$/i', $filename, $matches)) {
+        }
+        // Priority 3: Simple number (e.g. "54.png")
+        elseif (preg_match('/^(\d+)\.(?:png|jpg|jpeg|webp)$/i', $filename, $matches)) {
             $apartment = $matches[1];
         }
 
