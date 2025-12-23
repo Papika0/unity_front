@@ -30,43 +30,63 @@
       class="flex items-center w-full" 
       :class="[isInline ? 'mt-4 lg:mt-8' : 'pt-24 lg:pt-32 pb-12 lg:pb-20 px-4 lg:px-6 min-h-screen']"
     >
-      <!-- Loading State -->
-      <div v-if="isLoading" class="w-full flex flex-col items-center justify-center min-h-[400px]">
-        <div class="w-12 h-12 border-2 border-zinc-200 border-t-[#FFCD4B] rounded-full animate-spin mb-4"></div>
-        <p class="text-zinc-400 font-light tracking-widest uppercase text-sm">{{ t('common.loading') }}</p>
-      </div>
-
-      <!-- Error State -->
-      <div v-else-if="error" class="w-full text-center py-20">
-        <div class="inline-block p-4 rounded-full bg-red-50 text-red-500 mb-4">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      <Transition name="fade" mode="out-in">
+        <!-- Loading State -->
+        <div v-if="isLoading" class="w-full flex flex-col items-center justify-center min-h-[400px]" key="loading">
+          <div class="w-12 h-12 border-2 border-zinc-200 border-t-[#FFCD4B] rounded-full animate-spin mb-4"></div>
+          <p class="text-zinc-400 font-light tracking-widest uppercase text-sm">{{ t('common.loading') }}</p>
         </div>
-        <h2 class="text-xl font-light mb-2 text-zinc-900">{{ t('apartments.error_loading') }}</h2>
-        <p class="text-zinc-500 mb-6">{{ error }}</p>
-        <button @click="loadData" class="px-6 py-2 bg-zinc-900 text-white hover:bg-[#FFCD4B] hover:text-black transition-colors rounded-full uppercase tracking-wider text-xs font-medium">
-          {{ t('buttons.retry') }}
-        </button>
-      </div>
 
-      <!-- Detail Content -->
-      <div v-else-if="apartment" class="w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-20 items-start">
-        
-        <!-- Left Column: Visuals (Floor Plan) -->
-        <div class="lg:col-span-7 relative order-1">
-          <div class="bg-zinc-50 border border-zinc-100 rounded-2xl p-6 lg:p-12 relative overflow-hidden group transition-all duration-500 hover:shadow-xl hover:shadow-zinc-200/50">
-             
-             <!-- Back Button (Inline Only) -->
+        <!-- Error State -->
+        <div v-else-if="error" class="w-full text-center py-20" key="error">
+          <div class="inline-block p-4 rounded-full bg-red-50 text-red-500 mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <h2 class="text-xl font-light mb-2 text-zinc-900">{{ t('apartments.error_loading') }}</h2>
+          <p class="text-zinc-500 mb-6">{{ error }}</p>
+          <button @click="loadData" class="px-6 py-2 bg-zinc-900 text-white hover:bg-[#FFCD4B] hover:text-black transition-colors rounded-full uppercase tracking-wider text-xs font-medium">
+            {{ t('buttons.retry') }}
+          </button>
+        </div>
+
+        <!-- Detail Content -->
+        <div v-else-if="apartment" class="w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-20 items-start" key="content">
+          
+          <!-- Left Column: Visuals (Floor Plan) -->
+          <div class="lg:col-span-7 relative order-1">
+          <!-- Navigation Bar (Inline Only) -->
+          <div v-if="isInline" class="flex items-center justify-between mb-4 gap-4">
              <button 
-                v-if="isInline"
                 @click="goBack"
-                class="absolute top-4 left-4 lg:top-6 lg:left-6 z-10 w-10 h-10 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 hover:border-zinc-900 transition-all shadow-sm"
+                class="w-10 h-10 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 hover:border-zinc-900 transition-all shadow-sm shrink-0"
                 :title="t('common.back')"
              >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" /></svg>
              </button>
 
-             <!-- 2D/3D Toggle (only show if both images exist) -->
-             <div v-if="apartment.image_2d?.url || apartment.image_3d?.url" class="absolute top-4 left-4 lg:top-6 lg:left-6 z-10 flex gap-1 bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-sm border border-zinc-200" :class="{ 'left-16 lg:left-20': isInline }">
+             <!-- 2D/3D Toggle (Inline Version) -->
+             <div v-if="apartment.image_2d?.url || apartment.image_3d?.url" class="flex gap-1 bg-zinc-100/50 rounded-full p-1 border border-zinc-200/50">
+               <button
+                 @click="viewMode = '2d'"
+                 class="px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-300"
+                 :class="viewMode === '2d' ? 'bg-[#FFCD4B] text-black shadow-sm' : 'text-zinc-500 hover:text-zinc-800'"
+               >
+                 {{ t('apartments.view_2d') }}
+               </button>
+               <button
+                 @click="viewMode = '3d'"
+                 class="px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-300"
+                 :class="viewMode === '3d' ? 'bg-[#FFCD4B] text-black shadow-sm' : 'text-zinc-500 hover:text-zinc-800'"
+               >
+                 {{ t('apartments.view_3d') }}
+               </button>
+             </div>
+          </div>
+
+          <div class="bg-zinc-50 border border-zinc-100 rounded-2xl p-6 lg:p-12 relative overflow-hidden group transition-all duration-500 hover:shadow-xl hover:shadow-zinc-200/50">
+             
+             <!-- 2D/3D Toggle (Desktop/Non-inline Version) -->
+             <div v-if="!isInline && (apartment.image_2d?.url || apartment.image_3d?.url)" class="absolute top-4 left-4 lg:top-6 lg:left-6 z-10 flex gap-1 bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-sm border border-zinc-200">
                <button
                  @click="viewMode = '2d'"
                  class="px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200"
@@ -84,33 +104,38 @@
              </div>
 
              <!-- Image Display -->
-             <div class="w-full aspect-[4/3] flex items-center justify-center cursor-pointer" @click="openLightbox">
-               <!-- 2D Image -->
-               <img 
-                 v-if="viewMode === '2d' && apartment.image_2d?.url" 
-                 :src="apartment.image_2d.url" 
-                 :alt="`${apartment.apartment_number} - 2D`" 
-                 class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700"
-               >
-               <!-- 3D Image -->
-               <img 
-                 v-else-if="viewMode === '3d' && apartment.image_3d?.url" 
-                 :src="apartment.image_3d.url" 
-                 :alt="`${apartment.apartment_number} - 3D`" 
-                 class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700"
-               >
-               <!-- Fallback to floor_plan_image -->
-               <img 
-                 v-else-if="apartment.floor_plan_image" 
-                 :src="apartment.floor_plan_image" 
-                 :alt="`Apartment ${apartment.apartment_number}`" 
-                 class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700"
-               >
-               <!-- No image placeholder -->
-               <div v-else class="flex flex-col items-center justify-center">
-                 <svg class="w-16 h-16 text-zinc-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                 <p class="text-zinc-400 font-light text-sm">{{ t('apartments.no_image') }}</p>
-               </div>
+             <div class="w-full aspect-[4/3] flex items-center justify-center cursor-pointer relative" @click="openLightbox">
+               <Transition name="fade" mode="out-in">
+                 <!-- 2D Image -->
+                 <img 
+                   v-if="viewMode === '2d' && apartment.image_2d?.url" 
+                   :key="'2d'"
+                   :src="apartment.image_2d.url" 
+                   :alt="`${apartment.apartment_number} - 2D`" 
+                   class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700 absolute"
+                 >
+                 <!-- 3D Image -->
+                 <img 
+                   v-else-if="viewMode === '3d' && apartment.image_3d?.url" 
+                   :key="'3d'"
+                   :src="apartment.image_3d.url" 
+                   :alt="`${apartment.apartment_number} - 3D`" 
+                   class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700 absolute"
+                 >
+                 <!-- Fallback to floor_plan_image -->
+                 <img 
+                   v-else-if="apartment.floor_plan_image" 
+                   :key="'plan'"
+                   :src="apartment.floor_plan_image" 
+                   :alt="`Apartment ${apartment.apartment_number}`" 
+                   class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700 absolute"
+                 >
+                 <!-- No image placeholder -->
+                 <div v-else key="empty" class="flex flex-col items-center justify-center absolute inset-0">
+                   <svg class="w-16 h-16 text-zinc-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                   <p class="text-zinc-400 font-light text-sm">{{ t('apartments.no_image') }}</p>
+                 </div>
+               </Transition>
              </div>
 
              <!-- Click to expand hint -->
@@ -281,6 +306,7 @@
 
         </div>
       </div>
+      </Transition>
     </main>
 
 

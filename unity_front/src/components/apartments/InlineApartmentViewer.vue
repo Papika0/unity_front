@@ -10,11 +10,11 @@
       @apartment-back="handleApartmentBack"
     />
 
-    <!-- Floor Selector View -->
-    <Transition name="fade-slide" mode="out-in">
+    <!-- Navigation Views -->
+    <Transition :name="transitionName" mode="out-in">
       <FloorSelector
         v-if="selectedBuilding && !selectedFloor"
-        :key="`floor-${selectedBuilding.id}`"
+        key="floor-selector"
         :project-id="projectId"
         :building-id="selectedBuilding.entity_id"
         :building-identifier="selectedBuilding.building_identifier"
@@ -22,13 +22,9 @@
         @floor-selected="handleFloorSelected"
         @back="resetToBuildings"
       />
-    </Transition>
-
-    <!-- Apartment Grid View -->
-    <Transition name="fade-slide" mode="out-in">
       <ApartmentGrid
-        v-if="selectedBuilding && selectedFloor && !selectedApartmentId"
-        :key="`apartment-${selectedFloor.id}-${selectedFloor.floor_number}`"
+        v-else-if="selectedBuilding && selectedFloor && !selectedApartmentId"
+        key="apartment-grid"
         :project-id="projectId"
         :building-id="selectedBuilding.entity_id"
         :building-identifier="selectedBuilding.building_identifier"
@@ -40,7 +36,7 @@
       <!-- Apartment Detail View (Inline) -->
       <ApartmentDetailView
         v-else-if="selectedBuilding && selectedFloor && selectedApartmentId"
-        :key="`detail-${selectedApartmentId}`"
+        key="apartment-detail"
         :project-id="projectId"
         :building-identifier="selectedBuilding.building_identifier"
         :floor-number="selectedFloor.floor_number"
@@ -53,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ApartmentBreadcrumb from './ApartmentBreadcrumb.vue'
 import FloorSelector from './FloorSelector.vue'
@@ -66,7 +62,7 @@ interface Props {
   selectedBuilding: BuildingZone | null
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'building-deselected': []
@@ -81,6 +77,27 @@ const selectedFloor = ref<FloorZone | null>(null)
 const selectedApartmentId = ref<number | null>(
   route.query.apartment ? Number(route.query.apartment) : null
 )
+
+// Navigation Direction Logic
+const navigationDirection = ref<'forward' | 'backward'>('forward')
+const stageDepth = computed(() => {
+  if (selectedApartmentId.value) return 3
+  if (selectedFloor.value) return 2
+  if (props.selectedBuilding) return 1
+  return 0
+})
+
+const transitionName = computed(() => {
+  return navigationDirection.value === 'forward' ? 'stage-slide-forward' : 'stage-slide-backward'
+})
+
+watch(stageDepth, (newVal, oldVal) => {
+  if (newVal > oldVal) {
+    navigationDirection.value = 'forward'
+  } else {
+    navigationDirection.value = 'backward'
+  }
+})
 
 // Handle apartment selection
 function handleSelectApartment(apartmentId: number) {
@@ -192,19 +209,51 @@ onMounted(() => {
   width: 100%;
 }
 
-/* Fade slide transitions */
-.fade-slide-enter-active,
-.fade-slide-leave-active {
+/* Staged Fade (Internal component states) */
+:deep(.fade-staged-enter-active),
+:deep(.fade-staged-leave-active) {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.fade-slide-enter-from {
+:deep(.fade-staged-enter-from) {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(10px);
 }
 
-.fade-slide-leave-to {
+:deep(.fade-staged-leave-to) {
   opacity: 0;
-  transform: translateY(-20px);
+  transform: translateY(-5px);
+}
+
+/* Forward Stage Transition */
+.stage-slide-forward-enter-active,
+.stage-slide-forward-leave-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stage-slide-forward-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.stage-slide-forward-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+/* Backward Stage Transition */
+.stage-slide-backward-enter-active,
+.stage-slide-backward-leave-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stage-slide-backward-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.stage-slide-backward-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
 }
 </style>

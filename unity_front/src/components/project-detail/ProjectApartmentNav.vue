@@ -8,7 +8,7 @@
         <div class="w-20 h-0.5 bg-[#FFCD4B] mx-auto"></div>
       </div>
 
-      <!-- Building Selector -->
+      <!-- Building Selector and Inline Apartment Viewer -->
       <Transition name="fade-slide" mode="out-in">
         <BuildingSelector
           v-if="!selectedBuilding"
@@ -17,13 +17,10 @@
           :auto-navigate="false"
           @building-selected="$emit('buildingSelected', $event)"
         />
-      </Transition>
 
-      <!-- Inline Apartment Viewer (appears below after building selection) -->
-      <Transition name="fade-slide" mode="out-in">
         <InlineApartmentViewer
-          v-if="selectedBuilding"
-          :key="`viewer-${selectedBuilding.id}`"
+          v-else
+          :key="'viewer'"
           :project-id="projectId"
           :selected-building="selectedBuilding"
           @building-deselected="$emit('buildingDeselected')"

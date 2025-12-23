@@ -1,44 +1,46 @@
 <template>
   <div class="building-selector">
-    <!-- Loading State -->
-    <div v-if="apartmentStore.isLoading" class="loading-skeleton">
-      <div class="animate-pulse">
-        <div class="h-96 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
-        <div class="space-y-3">
-          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+    <Transition name="fade-staged">
+      <!-- Loading State -->
+      <div v-if="apartmentStore.isLoading" :key="'loading'" class="loading-skeleton">
+        <div class="animate-pulse">
+          <div class="h-96 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
+          <div class="space-y-3">
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Error State -->
-    <div v-else-if="apartmentStore.error" class="error-display p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-      <p class="text-red-600 dark:text-red-400">{{ apartmentStore.error }}</p>
-      <button
-        @click="loadData"
-        class="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-      >
-        Retry
-      </button>
-    </div>
+      <!-- Error State -->
+      <div v-else-if="apartmentStore.error" :key="'error'" class="error-display p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+        <p class="text-red-600 dark:text-red-400">{{ apartmentStore.error }}</p>
+        <button
+          @click="loadData"
+          class="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+        >
+          Retry
+        </button>
+      </div>
 
-    <!-- Main Content -->
-    <div v-else-if="buildingZones.length > 0">
-      <!-- Full Width Interactive Map -->
-      <InteractiveMapViewer
-        :image="apartmentStore.currentImage"
-        :zones="buildingZones"
-        :selected-zone-id="selectedBuildingId"
-        :hovered-zone="hoveredZone"
-        @zone-click="handleBuildingClick"
-        @zone-hover="handleBuildingHover"
-      />
-    </div>
+      <!-- Main Content -->
+      <div v-else-if="apartmentStore.currentImage || buildingZones.length > 0" :key="'content'">
+        <!-- Full Width Interactive Map -->
+        <InteractiveMapViewer
+          :image="apartmentStore.currentImage"
+          :zones="buildingZones"
+          :selected-zone-id="selectedBuildingId"
+          :hovered-zone="hoveredZone"
+          @zone-click="handleBuildingClick"
+          @zone-hover="handleBuildingHover"
+        />
+      </div>
 
-    <!-- Empty State -->
-    <div v-else class="empty-state text-center py-12">
-      <p class="text-gray-600 dark:text-gray-400">{{ t('apartments.no_buildings') }}</p>
-    </div>
+      <!-- Empty State -->
+      <div v-else :key="'empty'" class="empty-state text-center py-12">
+        <p class="text-gray-600 dark:text-gray-400">{{ t('apartments.no_buildings') }}</p>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -78,13 +80,6 @@ const buildingZones = computed(() => {
 async function loadData() {
   try {
     await apartmentStore.loadNavigation(props.projectId, 'overview')
-
-    console.log('🔍 Building Selector - Loaded Data:', {
-      hasData: !!apartmentStore.navigationData,
-      zones: apartmentStore.currentZones,
-      image: apartmentStore.currentImage,
-      buildingZonesCount: buildingZones.value.length
-    })
 
     // Auto-navigate if only one building
     if (

@@ -91,6 +91,7 @@ const router = createRouter({
             floorNumber: Number(route.params.floorNumber),
             apartmentId: Number(route.params.apartmentId),
           }),
+          meta: { hideHeader: true },
         },
         {
           path: 'news',

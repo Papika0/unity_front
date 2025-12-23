@@ -139,84 +139,86 @@ const navigateToProject = (id: number) => router.push(`/projects/${id}`)
       ></div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="isLoading" class="min-h-screen bg-black flex items-center justify-center">
-      <div class="text-center">
-        <div
-          class="inline-block animate-spin rounded-full h-12 w-12 border-2 border-transparent border-t-[#FFCD4B] mb-6"
-        ></div>
-        <p class="text-lg text-[#FFCD4B] font-light uppercase tracking-wider">
-          {{ t('projects.loading') }}
-        </p>
+    <Transition name="fade" mode="out-in">
+      <!-- Loading State -->
+      <div v-if="isLoading" class="min-h-screen bg-black flex items-center justify-center" key="loading">
+        <div class="text-center">
+          <div
+            class="inline-block animate-spin rounded-full h-12 w-12 border-2 border-transparent border-t-[#FFCD4B] mb-6"
+          ></div>
+          <p class="text-lg text-[#FFCD4B] font-light uppercase tracking-wider">
+            {{ t('projects.loading') }}
+          </p>
+        </div>
       </div>
-    </div>
 
-    <!-- Error State -->
-    <div v-else-if="error" class="min-h-screen bg-black flex items-center justify-center">
-      <div class="text-center max-w-md mx-auto px-8">
-        <div class="text-5xl mb-6">⚠️</div>
-        <h2 class="text-xl font-light text-white mb-3">{{ t('projects.error_title') }}</h2>
-        <p class="text-base text-zinc-400 mb-8 font-light">{{ error }}</p>
-        <button
-          @click="() => loadProjectData(parseInt(route.params.id as string))"
-          class="px-8 py-3 bg-black text-[#FFCD4B] font-light text-sm uppercase tracking-wider transition-all duration-300 hover:bg-zinc-900"
-        >
-          {{ t('buttons.retry') }}
-        </button>
+      <!-- Error State -->
+      <div v-else-if="error" class="min-h-screen bg-black flex items-center justify-center" key="error">
+        <div class="text-center max-w-md mx-auto px-8">
+          <div class="text-5xl mb-6">⚠️</div>
+          <h2 class="text-xl font-light text-white mb-3">{{ t('projects.error_title') }}</h2>
+          <p class="text-base text-zinc-400 mb-8 font-light">{{ error }}</p>
+          <button
+            @click="() => loadProjectData(parseInt(route.params.id as string))"
+            class="px-8 py-3 bg-black text-[#FFCD4B] font-light text-sm uppercase tracking-wider transition-all duration-300 hover:bg-zinc-900"
+          >
+            {{ t('buttons.retry') }}
+          </button>
+        </div>
       </div>
-    </div>
 
-    <!-- Project Content -->
-    <div v-else-if="project" class="project-content">
-      <ProjectHero 
-        :project="project" 
-        :status-text="statusText" 
-        :status-color="getStatusColor(project.status)"
-        @back="goBack"
-      />
+      <!-- Project Content -->
+      <div v-else-if="project" class="project-content" key="content">
+        <ProjectHero 
+          :project="project" 
+          :status-text="statusText" 
+          :status-color="getStatusColor(project.status)"
+          @back="goBack"
+        />
 
-      <ProjectApartmentNav
-        v-if="hasApartmentNavigation"
-        :project-id="project.id"
-        :selected-building="selectedBuilding"
-        @building-selected="handleBuildingSelected"
-        @building-deselected="handleBuildingDeselected"
-        @floor-selected="handleFloorSelected"
-        @floor-deselected="handleFloorDeselected"
-      />
+        <ProjectApartmentNav
+          v-if="hasApartmentNavigation"
+          :project-id="project.id"
+          :selected-building="selectedBuilding"
+          @building-selected="handleBuildingSelected"
+          @building-deselected="handleBuildingDeselected"
+          @floor-selected="handleFloorSelected"
+          @floor-deselected="handleFloorDeselected"
+        />
 
-      <section class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            <!-- Left Column -->
-            <div class="lg:col-span-5 space-y-8">
-              <ProjectGallery
-                :project="project"
-                :selected-image-index="selectedImageIndex"
-                @select-image="selectImage"
-                @open-fullscreen="openFullscreenGallery"
-              />
-              <ProjectDetailsCard
-                :project="project"
-                :status-text="statusText"
-                :status-color="getStatusColor(project.status)"
-              />
-            </div>
+        <section class="py-20 bg-white">
+          <div class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+              <!-- Left Column -->
+              <div class="lg:col-span-5 space-y-8">
+                <ProjectGallery
+                  :project="project"
+                  :selected-image-index="selectedImageIndex"
+                  @select-image="selectImage"
+                  @open-fullscreen="openFullscreenGallery"
+                />
+                <ProjectDetailsCard
+                  :project="project"
+                  :status-text="statusText"
+                  :status-color="getStatusColor(project.status)"
+                />
+              </div>
 
-            <!-- Right Column -->
-            <div class="lg:col-span-7">
-              <ProjectDescription :description="project.description" />
+              <!-- Right Column -->
+              <div class="lg:col-span-7">
+                <ProjectDescription :description="project.description" />
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <ProjectFeatures :features="projectFeatures" />
+        <ProjectFeatures :features="projectFeatures" />
 
-      <ProjectCTA />
+        <ProjectCTA />
 
-      <ProjectRelated :projects="relatedProjects" @navigate="navigateToProject" />
-    </div>
+        <ProjectRelated :projects="relatedProjects" @navigate="navigateToProject" />
+      </div>
+    </Transition>
 
     <!-- Fullscreen Gallery Modal -->
     <ProjectGalleryModal
@@ -275,5 +277,16 @@ html {
 ::-moz-selection {
   background: #ffcd4b;
   color: #000;
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

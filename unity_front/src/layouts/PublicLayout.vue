@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen flex flex-col">
-    <AppHeader :transparent="isTransparentHeader" @open-phone-modal="openPhoneModal" />
+    <AppHeader v-if="!route.meta.hideHeader" :transparent="isTransparentHeader" @open-phone-modal="openPhoneModal" />
     <main :class="isTransparentHeader ? '' : 'flex-1'">
       <RouterView />
     </main>

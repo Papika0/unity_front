@@ -1,11 +1,20 @@
 <template>
   <div class="interactive-map-viewer relative w-full">
+    <!-- Loading overlay for image -->
+    <div
+      v-if="image?.url && !imageLoaded"
+      class="absolute inset-0 flex items-center justify-center bg-zinc-50 z-10"
+    >
+      <div class="w-10 h-10 border-2 border-zinc-200 border-t-zinc-400 rounded-full animate-spin"></div>
+    </div>
+
     <svg
       ref="svgElement"
       :viewBox="image?.viewbox || '0 0 1000 1000'"
       :width="image?.width"
       :height="image?.height"
       class="w-full h-auto"
+      :class="{ 'opacity-0': image?.url && !imageLoaded }"
       xmlns="http://www.w3.org/2000/svg"
     >
       <!-- Background image -->
@@ -17,6 +26,8 @@
         x="0"
         y="0"
         preserveAspectRatio="xMidYMid meet"
+        @load="handleImageLoad"
+        @error="handleImageError"
       />
 
       <!-- Interactive zones -->
@@ -76,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, toRef, onMounted, onUnmounted } from 'vue'
+import { ref, toRef, onMounted, onUnmounted, watch } from 'vue'
 import type { ZoneImage, BuildingZone, FloorZone, ApartmentZone } from '@/types/apartments'
 import { useInteractiveMap } from '@/composables/navigation/useInteractiveMap'
 import MapTooltip from './MapTooltip.vue'
@@ -98,11 +109,22 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'zone-click': [zone: BuildingZone | FloorZone | ApartmentZone]
   'zone-hover': [zone: BuildingZone | FloorZone | ApartmentZone | null]
+  'image-load': [loaded: boolean]
 }>()
 
 const svgElement = ref<SVGSVGElement | null>(null)
 const touchStartZoneId = ref<number | null>(null)
 const isTouchDragging = ref(false)
+const imageLoaded = ref(false)
+const imageError = ref(false)
+
+// Reset image loaded state when image URL changes
+watch(() => props.image?.url, (newUrl, oldUrl) => {
+  if (newUrl !== oldUrl) {
+    imageLoaded.value = false
+    imageError.value = false
+  }
+})
 
 // Use the composable for all zone logic
 const {
@@ -122,6 +144,20 @@ const {
   toRef(props, 'zones'),
   toRef(props, 'hoveredZone')
 )
+
+// ==================== IMAGE HANDLERS ====================
+function handleImageLoad() {
+  imageLoaded.value = true
+  imageError.value = false
+  emit('image-load', true)
+}
+
+function handleImageError() {
+  imageLoaded.value = false
+  imageError.value = true
+  emit('image-load', false)
+  console.error('Failed to load SVG image:', props.image?.url)
+}
 
 // ==================== EVENT HANDLERS ====================
 function isSelected(zone: BuildingZone | FloorZone | ApartmentZone): boolean {
@@ -215,8 +251,7 @@ function handleTouchEnd(e: TouchEvent, zone: BuildingZone | FloorZone | Apartmen
       emit('zone-hover', zone)
     }
   }
-  
-  touchStartZoneId.value = null
+
   touchStartZoneId.value = null
 }
 

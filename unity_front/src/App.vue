@@ -83,8 +83,12 @@ watch(() => route.name, (newRoute) => {
 <template>
   <div id="app">
     <GlobalLoadingOverlay />
-    <div :class="{ 'content-invisible': waitingForTranslations }">
-      <RouterView />
+    <div :class="[waitingForTranslations ? 'content-invisible' : 'content-visible']">
+      <RouterView v-slot="{ Component }">
+        <Transition name="page" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </RouterView>
     </div>
     <ToastContainer />
   </div>
@@ -96,9 +100,26 @@ watch(() => route.name, (newRoute) => {
   overflow-x: hidden;
 }
 
-/* Hide content while waiting for translations to prevent key flashing */
+/* Smooth fade for content visibility */
 .content-invisible {
   opacity: 0;
+  transition: opacity 0.5s ease-in-out;
   pointer-events: none;
+}
+
+.content-visible {
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+/* Global Page Transitions */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
 }
 </style>

@@ -74,49 +74,58 @@
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="apartmentStore.isLoading" class="loading-skeleton">
-      <div class="text-center py-24">
-        <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-zinc-100 border-t-[#FFCD4B] mb-6"></div>
-        <p class="text-sm text-zinc-400 font-light tracking-widest uppercase">{{ getLabel('loading') }}</p>
-      </div>
-    </div>
-
-    <!-- Error State -->
-    <div v-else-if="apartmentStore.error" class="error-display">
-      <div class="text-center max-w-md mx-auto py-20">
-        <div class="w-16 h-16 bg-red-50 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">
-          !
+    <Transition name="fade-staged" mode="out-in">
+      <!-- Loading State -->
+      <div v-if="apartmentStore.isLoading" :key="'loading'" class="loading-skeleton">
+        <div class="text-center py-24">
+          <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-zinc-100 border-t-[#FFCD4B] mb-6"></div>
+          <p class="text-sm text-zinc-400 font-light tracking-widest uppercase">{{ getLabel('loading') }}</p>
         </div>
-        <h2 class="text-xl font-light text-zinc-900 mb-3">{{ getLabel('error') }}</h2>
-        <p class="text-sm text-zinc-500 mb-8 font-light leading-relaxed">{{ apartmentStore.error }}</p>
-        <button
-          @click="loadData"
-          class="px-8 py-3 bg-zinc-900 text-white hover:bg-[#FFCD4B] hover:text-black transition-colors rounded-full text-sm font-medium tracking-wide"
-        >
-          {{ getLabel('retry') }}
-        </button>
       </div>
-    </div>
-    <!-- Main Content - Full Width Map -->
-    <div v-else-if="apartments.length > 0" class="bg-white border border-zinc-100 hover:border-[#FFCD4B]/30 transition-all duration-500 overflow-hidden">
-      <InteractiveMapViewer
-        :image="apartmentStore.currentImage"
-        :zones="filteredApartments"
-        :selected-zone-id="selectedApartmentId"
-        @zone-click="handleApartmentClick"
-        @zone-hover="handleApartmentHover"
-      />
-    </div>
 
-    <!-- Empty State -->
-    <div v-else class="empty-state">
-      <div class="text-center max-w-md mx-auto py-20">
-        <div class="text-5xl mb-6">🏢</div>
-        <h2 class="text-xl font-light text-zinc-900 mb-3">{{ getLabel('no_apartments') }}</h2>
-        <p class="text-base text-zinc-600 font-light">{{ getLabel('no_apartments_desc') }}</p>
+      <!-- Error State -->
+      <div v-else-if="apartmentStore.error" :key="'error'" class="error-display">
+        <div class="text-center max-w-md mx-auto py-20">
+          <div class="w-16 h-16 bg-red-50 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">
+            !
+          </div>
+          <h2 class="text-xl font-light text-zinc-900 mb-3">{{ getLabel('error') }}</h2>
+          <p class="text-sm text-zinc-500 mb-8 font-light leading-relaxed">{{ apartmentStore.error }}</p>
+          <button
+            @click="loadData"
+            class="px-8 py-3 bg-zinc-900 text-white hover:bg-[#FFCD4B] hover:text-black transition-colors rounded-full text-sm font-medium tracking-wide"
+          >
+            {{ getLabel('retry') }}
+          </button>
+        </div>
       </div>
-    </div>
+
+      <!-- Main Content - Full Width Map -->
+      <div
+        v-else-if="apartmentStore.currentImage || apartments.length > 0"
+        :key="'content'"
+        class="bg-zinc-50 border border-zinc-100 transition-all duration-500 overflow-hidden relative"
+        :style="containerStyle"
+      >
+        <InteractiveMapViewer
+          :image="apartmentStore.currentImage"
+          :zones="filteredApartments"
+          :selected-zone-id="selectedApartmentId"
+          @zone-click="handleApartmentClick"
+          @zone-hover="handleApartmentHover"
+          class="w-full h-full"
+        />
+      </div>
+
+      <!-- Empty State -->
+      <div v-else :key="'empty'" class="empty-state">
+        <div class="text-center max-w-md mx-auto py-20">
+          <div class="text-5xl mb-6">🏢</div>
+          <h2 class="text-xl font-light text-zinc-900 mb-3">{{ getLabel('no_apartments') }}</h2>
+          <p class="text-base text-zinc-600 font-light">{{ getLabel('no_apartments_desc') }}</p>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -179,6 +188,28 @@ const filteredApartments = computed(() => {
     return apartments.value.filter((apt) => apt.status === 'available')
   }
   return apartments.value
+})
+
+// Calculate aspect ratio from viewbox to prevent layout shift
+const containerStyle = computed(() => {
+  const image = apartmentStore.currentImage
+  if (!image?.viewbox) return { minHeight: '500px' }
+
+  // Parse viewbox: "x y width height"
+  const viewboxParts = image.viewbox.split(' ')
+  if (viewboxParts.length === 4) {
+    const width = parseFloat(viewboxParts[2])
+    const height = parseFloat(viewboxParts[3])
+    if (width && height) {
+      const aspectRatio = width / height
+      return {
+        aspectRatio: aspectRatio.toString(),
+      }
+    }
+  }
+
+  // Fallback to min-height if viewbox parsing fails
+  return { minHeight: '500px' }
 })
 
 async function loadData() {

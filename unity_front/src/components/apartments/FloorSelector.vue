@@ -13,61 +13,65 @@
       </button>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="apartmentStore.isLoading" class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-      <div class="text-center">
-        <div class="inline-block animate-spin rounded-full h-12 w-12 border-2 border-transparent border-t-[#FFCD4B] mb-6"></div>
-        <p class="text-lg text-[#FFCD4B] font-light uppercase tracking-wider">{{ t('common.loading') }}</p>
+    <Transition name="fade-staged" mode="out-in">
+      <!-- Loading State -->
+      <div v-if="apartmentStore.isLoading" :key="'loading'" class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+        <div class="text-center">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-2 border-transparent border-t-[#FFCD4B] mb-6"></div>
+          <p class="text-lg text-[#FFCD4B] font-light uppercase tracking-wider">{{ t('common.loading') }}</p>
+        </div>
       </div>
-    </div>
 
-    <!-- Error State -->
-    <div v-else-if="apartmentStore.error" class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-      <div class="text-center max-w-md mx-auto">
-        <div class="text-5xl mb-6">⚠️</div>
-        <h2 class="text-xl font-light text-zinc-900 mb-3">{{ t('apartments.error_loading') }}</h2>
-        <p class="text-base text-zinc-600 mb-8 font-light">{{ apartmentStore.error }}</p>
-        <button
-          @click="loadData"
-          class="px-8 py-3 bg-black text-[#FFCD4B] font-light text-sm uppercase tracking-wider transition-all duration-300 hover:bg-zinc-900"
+      <!-- Error State -->
+      <div v-else-if="apartmentStore.error" :key="'error'" class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+        <div class="text-center max-w-md mx-auto">
+          <div class="text-5xl mb-6">⚠️</div>
+          <h2 class="text-xl font-light text-zinc-900 mb-3">{{ t('apartments.error_loading') }}</h2>
+          <p class="text-base text-zinc-600 mb-8 font-light">{{ apartmentStore.error }}</p>
+          <button
+            @click="loadData"
+            class="px-8 py-3 bg-black text-[#FFCD4B] font-light text-sm uppercase tracking-wider transition-all duration-300 hover:bg-zinc-900"
+          >
+            {{ t('buttons.retry') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div v-else-if="apartmentStore.currentImage || floorZones.length > 0" :key="'content'" class="w-full max-w-[1400px] mx-auto px-0 lg:px-4">
+        <!-- Interactive Map -->
+        <div
+          ref="mapElement"
+          :class="[
+            'bg-zinc-50 overflow-hidden transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 relative',
+            {
+              'opacity-100 translate-y-0 scale-100 blur-0': mapVisible,
+              'opacity-0 translate-y-12 scale-95 blur-sm': !mapVisible,
+              'min-h-[500px] lg:min-h-[600px]': !containerStyle.aspectRatio,
+            }
+          ]"
+          :style="containerStyle"
         >
-          {{ t('buttons.retry') }}
-        </button>
+          <InteractiveMapViewer
+            :image="apartmentStore.currentImage"
+            :zones="floorZones"
+            :selected-zone-id="selectedFloorId"
+            :hovered-zone="hoveredFloor"
+            @zone-click="handleFloorClick"
+            @zone-hover="handleFloorHover"
+          />
+        </div>
       </div>
-    </div>
 
-    <!-- Main Content -->
-    <div v-else-if="floorZones.length > 0" class="w-full max-w-[1400px] mx-auto px-0 lg:px-4">
-      <!-- Interactive Map -->
-      <div
-        ref="mapElement"
-        :class="[
-          'bg-white overflow-hidden transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100',
-          {
-            'opacity-100 translate-y-0 scale-100 blur-0': mapVisible,
-            'opacity-0 translate-y-12 scale-95 blur-sm': !mapVisible,
-          }
-        ]"
-      >
-        <InteractiveMapViewer
-          :image="apartmentStore.currentImage"
-          :zones="floorZones"
-          :selected-zone-id="selectedFloorId"
-          :hovered-zone="hoveredFloor"
-          @zone-click="handleFloorClick"
-          @zone-hover="handleFloorHover"
-        />
+      <!-- Empty State (Only show if loaded and truly empty) -->
+      <div v-else :key="'empty'" class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+        <div class="text-center max-w-md mx-auto py-20">
+          <div class="text-5xl mb-6">🏢</div>
+          <h2 class="text-xl font-light text-zinc-900 mb-3">{{ t('apartments.no_floors') }}</h2>
+          <p class="text-base text-zinc-600 font-light">{{ t('apartments.no_floors_description') }}</p>
+        </div>
       </div>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
-      <div class="text-center max-w-md mx-auto">
-        <div class="text-5xl mb-6">🏢</div>
-        <h2 class="text-xl font-light text-zinc-900 mb-3">{{ t('apartments.no_floors') }}</h2>
-        <p class="text-base text-zinc-600 font-light">{{ t('apartments.no_floors_description') }}</p>
-      </div>
-    </div>
+    </Transition>
   </section>
 </template>
 
@@ -115,6 +119,28 @@ const floorZones = computed(() => {
 const hoveredFloor = computed(() => {
   if (!hoveredFloorId.value) return null
   return floorZones.value.find(z => z.id === hoveredFloorId.value) || null
+})
+
+// Calculate aspect ratio from viewbox to prevent layout shift
+const containerStyle = computed(() => {
+  const image = apartmentStore.currentImage
+  if (!image?.viewbox) return {}
+
+  // Parse viewbox: "x y width height"
+  const viewboxParts = image.viewbox.split(' ')
+  if (viewboxParts.length === 4) {
+    const width = parseFloat(viewboxParts[2])
+    const height = parseFloat(viewboxParts[3])
+    if (width && height) {
+      const aspectRatio = width / height
+      return {
+        aspectRatio: aspectRatio.toString(),
+      }
+    }
+  }
+
+  // Fallback to min-height if viewbox parsing fails
+  return {}
 })
 
 async function loadData() {
