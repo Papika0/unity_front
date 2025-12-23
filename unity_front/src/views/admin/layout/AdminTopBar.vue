@@ -18,8 +18,25 @@
         </h2>
       </div>
 
+      <!-- Language Switcher -->
+      <div class="mr-2 sm:mr-4 flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
+        <button
+          v-for="locale in (['en', 'ka', 'ru'] as const)"
+          :key="locale"
+          @click="localeStore.setLocale(locale)"
+          :class="[
+            'px-2 py-1 text-xs font-medium rounded-md transition-all duration-200',
+            localeStore.currentLocale === locale
+              ? 'bg-white text-amber-600 shadow-sm ring-1 ring-black/5'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+          ]"
+        >
+          {{ locale.toUpperCase() }}
+        </button>
+      </div>
+
       <!-- User menu -->
-      <div class="ml-2 sm:ml-4 flex items-center md:ml-6 user-menu-container">
+      <div class="flex items-center user-menu-container">
         <div class="relative">
           <button
             @click="emit('toggle-user-menu')"
@@ -77,8 +94,10 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTranslationsStore } from '@/stores/ui/translations'
+import { useLocaleStore } from '@/stores/ui/locale'
 
 const translationsStore = useTranslationsStore()
+const localeStore = useLocaleStore()
 
 defineProps<{
   user: { name?: string; email?: string } | null

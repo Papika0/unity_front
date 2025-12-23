@@ -105,37 +105,37 @@
 
              <!-- Image Display -->
              <div class="w-full aspect-[4/3] flex items-center justify-center cursor-pointer relative" @click="openLightbox">
-               <Transition name="fade" mode="out-in">
-                 <!-- 2D Image -->
-                 <img 
-                   v-if="viewMode === '2d' && apartment.image_2d?.url" 
-                   :key="'2d'"
-                   :src="apartment.image_2d.url" 
-                   :alt="`${apartment.apartment_number} - 2D`" 
-                   class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700 absolute"
-                 >
-                 <!-- 3D Image -->
-                 <img 
-                   v-else-if="viewMode === '3d' && apartment.image_3d?.url" 
-                   :key="'3d'"
-                   :src="apartment.image_3d.url" 
-                   :alt="`${apartment.apartment_number} - 3D`" 
-                   class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700 absolute"
-                 >
-                 <!-- Fallback to floor_plan_image -->
-                 <img 
-                   v-else-if="apartment.floor_plan_image" 
-                   :key="'plan'"
-                   :src="apartment.floor_plan_image" 
-                   :alt="`Apartment ${apartment.apartment_number}`" 
-                   class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700 absolute"
-                 >
-                 <!-- No image placeholder -->
-                 <div v-else key="empty" class="flex flex-col items-center justify-center absolute inset-0">
-                   <svg class="w-16 h-16 text-zinc-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                   <p class="text-zinc-400 font-light text-sm">{{ t('apartments.no_image') }}</p>
-                 </div>
-               </Transition>
+              <Transition :name="transitionName">
+                <!-- 2D Image -->
+                <img 
+                  v-if="viewMode === '2d' && apartment.image_2d?.url" 
+                  :key="'2d'"
+                  :src="apartment.image_2d.url" 
+                  :alt="`${apartment.apartment_number} - 2D`" 
+                  class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700 absolute inset-0 m-auto"
+                >
+                <!-- 3D Image -->
+                <img 
+                  v-else-if="viewMode === '3d' && apartment.image_3d?.url" 
+                  :key="'3d'"
+                  :src="apartment.image_3d.url" 
+                  :alt="`${apartment.apartment_number} - 3D`" 
+                  class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700 absolute inset-0 m-auto"
+                >
+                <!-- Fallback to floor_plan_image -->
+                <img 
+                  v-else-if="apartment.floor_plan_image" 
+                  :key="'plan'"
+                  :src="apartment.floor_plan_image" 
+                  :alt="`Apartment ${apartment.apartment_number}`" 
+                  class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700 absolute inset-0 m-auto"
+                >
+                <!-- No image placeholder -->
+                <div v-else key="empty" class="flex flex-col items-center justify-center absolute inset-0 m-auto">
+                  <svg class="w-16 h-16 text-zinc-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <p class="text-zinc-400 font-light text-sm">{{ t('apartments.no_image') }}</p>
+                </div>
+              </Transition>
              </div>
 
              <!-- Click to expand hint -->
@@ -453,6 +453,17 @@ const emit = defineEmits<{
 
 // View mode for 2D/3D toggle
 const viewMode = ref<'2d' | '3d'>('2d')
+const transitionName = ref('view-fade')
+
+watch(viewMode, (newVal, oldVal) => {
+  if (newVal === '3d' && oldVal === '2d') {
+    transitionName.value = 'view-slide-left'
+  } else if (newVal === '2d' && oldVal === '3d') {
+    transitionName.value = 'view-slide-right'
+  } else {
+    transitionName.value = 'view-fade'
+  }
+})
 
 // Lightbox state
 const lightboxOpen = ref(false)
@@ -932,8 +943,50 @@ async function downloadPDF() {
   opacity: 0;
 }
 
+
 .lightbox-enter-from img,
 .lightbox-leave-to img {
   transform: scale(0.9);
+}
+
+
+/* View Switch Transitions */
+
+/* Slide Left (Going to 3D) */
+.view-slide-left-enter-active,
+.view-slide-left-leave-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.view-slide-left-enter-from {
+  opacity: 0;
+  transform: translateX(100%) scale(0.9);
+}
+.view-slide-left-leave-to {
+  opacity: 0;
+  transform: translateX(-100%) scale(0.9);
+}
+
+/* Slide Right (Going back to 2D) */
+.view-slide-right-enter-active,
+.view-slide-right-leave-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.view-slide-right-enter-from {
+  opacity: 0;
+  transform: translateX(-100%) scale(0.9);
+}
+.view-slide-right-leave-to {
+  opacity: 0;
+  transform: translateX(100%) scale(0.9);
+}
+
+/* Fade Fallback */
+.view-fade-enter-active,
+.view-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.view-fade-enter-from,
+.view-fade-leave-to {
+  opacity: 0;
 }
 </style>

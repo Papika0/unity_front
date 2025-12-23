@@ -54,6 +54,26 @@
                 @click="emit('close')"
               />
             </div>
+
+            <!-- Language Switcher (Mobile) -->
+            <div class="pt-4 mt-4 border-t border-slate-200 px-4 pb-4">
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Language</p>
+              <div class="flex items-center space-x-2">
+                <button
+                  v-for="locale in (['en', 'ka', 'ru'] as const)"
+                  :key="locale"
+                  @click="localeStore.setLocale(locale)"
+                  :class="[
+                    'px-3 py-2 text-sm font-medium rounded-md w-full transition-all duration-200 border',
+                    localeStore.currentLocale === locale
+                      ? 'bg-amber-50 text-amber-700 border-amber-200 shadow-sm'
+                      : 'text-slate-600 bg-white border-slate-200 hover:text-slate-900 hover:bg-slate-50'
+                  ]"
+                >
+                  {{ locale.toUpperCase() }}
+                </button>
+              </div>
+            </div>
           </nav>
         </div>
       </div>
@@ -63,10 +83,12 @@
 
 <script setup lang="ts">
 import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useLocaleStore } from '@/stores/ui/locale'
 import MobileNavLink from './MobileNavLink.vue'
 import type { NavItem } from './navigation'
 
 const { t } = useTranslations()
+const localeStore = useLocaleStore()
 
 defineProps<{
   isAdmin: boolean
