@@ -94,7 +94,6 @@ export function useApartmentEditor() {
       const response = await adminApartmentsApi.getAll(Number(projectId.value), Number(buildingId.value), { floor_number: floorNumber.value })
       apartments.value = response.data.data || response.data
       
-      console.log('Loaded apartments for floor', floorNumber.value, ':', apartments.value)
     } catch (error) {
       console.error('Failed to load apartments:', error)
       apartments.value = []
@@ -116,26 +115,21 @@ export function useApartmentEditor() {
       })
 
       const images = response.data.data || response.data
-      console.log('Zone images response:', images)
       
       if (images && images.length > 0) {
         const zoneImage = images[0]
-        console.log('Selected zone image:', zoneImage)
         
         if (zoneImage.images && zoneImage.images.length > 0) {
           const imageData = zoneImage.images[0]
           backgroundImageUrl.value = imageData.full_url || imageData.url
-          console.log('Image URL:', backgroundImageUrl.value)
         }
 
         if (zoneImage.viewbox) {
           const [, , w, h] = zoneImage.viewbox.split(' ').map(Number)
           imageWidth.value = w
           imageHeight.value = h
-          console.log('Image dimensions:', w, 'x', h)
         }
       } else {
-        console.log('No zone images found for floor', floorNumber.value)
       }
     } catch (error) {
       console.error('Failed to load zone image:', error)
@@ -157,7 +151,6 @@ export function useApartmentEditor() {
       })
 
       const data = response.data.data || response.data
-      console.log('🎯 LoadZones - Raw API response:', data)
       
       zones.value = (data || []).map((zone: ZoneResponse) => ({
         id: `zone-${zone.id}`,
@@ -170,8 +163,6 @@ export function useApartmentEditor() {
         selected: false,
       }))
       
-      console.log('🎯 LoadZones - Mapped zones:', zones.value)
-      console.log('🎯 LoadZones - Zone count:', zones.value.length)
     } catch (error) {
       console.error('Failed to load zones:', error)
       zones.value = []

@@ -833,7 +833,6 @@ async function downloadPDF() {
       try {
         // Use proxy URL to avoid CORS issues
         const proxyUrl = getProxyImageUrl(imageUrl)
-        console.log('Loading image via proxy:', proxyUrl)
         
         const img = new Image()
         img.crossOrigin = 'anonymous'
@@ -887,7 +886,6 @@ async function downloadPDF() {
     }
     
     // Debug: Log image URLs
-    console.log('PDF Image URLs:', {
       image_2d: apt.image_2d?.url,
       image_3d: apt.image_3d?.url,
       floor_plan: apt.floor_plan_image
@@ -895,19 +893,16 @@ async function downloadPDF() {
     
     // Add 2D image if available (using English title since jsPDF doesn't support Georgian)
     if (apt.image_2d?.url) {
-      console.log('Adding 2D image...')
       await addImagePage(apt.image_2d.url, '2D Floor Plan')
     }
     
     // Add 3D image if available
     if (apt.image_3d?.url) {
-      console.log('Adding 3D image...')
       await addImagePage(apt.image_3d.url, '3D Render')
     }
     
     // If no 2D/3D but has floor plan, add that
     if (!apt.image_2d?.url && !apt.image_3d?.url && apt.floor_plan_image) {
-      console.log('Adding floor plan image...')
       await addImagePage(apt.floor_plan_image, 'Floor Plan')
     }
     
