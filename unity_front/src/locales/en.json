@@ -35,7 +35,25 @@
         "bathrooms": "Bathrooms",
         "balcony": "Balcony",
         "no_plan_image": "No plan image available",
+        "no_image": "No image available",
         "detail_coming_soon": "Details coming soon...",
+        "image_2d": "2D Floor Plan",
+        "image_3d": "3D Render",
+        "view_2d": "2D View",
+        "view_3d": "3D View",
+        "batch_upload_images": "Batch Upload Images",
+        "click_to_expand": "Click to expand",
+        "click_to_close": "Click anywhere to close",
+        "zoom_in": "Zoom in",
+        "zoom_out": "Zoom out",
+        "reset_zoom": "Reset zoom",
+        "scroll_to_zoom": "Scroll to zoom",
+        "drag_to_pan": "Drag to pan",
+        "request_call": "Request a call",
+        "generating_pdf": "Generating PDF...",
+        "pdf_generated": "PDF Generated",
+        "pdf_download_started": "Download started",
+        "pdf_error": "Failed to generate PDF",
         "rooms": {
             "dimensions": "Room Dimensions",
             "bedroom": "Bedroom",
@@ -223,7 +241,9 @@
             "success": "Success",
             "error": "Error",
             "view": "View",
-            "dangerous": "Dangerous"
+            "dangerous": "Dangerous",
+            "uploading": "Uploading...",
+            "upload_success": "Upload successful"
         },
         "errors": {
             "loading_failed": "Loading failed",
@@ -578,6 +598,19 @@
                 "imported": "Imported: {count} apartments",
                 "finish": "Finish",
                 "row": "Row",
+                "errors": "Errors"
+            },
+            "batch_upload": {
+                "instructions_title": "Upload Instructions",
+                "instruction_1": "Folder structure should be: floor/apartment/2d.jpg or 3d.jpg",
+                "instruction_2": "File name should contain '2D' or '3D' to indicate type",
+                "instruction_3": "Floor and apartment numbers are extracted from file names",
+                "select_folder": "Select Folder",
+                "files_selected": "{count} files selected",
+                "and_more": "and {count} more files",
+                "result": "Result",
+                "uploaded": "Uploaded: {count}",
+                "failed": "Failed: {count}",
                 "errors": "Errors"
             }
         },

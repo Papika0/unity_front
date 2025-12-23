@@ -35,7 +35,25 @@
         "bathrooms": "სველი წერტილები",
         "balcony": "აივანი",
         "no_plan_image": "გეგმარება არ არის ხელმისაწვდომი",
+        "no_image": "სურათი არ არის ხელმისაწვდომი",
         "detail_coming_soon": "დეტალები მალე დაემატება...",
+        "image_2d": "2D გეგმა",
+        "image_3d": "3D რენდერი",
+        "view_2d": "2D ხედი",
+        "view_3d": "3D ხედი",
+        "batch_upload_images": "ფოტოების ჯგუფური ატვირთვა",
+        "click_to_expand": "დააჭირეთ გასადიდებლად",
+        "click_to_close": "დააჭირეთ დასახურად",
+        "zoom_in": "გადიდება",
+        "zoom_out": "დაპატარავება",
+        "reset_zoom": "გადატვირთვა",
+        "scroll_to_zoom": "გაახვიეთ გასადიდებლად",
+        "drag_to_pan": "გადაათრიეთ გადასატანად",
+        "request_call": "ზარის მოთხოვნა",
+        "generating_pdf": "იქმნება PDF...",
+        "pdf_generated": "PDF შექმნილია",
+        "pdf_download_started": "ფაილი იტვირთება",
+        "pdf_error": "PDF-ის შექმნა ვერ მოხერხდა",
         "rooms": {
             "dimensions": "ოთახების ზომები",
             "bedroom": "საძინებელი",
@@ -223,7 +241,9 @@
             "success": "წარმატება",
             "error": "შეცდომა",
             "view": "ნახვა",
-            "dangerous": "საშიში"
+            "dangerous": "საშიში",
+            "uploading": "იტვირთება...",
+            "upload_success": "წარმატებით აიტვირთა"
         },
         "errors": {
             "loading_failed": "ჩატვირთვა ვერ მოხერხდა",
@@ -578,6 +598,19 @@
                 "imported": "იმპორტირებულია: {count} ბინა",
                 "finish": "დასრულება",
                 "row": "რიგი",
+                "errors": "შეცდომები"
+            },
+            "batch_upload": {
+                "instructions_title": "ატვირთვის ინსტრუქცია",
+                "instruction_1": "საქაღალდეს უნდა ჰქონდეს სტრუქტურა: სართული/ბინა/2d.jpg ან 3d.jpg",
+                "instruction_2": "ფაილის სახელში უნდა იყოს '2D' ან '3D' ტიპის აღსანიშნავად",
+                "instruction_3": "სართულის და ბინის ნომრები ამოიღება ფაილების სახელიდან",
+                "select_folder": "აირჩიეთ საქაღალდე",
+                "files_selected": "არჩეულია {count} ფაილი",
+                "and_more": "და კიდევ {count} ფაილი",
+                "result": "შედეგი",
+                "uploaded": "ატვირთულია: {count}",
+                "failed": "ვერ ატვირთვა: {count}",
                 "errors": "შეცდომები"
             }
         },

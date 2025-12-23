@@ -74,4 +74,45 @@ export const adminApartmentsApi = {
       responseType: 'blob',
     })
   },
+
+  /**
+   * Upload 2D/3D images for an apartment
+   */
+  uploadImages: async (apartmentId: number, image2d?: File | null, image3d?: File | null) => {
+    const formData = new FormData()
+    if (image2d) formData.append('image_2d', image2d)
+    if (image3d) formData.append('image_3d', image3d)
+
+    return api.post(`/admin/apartments/${apartmentId}/images`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
+
+  /**
+   * Delete an image from an apartment
+   */
+  deleteImage: async (apartmentId: number, imageId: number) => {
+    return api.delete(`/admin/apartments/${apartmentId}/images/${imageId}`)
+  },
+
+  /**
+   * Batch upload images from folder structure
+   */
+  batchUploadImages: async (projectId: number, buildingId: number, files: FileList) => {
+    const formData = new FormData()
+    
+    Array.from(files).forEach((file, index) => {
+      // Use webkitRelativePath if available (folder upload), otherwise use name
+      const path = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name
+      formData.append(`files[${index}]`, file, path)
+    })
+
+    return api.post(
+      `/admin/projects/${projectId}/buildings/${buildingId}/apartments/batch-images`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      },
+    )
+  },
 }

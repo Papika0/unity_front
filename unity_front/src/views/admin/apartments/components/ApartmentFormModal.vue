@@ -240,6 +240,69 @@
           </div>
         </div>
 
+        <!-- Apartment Images Section (only in edit mode) -->
+        <div v-if="isEdit" class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+          <label class="block text-sm font-medium text-slate-700 mb-3">{{ t('apartments.image_2d') }} / {{ t('apartments.image_3d') }}</label>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <!-- 2D Image -->
+            <div>
+              <label class="block text-xs text-slate-500 mb-2">{{ t('apartments.image_2d') }}</label>
+              <div v-if="preview2d || props.apartment?.image_2d?.url" class="relative mb-2">
+                <img 
+                  :src="preview2d || props.apartment?.image_2d?.url" 
+                  :alt="t('apartments.image_2d')"
+                  class="w-full h-32 object-cover rounded-lg border border-slate-200"
+                />
+                <button
+                  type="button"
+                  @click="remove2d"
+                  class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                  :title="t('admin.common.delete')"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                @change="handle2dChange"
+                class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+              />
+            </div>
+
+            <!-- 3D Image -->
+            <div>
+              <label class="block text-xs text-slate-500 mb-2">{{ t('apartments.image_3d') }}</label>
+              <div v-if="preview3d || props.apartment?.image_3d?.url" class="relative mb-2">
+                <img 
+                  :src="preview3d || props.apartment?.image_3d?.url" 
+                  :alt="t('apartments.image_3d')"
+                  class="w-full h-32 object-cover rounded-lg border border-slate-200"
+                />
+                <button
+                  type="button"
+                  @click="remove3d"
+                  class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                  :title="t('admin.common.delete')"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                @change="handle3dChange"
+                class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+              />
+            </div>
+          </div>
+        </div>
+
         <!-- Error Message -->
         <div v-if="error" class="bg-red-50 border border-red-200 rounded-xl p-4">
           <p class="text-red-600 text-sm">{{ error }}</p>
@@ -273,6 +336,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useApartmentsAdminStore } from '@/stores/admin/apartments'
 import { useToast } from '@/composables/ui/useToast'
 import { useTranslations } from '@/composables/i18n/useTranslations'
+import { adminApartmentsApi } from '@/services/adminApartmentsApi'
 import type { Apartment, Building, RoomDetails } from '@/types/apartments'
 
 interface Props {
@@ -340,6 +404,60 @@ const form = ref({
 const isSubmitting = ref(false)
 const error = ref('')
 
+// Image upload state
+const image2dFile = ref<File | null>(null)
+const image3dFile = ref<File | null>(null)
+const preview2d = ref<string | null>(null)
+const preview3d = ref<string | null>(null)
+
+function handle2dChange(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (file) {
+    image2dFile.value = file
+    preview2d.value = URL.createObjectURL(file)
+  }
+}
+
+function handle3dChange(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (file) {
+    image3dFile.value = file
+    preview3d.value = URL.createObjectURL(file)
+  }
+}
+
+async function remove2d() {
+  // If there's an existing image on the server, delete it
+  if (props.apartment?.image_2d?.id) {
+    try {
+      await adminApartmentsApi.deleteImage(props.apartment.id, props.apartment.image_2d.id)
+      success(t('admin.messages.delete_success'))
+    } catch (err) {
+      showError(t('admin.errors.delete_error'))
+    }
+  }
+  // Clear local state
+  image2dFile.value = null
+  preview2d.value = null
+}
+
+async function remove3d() {
+  // If there's an existing image on the server, delete it
+  if (props.apartment?.image_3d?.id) {
+    try {
+      await adminApartmentsApi.deleteImage(props.apartment.id, props.apartment.image_3d.id)
+      success(t('admin.messages.delete_success'))
+    } catch (err) {
+      showError(t('admin.errors.delete_error'))
+    }
+  }
+  // Clear local state
+  image3dFile.value = null
+  preview3d.value = null
+}
+
 onMounted(() => {
   // Add keyboard listener for ESC
   window.addEventListener('keydown', handleKeydown)
@@ -366,6 +484,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
+  // Clean up object URLs
+  if (preview2d.value) URL.revokeObjectURL(preview2d.value)
+  if (preview3d.value) URL.revokeObjectURL(preview3d.value)
 })
 
 async function handleSubmit() {
@@ -396,13 +517,28 @@ async function handleSubmit() {
       has_parking: form.value.is_parking,
     }
 
+    let apartmentId: number
+
     if (isEdit.value && props.apartment) {
       await apartmentsStore.updateApartment(props.apartment.id, payload)
+      apartmentId = props.apartment.id
       success(t('admin.messages.update_success'))
     } else {
-      await apartmentsStore.createApartment(props.projectId, form.value.building_id, payload)
+      const result = await apartmentsStore.createApartment(props.projectId, form.value.building_id, payload)
+      apartmentId = result.data?.id || result.id
       success(t('admin.messages.create_success'))
     }
+
+    // Upload images if any were selected
+    if (image2dFile.value || image3dFile.value) {
+      try {
+        await adminApartmentsApi.uploadImages(apartmentId, image2dFile.value, image3dFile.value)
+      } catch (err) {
+        // Don't fail the whole operation if image upload fails
+        console.error('Image upload failed:', err)
+      }
+    }
+
     emit('saved')
   } catch (err: unknown) {
     const apiError = err as { response?: { data?: { message?: string } }; message?: string }

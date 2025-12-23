@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Apartment extends Model
 {
@@ -92,5 +93,31 @@ class Apartment extends Model
     public function scopeByFloor(Builder $query, int $floorNumber): Builder
     {
         return $query->where('floor_number', $floorNumber);
+    }
+
+    /**
+     * Get all images for the apartment.
+     */
+    public function images(): MorphToMany
+    {
+        return $this->morphToMany(Image::class, 'imageable', 'imageables');
+    }
+
+    /**
+     * Get the 2D floor plan image.
+     */
+    public function image2d(): MorphToMany
+    {
+        return $this->morphToMany(Image::class, 'imageable', 'imageables')
+            ->wherePivot('type', '2d');
+    }
+
+    /**
+     * Get the 3D render image.
+     */
+    public function image3d(): MorphToMany
+    {
+        return $this->morphToMany(Image::class, 'imageable', 'imageables')
+            ->wherePivot('type', '3d');
     }
 }

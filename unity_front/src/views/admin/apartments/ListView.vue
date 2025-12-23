@@ -7,7 +7,11 @@
           <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent break-words leading-tight py-1">{{ t('admin.sidebar.apartments') }}</h1>
           <p class="mt-2 text-slate-600 text-sm sm:text-base md:text-lg">{{ t('admin.sidebar.apartments') }}</p>
         </div>
-        <div class="flex-shrink-0 flex gap-2">
+        <div class="flex-shrink-0 flex gap-2 flex-wrap">
+          <button @click="showBatchImageUpload = true" :disabled="!selectedProjectId || !selectedBuildingId" class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base disabled:opacity-50">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            {{ t('apartments.batch_upload_images') }}
+          </button>
           <button @click="showImportModal = true" :disabled="!selectedProjectId" class="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base disabled:opacity-50">
             <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
             {{ t('admin.common.upload') }}
@@ -131,16 +135,30 @@
 
     <!-- Import Modal -->
     <ApartmentImportModal v-if="showImportModal" :project-id="selectedProjectId" :buildings="buildings" @close="showImportModal = false" @imported="handleImported" />
+
+    <!-- Batch Image Upload Modal -->
+    <ApartmentBatchImageUploadModal
+      :show="showBatchImageUpload"
+      :project-id="selectedProjectId"
+      :building-id="selectedBuildingId"
+      @close="showBatchImageUpload = false"
+      @uploaded="handleBatchImageUploaded"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 import ApartmentFormModal from './components/ApartmentFormModal.vue'
 import ApartmentImportModal from './components/ApartmentImportModal.vue'
+import ApartmentBatchImageUploadModal from './components/ApartmentBatchImageUploadModal.vue'
 import { useApartmentsList } from './composables'
 
 const { t } = useTranslations()
+
+// Batch image upload state
+const showBatchImageUpload = ref(false)
 
 const {
   apartmentsStore,
@@ -167,4 +185,10 @@ const {
   getStatusLabel,
   formatPrice,
 } = useApartmentsList()
+
+// Handle batch image upload completion
+function handleBatchImageUploaded() {
+  loadApartments()
+  showBatchImageUpload.value = false
+}
 </script>
