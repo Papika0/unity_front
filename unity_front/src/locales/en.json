@@ -8,7 +8,9 @@
         "no": "No",
         "price_on_request": "Price on request",
         "contact_us": "Contact Us",
-        "download_pdf": "Download PDF"
+        "download_pdf": "Download PDF",
+        "share": "Share",
+        "link_copied": "Link copied to clipboard"
     },
     "status": {
         "available": "Available",

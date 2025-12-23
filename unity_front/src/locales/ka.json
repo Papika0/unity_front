@@ -8,7 +8,9 @@
         "no": "არა",
         "price_on_request": "ფასი მოთხოვნით",
         "contact_us": "დაგვიკავშირდით",
-        "download_pdf": "PDF ჩამოტვირთვა"
+        "download_pdf": "PDF ჩამოტვირთვა",
+        "share": "გაზიარება",
+        "link_copied": "ბმული კოპირებულია"
     },
     "status": {
         "available": "თავისუფალი",

@@ -78,7 +78,9 @@ const route = useRoute()
 const router = useRouter()
 
 const selectedFloor = ref<FloorZone | null>(null)
-const selectedApartmentId = ref<number | null>(null)
+const selectedApartmentId = ref<number | null>(
+  route.query.apartment ? Number(route.query.apartment) : null
+)
 
 // Handle apartment selection
 function handleSelectApartment(apartmentId: number) {
@@ -120,7 +122,10 @@ function handleChangeFloor(newFloorNumber: number) {
 // Handle floor selection
 function handleFloorSelected(floor: FloorZone) {
   selectedFloor.value = floor
-  selectedApartmentId.value = null
+  // Keep apartment selected if we are initializing from URL
+  if (!route.query.apartment || Number(route.query.apartment) !== selectedApartmentId.value) {
+    selectedApartmentId.value = null
+  }
   
   router.replace({
     query: {
@@ -173,7 +178,7 @@ watch(() => route.query, (newQuery) => {
   } else if (selectedApartmentId.value) {
     selectedApartmentId.value = null
   }
-}, { deep: true })
+}, { deep: true, immediate: true })
 
 // Initialize from URL on mount
 onMounted(() => {

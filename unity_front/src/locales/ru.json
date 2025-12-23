@@ -8,7 +8,9 @@
         "no": "Нет",
         "price_on_request": "Цена по запросу",
         "contact_us": "Связаться с нами",
-        "download_pdf": "Скачать PDF"
+        "download_pdf": "Скачать PDF",
+        "share": "Поделиться",
+        "link_copied": "Ссылка скопирована"
     },
     "status": {
         "available": "Свободно",

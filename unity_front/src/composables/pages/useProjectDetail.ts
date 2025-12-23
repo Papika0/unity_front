@@ -150,6 +150,17 @@ export function useProjectDetail() {
   
   const handleBuildingSelected = (building: BuildingZone) => {
     selectedBuilding.value = building
+    
+    // Check if this is a deep link initialization (same building already in URL)
+    const currentBuildingId = router.currentRoute.value.query.building
+    
+    if (currentBuildingId === building.building_identifier) {
+      // Preserve existing query params (floor, apartment) by NOT wiping the query
+      // Initial floor/apartment selection will be handled by the watchers in InlineApartmentViewer
+      return
+    }
+
+    // New building selection - clear other params
     selectedFloor.value = null
     router.replace({ query: { building: building.building_identifier } })
   }
