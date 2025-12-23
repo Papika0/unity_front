@@ -81,7 +81,7 @@ export const projectsApi = {
       success: boolean;
       data: {
         data: ProjectApiResponse;
-        translations?: Record<string, any>;
+        translations?: Record<string, unknown>;
         meta?: {
           locale: string;
           cached_at: string;

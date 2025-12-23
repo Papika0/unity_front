@@ -4,15 +4,13 @@ import type {
   NavigationLevel,
   NavigationResponse,
   ApartmentDetail,
-  BuildingZone,
   FloorZone,
-  ApartmentZone,
   ZoneImage,
 } from '@/types/apartments'
 import { apartmentNavigationApi } from '@/services/apartmentNavigationApi'
 
 export const useApartmentNavigationStore = defineStore('apartmentNavigation', () => {
-  // State
+  // ==================== STATE ====================
   const currentLevel = ref<NavigationLevel | null>(null)
   const currentProjectId = ref<number | null>(null)
   const currentBuildingId = ref<number | null>(null)
@@ -24,7 +22,7 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
   const minFloor = ref<number | null>(null)
   const maxFloor = ref<number | null>(null)
 
-  // Getters
+  // ==================== GETTERS ====================
   const hasMultipleBuildings = computed(() => {
     return navigationData.value?.has_multiple_buildings ?? false
   })
@@ -55,7 +53,7 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
     return navigationData.value?.project?.title ?? null
   })
 
-  // Actions
+  // ==================== ACTIONS ====================
   async function loadNavigation(
     projectId: number,
     level: NavigationLevel,
@@ -143,7 +141,8 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
     await loadNavigation(currentProjectId.value, level, buildingId, floorNumber)
   }
 
-  function reset() {
+  // ==================== RESET ====================
+  function $reset() {
     currentLevel.value = null
     currentProjectId.value = null
     currentBuildingId.value = null
@@ -168,7 +167,6 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
     selectedApartment,
     minFloor,
     maxFloor,
-
     // Getters
     hasMultipleBuildings,
     currentZones,
@@ -176,11 +174,10 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
     buildingIdentifier,
     buildingName,
     projectTitle,
-
     // Actions
     loadNavigation,
     loadApartmentDetail,
     navigateToLevel,
-    reset,
+    $reset,
   }
 })

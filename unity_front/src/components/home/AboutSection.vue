@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useTranslations } from '../../composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { RouterLink } from 'vue-router'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 
 const { t } = useTranslations()
 

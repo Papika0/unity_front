@@ -263,7 +263,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { adminImageApi, type AdminImage, type MultilingualText } from '@/services/adminImageApi'
+import { adminImageApi, type AdminImage } from '@/services/adminImageApi'
+import type { MultilingualText } from '@/services/contactApi'
 
 interface Props {
   image: AdminImage

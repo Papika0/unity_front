@@ -72,13 +72,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 import InteractiveMapViewer from './InteractiveMapViewer.vue'
-import type { FloorZone, FloorStats, BuildingZone, ApartmentZone } from '@/types/apartments'
+import type { FloorZone, BuildingZone, ApartmentZone } from '@/types/apartments'
 
 interface Props {
   projectId: number
@@ -112,10 +112,6 @@ const floorZones = computed(() => {
   return zones.filter((zone) => zone.type === 'floor_strip')
 })
 
-const sortedFloorZones = computed(() => {
-  return [...floorZones.value].sort((a, b) => b.floor_number - a.floor_number)
-})
-
 const hoveredFloor = computed(() => {
   if (!hoveredFloorId.value) return null
   return floorZones.value.find(z => z.id === hoveredFloorId.value) || null
@@ -145,10 +141,6 @@ async function loadData() {
   }
 }
 
-function handleBack() {
-  router.push(`/projects/${props.projectId}`)
-}
-
 function handleFloorClick(zone: FloorZone | ApartmentZone | BuildingZone) {
   // Only handle floor zones
   if ('floor_number' in zone && zone.type === 'floor_strip') {
@@ -168,31 +160,6 @@ function handleFloorHover(zone: FloorZone | ApartmentZone | BuildingZone | null)
     hoveredFloorId.value = zone.id
   } else {
     hoveredFloorId.value = null
-  }
-}
-
-function getFloorCardClass(zone: FloorZone): string {
-  const isHovered = hoveredFloorId.value === zone.id
-  const isSelected = selectedFloorId.value === zone.id
-
-  if (isSelected) {
-    return 'border-[#FFCD4B] bg-[#FFCD4B]/10 shadow-lg shadow-[#FFCD4B]/20'
-  }
-
-  if (isHovered) {
-    return 'border-[#FFCD4B]/50 bg-white/5'
-  }
-
-  return 'border-white/10 hover:border-[#FFCD4B]/30'
-}
-
-function getStatusIndicatorClass(stats: FloorStats): string {
-  if (stats.available === 0) {
-    return 'bg-zinc-500' // All sold/reserved
-  } else if (stats.available === stats.total) {
-    return 'bg-[#4ade80]' // All available
-  } else {
-    return 'bg-[#FFCD4B]' // Some available
   }
 }
 

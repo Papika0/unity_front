@@ -43,4 +43,14 @@ return [
 
     'floor_selection_meta_description' => 'დაათვალიერეთ ხელმისაწვდომი სართულები და ბინები',
     'apartment_selection_meta_description' => 'იხილეთ ხელმისაწვდომი ბინები ამ სართულზე',
+
+    // 2D/3D Images
+    'image_2d' => '2D გეგმა',
+    'image_3d' => '3D რენდერი',
+    'upload_2d_image' => '2D გეგმის ატვირთვა',
+    'upload_3d_image' => '3D რენდერის ატვირთვა',
+    'batch_upload_images' => 'ფოტოების ჯგუფური ატვირთვა',
+    'view_2d' => '2D ხედი',
+    'view_3d' => '3D ხედი',
+    'no_image' => 'სურათი არ არის ხელმისაწვდომი',
 ];

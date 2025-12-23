@@ -1,16 +1,6 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 
-// Define the interface for the environment variables
-interface ImportMetaEnv {
-  readonly VITE_API_URL: string
-}
-
-// Extend the import.meta type with the new env property
-interface ImportMeta {
-  readonly env: ImportMetaEnv
-}
-
 // Create an instance of axios with custom configuration
 const api: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL, // Use the environment variable for the base URL

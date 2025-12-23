@@ -43,4 +43,14 @@ return [
 
     'floor_selection_meta_description' => 'Browse available floors and apartments',
     'apartment_selection_meta_description' => 'View available apartments on this floor',
+
+    // 2D/3D Images
+    'image_2d' => '2D Floor Plan',
+    'image_3d' => '3D Render',
+    'upload_2d_image' => 'Upload 2D Floor Plan',
+    'upload_3d_image' => 'Upload 3D Render',
+    'batch_upload_images' => 'Batch Upload Images',
+    'view_2d' => '2D View',
+    'view_3d' => '3D View',
+    'no_image' => 'No image available',
 ];

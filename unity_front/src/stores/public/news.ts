@@ -28,7 +28,7 @@ interface PaginatedResponse {
 }
 
 export const useNewsStore = defineStore('news', () => {
-  // State
+  // ==================== STATE ====================
   const articles = ref<NewsArticle[]>([])
   const recentArticles = ref<NewsArticle[]>([])
   const featuredArticles = ref<NewsArticle[]>([])
@@ -44,8 +44,7 @@ export const useNewsStore = defineStore('news', () => {
     last_page: 1,
   })
 
-  // Getters
-
+  // ==================== GETTERS ====================
   const activeArticles = computed(() => articles.value.filter((article) => article.is_active))
 
   const categorizedArticles = computed(() => {
@@ -66,7 +65,7 @@ export const useNewsStore = defineStore('news', () => {
     return categorized
   })
 
-  // Actions
+  // ==================== ACTIONS ====================
   const loadArticles = async (params?: {
     category?: string
     featured?: boolean
@@ -259,6 +258,24 @@ export const useNewsStore = defineStore('news', () => {
     }
   }
 
+  // ==================== RESET ====================
+  const $reset = () => {
+    articles.value = []
+    recentArticles.value = []
+    featuredArticles.value = []
+    currentArticle.value = null
+    loading.value = false
+    error.value = ''
+    searchQuery.value = ''
+    selectedCategory.value = ''
+    pagination.value = {
+      total: 0,
+      per_page: 12,
+      current_page: 1,
+      last_page: 1,
+    }
+  }
+
   return {
     // State
     articles,
@@ -270,11 +287,9 @@ export const useNewsStore = defineStore('news', () => {
     searchQuery,
     selectedCategory,
     pagination,
-
     // Getters
     activeArticles,
     categorizedArticles,
-
     // Actions
     loadArticles,
     loadRecentArticles,
@@ -289,5 +304,6 @@ export const useNewsStore = defineStore('news', () => {
     clearCurrentArticle,
     initialize,
     $patch,
+    $reset,
   }
 })

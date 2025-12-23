@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { VueTelInput } from 'vue-tel-input'
-import { useTranslations } from '../../composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import 'vue-tel-input/vue-tel-input.css'
 
 interface Props {

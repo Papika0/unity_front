@@ -1,0 +1,6 @@
+export { default as NewsBasicInfo } from './NewsBasicInfo.vue'
+export { default as NewsDetails } from './NewsDetails.vue'
+export { default as NewsMedia } from './NewsMedia.vue'
+export { default as NewsTags } from './NewsTags.vue'
+export { default as NewsSEO } from './NewsSEO.vue'
+export { default as FieldError } from './FieldError.vue'

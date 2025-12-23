@@ -8,10 +8,10 @@
             <h1
               class="text-4xl font-light bg-gradient-to-r from-indigo-500 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2 tracking-tight"
             >
-              კონტაქტის პარამეტრები
+              {{ t('admin.contact_settings.title') }}
             </h1>
             <p class="text-slate-600 text-lg font-light">
-              მართეთ საკონტაქტო ინფორმაცია და პარამეტრები
+              {{ t('admin.contact_settings.subtitle') }}
             </p>
           </div>
         </div>
@@ -27,4 +27,7 @@
 
 <script setup lang="ts">
 import ContactSettingsForm from '@/components/admin/ContactSettingsForm.vue'
+import { useTranslations } from '@/composables/i18n/useTranslations'
+
+const { t } = useTranslations()
 </script>

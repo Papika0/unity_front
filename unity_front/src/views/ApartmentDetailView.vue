@@ -31,18 +31,18 @@
       :class="[isInline ? 'mt-4 lg:mt-8' : 'pt-24 lg:pt-32 pb-12 lg:pb-20 px-4 lg:px-6 min-h-screen']"
     >
       <!-- Loading State -->
-      <div v-if="apartmentStore.isLoading" class="w-full flex flex-col items-center justify-center min-h-[400px]">
+      <div v-if="isLoading" class="w-full flex flex-col items-center justify-center min-h-[400px]">
         <div class="w-12 h-12 border-2 border-zinc-200 border-t-[#FFCD4B] rounded-full animate-spin mb-4"></div>
         <p class="text-zinc-400 font-light tracking-widest uppercase text-sm">{{ t('common.loading') }}</p>
       </div>
 
       <!-- Error State -->
-      <div v-else-if="apartmentStore.error" class="w-full text-center py-20">
+      <div v-else-if="error" class="w-full text-center py-20">
         <div class="inline-block p-4 rounded-full bg-red-50 text-red-500 mb-4">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
         </div>
         <h2 class="text-xl font-light mb-2 text-zinc-900">{{ t('apartments.error_loading') }}</h2>
-        <p class="text-zinc-500 mb-6">{{ apartmentStore.error }}</p>
+        <p class="text-zinc-500 mb-6">{{ error }}</p>
         <button @click="loadData" class="px-6 py-2 bg-zinc-900 text-white hover:bg-[#FFCD4B] hover:text-black transition-colors rounded-full uppercase tracking-wider text-xs font-medium">
           {{ t('buttons.retry') }}
         </button>
@@ -75,13 +75,58 @@
                 </div>
              </div>
 
-             <!-- Image -->
-             <div v-if="apartment.floor_plan_image" class="w-full aspect-[4/3] flex items-center justify-center">
-                <img :src="apartment.floor_plan_image" :alt="`Apartment ${apartment.apartment_number}`" class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700">
+             <!-- 2D/3D Toggle (only show if both images exist) -->
+             <div v-if="apartment.image_2d?.url || apartment.image_3d?.url" class="absolute top-4 left-4 lg:top-6 lg:left-6 z-10 flex gap-1 bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-sm border border-zinc-200" :class="{ 'left-16 lg:left-20': isInline }">
+               <button
+                 @click="viewMode = '2d'"
+                 class="px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200"
+                 :class="viewMode === '2d' ? 'bg-[#FFCD4B] text-black' : 'text-zinc-500 hover:text-zinc-900'"
+               >
+                 {{ t('apartments.view_2d') }}
+               </button>
+               <button
+                 @click="viewMode = '3d'"
+                 class="px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200"
+                 :class="viewMode === '3d' ? 'bg-[#FFCD4B] text-black' : 'text-zinc-500 hover:text-zinc-900'"
+               >
+                 {{ t('apartments.view_3d') }}
+               </button>
              </div>
-             <div v-else class="w-full aspect-[4/3] flex flex-col items-center justify-center">
-                <svg class="w-16 h-16 text-zinc-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                <p class="text-zinc-400 font-light text-sm">{{ t('apartments.no_plan_image') }}</p>
+
+             <!-- Image Display -->
+             <div class="w-full aspect-[4/3] flex items-center justify-center cursor-pointer" @click="openLightbox">
+               <!-- 2D Image -->
+               <img 
+                 v-if="viewMode === '2d' && apartment.image_2d?.url" 
+                 :src="apartment.image_2d.url" 
+                 :alt="`${apartment.apartment_number} - 2D`" 
+                 class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700"
+               >
+               <!-- 3D Image -->
+               <img 
+                 v-else-if="viewMode === '3d' && apartment.image_3d?.url" 
+                 :src="apartment.image_3d.url" 
+                 :alt="`${apartment.apartment_number} - 3D`" 
+                 class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700"
+               >
+               <!-- Fallback to floor_plan_image -->
+               <img 
+                 v-else-if="apartment.floor_plan_image" 
+                 :src="apartment.floor_plan_image" 
+                 :alt="`Apartment ${apartment.apartment_number}`" 
+                 class="max-w-full max-h-full object-contain mix-blend-multiply filter hover:scale-105 transition-transform duration-700"
+               >
+               <!-- No image placeholder -->
+               <div v-else class="flex flex-col items-center justify-center">
+                 <svg class="w-16 h-16 text-zinc-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                 <p class="text-zinc-400 font-light text-sm">{{ t('apartments.no_image') }}</p>
+               </div>
+             </div>
+
+             <!-- Click to expand hint -->
+             <div v-if="currentImageUrl" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-zinc-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+               <span>{{ t('apartments.click_to_expand') }}</span>
              </div>
           </div>
         </div>
@@ -99,15 +144,6 @@
             <h1 class="text-4xl lg:text-6xl font-extralight tracking-tight text-zinc-900 mb-4 lg:mb-6">
               <span class="text-zinc-300 text-2xl lg:text-3xl mr-1 font-thin">N.</span>{{ apartment.apartment_number }}
             </h1>
-            
-            <!-- Price Block -->
-            <div class="inline-block">
-               <div class="text-zinc-400 text-[10px] uppercase tracking-widest mb-1">{{ t('apartments.price') }}</div>
-               <div class="text-3xl lg:text-4xl font-light text-zinc-900 tracking-tight">
-                 <span v-if="apartment.price">${{ formatPrice(apartment.price) }}</span>
-                 <span v-else class="text-xl text-zinc-500 uppercase">{{ t('common.price_on_request') }}</span>
-               </div>
-            </div>
           </div>
 
           <div class="w-12 h-px bg-[#FFCD4B]"></div>
@@ -117,7 +153,10 @@
             <!-- Total Area -->
             <div class="space-y-1">
               <div class="flex items-center gap-2 text-zinc-400 text-xs uppercase tracking-widest">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                <!-- Ruler/Expand icon -->
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/>
+                </svg>
                 {{ t('apartments.area_total') }}
               </div>
               <div class="text-2xl font-light text-zinc-900">
@@ -128,7 +167,10 @@
              <!-- Living Area -->
              <div class="space-y-1">
               <div class="flex items-center gap-2 text-zinc-400 text-xs uppercase tracking-widest">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                <!-- Home/House icon -->
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+                </svg>
                 {{ t('apartments.area_living') }}
               </div>
               <div class="text-2xl font-light text-zinc-900">
@@ -139,7 +181,10 @@
             <!-- Bedrooms -->
             <div class="space-y-1">
               <div class="flex items-center gap-2 text-zinc-400 text-xs uppercase tracking-widest">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                <!-- Bed icon -->
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 10.5h.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H21M3.75 18h.75v-1.5h15v1.5h.75M2.25 15V5.625c0-.621.504-1.125 1.125-1.125h17.25c.621 0 1.125.504 1.125 1.125V15M4.5 10.5h15M4.5 7.5h7.5"/>
+                </svg>
                 {{ t('apartments.bedrooms') }}
               </div>
               <div class="text-2xl font-light text-zinc-900">
@@ -150,7 +195,11 @@
             <!-- Bathrooms -->
              <div class="space-y-1">
               <div class="flex items-center gap-2 text-zinc-400 text-xs uppercase tracking-widest">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                <!-- Droplet/Bathroom icon -->
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c-1.2 2.4-4 5-4 8a4 4 0 108 0c0-3-2.8-5.6-4-8z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 17v1m-2-1.5l-.5.866M14 15.5l.5.866"/>
+                </svg>
                 {{ t('apartments.bathrooms') }}
               </div>
               <div class="text-2xl font-light text-zinc-900">
@@ -182,13 +231,44 @@
           </div>
           
           <!-- Actions -->
-          <div class="flex flex-col gap-4 pt-6 mt-4 border-t border-zinc-100">
-             <button class="w-full py-4 bg-[#FFCD4B] text-black font-semibold uppercase tracking-widest hover:bg-[#ffda7a] transition-all duration-300 rounded-xl shadow-lg shadow-[#FFCD4B]/20 flex items-center justify-center gap-2 group">
+          <div class="flex flex-col gap-3 pt-6 mt-4 border-t border-zinc-100">
+             <!-- Contact Us Button -->
+             <button 
+               @click="navigateToContact"
+               class="w-full py-4 bg-[#FFCD4B] text-black font-semibold uppercase tracking-widest hover:bg-[#ffda7a] transition-all duration-300 rounded-xl shadow-lg shadow-[#FFCD4B]/20 flex items-center justify-center gap-3 group"
+             >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
                 {{ t('common.contact_us') }}
                 <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
              </button>
-             <button class="w-full py-4 border border-zinc-200 text-zinc-600 hover:text-black hover:border-black hover:bg-zinc-50 uppercase tracking-widest text-xs font-medium rounded-xl transition-all duration-300">
-                {{ t('common.download_pdf') }}
+
+             <!-- Request Call Button -->
+             <button 
+               @click="openPhoneModal"
+               class="w-full py-4 bg-zinc-900 text-white font-semibold uppercase tracking-widest hover:bg-zinc-800 transition-all duration-300 rounded-xl shadow-lg flex items-center justify-center gap-3 group"
+             >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                {{ t('apartments.request_call') }}
+             </button>
+
+             <!-- Download PDF Button -->
+             <button 
+               @click="downloadPDF"
+               :disabled="isGeneratingPDF"
+               class="w-full py-4 border border-zinc-200 text-zinc-600 hover:text-black hover:border-black hover:bg-zinc-50 uppercase tracking-widest text-xs font-medium rounded-xl transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+             >
+                <svg v-if="!isGeneratingPDF" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <svg v-else class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {{ isGeneratingPDF ? t('apartments.generating_pdf') : t('common.download_pdf') }}
              </button>
           </div>
 
@@ -196,25 +276,131 @@
       </div>
     </main>
   </div>
+
+  <!-- Lightbox Modal -->
+  <Teleport to="body">
+    <Transition name="lightbox">
+      <div 
+        v-if="lightboxOpen && currentImageUrl" 
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+        @click="closeLightbox"
+        @wheel.prevent="handleWheel"
+      >
+        <!-- Close button -->
+        <button 
+          class="absolute top-6 right-6 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-300"
+          @click.stop="closeLightbox"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+
+        <!-- Zoom Controls -->
+        <div class="absolute top-6 right-24 z-10 flex gap-2">
+          <button 
+            class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-300"
+            @click.stop="zoomIn"
+            :title="t('apartments.zoom_in')"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+            </svg>
+          </button>
+          <button 
+            class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-300"
+            @click.stop="zoomOut"
+            :title="t('apartments.zoom_out')"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"/>
+            </svg>
+          </button>
+          <button 
+            v-if="zoomLevel !== 1 || panX !== 0 || panY !== 0"
+            class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-300"
+            @click.stop="resetZoom"
+            :title="t('apartments.reset_zoom')"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 2D/3D Toggle in Lightbox -->
+        <div v-if="apartment?.image_2d?.url && apartment?.image_3d?.url" class="absolute top-6 left-1/2 -translate-x-1/2 z-10 flex gap-1 bg-white/10 backdrop-blur-sm rounded-full p-1">
+          <button
+            @click.stop="viewMode = '2d'"
+            class="px-4 py-2 text-sm font-medium rounded-full transition-all duration-200"
+            :class="viewMode === '2d' ? 'bg-[#FFCD4B] text-black' : 'text-white/70 hover:text-white'"
+          >
+            {{ t('apartments.view_2d') }}
+          </button>
+          <button
+            @click.stop="viewMode = '3d'"
+            class="px-4 py-2 text-sm font-medium rounded-full transition-all duration-200"
+            :class="viewMode === '3d' ? 'bg-[#FFCD4B] text-black' : 'text-white/70 hover:text-white'"
+          >
+            {{ t('apartments.view_3d') }}
+          </button>
+        </div>
+
+        <!-- Image Container with zoom/pan -->
+        <div 
+          class="relative overflow-hidden select-none"
+          :class="zoomLevel > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'"
+          @click.stop="zoomLevel === 1 ? zoomIn() : null"
+          @dblclick.stop="resetZoom"
+          @mousedown.stop="startPan"
+          @mousemove="onPan"
+          @mouseup="endPan"
+          @mouseleave="endPan"
+          @touchstart.stop="handleTouchStart"
+          @touchmove.prevent="handleTouchMove"
+          @touchend="handleTouchEnd"
+        >
+          <img 
+            :src="currentImageUrl" 
+            :alt="apartment?.apartment_number"
+            class="max-w-[90vw] max-h-[85vh] object-contain rounded-lg shadow-2xl transition-transform duration-150"
+            :style="{
+              transform: `scale(${zoomLevel}) translate(${panX / zoomLevel}px, ${panY / zoomLevel}px)`,
+            }"
+            draggable="false"
+          >
+        </div>
+
+        <!-- Zoom Level Indicator -->
+        <div v-if="zoomLevel !== 1" class="absolute bottom-20 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/50 rounded-full text-white text-sm font-medium">
+          {{ Math.round(zoomLevel * 100) }}%
+        </div>
+
+        <!-- Hint -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/50 text-sm text-center">
+          <span v-if="zoomLevel === 1">{{ t('apartments.scroll_to_zoom') }}</span>
+          <span v-else>{{ t('apartments.drag_to_pan') }}</span>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- Phone Modal -->
+  <PhoneModal 
+    :is-open="isPhoneModalOpen" 
+    @close="closePhoneModal" 
+    @submit="handlePhoneSubmit" 
+  />
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTranslations } from '@/composables/useTranslations'
-import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
-import type { ApartmentStatus } from '@/types/apartments'
-import { 
-  BedDouble, 
-  Bath, 
-  ChefHat, 
-  Sofa, 
-  DoorOpen, 
-  Shirt, 
-  Maximize,
-  Wind,
-  Box
-} from 'lucide-vue-next'
+import { useApartmentDetail } from './apartments/composables'
+import PhoneModal from '@/components/ui/PhoneModal.vue'
+import { useToastStore } from '@/stores/ui/toast'
+import { customerApi, type CustomerData } from '@/services/customerApi'
+import jsPDF from 'jspdf'
 
 interface Props {
   projectId: number
@@ -232,143 +418,494 @@ const emit = defineEmits<{
   'back': []
 }>()
 
+// View mode for 2D/3D toggle
+const viewMode = ref<'2d' | '3d'>('2d')
+
+// Lightbox state
+const lightboxOpen = ref(false)
+
+// Router and stores
 const router = useRouter()
-const { t } = useTranslations()
-const apartmentStore = useApartmentNavigationStore()
+const toastStore = useToastStore()
 
-// Computed apartment data
-const apartment = computed(() => apartmentStore.selectedApartment)
+// Phone modal state
+const isPhoneModalOpen = ref(false)
 
+// PDF generation state
+const isGeneratingPDF = ref(false)
 
+// Zoom and pan state
+const zoomLevel = ref(1)
+const panX = ref(0)
+const panY = ref(0)
+const isPanning = ref(false)
+const panStart = ref({ x: 0, y: 0 })
+const lastPan = ref({ x: 0, y: 0 })
 
-// ... existing code ...
+// Touch zoom state
+const lastTouchDistance = ref(0)
 
-const roomList = computed(() => {
-  let details = apartment.value?.room_details
-  
-  // Handle stringified JSON from backend
-  if (typeof details === 'string') {
-    try {
-      details = JSON.parse(details)
-    } catch (e) {
-      console.error('Failed to parse room_details', e)
-      return []
-    }
+const {
+  t,
+  apartment,
+  isLoading,
+  error,
+  roomList,
+  loadData,
+  goBack,
+  formatPrice,
+  getStatusClasses,
+} = useApartmentDetail(props, () => emit('back'))
+
+// Current image URL based on view mode
+const currentImageUrl = computed(() => {
+  if (viewMode.value === '2d' && apartment.value?.image_2d?.url) {
+    return apartment.value.image_2d.url
   }
-
-  if (!details) return []
-  const list: { key: string; label: string; area: number; icon: any }[] = []
-  
-  // Helper to process room group
-  const processGroup = (group: Record<string, number> | undefined) => {
-    if (!group) return
-    Object.entries(group).forEach(([key, area]) => {
-      let label = ''
-      let icon: any = Maximize // Default icon
-
-      // Dynamic Bedroom Parsing
-      const bedroomMatch = key.match(/^bedroom_?(\d+)$/)
-      if (bedroomMatch) {
-         label = `${t('apartments.rooms.bedroom')} ${bedroomMatch[1]}`
-         icon = BedDouble
-      } 
-      // Dynamic Bathroom Parsing
-      else if (key.match(/^bathroom_?(\d+)$/)) {
-         const match = key.match(/^bathroom_?(\d+)$/)
-         label = `${t('apartments.rooms.bathroom')} ${match ? match[1] : ''}`
-         icon = Bath
-      }
-      // Specific Known Rooms
-      else if (key.includes('living') || key.includes('studio')) {
-          label = t(`apartments.rooms.${key}`)
-          icon = Sofa
-      }
-      else if (key.includes('kitchen')) {
-          label = t(`apartments.rooms.${key}`)
-          icon = ChefHat
-      }
-      else if (key.includes('hall') || key.includes('corridor') || key.includes('entrance')) {
-          label = t(`apartments.rooms.${key}`)
-          icon = DoorOpen
-      }
-      else if (key.includes('dressing') || key.includes('wardrobe')) {
-          label = t(`apartments.rooms.${key}`)
-          icon = Shirt
-      }
-      else if (key.includes('balcony')) {
-          label = t(`apartments.rooms.${key}`)
-          icon = Wind
-      }
-      else {
-          // Fallback
-          label = t(`apartments.rooms.${key}`)
-          icon = Box
-      }
-
-      list.push({ key, label, area, icon })
-    })
+  if (viewMode.value === '3d' && apartment.value?.image_3d?.url) {
+    return apartment.value.image_3d.url
   }
-
-  processGroup(details.bedrooms)
-  processGroup(details.bathrooms)
-  processGroup(details.other_rooms)
-  
-  return list
+  return apartment.value?.floor_plan_image || null
 })
 
-// Load data on mount
-async function loadData() {
-  await apartmentStore.loadApartmentDetail(props.apartmentId)
+// Reset zoom when image changes
+watch(currentImageUrl, () => {
+  resetZoom()
+})
+
+// Open lightbox
+function openLightbox() {
+  if (currentImageUrl.value) {
+    lightboxOpen.value = true
+    resetZoom()
+  }
 }
 
-onMounted(() => {
-  loadData()
-})
-
-// Watch for prop changes
-watch(() => props.apartmentId, () => {
-  loadData()
-})
-
-function goBack() {
-  if (props.isInline) {
-    emit('back')
+// Close lightbox
+function closeLightbox() {
+  if (zoomLevel.value === 1) {
+    lightboxOpen.value = false
   } else {
-    router.push({
-      name: 'apartment-selection', 
-      params: {
-        id: props.projectId,
-        buildingIdentifier: props.buildingIdentifier,
-        floorNumber: props.floorNumber,
-      },
-    })
+    resetZoom()
   }
 }
 
-function formatPrice(price: number): string {
-    return new Intl.NumberFormat('en-US').format(price)
+// Zoom functions
+function zoomIn() {
+  zoomLevel.value = Math.min(zoomLevel.value * 1.5, 5)
 }
 
-function getStatusClasses(status: ApartmentStatus) {
-    if (props.isInline) {
-        // Light mode status
-         switch (status) {
-            case 'available': return 'bg-emerald-50 text-emerald-600 border-emerald-200'
-            case 'reserved': return 'bg-orange-50 text-orange-600 border-orange-200'
-            case 'sold': return 'bg-red-50 text-red-600 border-red-200'
-            default: return 'bg-zinc-50 text-zinc-500 border-zinc-200'
-        }
+function zoomOut() {
+  zoomLevel.value = Math.max(zoomLevel.value / 1.5, 1)
+  if (zoomLevel.value === 1) {
+    panX.value = 0
+    panY.value = 0
+  }
+}
+
+function resetZoom() {
+  zoomLevel.value = 1
+  panX.value = 0
+  panY.value = 0
+}
+
+// Mouse wheel zoom
+function handleWheel(e: WheelEvent) {
+  if (e.deltaY < 0) {
+    zoomIn()
+  } else {
+    zoomOut()
+  }
+}
+
+// Pan functions
+function startPan(e: MouseEvent) {
+  if (zoomLevel.value > 1) {
+    isPanning.value = true
+    panStart.value = { x: e.clientX, y: e.clientY }
+    lastPan.value = { x: panX.value, y: panY.value }
+  }
+}
+
+function onPan(e: MouseEvent) {
+  if (isPanning.value && zoomLevel.value > 1) {
+    const dx = e.clientX - panStart.value.x
+    const dy = e.clientY - panStart.value.y
+    panX.value = lastPan.value.x + dx
+    panY.value = lastPan.value.y + dy
+  }
+}
+
+function endPan() {
+  isPanning.value = false
+}
+
+// Touch handlers for mobile
+function handleTouchStart(e: TouchEvent) {
+  if (e.touches.length === 2) {
+    // Pinch zoom start
+    lastTouchDistance.value = getTouchDistance(e.touches)
+  } else if (e.touches.length === 1 && zoomLevel.value > 1) {
+    // Pan start
+    isPanning.value = true
+    panStart.value = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    lastPan.value = { x: panX.value, y: panY.value }
+  }
+}
+
+function handleTouchMove(e: TouchEvent) {
+  if (e.touches.length === 2) {
+    // Pinch zoom
+    const distance = getTouchDistance(e.touches)
+    if (lastTouchDistance.value > 0) {
+      const scale = distance / lastTouchDistance.value
+      zoomLevel.value = Math.max(1, Math.min(5, zoomLevel.value * scale))
     }
-    // Dark mode status (legacy support if page used standalone in dark mode)
-    switch (status) {
-        case 'available': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-        case 'reserved': return 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-        case 'sold': return 'bg-red-500/20 text-red-400 border-red-500/30'
-        default: return 'bg-zinc-800 text-zinc-400 border-zinc-700'
+    lastTouchDistance.value = distance
+  } else if (e.touches.length === 1 && isPanning.value && zoomLevel.value > 1) {
+    // Pan
+    const dx = e.touches[0].clientX - panStart.value.x
+    const dy = e.touches[0].clientY - panStart.value.y
+    panX.value = lastPan.value.x + dx
+    panY.value = lastPan.value.y + dy
+  }
+}
+
+function handleTouchEnd() {
+  isPanning.value = false
+  lastTouchDistance.value = 0
+}
+
+function getTouchDistance(touches: TouchList): number {
+  return Math.hypot(
+    touches[0].clientX - touches[1].clientX,
+    touches[0].clientY - touches[1].clientY
+  )
+}
+
+// Navigation functions
+function navigateToContact() {
+  router.push('/contact')
+}
+
+// Phone modal functions
+function openPhoneModal() {
+  isPhoneModalOpen.value = true
+}
+
+function closePhoneModal() {
+  isPhoneModalOpen.value = false
+}
+
+interface FormData {
+  name: string
+  email: string
+  phone: string
+  message: string
+}
+
+async function handlePhoneSubmit(formData: FormData) {
+  try {
+    const customerData: CustomerData = {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      message: formData.message + `\n\n[Apartment: ${apartment.value?.apartment_number}, Building: ${apartment.value?.building?.name}]`,
+      source: 'call_request',
     }
+
+    const response = await customerApi.submit(customerData)
+
+    if (response.success) {
+      toastStore.success(
+        t('messages.phone_success_title') || 'მოთხოვნა გაგზავნილია',
+        response.message || t('messages.phone_success_message') || 'ჩვენ მალე დაგიკავშირდებით',
+      )
+    } else {
+      throw new Error(response.message || 'დაფიქსირდა შეცდომა')
+    }
+  } catch (err: unknown) {
+    const error = err as { message?: string }
+    toastStore.error(
+      t('messages.error_title') || 'შეცდომა',
+      error.message || t('messages.error_message') || 'გთხოვთ სცადოთ მოგვიანებით',
+    )
+  }
+}
+
+// PDF Generation - Uses html2canvas to properly render Georgian fonts
+async function downloadPDF() {
+  if (!apartment.value || isGeneratingPDF.value) return
+  
+  isGeneratingPDF.value = true
+  
+  try {
+    // Dynamically import html2canvas
+    const html2canvasModule = await import('html2canvas')
+    const html2canvas = html2canvasModule.default
+    
+    const apt = apartment.value
+    
+    // Create a temporary container for PDF content
+    // A4 size at 96 DPI: 794px x 1123px
+    const container = document.createElement('div')
+    container.style.cssText = `
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 794px;
+      min-height: 1123px;
+      padding: 0;
+      margin: 0;
+      background: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      overflow: hidden;
+    `
+    
+    // Get status color and translated label
+    const statusColors: Record<string, string> = {
+      available: '#22c55e',
+      sold: '#ef4444',
+      reserved: '#fbbf24'
+    }
+    const statusColor = statusColors[apt.status || 'available'] || '#22c55e'
+    
+    // Translate status
+    const statusLabels: Record<string, string> = {
+      available: t('status.available'),
+      sold: t('status.sold'),
+      reserved: t('status.reserved')
+    }
+    const statusLabel = statusLabels[apt.status || 'available'] || apt.status || t('status.available')
+    
+    // Build HTML content
+    container.innerHTML = `
+      <div style="background: white; width: 794px; min-height: 1123px; display: flex; flex-direction: column; position: relative;">
+        <!-- Header -->
+        <div style="background: #FFCD4B; padding: 30px 40px; display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 32px; font-weight: bold; color: black;">UNITY</div>
+          <div style="text-align: right; color: #333;">
+            <div style="font-size: 14px; font-weight: 600;">${apt.building?.name || ''}</div>
+            <div style="font-size: 12px; margin-top: 4px;">${t('apartments.floor')} ${apt.floor_number}</div>
+          </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div style="padding: 40px; flex-grow: 1;">
+          <!-- Apartment Number -->
+          <div style="margin-bottom: 20px;">
+            <span style="color: #ccc; font-size: 28px; font-weight: 200;">N.</span>
+            <span style="font-size: 48px; font-weight: 300; color: #1a1a1a;">${apt.apartment_number}</span>
+          </div>
+          
+          <!-- Status Badge -->
+          <div style="margin-bottom: 25px;">
+            <span style="background: ${statusColor}; color: white; padding: 6px 16px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase;">
+              ${statusLabel}
+            </span>
+          </div>
+          
+          <!-- Divider -->
+          <div style="width: 40px; height: 3px; background: #FFCD4B; margin-bottom: 30px;"></div>
+          
+          <!-- Stats Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px;">
+            <div>
+              <div style="color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">${t('apartments.area_total')}</div>
+              <div style="font-size: 28px; font-weight: 300; color: #1a1a1a;">${apt.area_total} <span style="font-size: 14px; color: #888;">m²</span></div>
+            </div>
+            <div>
+              <div style="color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">${t('apartments.area_living')}</div>
+              <div style="font-size: 28px; font-weight: 300; color: #1a1a1a;">${apt.area_living || '—'} <span style="font-size: 14px; color: #888;">m²</span></div>
+            </div>
+            <div>
+              <div style="color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">${t('apartments.bedrooms')}</div>
+              <div style="font-size: 28px; font-weight: 300; color: #1a1a1a;">${apt.bedrooms || '—'}</div>
+            </div>
+            <div>
+              <div style="color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">${t('apartments.bathrooms')}</div>
+              <div style="font-size: 28px; font-weight: 300; color: #1a1a1a;">${apt.bathrooms || '—'}</div>
+            </div>
+          </div>
+          
+          ${roomList.value && roomList.value.length > 0 ? `
+            <!-- Room Dimensions -->
+            <div style="border-top: 1px solid #eee; padding-top: 25px; margin-bottom: 40px;">
+              <div style="color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">${t('apartments.rooms.dimensions')}</div>
+              ${roomList.value.map((room: { label: string; area: number }) => `
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee;">
+                  <span style="color: #555; font-size: 13px;">${room.label}</span>
+                  <span style="color: #1a1a1a; font-weight: 500; font-size: 13px;">${room.area} m²</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+        
+        <!-- Footer -->
+        <div style="background: #1a1a1a; padding: 12px 40px; text-align: center; margin-top: auto;">
+          <span style="color: #999; font-size: 10px;">unity.ge</span>
+        </div>
+      </div>
+    `
+    
+    document.body.appendChild(container)
+    
+    // Create PDF
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    })
+    
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
+    
+    // Render first page with text content
+    const canvas = await html2canvas(container.firstElementChild as HTMLElement, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff'
+    })
+    
+    const imgData = canvas.toDataURL('image/png')
+    const imgWidth = pageWidth
+    const imgHeight = (canvas.height * pageWidth) / canvas.width
+    
+    doc.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight))
+    
+    // Clean up
+    document.body.removeChild(container)
+    
+    // Helper function to convert storage URL to API proxy URL
+    const getProxyImageUrl = (originalUrl: string): string => {
+      // Extract path from storage URL (e.g., /storage/images/apartments/2025/12/xxx.png)
+      const match = originalUrl.match(/\/storage\/(.+)$/)
+      if (match) {
+        // Use API proxy: /api/images/{path}
+        const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+        return `${apiBase}/api/images/${match[1]}`
+      }
+      return originalUrl
+    }
+    
+    // Helper function to load and add image to PDF
+    const addImagePage = async (imageUrl: string, label: string) => {
+      try {
+        // Use proxy URL to avoid CORS issues
+        const proxyUrl = getProxyImageUrl(imageUrl)
+        console.log('Loading image via proxy:', proxyUrl)
+        
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve()
+          img.onerror = () => reject(new Error('Failed to load image'))
+          img.src = proxyUrl
+        })
+        
+        // Add new page
+        doc.addPage()
+        
+        // Header bar
+        doc.setFillColor(255, 205, 75)
+        doc.rect(0, 0, pageWidth, 20, 'F')
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(12)
+        doc.setTextColor(0, 0, 0)
+        doc.text(`${label} - N.${apt.apartment_number}`, 10, 13)
+        
+        // Calculate image dimensions
+        const margin = 10
+        const maxImgWidth = pageWidth - 2 * margin
+        const maxImgHeight = pageHeight - 40
+        
+        let imgWidth = img.width
+        let imgHeight = img.height
+        
+        const scale = Math.min(maxImgWidth / imgWidth, maxImgHeight / imgHeight)
+        imgWidth *= scale
+        imgHeight *= scale
+        
+        const imgX = (pageWidth - imgWidth) / 2
+        const imgY = 25
+        
+        doc.addImage(img, 'PNG', imgX, imgY, imgWidth, imgHeight)
+        
+        // Footer
+        doc.setFillColor(40, 40, 40)
+        doc.rect(0, pageHeight - 10, pageWidth, 10, 'F')
+        doc.setFontSize(8)
+        doc.setTextColor(150, 150, 150)
+        doc.text('unity.ge', pageWidth / 2, pageHeight - 4, { align: 'center' })
+        
+        return true
+      } catch (error) {
+        console.warn(`Could not add ${label} image to PDF:`, error)
+        return false
+      }
+    }
+    
+    // Debug: Log image URLs
+    console.log('PDF Image URLs:', {
+      image_2d: apt.image_2d?.url,
+      image_3d: apt.image_3d?.url,
+      floor_plan: apt.floor_plan_image
+    })
+    
+    // Add 2D image if available (using English title since jsPDF doesn't support Georgian)
+    if (apt.image_2d?.url) {
+      console.log('Adding 2D image...')
+      await addImagePage(apt.image_2d.url, '2D Floor Plan')
+    }
+    
+    // Add 3D image if available
+    if (apt.image_3d?.url) {
+      console.log('Adding 3D image...')
+      await addImagePage(apt.image_3d.url, '3D Render')
+    }
+    
+    // If no 2D/3D but has floor plan, add that
+    if (!apt.image_2d?.url && !apt.image_3d?.url && apt.floor_plan_image) {
+      console.log('Adding floor plan image...')
+      await addImagePage(apt.floor_plan_image, 'Floor Plan')
+    }
+    
+    // Save
+    doc.save(`apartment-${apt.apartment_number}.pdf`)
+    
+    toastStore.success(
+      t('apartments.pdf_generated') || 'PDF Generated',
+      t('apartments.pdf_download_started') || 'Download started'
+    )
+  } catch (error) {
+    console.error('PDF generation failed:', error)
+    toastStore.error(
+      t('messages.error_title') || 'Error',
+      t('apartments.pdf_error') || 'Failed to generate PDF'
+    )
+  } finally {
+    isGeneratingPDF.value = false
+  }
 }
 </script>
 
 <style scoped>
-/* Additional specific styles if needed */
+/* Lightbox transitions */
+.lightbox-enter-active,
+.lightbox-leave-active {
+  transition: all 0.3s ease;
+}
+
+.lightbox-enter-from,
+.lightbox-leave-to {
+  opacity: 0;
+}
+
+.lightbox-enter-from img,
+.lightbox-leave-to img {
+  transform: scale(0.9);
+}
 </style>

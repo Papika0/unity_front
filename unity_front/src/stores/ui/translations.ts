@@ -7,7 +7,7 @@ export type TranslationGroup = Record<string, string> // Group name -> translati
 export type PageGroups = Record<string, string[]> // Page name -> array of group names
 
 export const useTranslationsStore = defineStore('translations', () => {
-  // State
+  // ==================== STATE ====================
   const loadedGroups = ref<Set<string>>(new Set())
   const translations = ref<TranslationsRecord>({})
   const translationGroups = ref<Record<string, TranslationGroup>>({}) // Store groups of translations
@@ -34,7 +34,7 @@ export const useTranslationsStore = defineStore('translations', () => {
   const isInitialized = ref(false)
   const isFirstLoad = ref(true) // Track if this is the very first load
 
-  // Getters
+  // ==================== GETTERS ====================
   const currentLocale = computed(() => {
     const localeStore = useLocaleStore()
     return localeStore.currentLocale
@@ -75,8 +75,7 @@ export const useTranslationsStore = defineStore('translations', () => {
     { deep: true, immediate: true },
   )
 
-  // Actions
-
+  // ==================== ACTIONS ====================
   // Check if all groups for a page are loaded
   function arePageGroupsLoaded(pageName: string): boolean {
     const groups = pageGroups[pageName]
@@ -122,8 +121,10 @@ export const useTranslationsStore = defineStore('translations', () => {
 
     const missing = requiredGroups.filter((group) => !loadedGroups.includes(group))
     return missing
-  } // Translation function
-  function t(key: string): string {
+  }
+
+  // Translation function with support for parameters
+  function t(key: string, params?: Record<string, string | number>): string {
     const localeStore = useLocaleStore()
 
     // If we're switching languages, return empty to prevent key flashing
@@ -136,7 +137,15 @@ export const useTranslationsStore = defineStore('translations', () => {
       return ''
     }
 
-    const result = translations.value[key] || ''
+    let result = translations.value[key] || ''
+
+    // Simple parameter replacement
+    if (params && result) {
+      Object.entries(params).forEach(([k, v]) => {
+        result = result.replace(`{${k}}`, String(v))
+      })
+    }
+
     return result
   }
 
@@ -180,13 +189,13 @@ export const useTranslationsStore = defineStore('translations', () => {
   }
 
   // Helper to flatten nested JSON object to dot notation
-  function flattenObject(obj: any, prefix = ''): Record<string, string> {
-    return Object.keys(obj).reduce((acc: any, k) => {
+  function flattenObject(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
+    return Object.keys(obj).reduce((acc: Record<string, string>, k) => {
       const pre = prefix.length ? prefix + '.' : ''
       if (typeof obj[k] === 'object' && obj[k] !== null) {
-        Object.assign(acc, flattenObject(obj[k], pre + k))
+        Object.assign(acc, flattenObject(obj[k] as Record<string, unknown>, pre + k))
       } else {
-        acc[pre + k] = obj[k]
+        acc[pre + k] = String(obj[k])
       }
       return acc
     }, {})
@@ -206,10 +215,22 @@ export const useTranslationsStore = defineStore('translations', () => {
     }
   }
 
+  // ==================== WATCHERS ====================
   // Watch for locale changes to load local files
   watch(currentLocale, (newLocale) => {
     loadLocalTranslations(newLocale)
   }, { immediate: true })
+
+  // ==================== RESET ====================
+  const $reset = () => {
+    loadedGroups.value = new Set()
+    translations.value = {}
+    translationGroups.value = {}
+    isLoading.value = false
+    loadError.value = ''
+    isInitialized.value = false
+    isFirstLoad.value = true
+  }
 
   return {
     // State
@@ -221,8 +242,8 @@ export const useTranslationsStore = defineStore('translations', () => {
     loadError,
     isInitialized,
     isFirstLoad,
+    // Getters
     currentLocale,
-
     // Actions
     arePageGroupsLoaded,
     getGroupTranslations,
@@ -236,6 +257,7 @@ export const useTranslationsStore = defineStore('translations', () => {
     clearTranslations,
     hasTranslations,
     tSafe,
-    loadLocalTranslations
+    loadLocalTranslations,
+    $reset,
   }
 })

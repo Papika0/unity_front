@@ -4,7 +4,7 @@ import { getFooterData, type FooterData } from '@/services/footerApi'
 import { useLocaleStore } from '@/stores/ui/locale'
 
 export const useFooterStore = defineStore('footer', () => {
-  // State
+  // ==================== STATE ====================
   const footerData = ref<FooterData | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -17,7 +17,7 @@ export const useFooterStore = defineStore('footer', () => {
   // Store dependencies
   const localeStore = useLocaleStore()
 
-  // Getters
+  // ==================== GETTERS ====================
   const projects = computed(() => footerData.value?.projects || [])
   const contact = computed(() => footerData.value?.contact || null)
   const socialLinks = computed(() => footerData.value?.social_links || null)
@@ -32,7 +32,7 @@ export const useFooterStore = defineStore('footer', () => {
     )
   })
 
-  // Actions
+  // ==================== ACTIONS ====================
   function setDataFromHomepage(data: {
     contact: FooterData['contact']
     social_links: FooterData['social_links']
@@ -116,12 +116,19 @@ export const useFooterStore = defineStore('footer', () => {
     await loadFooterData(true)
   }
 
-  function clearData() {
+  // ==================== RESET ====================
+  function $reset() {
     footerData.value = null
     isFetched.value = false
+    isFromHomepage.value = false
+    isLoading.value = false
     error.value = null
   }
 
+  // Alias for backward compatibility
+  const clearData = $reset
+
+  // ==================== WATCHERS ====================
   // Watch for locale changes and refresh data
   watch(
     () => localeStore.currentLocale,
@@ -141,17 +148,16 @@ export const useFooterStore = defineStore('footer', () => {
     error,
     isFetched,
     isFromHomepage,
-    isDataEmpty,
-
     // Getters
+    isDataEmpty,
     projects,
     contact,
     socialLinks,
-
     // Actions
     setDataFromHomepage,
     loadFooterData,
     refresh,
     clearData,
+    $reset,
   }
 })

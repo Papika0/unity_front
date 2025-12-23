@@ -1,10 +1,5 @@
 import api from '@/plugins/axios/api'
-
-export interface MultilingualText {
-  ka: string
-  en: string
-  ru: string
-}
+import type { MultilingualText } from './contactApi'
 
 export interface AdminImage {
   id: number

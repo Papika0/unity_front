@@ -1,0 +1,6 @@
+export { default as ContactInfoTab } from './ContactInfoTab.vue'
+export { default as SocialLinksTab } from './SocialLinksTab.vue'
+export { default as MapSettingsTab } from './MapSettingsTab.vue'
+export { default as FormSubjectsTab } from './FormSubjectsTab.vue'
+export { default as FaqsTab } from './FaqsTab.vue'
+export { default as OfficeDaysTab } from './OfficeDaysTab.vue'
