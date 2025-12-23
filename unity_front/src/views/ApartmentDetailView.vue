@@ -885,11 +885,6 @@ async function downloadPDF() {
       }
     }
     
-    // Debug: Log image URLs
-      image_2d: apt.image_2d?.url,
-      image_3d: apt.image_3d?.url,
-      floor_plan: apt.floor_plan_image
-    })
     
     // Add 2D image if available (using English title since jsPDF doesn't support Georgian)
     if (apt.image_2d?.url) {
