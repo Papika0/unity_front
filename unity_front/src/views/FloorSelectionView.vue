@@ -106,12 +106,10 @@ onMounted(async () => {
   loadingError.value = null
   
   try {
-    console.log('🔍 FloorSelectionView - Fetching building by identifier:', props.buildingIdentifier)
     
     // Fetch building by identifier to get the building ID
     const building = await buildingsApi.fetchBuilding(props.projectId, props.buildingIdentifier)
     
-    console.log('✅ FloorSelectionView - Building found:', building)
     
     if (building) {
       buildingId.value = building.id
