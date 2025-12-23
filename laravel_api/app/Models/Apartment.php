@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
@@ -96,6 +97,61 @@ class Apartment extends Model
     }
 
     /**
+     * Get all deals for this apartment.
+     */
+    public function deals(): HasMany
+    {
+        return $this->hasMany(CrmDeal::class);
+    }
+
+    /**
+     * Get active deals (not closed) for this apartment.
+     */
+    public function activeDeals(): HasMany
+    {
+        return $this->deals()->whereHas('stage', function ($q) {
+            $q->where('type', 'open');
+        });
+    }
+
+    /**
+     * Check if apartment has any active deals.
+     */
+    public function hasActiveDeals(): bool
+    {
+        return $this->activeDeals()->exists();
+    }
+
+    /**
+     * Check if apartment is available for new deals.
+     */
+    public function isAvailableForDeals(): bool
+    {
+        return $this->status === 'available' && !$this->hasActiveDeals();
+    }
+
+    /**
+     * Mark apartment as reserved.
+     */
+    public function markAsReserved(): void
+    {
+        $this->update(['status' => 'reserved']);
+    }
+
+    /**
+     * Mark apartment as sold.
+     */
+    public function markAsSold(): void
+    {
+        $this->update(['status' => 'sold']);
+    }
+
+    /**
+     * Mark apartment as available.
+     */
+    public function markAsAvailable(): void
+    {
+        $this->update(['status' => 'available']);
      * Get all images for the apartment.
      */
     public function images(): MorphToMany

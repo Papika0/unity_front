@@ -7,3 +7,35 @@ body {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   background-color: #f8fafc;
 }
+
+/* Fix input visibility - CRM improvements */
+input, textarea, select {
+  color: #1F2937 !important; /* Dark gray for input text */
+  font-weight: 500;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9CA3AF !important; /* Medium gray for placeholder */
+  font-weight: 400;
+}
+
+/* Disabled inputs */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  color: #6B7280 !important;
+  background: #F3F4F6 !important;
+}
+
+/* Label text */
+label {
+  color: #374151 !important;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* Dropdown selected text */
+select option {
+  color: #1F2937;
+}

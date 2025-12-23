@@ -9,8 +9,10 @@ use App\Models\News;
 use App\Models\Projects;
 use App\Models\Building;
 use App\Models\Apartment;
+use App\Models\CrmDeal;
 use App\Observers\NewsObserver;
 use App\Observers\ProjectsObserver;
+use App\Observers\CrmDealObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,6 +34,9 @@ class AppServiceProvider extends ServiceProvider
         // Register model observers for automatic image cleanup
         News::observe(NewsObserver::class);
         Projects::observe(ProjectsObserver::class);
+
+        // Register CRM observer for apartment status automation
+        CrmDeal::observe(CrmDealObserver::class);
         
         // Register morph map for polymorphic relationships (for InteractiveZone only)
         // Using morphMap instead of enforceMorphMap to avoid breaking other polymorphic relations

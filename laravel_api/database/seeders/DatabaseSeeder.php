@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ProjectsSeeder::class,
             NewsSeeder::class,
+            CrmSeeder::class,
         ]);
         
         // $this->call(AboutPageTranslationSeeder::class);

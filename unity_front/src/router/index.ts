@@ -294,6 +294,13 @@ const router = createRouter({
               component: () => import('@/views/admin/users/AdminUsersView.vue'),
               beforeEnter: requireAdmin,
             },
+            // CRM Routes
+            {
+              path: 'crm',
+              name: 'admin-crm-pipeline',
+              component: () => import('@/views/admin/crm/CrmPipelineView.vue'),
+              beforeEnter: requireAdminOrMarketing,
+            },
           ],
         },
       ],

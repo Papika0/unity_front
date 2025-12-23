@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -62,4 +63,51 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(Role::class);
     }
 
+    /**
+     * Get deals assigned to this user
+     */
+    public function deals(): HasMany
+    {
+        return $this->hasMany(CrmDeal::class);
+    }
+
+    /**
+     * Get activities created by this user
+     */
+    public function crmActivities(): HasMany
+    {
+        return $this->hasMany(CrmActivity::class);
+    }
+
+    /**
+     * Check if user has a specific role
+     */
+    public function hasRole(string $roleName): bool
+    {
+        return $this->role && $this->role->name === $roleName;
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Check if user is marketing
+     */
+    public function isMarketing(): bool
+    {
+        return $this->hasRole('marketing');
+    }
+
+    /**
+     * Check if user can access CRM
+     */
+    public function canAccessCrm(): bool
+    {
+        return $this->isAdmin() || $this->isMarketing();
+    }
 }
