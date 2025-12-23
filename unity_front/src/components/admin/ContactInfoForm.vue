@@ -133,7 +133,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import type { ContactInfo } from '@/composables/useContactInfo'
+import type { ContactInfo } from '@/composables/pages/useContactInfo'
 import type { ContactInfoFormData } from '@/stores/admin/contactInfo'
 
 interface Props {

@@ -25,7 +25,7 @@ const getErrorMessage = (err: unknown, defaultMessage: string): string => {
 }
 
 export const useAdminProjectsStore = defineStore('adminProjects', () => {
-  // State
+  // ==================== STATE ====================
   const projects = ref<Project[]>([])
   const currentProject = ref<Project | null>(null)
   const loading = ref(false)
@@ -49,7 +49,7 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
   const canSelectMoreFeatured = computed(() => selectedProjects.value.length < 3)
   const featuredProjects = computed(() => projects.value.filter((p) => p.is_featured))
 
-  // Getters
+  // ==================== GETTERS ====================
   const filteredProjects = computed(() => {
     if (!searchQuery.value) return projects.value
 
@@ -62,7 +62,7 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
 
   const projectsCount = computed(() => projects.value.length)
 
-  // Actions
+  // ==================== ACTIONS ====================
   const loadProjects = async () => {
     try {
       loading.value = true
@@ -316,6 +316,23 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
     }
   }
 
+  // ==================== RESET ====================
+  const $reset = () => {
+    projects.value = []
+    currentProject.value = null
+    loading.value = false
+    saving.value = false
+    error.value = ''
+    searchQuery.value = ''
+    showFeaturedModal.value = false
+    selectedProjects.value = []
+    savingFeatured.value = false
+    showHomepageModal.value = false
+    selectedHomepageIds.value = []
+    savingHomepage.value = false
+  }
+
+  // ==================== RETURN ====================
   return {
     // State
     projects,
@@ -358,5 +375,6 @@ export const useAdminProjectsStore = defineStore('adminProjects', () => {
     clearError,
     clearCurrentProject,
     initialize,
+    $reset,
   }
 })

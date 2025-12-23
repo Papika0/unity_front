@@ -40,6 +40,7 @@ use App\Http\Controllers\Admin\CrmDealController;
 use App\Http\Controllers\Admin\CrmActivityController;
 use App\Http\Controllers\Admin\CrmPaymentController;
 use App\Http\Controllers\Admin\AdminApartmentDetectionController;
+use App\Http\Controllers\Api\ImageProxyController;
 
 
 /*
@@ -52,6 +53,9 @@ use App\Http\Controllers\Admin\AdminApartmentDetectionController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+// Image proxy route for CORS-enabled image access (must be before other routes)
+Route::get('images/{path}', [ImageProxyController::class, 'show'])->where('path', '.*');
 
 // Auth routes with standard rate limiting
 Route::prefix('auth')->middleware('throttle:public')->group(function () {
@@ -209,7 +213,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
         Route::get('/', 'index');           // Get the single contact info record (legacy)
         Route::put('/', 'update');          // Update the contact info record (legacy)
         Route::post('/', 'update');         // Allow POST for form compatibility (legacy)
-        
+
         // New contact settings endpoints
         Route::get('/settings', 'settings');        // Get complete contact settings
         Route::put('/settings', 'updateSettings');  // Update complete contact settings
@@ -413,7 +417,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
         Route::put('/{zoneImageId}', 'updateGlobal'); // Update zone image
         Route::delete('/{zoneImageId}', 'destroyGlobal'); // Delete zone image
     });
-    
+
     // Global Interactive Zone Management Routes (for polygon editors)
     Route::prefix('admin/projects/{projectId}/interactive-zones')->middleware('role:admin')->controller(AdminInteractiveZoneController::class)->group(function () {
         Route::get('/', 'index');                      // Get zones with filters
@@ -422,7 +426,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
         Route::put('/{zoneId}', 'update');            // Update zone
         Route::delete('/{zoneId}', 'destroy');        // Delete zone
     });
-    
+
     // Apartment Detection from PDF (AI-powered polygon detection)
     Route::prefix('admin/detect-apartments')->middleware('role:admin')->controller(AdminApartmentDetectionController::class)->group(function () {
         Route::post('/', 'detect');  // Upload PDF with red lines, get detected polygons
@@ -430,7 +434,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
 
     // Admin Apartment Navigation Management Routes
     Route::prefix('admin/projects/{projectId}')->middleware('role:admin')->group(function () {
-        
+
         // Building Management
         Route::prefix('buildings')->controller(AdminBuildingController::class)->group(function () {
             Route::get('/', 'index');                  // Get all buildings for project
@@ -439,7 +443,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
             Route::put('/{buildingId}', 'update');    // Update building
             Route::delete('/{buildingId}', 'destroy'); // Delete building (soft delete with validation)
         });
-        
+
         // Building-specific Zone Management (for frontend ListView compatibility)
         Route::prefix('buildings/{buildingId}/zones')->controller(AdminInteractiveZoneController::class)->group(function () {
             Route::get('/', 'indexByBuilding');       // Get zones for specific building
@@ -447,7 +451,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
             Route::put('/{zoneId}', 'updateByBuilding'); // Update zone
             Route::delete('/{zoneId}', 'destroyByBuilding'); // Delete zone
         });
-        
+
         // Apartment Management (within building context)
         Route::prefix('buildings/{buildingId}/apartments')->controller(AdminApartmentController::class)->group(function () {
             Route::get('/', 'index');                  // Get all apartments for building
@@ -455,7 +459,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
             Route::post('/bulk-import', 'bulkImport'); // Bulk import apartments from CSV/Excel
             Route::get('/template', 'downloadTemplate'); // Download CSV template
         });
-        
+
         // Interactive Zone Management
         Route::prefix('zones')->controller(AdminInteractiveZoneController::class)->group(function () {
             Route::get('/', 'index');                  // Get zones with filters
@@ -464,7 +468,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
             Route::put('/{zoneId}', 'update');        // Update zone
             Route::delete('/{zoneId}', 'destroy');    // Delete zone
         });
-        
+
         // Zone Image Management (project-specific endpoints)
         Route::prefix('zone-images')->controller(AdminZoneImageController::class)->group(function () {
             Route::get('/', 'index');                  // Get zone images with filters
@@ -475,13 +479,22 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
             Route::delete('/{zoneImageId}', 'destroy'); // Delete zone image
         });
     });
-    
+
     // Apartment Management (non-building context for updates/deletes)
     Route::prefix('admin/apartments')->controller(AdminApartmentController::class)->group(function () {
         Route::put('/{apartmentId}', 'update');       // Update apartment
         Route::patch('/{apartmentId}/status', 'updateStatus'); // Quick status update
         Route::delete('/{apartmentId}', 'destroy');   // Delete apartment
+        Route::post('/{apartmentId}/images', 'uploadImages'); // Upload 2D/3D images
+        Route::delete('/{apartmentId}/images/{imageId}', 'deleteImage'); // Delete image
     });
+
+    // Batch apartment image upload (requires project/building context)
+    Route::post(
+        'admin/projects/{projectId}/buildings/{buildingId}/apartments/batch-images',
+        [AdminApartmentController::class, 'batchUploadImages']
+    )
+        ->middleware('role:admin');
 
     // Building Management (standalone routes without project context)
     Route::prefix('admin/buildings')->middleware('role:admin')->controller(AdminBuildingController::class)->group(function () {
@@ -511,11 +524,11 @@ Route::get('debug/auth-headers', [\App\Http\Controllers\Debug\AuthDebugControlle
 // Temporary debug route to check form_subjects data
 Route::get('/debug/form-subjects', function () {
     $setting = \App\Models\SiteSetting::where('key', 'form_subjects')->where('group', 'contact')->first();
-    
+
     if (!$setting) {
         return response()->json(['error' => 'form_subjects setting not found']);
     }
-    
+
     return response()->json([
         'raw_original' => $setting->getRawOriginal('value'),
         'processed_value' => $setting->value,

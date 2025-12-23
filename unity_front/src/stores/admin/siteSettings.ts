@@ -1,57 +1,33 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useToastStore } from '@/stores/ui/toast'
-import api from '@/plugins/axios/api'
-import type { ContactInfo } from '@/composables/useContactInfo'
-import type { AboutInfo } from '@/composables/useAboutInfo'
-
-interface ContactInfoFormData {
-  email: string
-  phone_numbers: Array<{
-    number: string
-    display: string
-  }>
-  google_maps_url: string
-}
-
-export interface AboutInfoFormData {
-  stats: {
-    successful_projects: string
-    years_experience: string
-    satisfied_clients: string
-    client_satisfaction: string
-  }
-  philosophy_image_id?: number | null
-}
+import { adminContactInfoApi, type ContactInfoFormData } from '@/services/adminContactInfoApi'
+import { adminAboutInfoApi, type AboutInfoFormData } from '@/services/adminAboutInfoApi'
+import type { ContactInfo } from '@/composables/pages/useContactInfo'
+import type { AboutInfo } from '@/composables/pages/useAboutInfo'
 
 export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => {
-  // State
+  // ==================== STATE ====================
   const contactInfo = ref<ContactInfo | null>(null)
   const aboutInfo = ref<AboutInfo | null>(null)
   const loading = ref(false)
   const saving = ref(false)
   const error = ref('')
-
-  // Form state
   const showContactEditModal = ref(false)
 
-  // Getters
+  // ==================== GETTERS ====================
   const hasContactInfo = computed(() => contactInfo.value !== null)
   const hasAboutInfo = computed(() => aboutInfo.value !== null)
 
-  // Actions
+  // ==================== ACTIONS ====================
   const loadContactInfo = async () => {
     try {
       loading.value = true
       error.value = ''
-
-      const response = await api.get('/admin/contact-info')
-      const data = response.data?.data
-      contactInfo.value = data || null
+      contactInfo.value = await adminContactInfoApi.get()
     } catch (err) {
       console.error('Error loading contact info:', err)
-      error.value =
-        err instanceof Error ? err.message : 'კონტაქტის ინფორმაციის ჩატვირთვა ვერ მოხერხდა'
+      error.value = err instanceof Error ? err.message : 'კონტაქტის ინფორმაციის ჩატვირთვა ვერ მოხერხდა'
     } finally {
       loading.value = false
     }
@@ -61,14 +37,10 @@ export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => 
     try {
       loading.value = true
       error.value = ''
-
-      const response = await api.get('/admin/about-info')
-      const data = response.data?.data
-      aboutInfo.value = data || null
+      aboutInfo.value = await adminAboutInfoApi.get()
     } catch (err) {
       console.error('Error loading about info:', err)
-      error.value =
-        err instanceof Error ? err.message : 'სტატისტიკის მონაცემების ჩატვირთვა ვერ მოხერხდა'
+      error.value = err instanceof Error ? err.message : 'სტატისტიკის მონაცემების ჩატვირთვა ვერ მოხერხდა'
     } finally {
       loading.value = false
     }
@@ -85,26 +57,14 @@ export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => 
       saving.value = true
       error.value = ''
 
-      const response = await api.put('/admin/contact-info', formData)
-
-      if (!response.data) {
-        throw new Error('კონტაქტის ინფორმაციის განახლება ვერ მოხერხდა')
-      }
-
-      const result = response.data
-      contactInfo.value = result.data
-
+      contactInfo.value = await adminContactInfoApi.update(formData)
       showContactEditModal.value = false
       toastStore.success('წარმატება', 'კონტაქტის ინფორმაცია წარმატებით განახლდა')
 
-      // Reload data to show updated values
-      await loadContactInfo()
-
-      return result.data
+      return contactInfo.value
     } catch (err) {
       console.error('Error updating contact info:', err)
-      error.value =
-        err instanceof Error ? err.message : 'კონტაქტის ინფორმაციის განახლება ვერ მოხერხდა'
+      error.value = err instanceof Error ? err.message : 'კონტაქტის ინფორმაციის განახლება ვერ მოხერხდა'
       toastStore.error('შეცდომა', error.value)
       throw err
     } finally {
@@ -119,25 +79,13 @@ export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => 
       saving.value = true
       error.value = ''
 
-      const response = await api.put('/admin/about-info', formData)
-
-      if (!response.data) {
-        throw new Error('სტატისტიკის მონაცემების განახლება ვერ მოხერხდა')
-      }
-
-      const result = response.data
-      aboutInfo.value = result.data
-
+      aboutInfo.value = await adminAboutInfoApi.update(formData)
       toastStore.success('წარმატება', 'სტატისტიკის მონაცემები წარმატებით განახლდა')
 
-      // Reload data to show updated values
-      await loadAboutInfo()
-
-      return result.data
+      return aboutInfo.value
     } catch (err) {
       console.error('Error updating about info:', err)
-      error.value =
-        err instanceof Error ? err.message : 'სტატისტიკის მონაცემების განახლება ვერ მოხერხდა'
+      error.value = err instanceof Error ? err.message : 'სტატისტიკის მონაცემების განახლება ვერ მოხერხდა'
       toastStore.error('შეცდომა', error.value)
       throw err
     } finally {
@@ -155,6 +103,17 @@ export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => 
     error.value = ''
   }
 
+  // ==================== RESET ====================
+  const $reset = () => {
+    contactInfo.value = null
+    aboutInfo.value = null
+    loading.value = false
+    saving.value = false
+    error.value = ''
+    showContactEditModal.value = false
+  }
+
+  // ==================== RETURN ====================
   return {
     // State
     contactInfo,
@@ -163,11 +122,9 @@ export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => 
     saving,
     error,
     showContactEditModal,
-
     // Getters
     hasContactInfo,
     hasAboutInfo,
-
     // Actions
     loadContactInfo,
     loadAboutInfo,
@@ -176,7 +133,8 @@ export const useAdminSiteSettingsStore = defineStore('adminSiteSettings', () => 
     updateAboutInfo,
     openContactEditModal,
     closeModals,
+    $reset,
   }
 })
 
-export type { ContactInfoFormData }
+export type { ContactInfoFormData, AboutInfoFormData }

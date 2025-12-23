@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useTranslations } from '../../composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useNewsStore } from '@/stores/public/news'
 
 const { t } = useTranslations()

@@ -1,6 +1,11 @@
+import type { RouteLocationNormalized, NavigationGuardNext } from 'vue-router'
 import { useAuthStore } from '@/stores/auth/auth'
 
-export const requireAuth = (to: any, from: any, next: any) => {
+export const requireAuth = (
+  _to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+  next: NavigationGuardNext
+) => {
   const authStore = useAuthStore()
 
   if (!authStore.isAuthenticated) {
@@ -10,7 +15,11 @@ export const requireAuth = (to: any, from: any, next: any) => {
   }
 }
 
-export const requireAdmin = (to: any, from: any, next: any) => {
+export const requireAdmin = (
+  _to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+  next: NavigationGuardNext
+) => {
   const authStore = useAuthStore()
 
   if (!authStore.isAuthenticated) {
@@ -22,7 +31,11 @@ export const requireAdmin = (to: any, from: any, next: any) => {
   }
 }
 
-export const requireAdminOrMarketing = (to: any, from: any, next: any) => {
+export const requireAdminOrMarketing = (
+  _to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+  next: NavigationGuardNext
+) => {
   const authStore = useAuthStore()
 
   if (!authStore.isAuthenticated) {
@@ -34,7 +47,11 @@ export const requireAdminOrMarketing = (to: any, from: any, next: any) => {
   }
 }
 
-export const redirectIfAuthenticated = (to: any, from: any, next: any) => {
+export const redirectIfAuthenticated = (
+  _to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+  next: NavigationGuardNext
+) => {
   const authStore = useAuthStore()
 
   if (authStore.isAuthenticated) {

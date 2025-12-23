@@ -44,7 +44,7 @@ export interface CustomersResponse {
   }
 }
 
-export interface CustomerResponse {
+export interface AdminCustomerResponse {
   success: boolean
   data?: Customer
   message?: string
@@ -107,8 +107,8 @@ export const adminCustomerApi = {
   async update(
     id: number,
     data: { status?: string; notes?: string },
-  ): Promise<CustomerResponse> {
-    const response = await api.put<CustomerResponse>(`/admin/customers/${id}`, data)
+  ): Promise<AdminCustomerResponse> {
+    const response = await api.put<AdminCustomerResponse>(`/admin/customers/${id}`, data)
     return response.data
   },
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useTranslations } from '../../composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useProjectsStore, type Project } from '@/stores/public/projects'
 import { getImageUrl } from '@/utils/imageUrl'
-import { useParallax } from '@/composables/useScrollAnimation'
+import { useParallax } from '@/composables/animations'
 
 const { t } = useTranslations()
 const projectsStore = useProjectsStore()

@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import ToastContainer from '@/components/ui/ToastContainer.vue'
 import GlobalLoadingOverlay from '@/components/ui/GlobalLoadingOverlay.vue'
 import { useTranslationsStore } from '@/stores/ui/translations'
-import { usePageTitle } from '@/composables/usePageTitle'
+import { usePageTitle } from '@/composables/ui/usePageTitle'
 
 const route = useRoute()
 const translationsStore = useTranslationsStore()

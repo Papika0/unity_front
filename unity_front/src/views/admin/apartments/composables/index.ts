@@ -1,0 +1,1 @@
+export { useApartmentsList } from './useApartmentsList'

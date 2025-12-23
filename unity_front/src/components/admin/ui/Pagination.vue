@@ -128,6 +128,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+defineOptions({
+  name: 'AdminPagination'
+})
+
 interface Props {
   currentPage: number
   totalPages: number

@@ -13,7 +13,7 @@
 import { defineEmits } from 'vue'
 import Modal from '@/components/admin/ui/Modal.vue'
 import ContactInfoForm from './ContactInfoForm.vue'
-import type { ContactInfo } from '@/composables/useContactInfo'
+import type { ContactInfo } from '@/composables/pages/useContactInfo'
 import type { ContactInfoFormData } from '@/stores/admin/contactInfo'
 
 interface Props {

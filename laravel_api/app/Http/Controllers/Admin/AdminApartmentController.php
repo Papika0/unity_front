@@ -10,7 +10,9 @@ use App\Http\Requests\Admin\UpdateApartmentStatusRequest;
 use App\Http\Resources\Admin\AdminApartmentResource;
 use App\Models\Apartment;
 use App\Models\Building;
+use App\Models\Image;
 use App\Models\Project;
+use App\Services\ImageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -19,6 +21,10 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class AdminApartmentController extends Controller
 {
+    public function __construct(
+        protected ImageService $imageService
+    ) {}
+
     /**
      * List apartments with filters
      */
@@ -28,7 +34,8 @@ class AdminApartmentController extends Controller
             ->where('id', $buildingId)
             ->firstOrFail();
 
-        $query = Apartment::where('building_id', $buildingId);
+        $query = Apartment::where('building_id', $buildingId)
+            ->with(['image2d', 'image3d']);
 
         // Filter by floor
         if ($request->has('floor_number')) {
@@ -114,7 +121,9 @@ class AdminApartmentController extends Controller
         // Find the actual header row (smart detection for non-standard Excel files)
         $headerRowIndex = 0;
         foreach ($rows as $index => $row) {
-            $rowLower = array_map(function($v) { return strtolower(trim($v ?? '')); }, $row);
+            $rowLower = array_map(function ($v) {
+                return strtolower(trim($v ?? ''));
+            }, $row);
             // Check if row contains typical header keywords
             if (in_array('area status', $rowLower) || in_array('floor', $rowLower) || in_array('apartment', $rowLower)) {
                 $headerRowIndex = $index;
@@ -532,7 +541,7 @@ class AdminApartmentController extends Controller
     public function destroy(int $apartmentId): JsonResponse
     {
         $apartment = Apartment::findOrFail($apartmentId);
-        
+
         $apartment->delete();
 
         return response()->json([
@@ -586,5 +595,241 @@ class AdminApartmentController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv',
         ]);
+    }
+
+    /**
+     * Upload 2D/3D images for an apartment
+     */
+    public function uploadImages(Request $request, int $apartmentId): JsonResponse
+    {
+        $request->validate([
+            'image_2d' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:20480',
+            'image_3d' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:20480',
+        ]);
+
+        $apartment = Apartment::with(['image2d', 'image3d'])->findOrFail($apartmentId);
+
+        try {
+            DB::beginTransaction();
+
+            // Handle 2D image upload
+            if ($request->hasFile('image_2d')) {
+                // Remove existing 2D image if exists
+                if ($apartment->image2d->first()) {
+                    $this->imageService->detachImage(
+                        $apartment->image2d->first(),
+                        $apartment,
+                        '2d'
+                    );
+                }
+
+                // Upload new 2D image
+                $image = $this->imageService->uploadImage(
+                    $request->file('image_2d'),
+                    'Apartment ' . $apartment->apartment_number . ' - 2D',
+                    'apartments'
+                );
+                $this->imageService->attachImage($image, $apartment, '2d');
+            }
+
+            // Handle 3D image upload
+            if ($request->hasFile('image_3d')) {
+                // Remove existing 3D image if exists
+                if ($apartment->image3d->first()) {
+                    $this->imageService->detachImage(
+                        $apartment->image3d->first(),
+                        $apartment,
+                        '3d'
+                    );
+                }
+
+                // Upload new 3D image
+                $image = $this->imageService->uploadImage(
+                    $request->file('image_3d'),
+                    'Apartment ' . $apartment->apartment_number . ' - 3D',
+                    'apartments'
+                );
+                $this->imageService->attachImage($image, $apartment, '3d');
+            }
+
+            DB::commit();
+
+            // Reload apartment with images
+            $apartment->load(['image2d', 'image3d']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Images uploaded successfully',
+                'data' => new AdminApartmentResource($apartment),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Image upload failed: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete an image from an apartment
+     */
+    public function deleteImage(int $apartmentId, int $imageId): JsonResponse
+    {
+        $apartment = Apartment::findOrFail($apartmentId);
+        $image = Image::findOrFail($imageId);
+
+        try {
+            $this->imageService->detachImage($image, $apartment);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Image deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Image deletion failed: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Batch upload images from folder structure
+     * Expected structure: /Floor X/Apartment Y/2d.jpg or 3d.jpg
+     */
+    public function batchUploadImages(Request $request, int $projectId, int $buildingId): JsonResponse
+    {
+        $request->validate([
+            'files' => 'required|array',
+            'files.*' => 'image|mimes:jpeg,png,jpg,webp|max:20480',
+        ]);
+
+        $building = Building::where('project_id', $projectId)
+            ->where('id', $buildingId)
+            ->firstOrFail();
+
+        $uploaded = 0;
+        $failed = 0;
+        $errors = [];
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($request->file('files', []) as $file) {
+                $path = $file->getClientOriginalName();
+
+                // Try to parse the path for floor/apartment/type
+                $parsed = $this->parseBatchImagePath($path);
+
+                if (!$parsed) {
+                    $errors[] = "Could not parse path: {$path}";
+                    $failed++;
+                    continue;
+                }
+
+                // Find the apartment
+                $apartment = Apartment::where('building_id', $buildingId)
+                    ->where('floor_number', $parsed['floor'])
+                    ->where('apartment_number', $parsed['apartment'])
+                    ->first();
+
+                if (!$apartment) {
+                    $errors[] = "Apartment not found: Floor {$parsed['floor']}, Apt {$parsed['apartment']}";
+                    $failed++;
+                    continue;
+                }
+
+                // Upload the image
+                $image = $this->imageService->uploadImage(
+                    $file,
+                    "Apartment {$apartment->apartment_number} - " . strtoupper($parsed['type']),
+                    'apartments'
+                );
+
+                // Remove existing image of the same type
+                $existingRelation = $parsed['type'] === '2d' ? 'image2d' : 'image3d';
+                if ($apartment->$existingRelation->first()) {
+                    $this->imageService->detachImage(
+                        $apartment->$existingRelation->first(),
+                        $apartment,
+                        $parsed['type']
+                    );
+                }
+
+                // Attach new image
+                $this->imageService->attachImage($image, $apartment, $parsed['type']);
+                $uploaded++;
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Batch upload complete: {$uploaded} uploaded, {$failed} failed",
+                'data' => [
+                    'uploaded' => $uploaded,
+                    'failed' => $failed,
+                    'errors' => $errors,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Batch upload failed: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Parse batch image path to extract floor, apartment, and type
+     */
+    private function parseBatchImagePath(string $path): ?array
+    {
+        // Type detection from path - look for 2D or 3D in folder names
+        $type = null;
+        if (preg_match('/2D|2d/', $path)) {
+            $type = '2d';
+        } elseif (preg_match('/3D|3d/', $path)) {
+            $type = '3d';
+        }
+
+        if (!$type) {
+            return null;
+        }
+
+        // Floor extraction - matches patterns like "7 სართული", "Floor 7", "სართული 7"
+        $floor = null;
+        if (preg_match('/(\d+)\s*(?:სართული|სათული|floor)/i', $path, $matches)) {
+            $floor = (int) $matches[1];
+        } elseif (preg_match('/(?:სართული|სათული|floor)\s*(\d+)/i', $path, $matches)) {
+            $floor = (int) $matches[1];
+        }
+
+        // Apartment extraction - matches patterns like "ბინა 70", "bina 70", "70.png"
+        $apartment = null;
+
+        // First try to extract from filename (e.g., "7. bina 70 sul 58.05.png")
+        $filename = basename($path);
+        if (preg_match('/(?:ბინა|bina|apartment)\s*(\d+)/i', $filename, $matches)) {
+            $apartment = $matches[1];
+        } elseif (preg_match('/^\d+\.\s*(?:ბინა|bina)?\s*(\d+)/i', $filename, $matches)) {
+            $apartment = $matches[1];
+        } elseif (preg_match('/^(\d+)\.(?:png|jpg|jpeg|webp)$/i', $filename, $matches)) {
+            $apartment = $matches[1];
+        }
+
+        if (!$floor || !$apartment) {
+            return null;
+        }
+
+        return [
+            'type' => $type,
+            'floor' => $floor,
+            'apartment' => $apartment,
+        ];
     }
 }

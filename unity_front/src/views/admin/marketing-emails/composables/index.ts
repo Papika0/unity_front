@@ -1,0 +1,1 @@
+export { useMarketingEmails } from './useMarketingEmails'

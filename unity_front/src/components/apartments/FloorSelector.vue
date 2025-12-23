@@ -1,5 +1,18 @@
 <template>
-  <section class="py-20 bg-white">
+  <section :class="autoNavigate ? 'py-20 bg-white' : 'bg-white'">
+    <!-- Header with Back Button (Visible when not auto-navigating) -->
+    <div v-if="!autoNavigate" class="max-w-7xl mx-auto px-4 lg:px-16 xl:px-20 2xl:px-32 mb-6 pt-4">
+      <button 
+        @click="emit('back')"
+        class="w-10 h-10 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:bg-zinc-50 hover:border-[#FFCD4B] hover:text-[#FFCD4B] transition-all"
+        :title="t('apartments.back')"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+    </div>
+
     <!-- Loading State -->
     <div v-if="apartmentStore.isLoading" class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
       <div class="text-center">
@@ -24,12 +37,12 @@
     </div>
 
     <!-- Main Content -->
-    <div v-else-if="floorZones.length > 0" class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
+    <div v-else-if="floorZones.length > 0" class="w-full max-w-[1400px] mx-auto px-4">
       <!-- Interactive Map -->
       <div
         ref="mapElement"
         :class="[
-          'bg-white overflow-hidden hover:shadow-2xl transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100 hover:border-[#FFCD4B]/30',
+          'bg-white overflow-hidden transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] border border-zinc-100',
           {
             'opacity-100 translate-y-0 scale-100 blur-0': mapVisible,
             'opacity-0 translate-y-12 scale-95 blur-sm': !mapVisible,
@@ -59,27 +72,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useTranslations } from '@/composables/useTranslations'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
-import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 import InteractiveMapViewer from './InteractiveMapViewer.vue'
-import type { FloorZone, FloorStats, BuildingZone, ApartmentZone } from '@/types/apartments'
+import type { FloorZone, BuildingZone, ApartmentZone } from '@/types/apartments'
 
 interface Props {
   projectId: number
   buildingId: number
   buildingIdentifier: string
+  autoNavigate?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  autoNavigate: true
+})
 
 const emit = defineEmits<{
   'floor-selected': [floor: FloorZone]
+  'back': []
 }>()
 
 const router = useRouter()
+const route = useRoute()
 const { t } = useTranslations()
 const apartmentStore = useApartmentNavigationStore()
 
@@ -94,10 +112,6 @@ const floorZones = computed(() => {
   return zones.filter((zone) => zone.type === 'floor_strip')
 })
 
-const sortedFloorZones = computed(() => {
-  return [...floorZones.value].sort((a, b) => b.floor_number - a.floor_number)
-})
-
 const hoveredFloor = computed(() => {
   if (!hoveredFloorId.value) return null
   return floorZones.value.find(z => z.id === hoveredFloorId.value) || null
@@ -105,14 +119,26 @@ const hoveredFloor = computed(() => {
 
 async function loadData() {
   try {
+    // Load floors for this building
+    // Level is 'building' and we pass the buildingId as a parameter
     await apartmentStore.loadNavigation(props.projectId, 'building', props.buildingId)
+    
+    // Check for deep link
+    if (!props.autoNavigate && route.query.floor) {
+      const floorNumber = parseInt(route.query.floor as string)
+      if (!isNaN(floorNumber)) {
+        // Find the floor zone
+        const zones = apartmentStore.currentZones as FloorZone[]
+        const floor = zones.find(z => z.floor_number === floorNumber && z.type === 'floor_strip')
+        
+        if (floor) {
+          emit('floor-selected', floor)
+        }
+      }
+    }
   } catch (error) {
     console.error('Failed to load floor data:', error)
   }
-}
-
-function handleBack() {
-  router.push(`/projects/${props.projectId}`)
 }
 
 function handleFloorClick(zone: FloorZone | ApartmentZone | BuildingZone) {
@@ -121,8 +147,10 @@ function handleFloorClick(zone: FloorZone | ApartmentZone | BuildingZone) {
     selectedFloorId.value = zone.id
     emit('floor-selected', zone as FloorZone)
 
-    // Navigate to apartment grid
-    router.push(`/projects/${props.projectId}/${props.buildingIdentifier}/floor-${zone.floor_number}`)
+    // Only navigate if autoNavigate is enabled
+    if (props.autoNavigate) {
+      router.push(`/projects/${props.projectId}/${props.buildingIdentifier}/floor-${zone.floor_number}`)
+    }
   }
 }
 
@@ -135,37 +163,8 @@ function handleFloorHover(zone: FloorZone | ApartmentZone | BuildingZone | null)
   }
 }
 
-function getFloorCardClass(zone: FloorZone): string {
-  const isHovered = hoveredFloorId.value === zone.id
-  const isSelected = selectedFloorId.value === zone.id
-
-  if (isSelected) {
-    return 'border-[#FFCD4B] bg-[#FFCD4B]/10 shadow-lg shadow-[#FFCD4B]/20'
-  }
-
-  if (isHovered) {
-    return 'border-[#FFCD4B]/50 bg-white/5'
-  }
-
-  return 'border-white/10 hover:border-[#FFCD4B]/30'
-}
-
-function getStatusIndicatorClass(stats: FloorStats): string {
-  if (stats.available === 0) {
-    return 'bg-zinc-500' // All sold/reserved
-  } else if (stats.available === stats.total) {
-    return 'bg-[#4ade80]' // All available
-  } else {
-    return 'bg-[#FFCD4B]' // Some available
-  }
-}
-
 onMounted(() => {
   loadData()
-})
-
-onUnmounted(() => {
-  apartmentStore.reset()
 })
 </script>
 

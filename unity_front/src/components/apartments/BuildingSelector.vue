@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTranslations } from '@/composables/useTranslations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
 import InteractiveMapViewer from './InteractiveMapViewer.vue'
 import type { BuildingZone, ApartmentZone, FloorZone } from '@/types/apartments'
@@ -106,8 +106,10 @@ function handleBuildingClick(zone: BuildingZone | ApartmentZone | FloorZone) {
     selectedBuildingId.value = zone.id
     emit('building-selected', zone as BuildingZone)
 
-    // Navigate to floor selection
-    router.push(`/projects/${props.projectId}/${zone.building_identifier}`)
+    // Only navigate if autoNavigate is enabled
+    if (props.autoNavigate) {
+      router.push(`/projects/${props.projectId}/${zone.building_identifier}`)
+    }
   }
 }
 
@@ -126,7 +128,8 @@ onMounted(() => {
 
 // Cleanup on unmount
 onUnmounted(() => {
-  apartmentStore.reset()
+  // Don't reset store here as it might be needed by InlineApartmentViewer
+  // apartmentStore.reset()
 })
 </script>
 

@@ -7,49 +7,27 @@
           @click="goBack"
           class="inline-flex items-center text-emerald-600 hover:text-emerald-700 transition-all duration-300 mb-6 group font-medium text-sm bg-white/80 px-4 py-2 rounded-full border border-slate-300 hover:border-emerald-500/50 shadow-sm"
         >
-          <svg
-            class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform duration-300"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            ></path>
+          <svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
-          უკან პროექტებზე
+          {{ t('admin.projects.back_to_projects') }}
         </button>
-        <h1
-          class="text-5xl font-light bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 bg-clip-text text-transparent mb-3 tracking-tight leading-tight py-1"
-        >
-          ახალი პროექტის დამატება
+        <h1 class="text-5xl font-light bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 bg-clip-text text-transparent mb-3 tracking-tight leading-tight py-1">
+          {{ t('admin.projects.add_project') }}
         </h1>
-        <p class="text-slate-600 text-xl font-light">
-          შექმენით ახალი პროექტი და ატვირთეთ მისი მედია ფაილები
-        </p>
+        <p class="text-slate-600 text-xl font-light">{{ t('admin.projects.create_info') }}</p>
       </div>
 
       <!-- Upload Progress Indicator -->
-      <div
-        v-if="isUploading"
-        class="mb-8 bg-white rounded-2xl p-6 shadow-lg border border-slate-200"
-      >
+      <div v-if="isUploading" class="mb-8 bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-slate-700">მიმდინარეობს ატვირთვა...</h3>
+          <h3 class="text-lg font-semibold text-slate-700">{{ t('admin.projects.uploading') }}</h3>
           <span class="text-sm text-slate-500">{{ uploadProgress }}%</span>
         </div>
         <div class="w-full bg-slate-200 rounded-full h-3">
-          <div
-            class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-300 ease-out"
-            :style="{ width: uploadProgress + '%' }"
-          ></div>
+          <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-300 ease-out" :style="{ width: uploadProgress + '%' }"></div>
         </div>
-        <p class="text-sm text-slate-600 mt-2">
-          გთხოვთ, მოიცადოთ. სურათების კომპრესია და ატვირთვა მიმდინარეობს...
-        </p>
+        <p class="text-sm text-slate-600 mt-2">{{ t('admin.projects.upload_info') }}</p>
       </div>
 
       <ProjectForm
@@ -73,109 +51,27 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAdminProjectsStore } from '@/stores/admin/projects'
-import { useProjectForm } from '@/composables/useProjectForm'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { ProjectForm } from '@/components/admin'
+import { useProjectAdd } from './composables'
 
-const router = useRouter()
-const adminProjectsStore = useAdminProjectsStore()
+const { t } = useTranslations()
 
 const {
+  form,
+  previews,
   submitting,
   translating,
-  createInitialForm,
-  createInitialPreviews,
-  handleTranslate: baseHandleTranslate,
-  handleFileChange: baseHandleFileChange,
-  handleGalleryChange: baseHandleGalleryChange,
-  removeGalleryImage: baseRemoveGalleryImage,
-  prepareFormData,
-} = useProjectForm()
-
-const uploadProgress = ref(0)
-const isUploading = ref(false)
-
-const form = reactive(createInitialForm(false))
-const previews = reactive(createInitialPreviews())
-
-function goBack() {
-  router.push({ name: 'admin-projects' })
-}
-
-function updateForm(updatedForm: Partial<typeof form>) {
-  Object.assign(form, updatedForm)
-}
-
-function handleTranslate(fieldName: string, fromLang: string, toLang: string) {
-  baseHandleTranslate(form, fieldName, fromLang, toLang)
-}
-
-function handleFileChange(fieldName: 'main_image' | 'render_image', files: FileList | null) {
-  baseHandleFileChange(form, previews, fieldName, files)
-}
-
-function handleGalleryChange(files: FileList | null) {
-  baseHandleGalleryChange(form, previews, files, false)
-}
-
-function removeGalleryImage(index: number) {
-  baseRemoveGalleryImage(form, previews, index, false)
-}
-
-async function onSubmit() {
-  try {
-    submitting.value = true
-    isUploading.value = true
-    uploadProgress.value = 0
-
-    // Check if we need sequential upload (large payload)
-    const allImageFiles = [form.main_image, form.render_image, ...form.gallery_images].filter(
-      (file): file is File => file instanceof File,
-    )
-    const totalSize = allImageFiles.reduce((sum, file) => sum + file.size, 0)
-    const totalSizeMB = totalSize / (1024 * 1024)
-
-
-    if (totalSizeMB > 6) {
-      // Use sequential upload for large payloads
-
-      const formData = await prepareFormData(form, false)
-      const result = await adminProjectsStore.addProject(formData)
-
-      if (result.success) {
-        uploadProgress.value = 100
-        router.push({ name: 'admin-projects' })
-      } else {
-        alert(`პროექტის შექმნა ვერ მოხერხდა: ${result.error}`)
-      }
-    } else {
-      // Use normal upload for small payloads
-
-      const formData = await prepareFormData(form, false)
-
-   
-
-      uploadProgress.value = 50
-      const result = await adminProjectsStore.addProject(formData)
-
-      if (result.success) {
-        uploadProgress.value = 100
-        router.push({ name: 'admin-projects' })
-      } else {
-        alert(`პროექტის შექმნა ვერ მოხერხდა: ${result.error}`)
-      }
-    }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'უცნობი შეცდომა'
-    alert(`პროექტის შექმნა ვერ მოხერხდა: ${errorMessage}`)
-  } finally {
-    submitting.value = false
-    isUploading.value = false
-    uploadProgress.value = 0
-  }
-}
+  uploadProgress,
+  isUploading,
+  goBack,
+  updateForm,
+  handleTranslate,
+  handleFileChange,
+  handleGalleryChange,
+  removeGalleryImage,
+  onSubmit,
+} = useProjectAdd()
 </script>
 
 <style scoped>
@@ -183,7 +79,6 @@ async function onSubmit() {
   max-width: 1200px;
 }
 
-/* Custom select styling for light theme */
 select {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
   background-position: right 1rem center;
@@ -192,7 +87,6 @@ select {
   padding-right: 3rem;
 }
 
-/* Enhanced focus styles for light theme */
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
@@ -201,7 +95,6 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-/* Custom scrollbar for light theme */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -218,64 +111,5 @@ select:focus-visible {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.8);
-}
-
-/* Smooth animations for form elements */
-input[type='file']::-webkit-file-upload-button {
-  background: rgb(236, 253, 245);
-  color: rgb(5, 150, 105);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-input[type='file']::-webkit-file-upload-button:hover {
-  background: rgb(209, 250, 229);
-  transform: translateY(-1px);
-}
-
-/* Checkbox styling for light theme */
-input[type='checkbox']:checked {
-  background-size: 16px 16px;
-}
-
-/* Enhanced hover effects */
-.group:hover .group-hover\:scale-105 {
-  transform: scale(1.05);
-}
-
-/* Gradient text animation */
-@keyframes gradient-shift {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-.bg-gradient-to-r.from-emerald-500.via-emerald-400.to-teal-400 {
-  background-size: 200% 200%;
-  animation: gradient-shift 6s ease-in-out infinite;
-}
-
-/* Card hover effects */
-.bg-white:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-}
-
-/* Button glow effect */
-button[type='submit']:not(:disabled):hover {
-  box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
-}
-
-/* File input area styling */
-.border-dashed:hover {
-  background-color: rgba(248, 250, 252, 0.8);
 }
 </style>

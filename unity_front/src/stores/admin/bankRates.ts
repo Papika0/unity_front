@@ -17,14 +17,14 @@ const getErrorMessage = (err: unknown, defaultMessage: string): string => {
 }
 
 export const useBankRatesStore = defineStore('bankRates', () => {
-  // State
+  // ==================== STATE ====================
   const bankRates = ref<BankRate[]>([])
   const activeBankRates = ref<BankRate[]>([])
   const loading = ref(false)
   const saving = ref(false)
   const error = ref('')
 
-  // Actions
+  // ==================== ACTIONS ====================
   const loadBankRates = async () => {
     try {
       loading.value = true
@@ -189,9 +189,18 @@ export const useBankRatesStore = defineStore('bankRates', () => {
     error.value = ''
   }
 
-  // Initialize
+  // ==================== INITIALIZATION ====================
   const initialize = async () => {
     await loadBankRates()
+  }
+
+  // ==================== RESET ====================
+  const $reset = () => {
+    bankRates.value = []
+    activeBankRates.value = []
+    loading.value = false
+    saving.value = false
+    error.value = ''
   }
 
   return {
@@ -201,7 +210,6 @@ export const useBankRatesStore = defineStore('bankRates', () => {
     loading,
     saving,
     error,
-
     // Actions
     loadBankRates,
     loadActiveBankRates,
@@ -214,5 +222,6 @@ export const useBankRatesStore = defineStore('bankRates', () => {
     moveBankRateDown,
     clearError,
     initialize,
+    $reset,
   }
 })

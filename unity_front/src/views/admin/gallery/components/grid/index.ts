@@ -1,0 +1,6 @@
+export { default as GalleryCard } from './GalleryCard.vue'
+export { default as GalleryFilters } from './GalleryFilters.vue'
+export { default as GalleryGrid } from './GalleryGrid.vue'
+export { default as GalleryHeader } from './GalleryHeader.vue'
+export { default as GalleryPagination } from './GalleryPagination.vue'
+export { default as GalleryStatistics } from './GalleryStatistics.vue'

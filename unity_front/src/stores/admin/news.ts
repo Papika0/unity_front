@@ -13,7 +13,7 @@ import {
 import type { AdminNewsArticle } from '@/types'
 
 export const useAdminNewsStore = defineStore('adminNews', () => {
-  // State
+  // ==================== STATE ====================
   const articles = ref<AdminNewsArticle[]>([])
   const currentArticle = ref<AdminNewsArticle | null>(null)
   const loading = ref(false)
@@ -33,7 +33,7 @@ export const useAdminNewsStore = defineStore('adminNews', () => {
   const totalPages = ref(1)
   const totalItems = ref(0)
 
-  // Getters
+  // ==================== GETTERS ====================
   const activeArticles = computed(() =>
     Array.isArray(articles.value) ? articles.value.filter((article) => article.is_active) : [],
   )
@@ -80,7 +80,7 @@ export const useAdminNewsStore = defineStore('adminNews', () => {
     return categorized
   })
 
-  // Actions
+  // ==================== ACTIONS ====================
   const loadArticles = async (page: number = 1) => {
     loading.value = true
     error.value = ''
@@ -395,6 +395,25 @@ export const useAdminNewsStore = defineStore('adminNews', () => {
     currentArticle.value = null
   }
 
+  // ==================== RESET ====================
+  const $reset = () => {
+    articles.value = []
+    modalArticles.value = []
+    currentArticle.value = null
+    loading.value = false
+    loadingModal.value = false
+    saving.value = false
+    error.value = ''
+    validationErrors.value = {}
+    searchQuery.value = ''
+    selectedCategory.value = ''
+    currentPage.value = 1
+    perPage.value = 15
+    totalPages.value = 1
+    totalItems.value = 0
+  }
+
+  // ==================== RETURN ====================
   return {
     // State
     articles,
@@ -442,6 +461,7 @@ export const useAdminNewsStore = defineStore('adminNews', () => {
     clearValidationErrors,
     clearError,
     clearCurrentArticle,
+    $reset,
   }
 })
 

@@ -11,7 +11,7 @@
         <div
           class="animate-spin rounded-full h-10 w-10 border-2 border-amber-500 border-t-transparent mx-auto mb-3"
         ></div>
-        <p class="text-slate-600 text-sm font-medium">მიმართავს დაშბორდზე...</p>
+        <p class="text-slate-600 text-sm font-medium">{{ t('admin.login.redirecting') }}</p>
       </div>
     </div>
 
@@ -28,8 +28,8 @@
             class="h-full w-full object-contain"
           />
         </div>
-        <h1 class="text-2xl font-bold text-slate-800 mb-1">ადმინისტრაციული პანელი</h1>
-        <p class="text-slate-500 text-sm">შედით თქვენი ანგარიშით</p>
+        <h1 class="text-2xl font-bold text-slate-800 mb-1">{{ t('admin.login.title') }}</h1>
+        <p class="text-slate-500 text-sm">{{ t('admin.login.subtitle') }}</p>
       </div>
 
       <!-- Login Card -->
@@ -38,7 +38,7 @@
           <!-- Email Field -->
           <div>
             <label for="email" class="block text-sm font-medium text-slate-700 mb-2"
-              >ელ. ფოსტა</label
+              >{{ t('admin.login.email') }}</label
             >
             <input
               id="email"
@@ -48,14 +48,14 @@
               autocomplete="email"
               required
               class="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 placeholder-slate-400 text-slate-700 transition-all duration-200 text-sm"
-              placeholder="თქვენი ელ. ფოსტის მისამართი"
+              :placeholder="t('admin.login.email_placeholder')"
             />
           </div>
 
           <!-- Password Field -->
           <div>
             <label for="password" class="block text-sm font-medium text-slate-700 mb-2"
-              >პაროლი</label
+              >{{ t('admin.login.password') }}</label
             >
             <input
               id="password"
@@ -65,7 +65,7 @@
               autocomplete="current-password"
               required
               class="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 placeholder-slate-400 text-slate-700 transition-all duration-200 text-sm"
-              placeholder="თქვენი პაროლი"
+              :placeholder="t('admin.login.password_placeholder')"
             />
           </div>
 
@@ -78,7 +78,7 @@
               type="checkbox"
               class="h-4 w-4 text-amber-500 focus:ring-amber-400 border-slate-300 rounded"
             />
-            <label for="remember-me" class="ml-2 text-sm text-slate-600">დამიმახსოვრე</label>
+            <label for="remember-me" class="ml-2 text-sm text-slate-600">{{ t('admin.login.remember_me') }}</label>
           </div>
 
           <!-- Error Message -->
@@ -128,7 +128,7 @@
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            {{ authStore.loading ? 'შესვლა...' : 'შესვლა დაშბორდში' }}
+            {{ authStore.loading ? t('admin.login.logging_in') : t('admin.login.submit') }}
           </button>
 
           <!-- Back Link -->
@@ -145,7 +145,7 @@
                   d="M10 19l-7-7m0 0l7-7m-7 7h18"
                 />
               </svg>
-              <span>დაბრუნება მთავარ საიტზე</span>
+              <span>{{ t('admin.login.back_to_site') }}</span>
             </router-link>
           </div>
         </form>
@@ -158,9 +158,11 @@
 import { reactive, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth/auth'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { t } = useTranslations()
 const redirecting = ref(false)
 
 const form = reactive({

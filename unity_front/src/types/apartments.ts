@@ -32,6 +32,12 @@ export interface ZoneImage {
   height: number
 }
 
+export interface ApartmentImage {
+  id: number
+  url: string
+  title?: string
+}
+
 export interface Building {
   id: number
   project_id: number
@@ -65,6 +71,8 @@ export interface Apartment {
   room_details?: RoomDetails | null
   has_balcony: boolean
   is_parking: boolean
+  image_2d?: ApartmentImage | null
+  image_3d?: ApartmentImage | null
   created_at?: string
   updated_at?: string
 }
@@ -151,5 +159,12 @@ export interface ApartmentDetail {
   has_balcony: boolean
   has_parking: boolean
   floor_plan_image?: string
+  image_2d?: ApartmentImage | null
+  image_3d?: ApartmentImage | null
+  room_details?: {
+    bedrooms?: Record<string, number>
+    bathrooms?: Record<string, number>
+    other_rooms?: Record<string, number>
+  } | null
   similar_apartments?: ApartmentDetail[]
 }

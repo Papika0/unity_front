@@ -20,11 +20,15 @@ class ApartmentController extends Controller
         $cacheKey = "apartment_{$id}";
 
         $apartmentData = Cache::remember($cacheKey, 1800, function () use ($id) {
-            $apartment = Apartment::with(['project', 'building', 'interactiveZone'])
+            $apartment = Apartment::with(['project', 'building', 'interactiveZone', 'image2d', 'image3d'])
                 ->findOrFail($id);
 
             // Get floor plan image if exists (assuming it's attached via morphToMany)
             $floorPlanImage = $apartment->interactiveZone?->images()->first();
+
+            // Get 2D and 3D images
+            $image2d = $apartment->image2d->first();
+            $image3d = $apartment->image3d->first();
 
             // Find similar apartments (same bedrooms, similar area ±10%)
             $similar = Apartment::where('building_id', $apartment->building_id)
@@ -77,7 +81,16 @@ class ApartmentController extends Controller
                 'bathrooms' => $apartment->bathrooms,
                 'has_balcony' => $apartment->has_balcony,
                 'has_parking' => $apartment->has_parking,
+                'room_details' => is_string($apartment->room_details) ? json_decode($apartment->room_details, true) : $apartment->room_details,
                 'floor_plan_image' => $floorPlanImage?->url,
+                'image_2d' => $image2d ? [
+                    'id' => $image2d->id,
+                    'url' => $image2d->full_url,
+                ] : null,
+                'image_3d' => $image3d ? [
+                    'id' => $image3d->id,
+                    'url' => $image3d->full_url,
+                ] : null,
                 'similar_apartments' => $similar,
             ];
         });

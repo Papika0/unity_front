@@ -1,0 +1,1 @@
+export { useApartmentDetail } from './useApartmentDetail'

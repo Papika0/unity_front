@@ -82,5 +82,9 @@ onUnmounted(() => {
 </script>
 
 <script lang="ts">
-import { watchEffect, onUnmounted } from 'vue'
+import { watchEffect, onUnmounted, defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'AdminModal'
+})
 </script>

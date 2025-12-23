@@ -1,0 +1,6 @@
+export { default as ProjectCard } from './ProjectCard.vue'
+export { default as ProjectHeroImage } from './ProjectHeroImage.vue'
+export { default as ProjectHeader } from './ProjectHeader.vue'
+export { default as ProjectDetails } from './ProjectDetails.vue'
+export { default as ProjectRenderImage } from './ProjectRenderImage.vue'
+export { default as ProjectGallery } from './ProjectGallery.vue'

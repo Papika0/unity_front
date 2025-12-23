@@ -140,6 +140,14 @@ class InteractiveZone extends Model
     }
 
     /**
+     * Get the zone's images.
+     */
+    public function images(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    {
+        return $this->morphToMany(Image::class, 'imageable');
+    }
+
+    /**
      * Calculate and return the bounding box from svg_coordinates.
      */
     public function calculateBoundingBox(): array

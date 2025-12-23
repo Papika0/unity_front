@@ -80,7 +80,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { compressFileIfNeeded, type ConstructionImageType } from '@/utils/imageCompression'
+import { compressFileIfNeeded, type ConstructionImageType } from '@/utils/image-compression'
 
 interface Props {
   fieldId: string

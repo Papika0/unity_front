@@ -83,7 +83,7 @@ class ImageService
     {
         // Use the original filename as title
         $title = $file->getClientOriginalName();
-        
+
         // Call the main uploadImage method
         return $this->uploadImage($file, $title, $category, null, null);
     }
@@ -96,7 +96,7 @@ class ImageService
         return Imageable::create([
             'image_id' => $image->id,
             'imageable_id' => $model->id,
-            'imageable_type' => get_class($model),
+            'imageable_type' => $model->getMorphClass(),
             'type' => $type,
             'sort_order' => $sortOrder,
         ]);

@@ -1,0 +1,5 @@
+export { default as AboutSection } from './AboutSection.vue'
+export { default as FeaturedProject } from './FeaturedProject.vue'
+export { default as HeroSection } from './HeroSection.vue'
+export { default as NewsSection } from './NewsSection.vue'
+export { default as ProjectsSection } from './ProjectsSection.vue'

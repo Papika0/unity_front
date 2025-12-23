@@ -1,0 +1,1 @@
+export { useTranslationsList } from './useTranslationsList'
