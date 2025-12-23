@@ -1,5 +1,4 @@
 import api from '@/plugins/axios/api'
-import { useLocaleStore } from '@/stores/ui/locale'
 import { useTranslationsStore } from '@/stores/ui/translations'
 
 // Flag to prevent duplicate translation requests during page load
@@ -11,6 +10,7 @@ export const resetTranslationFlag = () => {
 }
 
 // Public endpoints
+// Locale is now sent via Accept-Language header automatically
 export const getNews = async (params?: {
   category?: string
   featured?: boolean
@@ -18,11 +18,9 @@ export const getNews = async (params?: {
   per_page?: number
   page?: number
 }) => {
-  const localeStore = useLocaleStore()
   const translationsStore = useTranslationsStore()
 
   const queryString = new URLSearchParams()
-  queryString.append('locale', localeStore.currentLocale)
 
   // Only request translation groups if they haven't been requested yet in this session
   if (!translationsRequested && !translationsStore.arePageGroupsLoaded('news')) {
@@ -37,15 +35,14 @@ export const getNews = async (params?: {
   if (params?.per_page) queryString.append('per_page', params.per_page.toString())
   if (params?.page) queryString.append('page', params.page.toString())
 
-  return api.get(`/news?${queryString}`)
+  const queryPart = queryString.toString() ? `?${queryString}` : ''
+  return api.get(`/news${queryPart}`)
 }
 
 export const getNewsArticle = async (id: number) => {
-  const localeStore = useLocaleStore()
   const translationsStore = useTranslationsStore()
 
   const queryString = new URLSearchParams()
-  queryString.append('locale', localeStore.currentLocale)
 
   // Only request translation groups for individual article pages that might need them
   const missingGroups = translationsStore.getMissingGroups('news')
@@ -53,31 +50,21 @@ export const getNewsArticle = async (id: number) => {
     missingGroups.forEach((group) => queryString.append('groups[]', group))
   }
 
-  return api.get(`/news/${id}?${queryString}`)
+  const queryPart = queryString.toString() ? `?${queryString}` : ''
+  return api.get(`/news/${id}${queryPart}`)
 }
 
 export const getRecentNews = async (params?: { limit?: number }) => {
-  const localeStore = useLocaleStore()
-
   const queryString = new URLSearchParams()
-  queryString.append('locale', localeStore.currentLocale)
-
-  // Don't request translation groups - let the main getNews call handle translations
 
   if (params?.limit) queryString.append('limit', params.limit.toString())
 
-  return api.get(`/news/recent?${queryString}`)
+  const queryPart = queryString.toString() ? `?${queryString}` : ''
+  return api.get(`/news/recent${queryPart}`)
 }
 
 export const getFeaturedNews = async () => {
-  const localeStore = useLocaleStore()
-
-  const queryString = new URLSearchParams()
-  queryString.append('locale', localeStore.currentLocale)
-
-  // Never request translation groups - let the main getNews call handle translations
-
-  return api.get(`/news/featured?${queryString}`)
+  return api.get(`/news/featured`)
 }
 
 export const getNewsByCategory = async (category: string) => api.get(`/news/category/${category}`)

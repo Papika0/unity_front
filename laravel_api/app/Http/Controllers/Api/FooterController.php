@@ -8,6 +8,7 @@ use App\Services\SiteSettingsService;
 use App\Services\PageCacheService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
 class FooterController extends Controller
@@ -19,7 +20,7 @@ class FooterController extends Controller
     protected $pageCacheService;
 
     public function __construct(
-        ProjectService $projectService, 
+        ProjectService $projectService,
         SiteSettingsService $siteSettingsService,
         PageCacheService $pageCacheService
     ) {
@@ -37,7 +38,7 @@ class FooterController extends Controller
     public function index(Request $request)
     {
         try {
-            $locale = $request->get('locale', 'ka');
+            $locale = App::getLocale();
 
             // Create cache key
             $cacheKey = "footer_index_{$locale}";
@@ -46,13 +47,13 @@ class FooterController extends Controller
             if ($this->pageCacheService->has($cacheKey)) {
                 return $this->pageCacheService->get($cacheKey);
             }
-            
+
             // Get footer-specific projects (limited for performance)
             $projects = $this->projectService->getFooterProjects($locale, 6);
-            
+
             // Get footer contact and social data
             $footerData = $this->siteSettingsService->getFooterData($locale);
-            
+
             $response = [
                 'projects' => $projects,
                 'contact' => $footerData['contact'],
@@ -70,7 +71,7 @@ class FooterController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return $this->error('Failed to retrieve footer data', 500);
         }
     }
@@ -84,19 +85,19 @@ class FooterController extends Controller
     public function projects(Request $request)
     {
         try {
-            $locale = $request->get('locale', 'ka');
+            $locale = App::getLocale();
             $limit = $request->get('limit', 6);
-            
+
             $projects = $this->projectService->getFooterProjects($locale, $limit);
-            
+
             return $this->success($projects, 'Footer projects retrieved successfully');
         } catch (\Exception $e) {
             Log::error('FooterController: Failed to get footer projects', [
                 'error' => $e->getMessage(),
-                'locale' => $request->get('locale', 'ka'),
+                'locale' => App::getLocale(),
                 'limit' => $request->get('limit', 6)
             ]);
-            
+
             return $this->error('Failed to retrieve footer projects', 500);
         }
     }
@@ -110,17 +111,17 @@ class FooterController extends Controller
     public function contact(Request $request)
     {
         try {
-            $locale = $request->get('locale', 'ka');
-            
+            $locale = App::getLocale();
+
             $contactInfo = $this->siteSettingsService->getFooterContactInfo($locale);
-            
+
             return $this->success($contactInfo, 'Footer contact info retrieved successfully');
         } catch (\Exception $e) {
             Log::error('FooterController: Failed to get footer contact info', [
                 'error' => $e->getMessage(),
-                'locale' => $request->get('locale', 'ka')
+                'locale' => App::getLocale()
             ]);
-            
+
             return $this->error('Failed to retrieve footer contact info', 500);
         }
     }

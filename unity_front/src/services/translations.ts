@@ -30,9 +30,11 @@ export const deleteTranslation = async (id: number) => api.delete(`/translations
 export const getTranslation = async (id: number) => api.get(`/translations/${id}`)
 
 // Public/grouped fetch for frontend consumption
-export const getTranslationsByGroup = async (group: string, locale: string = 'ka') =>
-  api.get(`/public/translations/group/${group}`, { params: { locale } })
+// Locale is now sent via Accept-Language header automatically
+export const getTranslationsByGroup = async (group: string) =>
+  api.get(`/public/translations/group/${group}`)
 
 // Fetch multiple groups at once
-export const getTranslationsByGroups = async (groups: string[], locale: string = 'ka') =>
-  api.post(`/public/translations/groups`, { groups, locale })
+// Locale is now sent via Accept-Language header automatically
+export const getTranslationsByGroups = async (groups: string[]) =>
+  api.post(`/public/translations/groups`, { groups })

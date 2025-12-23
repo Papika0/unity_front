@@ -1,7 +1,7 @@
 import api from '@/plugins/axios/api'
 
+// Locale is now sent via Accept-Language header automatically
 export type ContactSettingsParams = {
-  locale?: string
   groups?: string[]
 }
 

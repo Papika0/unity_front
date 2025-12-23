@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Translation;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class TranslationsController extends Controller
 {
@@ -18,12 +19,8 @@ class TranslationsController extends Controller
     public function getByGroup(Request $request, string $group)
     {
         try {
-            $locale = $request->get('locale', 'ka');
-
-            // Validate locale
-            if (!in_array($locale, ['ka', 'en', 'ru'])) {
-                return $this->error('Invalid locale', 400);
-            }
+            // Locale is now set by middleware from Accept-Language header
+            $locale = App::getLocale();
 
             // Get all active translations for this group
             $translations = Translation::where('group', $group)
@@ -51,13 +48,9 @@ class TranslationsController extends Controller
     public function getByGroups(Request $request)
     {
         try {
-            $locale = $request->get('locale', 'ka');
+            // Locale is now set by middleware from Accept-Language header
+            $locale = App::getLocale();
             $groups = $request->get('groups', []);
-
-            // Validate locale
-            if (!in_array($locale, ['ka', 'en', 'ru'])) {
-                return $this->error('Invalid locale', 400);
-            }
 
             // Validate groups is an array
             if (!is_array($groups) || empty($groups)) {

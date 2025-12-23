@@ -10,6 +10,7 @@ use App\Models\InteractiveZone;
 use App\Models\ZoneImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -46,7 +47,8 @@ class ApartmentNavigationController extends Controller
         }
 
         // Build cache key
-        $cacheKey = "apartment_nav:{$projectId}:{$level}:" . ($buildingId ?? 'null') . ':' . ($floorNumber ?? 'null');
+        $locale = App::getLocale();
+        $cacheKey = "apartment_nav:{$locale}:{$projectId}:{$level}:" . ($buildingId ?? 'null') . ':' . ($floorNumber ?? 'null');
 
         // Return cached response if available
         $response = Cache::remember($cacheKey, 1800, function () use ($projectId, $level, $buildingId, $floorNumber) {
@@ -102,8 +104,17 @@ class ApartmentNavigationController extends Controller
                 // Calculate stats for this building
                 $stats = $this->calculateBuildingStats($zone->entity_id);
 
-                // Get the label from display_config or fallback to building name
-                $label = $zone->display_config['label'] ?? $building?->name;
+                // Get the label fallback to building name (which is translatable)
+                $label = $building?->name;
+
+                // Only use display_config label if it's explicitly set and NOT just the building name fallback
+                if (isset($zone->display_config['label']) && !empty($zone->display_config['label'])) {
+                    // If we have a translation system for individual labels, we could use it here.
+                    // For now, we prefer the Building name if available because it IS translatable.
+                    if (!$building) {
+                        $label = $zone->display_config['label'];
+                    }
+                }
 
                 return [
                     'id' => $zone->id,
@@ -172,8 +183,9 @@ class ApartmentNavigationController extends Controller
                 // Calculate stats for this floor
                 $stats = $this->calculateFloorStats($buildingId, $floorNumber);
 
-                // Get the label from display_config or fallback to "Floor X"
-                $label = $zone->display_config['label'] ?? "Floor {$floorNumber}";
+                // Get the label from display_config or fallback to "Floor X" (localized)
+                $floorLabel = __('apartments.floor');
+                $label = $zone->display_config['label'] ?? "{$floorLabel} {$floorNumber}";
 
                 return [
                     'id' => $zone->id,

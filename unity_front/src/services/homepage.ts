@@ -1,9 +1,6 @@
 import api from '@/plugins/axios/api'
 
-export type HomepageBootstrapParams = {
-  locale: string
-}
-
-export const getHomepageBootstrap = async (params: HomepageBootstrapParams) => {
-  return api.get('/homepage/bootstrap', { params })
+// Locale is now sent via Accept-Language header automatically
+export const getHomepageBootstrap = async () => {
+  return api.get('/homepage/bootstrap')
 }

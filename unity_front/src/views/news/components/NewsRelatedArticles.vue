@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { RelatedArticle } from '@/types/news'
 import { useScrollAnimation } from '@/composables/animations/useScrollAnimation'
 import { useLocaleStore } from '@/stores/ui/locale'
@@ -12,13 +13,14 @@ const { t } = useTranslations()
 const localeStore = useLocaleStore()
 const { element: relatedElement, isVisible: relatedVisible } = useScrollAnimation({ once: true, threshold: 0.05, rootMargin: '200px' })
 
-const categoryLabels: Record<string, string> = {
+// Use computed so it updates when translations load
+const categoryLabels = computed(() => ({
   all: t('news.categories.all'),
   company: t('news.categories.company'),
   project: t('news.categories.project'),
   industry: t('news.categories.industry'),
   event: t('news.categories.event'),
-}
+}))
 
 const formatDate = (publishDate: string) => {
   const localeMap: Record<string, string> = {

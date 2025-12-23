@@ -7,6 +7,7 @@ use App\Services\ImageService;
 use App\Services\PageCacheService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\App;
 
 class GalleryController extends Controller
 {
@@ -27,13 +28,13 @@ class GalleryController extends Controller
         $category = $request->get('category', 'all');
         $limit = $request->get('limit', 20);
         $featured = $request->boolean('featured', false);
-        $locale = $request->get('locale', 'ka');
+        $locale = App::getLocale();
 
         // Create cache key
-        $cacheKey = "gallery_index_{$locale}_" . 
-                    ($category) . '_' .
-                    "limit{$limit}_" .
-                    ($featured ? 'featured' : 'normal');
+        $cacheKey = "gallery_index_{$locale}_" .
+            ($category) . '_' .
+            "limit{$limit}_" .
+            ($featured ? 'featured' : 'normal');
 
         // Check cache first
         if ($this->pageCacheService->has($cacheKey)) {
@@ -112,7 +113,7 @@ class GalleryController extends Controller
     public function show(Request $request, $id): JsonResponse
     {
         try {
-            $locale = $request->get('locale', 'ka');
+            $locale = App::getLocale();
             $image = \App\Models\Image::active()->findOrFail($id);
 
             return response()->json([

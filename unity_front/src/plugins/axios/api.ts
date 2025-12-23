@@ -15,9 +15,13 @@ api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('jwt_token') // Assuming JWT token is stored in localStorage
 
+    // Attach the current locale to the Accept-Language header
+    const locale = localStorage.getItem('app_locale') || 'ka'
+    config.headers = config.headers || {}
+    config.headers['Accept-Language'] = locale
+
     if (token) {
       // Attach the token to the Authorization header
-      config.headers = config.headers || {}
       config.headers['Authorization'] = `Bearer ${token}`
 
       // For cPanel/shared hosting environments, also add fallback headers

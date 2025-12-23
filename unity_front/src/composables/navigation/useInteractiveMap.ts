@@ -55,17 +55,19 @@ export function useInteractiveMap(
   }
 
   function getZoneLabel(zone: ZoneType): string {
-    if ('label' in zone && zone.label) {
-      return zone.label
-    }
     if ('building_identifier' in zone) {
-      return `Building ${zone.building_identifier}`
+      // For building blocks, use the label if available
+      const buildingZone = zone as BuildingZone
+      if (buildingZone.label) {
+        return buildingZone.label
+      }
+      return `${t('common.block')} ${buildingZone.building_identifier.toUpperCase()}`
     }
     if ('floor_number' in zone) {
-      return `Floor ${zone.floor_number}`
+      return `${t('common.floor')} ${zone.floor_number}`
     }
     if ('apartment_number' in zone) {
-      return `Apartment ${zone.apartment_number}`
+      return `${t('apartments.apartment')} ${zone.apartment_number}`
     }
     return 'Zone'
   }

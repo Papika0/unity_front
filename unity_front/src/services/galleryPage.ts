@@ -1,9 +1,9 @@
 import api from '@/plugins/axios/api'
 import type { GalleryImage } from './galleryApi'
 
+// Locale is now sent via Accept-Language header automatically
 export interface GalleryPageParams {
   groups?: string[]
-  locale?: string
   category?: string
   page?: number
   limit?: number

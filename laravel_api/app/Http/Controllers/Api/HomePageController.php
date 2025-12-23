@@ -10,6 +10,7 @@ use App\Services\PageCacheService;
 use App\Services\ProjectService;
 use App\Services\SiteSettingsService;
 use App\Services\TranslationService;
+use Illuminate\Support\Facades\App;
 
 class HomepageController extends Controller
 {
@@ -19,8 +20,8 @@ class HomepageController extends Controller
     protected $projectService;
 
     public function __construct(
-        PageCacheService $pageCacheService, 
-        SiteSettingsService $siteSettingsService, 
+        PageCacheService $pageCacheService,
+        SiteSettingsService $siteSettingsService,
         TranslationService $translationService,
         ProjectService $projectService
     ) {
@@ -38,7 +39,7 @@ class HomepageController extends Controller
      */
     public function index(Request $request)
     {
-        $locale = $request->input('locale', 'ka');
+        $locale = App::getLocale();
 
         // Static groups defined in backend
         $groups = ['messages', 'header', 'footer', 'buttons', 'contact', 'errors', 'home', 'projects', 'news'];
@@ -100,9 +101,18 @@ class HomepageController extends Controller
             ->where('is_featured', true)
             ->with(['mainImage', 'galleryImages'])
             ->select([
-                'id', 'title', 'excerpt', 'content', 'category',
-                'tags', 'publish_date', 'views', 'meta_title', 
-                'meta_description', 'created_at', 'updated_at'
+                'id',
+                'title',
+                'excerpt',
+                'content',
+                'category',
+                'tags',
+                'publish_date',
+                'views',
+                'meta_title',
+                'meta_description',
+                'created_at',
+                'updated_at'
             ])
             ->latest()
             ->limit(2)
@@ -126,6 +136,4 @@ class HomepageController extends Controller
             'social_links' => $footerData['social_links'],
         ];
     }
-
-
 }

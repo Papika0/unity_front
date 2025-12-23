@@ -17,7 +17,8 @@ class ApartmentController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $cacheKey = "apartment_{$id}";
+        $locale = app()->getLocale();
+        $cacheKey = "apartment_{$locale}_{$id}";
 
         $apartmentData = Cache::remember($cacheKey, 1800, function () use ($id) {
             $apartment = Apartment::with(['project', 'building', 'interactiveZone', 'image2d', 'image3d'])

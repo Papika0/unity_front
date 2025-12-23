@@ -1,8 +1,8 @@
 import api from '@/plugins/axios/api'
 import type { ProjectApiResponse } from './projectsApi'
 
+// Locale is now sent via Accept-Language header automatically
 export type ProjectsPageParams = {
-  locale?: string
   groups?: string[]
   page?: number
   per_page?: number

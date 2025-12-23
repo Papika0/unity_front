@@ -43,6 +43,7 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             // \App\Http\Middleware\EncryptCookies::class,
             // \Illuminate\Session\Middleware\StartSession::class,
+            \App\Http\Middleware\LocaleMiddleware::class,
             \Illuminate\Http\Middleware\HandleCors::class,
             // Throttle removed from default - will be applied per route group
             \Illuminate\Routing\Middleware\SubstituteBindings::class,

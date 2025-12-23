@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Http\Resources\Api\ProjectResource;
 use App\Services\PageCacheService;
 use App\Services\TranslationService;
+use Illuminate\Support\Facades\App;
 
 class ProjectsController extends Controller
 {
@@ -30,9 +31,9 @@ class ProjectsController extends Controller
     {
         try {
             $projects = Projects::where('is_active', true)
-                               ->with(['mainImage', 'renderImage', 'galleryImages'])
-                               ->orderBy('created_at', 'desc')
-                               ->get();
+                ->with(['mainImage', 'renderImage', 'galleryImages'])
+                ->orderBy('created_at', 'desc')
+                ->get();
 
             $resources = ProjectResource::collection($projects);
             return $this->success($resources);
@@ -48,10 +49,10 @@ class ProjectsController extends Controller
     {
         try {
             $projects = Projects::where('is_active', true)
-                               ->where('is_featured', true)
-                               ->with(['mainImage', 'renderImage', 'galleryImages'])
-                               ->orderBy('created_at', 'desc')
-                               ->get();
+                ->where('is_featured', true)
+                ->with(['mainImage', 'renderImage', 'galleryImages'])
+                ->orderBy('created_at', 'desc')
+                ->get();
 
             $resources = ProjectResource::collection($projects);
             return $this->success($resources);
@@ -67,10 +68,10 @@ class ProjectsController extends Controller
     {
         try {
             $projects = Projects::where('is_active', true)
-                               ->where('is_onHomepage', true)
-                               ->with(['mainImage', 'renderImage', 'galleryImages'])
-                               ->orderBy('created_at', 'desc')
-                               ->get();
+                ->where('is_onHomepage', true)
+                ->with(['mainImage', 'renderImage', 'galleryImages'])
+                ->orderBy('created_at', 'desc')
+                ->get();
 
             $resources = ProjectResource::collection($projects);
             return $this->success($resources);
@@ -85,7 +86,7 @@ class ProjectsController extends Controller
     public function show(Request $request, $id)
     {
         try {
-            $locale = $request->input('locale', 'ka');
+            $locale = App::getLocale();
             $requestGroups = $request->input('groups', []);
 
             // Create cache key including groups
@@ -104,8 +105,8 @@ class ProjectsController extends Controller
             }
 
             $project = Projects::where('is_active', true)
-                              ->with(['features', 'mainImage', 'renderImage', 'galleryImages'])
-                              ->findOrFail($id);
+                ->with(['features', 'mainImage', 'renderImage', 'galleryImages'])
+                ->findOrFail($id);
 
             // Get related projects (same status, excluding current)
             $relatedProjects = Projects::where('is_active', true)
@@ -136,7 +137,7 @@ class ProjectsController extends Controller
 
             // Add related projects to the resource
             $resourceData = $resource->toArray($request);
-            $resourceData['related_projects'] = $relatedProjects->map(function($related) use ($locale) {
+            $resourceData['related_projects'] = $relatedProjects->map(function ($related) use ($locale) {
                 $mainImage = $related->mainImage->first();
                 return [
                     'id' => $related->id,

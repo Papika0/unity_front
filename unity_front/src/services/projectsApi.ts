@@ -1,5 +1,4 @@
 import api from '@/plugins/axios/api'
-import { useLocaleStore } from '@/stores/ui/locale'
 import { useTranslationsStore } from '@/stores/ui/translations'
 import type { ProjectFeature } from './featuresApi'
 import type { ImageData } from '@/types'
@@ -40,9 +39,10 @@ export interface ProjectApiResponse {
 
 export const projectsApi = {
   // Get all active projects
-  getAll: async (locale: string = 'ka') => {
+  // Locale is now sent via Accept-Language header automatically
+  getAll: async () => {
     const response = await api.get<{ success: boolean; data: ProjectApiResponse[] }>(
-      `/projects?locale=${locale}`,
+      `/projects`,
     )
     return response.data.data
   },
@@ -64,18 +64,19 @@ export const projectsApi = {
   },
 
   // Get single project by ID
-  getById: async (id: number, locale: string = 'ka') => {
-    const localeStore = useLocaleStore()
+  // Locale is now sent via Accept-Language header automatically
+  getById: async (id: number) => {
     const translationsStore = useTranslationsStore()
 
     const queryString = new URLSearchParams()
-    queryString.append('locale', locale || localeStore.currentLocale)
 
     // Request missing translation groups for projects page
     const missingGroups = translationsStore.getMissingGroups('projects')
     if (missingGroups.length > 0) {
       missingGroups.forEach((group) => queryString.append('groups[]', group))
     }
+
+    const queryPart = queryString.toString() ? `?${queryString}` : ''
 
     const response = await api.get<{
       success: boolean;
@@ -88,7 +89,7 @@ export const projectsApi = {
         }
       }
     }>(
-      `/projects/${id}?${queryString}`,
+      `/projects/${id}${queryPart}`,
     )
 
     // Return the full response data (includes data, translations, and meta)

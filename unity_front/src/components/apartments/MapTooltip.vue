@@ -26,8 +26,8 @@
         :style="style"
       >
         <div class="flex items-center justify-between mb-2 gap-4">
-          <span class="text-zinc-400 text-xs uppercase tracking-wider">{{ t('common.apt') || 'Apt.' }}</span>
-          <div 
+          <span class="text-zinc-400 text-xs uppercase tracking-wider">{{ t('apartments.apartment_short') }}</span>
+          <div
             class="px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wider"
             :class="{
               'bg-emerald-100 text-emerald-700': zone.status === 'available',
@@ -42,7 +42,7 @@
           {{ zone.apartment_number }}
         </div>
         <div class="flex items-center space-x-2">
-          <span class="text-zinc-500 text-sm font-light">{{ zone.area_total || 'N/A' }} {{ t('common.sqm') || 'm²' }}</span>
+          <span class="text-zinc-500 text-sm font-light">{{ zone.area_total || 'N/A' }} {{ t('common.sqm') }}</span>
         </div>
       </div>
     </Transition>

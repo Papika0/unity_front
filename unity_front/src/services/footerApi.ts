@@ -36,28 +36,28 @@ export interface FooterApiResponse {
 
 /**
  * Get footer data including projects and contact information
+ * Locale is now sent via Accept-Language header automatically
  */
-export async function getFooterData(locale: string = 'ka'): Promise<FooterApiResponse> {
-  const response = await api.get<FooterApiResponse>(`footer?locale=${locale}`)
+export async function getFooterData(): Promise<FooterApiResponse> {
+  const response = await api.get<FooterApiResponse>(`footer`)
   return response.data
 }
 
 /**
  * Get only footer projects
+ * Locale is now sent via Accept-Language header automatically
  */
-export async function getFooterProjects(
-  locale: string = 'ka',
-  limit: number = 6,
-): Promise<FooterApiResponse> {
+export async function getFooterProjects(limit: number = 6): Promise<FooterApiResponse> {
   const response = await api.get<FooterApiResponse>(
-    `footer/projects?locale=${locale}&limit=${limit}`,
+    `footer/projects?limit=${limit}`,
   )
   return response.data
 }
 
 /**
  * Get only footer contact information
+ * Locale is now sent via Accept-Language header automatically
  */
-export async function getFooterContact(locale: string = 'ka'): Promise<FooterApiResponse> {
-  return api.get(`footer/contact?locale=${locale}`)
+export async function getFooterContact(): Promise<FooterApiResponse> {
+  return api.get(`footer/contact`)
 }
