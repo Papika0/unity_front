@@ -48,6 +48,14 @@ api.interceptors.response.use(
       // Remove expired token from localStorage
       localStorage.removeItem('jwt_token')
 
+      try {
+        const { useAuthStore } = await import('@/stores/auth/auth')
+        const authStore = useAuthStore()
+        authStore.$reset()
+      } catch (storeError) {
+        console.warn('Unauthorized: Failed to reset auth store', storeError)
+      }
+
       // You can also show a notification or a message to inform the user if needed
       console.log('Unauthorized: Token expired or invalid')
 

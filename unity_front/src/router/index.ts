@@ -320,6 +320,12 @@ router.beforeEach(async (to, from, next) => {
     await authStore.initAuth()
   }
 
+  // If an admin route is requested after a failed auth init, send back to login
+  if (to.path.startsWith('/admin') && !authStore.isAuthenticated && to.path !== '/admin/login') {
+    next('/admin/login')
+    return
+  }
+
   // Handle guest-only routes (like login)
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
     if (authStore.isAdmin) {
