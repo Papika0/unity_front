@@ -18,6 +18,8 @@ export interface PDFDetectionResult {
 interface DetectedApartment {
   id: number
   polygon: number[][]
+  apartment_number?: string | null
+  ocr_confidence?: number
 }
 
 export function usePdfDetection() {
@@ -126,7 +128,25 @@ export function usePdfDetection() {
       }
 
       const detectedZones: Polygon[] = result.apartments.map((apt: DetectedApartment, index: number) => {
-        const apartment = apartments[index]
+        // Try to find apartment by number match
+        let apartment = null
+        if (apt.apartment_number) {
+          // Normalize string comparison
+          const aptNum = String(apt.apartment_number).trim().toLowerCase()
+          apartment = apartments.find(a => String(a.apartment_number).trim().toLowerCase() === aptNum)
+        }
+
+        // Generate label
+        // Generate label
+        let label = ''
+        if (apartment) {
+          label = `ბინა ${apartment.apartment_number}`
+        } else if (apt.apartment_number) {
+          label = `ბინა ${apt.apartment_number}`
+        } else {
+          label = `ბინა ${index + 1}`
+        }
+
         return {
           id: `temp-pdf-${Date.now()}-${apt.id}`,
           points: apt.polygon.map((p: number[]) => ({
@@ -134,8 +154,8 @@ export function usePdfDetection() {
             y: (p[1] / 100) * imageHeight
           })),
           selected: false,
-          entityId: apartment?.id || null, // Ensure valid value
-          label: apartment ? `ბინა ${apartment.apartment_number}` : `ბინა ${index + 1}`,
+          entityId: apartment?.id || null, // Only assign if definitively matched
+          label: label,
           fillColor: apartment ? getColorByStatus(apartment.status) : 'rgba(107, 114, 128, 0.5)',
           strokeColor: '#374151',
           visible: true,

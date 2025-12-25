@@ -37,6 +37,8 @@ class Apartment extends Model
         'is_active',
         'sort_order',
         'room_details',
+        'ocr_confidence',
+        'ocr_text_position',
     ];
 
     /**
@@ -53,6 +55,8 @@ class Apartment extends Model
         'is_parking' => 'boolean',
         'is_active' => 'boolean',
         'room_details' => 'array',
+        'ocr_confidence' => 'decimal:2',
+        'ocr_text_position' => 'array',
     ];
 
     /**

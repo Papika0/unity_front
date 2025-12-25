@@ -5,13 +5,11 @@
       :selected-building="selectedBuilding"
       :floor-number="floorNumber"
       :has-changes="hasChanges"
-      :is-detecting="isDetecting"
       :is-pdf-detecting="isPdfDetecting"
       :background-image-url="backgroundImageUrl"
       :is-saving="isSaving"
       @back="goBack"
       @discard="handleDiscard"
-      @auto-detect="autoDetectPolygons"
       @open-pdf-modal="openPdfDetectionModal"
       @open-image-upload="openImageUpload"
       @save="saveZones"
@@ -153,7 +151,6 @@ const {
   backgroundImageUrl,
   imageWidth,
   imageHeight,
-  isDetecting,
   isPdfDetecting,
   isUploading,
 
@@ -172,7 +169,6 @@ const {
   goBack,
   saveZones,
   handleDiscard,
-  autoDetectPolygons,
   handleZonesChange,
   
   // Modal actions

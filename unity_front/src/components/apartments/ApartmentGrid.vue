@@ -103,7 +103,7 @@
       <!-- Main Content - Full Width Map -->
       <div
         v-else-if="apartmentStore.currentImage || apartments.length > 0"
-        :key="'content'"
+        :key="'content-' + floorNumber"
         class="bg-zinc-50 border border-zinc-100 transition-all duration-500 overflow-hidden relative"
         :style="containerStyle"
       >
@@ -130,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
 import InteractiveMapViewer from './InteractiveMapViewer.vue'
@@ -249,6 +249,11 @@ function handleApartmentHover(zone: ApartmentZone | BuildingZone | FloorZone | n
     hoveredApartmentId.value = null
   }
 }
+
+// Reload data when props change (e.g. switching floors)
+watch(() => [props.projectId, props.buildingId, props.floorNumber], () => {
+  loadData()
+})
 
 onMounted(() => {
   loadData()

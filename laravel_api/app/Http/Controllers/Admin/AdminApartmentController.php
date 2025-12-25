@@ -474,6 +474,8 @@ class AdminApartmentController extends Controller
             'bathrooms' => $request->input('bathrooms'),
             'has_balcony' => $request->input('has_balcony', false),
             'is_parking' => $request->input('is_parking', false),
+            'ocr_confidence' => $request->input('ocr_confidence'),
+            'ocr_text_position' => $request->input('ocr_text_position'),
         ];
 
         // Handle room_details as JSON

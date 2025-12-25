@@ -39,7 +39,7 @@ export const useZoneEditorStore = defineStore('zoneEditor', () => {
         route: {
           name: 'admin-zones-floor-strips',
           params: {
-            id: projectId.value!.toString(),
+            id: projectId.value?.toString() || '0',
             buildingId: buildingId.value.toString(),
           },
         },

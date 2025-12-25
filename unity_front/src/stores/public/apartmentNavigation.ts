@@ -25,7 +25,7 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
 
   // Cache for navigation data to prevent unnecessary refetches
   const navigationCache = new Map<string, { data: NavigationResponse; timestamp: number }>()
-  const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+  const CACHE_DURATION = 30 * 1000 // 30 seconds
 
   // Image preloading cache
   const preloadedImages = new Set<string>()
@@ -91,7 +91,7 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
     })
   }
 
-  function preloadImage(url: string): Promise<void> {
+  function preloadImage(url: string, cacheKey?: string): Promise<void> {
     return new Promise((resolve, reject) => {
       if (preloadedImages.has(url)) {
         resolve()
@@ -104,6 +104,11 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
         resolve()
       }
       img.onerror = () => {
+        // If image fails to load, it might be stale. Invalidate cache.
+        if (cacheKey) {
+            console.warn('[ApartmentNavigation] Image load failed, invalidating cache for key:', cacheKey)
+            navigationCache.delete(cacheKey)
+        }
         reject(new Error(`Failed to preload image: ${url}`))
       }
       img.src = url
@@ -133,7 +138,7 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
 
       // Preload image in background if not already loaded
       if (cachedData.image?.url && !preloadedImages.has(cachedData.image.url)) {
-        preloadImage(cachedData.image.url).catch(console.error)
+        preloadImage(cachedData.image.url, cacheKey).catch(console.error)
       }
 
       return
@@ -149,6 +154,11 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
         buildingId,
         floorNumber,
       )
+
+      // Fix image URL for public access via proxy
+      if (data.image?.url && data.image.url.includes('/storage/')) {
+        data.image.url = data.image.url.replace('/storage/', '/api/storage-proxy/')
+      }
 
       // Cache the data
       setCachedData(cacheKey, data)
@@ -171,7 +181,7 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
 
       // Preload the image in background
       if (data.image?.url) {
-        preloadImage(data.image.url).catch(console.error)
+        preloadImage(data.image.url, cacheKey).catch(console.error)
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load navigation data'
