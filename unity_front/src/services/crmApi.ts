@@ -26,7 +26,7 @@ import type {
   CrmActivitiesResponse,
   CrmPaymentsResponse,
   CrmStatisticsResponse,
-  CrmPipelineResponse,
+
 } from '@/types/crm'
 
 export const crmApi = {

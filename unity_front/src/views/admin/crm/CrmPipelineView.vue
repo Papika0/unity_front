@@ -144,7 +144,7 @@ async function handleStageChange(dealId: number, newStageId: number, lostReasonI
 
     await crmStore.updateDealStage(dealId, { stage_id: newStageId, lost_reason_id: lostReasonId })
     toast.success('გარიგება გადატანილია')
-  } catch (error) {
+  } catch {
     toast.error('გადატანა ვერ მოხერხდა')
     // Reload pipeline to restore state
     await crmStore.fetchPipeline(filterUserId.value ?? undefined)
@@ -208,7 +208,7 @@ async function handleCreateLead(): Promise<void> {
     
     // Refresh pipeline
     await crmStore.fetchPipeline(filterUserId.value ?? undefined)
-  } catch (error) {
+  } catch {
     toast.error('ლიდის შექმნა ვერ მოხერხდა')
   } finally {
     isCreating.value = false

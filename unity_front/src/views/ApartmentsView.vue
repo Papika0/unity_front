@@ -135,7 +135,7 @@ onActivated(() => {
 <template>
   <div class="apartments-view bg-white min-h-screen pt-24 lg:pt-32 pb-20">
     
-    <div class="max-w-[1920px] mx-auto px-6 lg:px-20 xl:px-32">
+    <div class="max-w-[1920px] mx-auto px-6 lg:px-10 xl:px-32">
       
       <!-- Page Header -->
       <div class="mb-12">

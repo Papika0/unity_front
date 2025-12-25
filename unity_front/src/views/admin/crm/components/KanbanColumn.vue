@@ -14,12 +14,12 @@ interface Props {
   draggedDealId?: number | null
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   draggedDealId: null,
 })
 
 // Emits
-const emit = defineEmits<{
+defineEmits<{
   (e: 'deal-click', deal: CrmDeal): void
   (e: 'dragstart', deal: CrmDeal, stageId: number): void
   (e: 'dragover', event: DragEvent): void

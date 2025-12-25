@@ -97,10 +97,10 @@ onMounted(async () => {
     const response = await projectsApi.getAll()
     // Check if response is array or object with data property
     if (Array.isArray(response)) {
-      projects.value = response as any
+      projects.value = response as unknown as Project[]
     } else if (response && 'data' in response) {
-      // @ts-ignore - Handle various API response shapes
-      projects.value = response.data as any
+      // @ts-expect-error - Handle various API response shapes
+      projects.value = response.data as unknown as Project[]
     } else {
        projects.value = []
     }
@@ -115,9 +115,9 @@ onMounted(async () => {
 <template>
   <div 
     class="bg-white rounded-2xl shadow-sm border border-zinc-100 overflow-hidden transition-all duration-300"
-    :class="compact ? 'p-4' : 'p-6 lg:p-8'"
+    :class="compact ? 'p-4' : 'p-6 lg:p-6 xl:p-8'"
   >
-    <div class="grid grid-cols-1 gap-6" :class="compact ? '' : 'lg:grid-cols-12 lg:gap-8 items-end'">
+    <div class="grid grid-cols-1 gap-6" :class="compact ? '' : 'lg:grid-cols-12 lg:gap-6 xl:gap-8 items-end'">
       
       <!-- Project Selector -->
       <div :class="compact ? '' : 'lg:col-span-3'">

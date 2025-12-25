@@ -3,7 +3,6 @@ import { defineStore } from 'pinia'
 import { getHomepageBootstrap } from '@/services/homepage'
 import { useProjectsStore } from './projects'
 import { useNewsStore } from './news'
-import { useLocaleStore } from '@/stores/ui/locale'
 import { mergeTranslations } from '@/composables/i18n/useTranslations'
 import { usePerformance } from '@/composables/ui/usePerformance'
 
@@ -26,7 +25,7 @@ export const useHomepageStore = defineStore('homepage', () => {
   // Store dependencies
   const projectsStore = useProjectsStore()
   const newsStore = useNewsStore()
-  const localeStore = useLocaleStore()
+
 
   // ==================== ACTIONS ====================
   async function loadHomepageData(force = false) {
@@ -40,9 +39,7 @@ export const useHomepageStore = defineStore('homepage', () => {
     startTimer('homepage_load')
 
     try {
-      const response = await getHomepageBootstrap({
-        locale: localeStore.currentLocale,
-      })
+      const response = await getHomepageBootstrap()
       const data = response.data
 
       // Handle translations - data is already localized for current locale

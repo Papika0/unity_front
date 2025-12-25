@@ -20,8 +20,8 @@ export function useContactPage() {
 
     try {
       const missingGroups = translationStore.getMissingGroups('contact')
-      const locale = translationStore.currentLocale
-      const contactResponse = await getContactSettings({ locale, groups: missingGroups })
+
+      const contactResponse = await getContactSettings({ groups: missingGroups })
 
       if (contactResponse.data) {
         contactSettings.value = contactResponse.data.contact_settings

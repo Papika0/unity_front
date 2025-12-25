@@ -19,7 +19,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // Emits
-const emit = defineEmits<{
+defineEmits<{
   (e: 'click', deal: CrmDeal): void
   (e: 'dragstart', deal: CrmDeal): void
 }>()

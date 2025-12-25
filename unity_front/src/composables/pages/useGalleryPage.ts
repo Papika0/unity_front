@@ -42,12 +42,11 @@ export function useGalleryPage() {
       const missingGroups = translationStore.getMissingGroups('gallery')
 
       // Get locale from translation store
-      const locale = translationStore.currentLocale
+
 
       // Load gallery page data with translations
       const response = await getGalleryPage({
         groups: missingGroups,
-        locale: locale,
         category: category && category !== 'all' ? category : undefined,
         page: page,
         limit: 12, // 12 photos per page

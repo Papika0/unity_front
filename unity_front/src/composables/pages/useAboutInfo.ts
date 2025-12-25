@@ -50,11 +50,10 @@ export function useAboutInfo() {
       }
 
       // Get locale from translation store
-      const locale = translationStore.currentLocale
+
 
       const response = await getAboutInfo({
         groups: missingGroups,
-        locale: locale,
       })
 
       const data: AboutResponse = response.data

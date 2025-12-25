@@ -39,7 +39,7 @@ export function useFeatureAssignment() {
   const loadProjects = async () => {
     try {
       // For admin, we can use default locale since it's just for selection
-      projects.value = await projectsApi.getAll('ka')
+      projects.value = await projectsApi.getAll()
     } catch (error) {
       console.error('Failed to load projects:', error)
     }

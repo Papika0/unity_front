@@ -134,7 +134,7 @@ export interface CrmActivity {
   user_id: number | null
   type: ActivityType
   description: string
-  metadata: Record<string, any> | null
+  metadata: Record<string, unknown> | null
   created_at: string
   updated_at: string
 

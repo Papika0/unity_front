@@ -46,7 +46,7 @@ export function useProjectDetail() {
     error.value = null
 
     try {
-      const response = await projectsApi.getById(projectId, localeStore.currentLocale)
+      const response = await projectsApi.getById(projectId)
 
       if ('translations' in response && response.translations) {
         translationsStore.mergeTranslations(response.translations as Record<string, string>)

@@ -4,7 +4,7 @@
  * Shows customer requests/leads that can be converted to deals
  */
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { adminCustomerApi, type Customer, type CustomerStatistics } from '@/services/adminCustomerApi'
 import { useToastStore } from '@/stores/ui/toast'
 import { useCrmStore } from '@/stores/admin/crm'
@@ -131,7 +131,7 @@ async function handleCreateDeal(): Promise<void> {
 
     // Update customer status
     await updateCustomerStatus(selectedCustomer.value.id, 'in_progress')
-  } catch (error) {
+  } catch {
     toast.error('გარიგების შექმნა ვერ მოხერხდა')
   }
 }

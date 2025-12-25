@@ -36,11 +36,10 @@ export function useProjectsPage() {
       const missingGroups = translationStore.getMissingGroups('projects')
 
       // Get locale from translation store
-      const locale = translationStore.currentLocale
+
 
       const response = await getProjectsPage({
         groups: missingGroups,
-        locale: locale,
         page: page,
         per_page: 6,
         status: status,

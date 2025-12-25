@@ -54,7 +54,7 @@ export const apartmentService = {
         acc[key] = value
       }
       return acc
-    }, {} as Record<string, any>)
+    }, {} as Record<string, string | number | boolean>)
 
     const response = await api.get<PaginatedApartments>('/apartments', { params })
     return response.data

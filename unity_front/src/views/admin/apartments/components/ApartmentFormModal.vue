@@ -434,7 +434,7 @@ async function remove2d() {
     try {
       await adminApartmentsApi.deleteImage(props.apartment.id, props.apartment.image_2d.id)
       success(t('admin.messages.delete_success'))
-    } catch (err) {
+    } catch {
       showError(t('admin.errors.delete_error'))
     }
   }
@@ -449,7 +449,7 @@ async function remove3d() {
     try {
       await adminApartmentsApi.deleteImage(props.apartment.id, props.apartment.image_3d.id)
       success(t('admin.messages.delete_success'))
-    } catch (err) {
+    } catch {
       showError(t('admin.errors.delete_error'))
     }
   }

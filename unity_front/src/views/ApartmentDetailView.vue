@@ -514,7 +514,7 @@ const {
   roomList,
   loadData,
   goBack,
-  formatPrice,
+
   getStatusClasses,
 } = useApartmentDetail(props, () => emit('back'))
 

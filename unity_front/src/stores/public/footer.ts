@@ -91,7 +91,7 @@ export const useFooterStore = defineStore('footer', () => {
             }
           }
 
-          const response = await getFooterData(localeStore.currentLocale)
+          const response = await getFooterData()
 
           if (response.success && response.data) {
             footerData.value = response.data

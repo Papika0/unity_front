@@ -116,7 +116,7 @@ export const useCrmStore = defineStore('crm', () => {
   async function createDeal(data: DealFormData): Promise<CrmDeal> {
     try {
       // If stage_id is not provided, use the first 'open' stage
-      let dealData = { ...data }
+      const dealData = { ...data }
       if (!dealData.stage_id) {
         const openStage = stages.value.find((s) => s.type === 'open' && s.is_active)
         if (openStage) {

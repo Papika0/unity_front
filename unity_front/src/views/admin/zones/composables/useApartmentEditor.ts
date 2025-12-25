@@ -56,11 +56,7 @@ export function useApartmentEditor() {
     closePdfDetectionModal,
     triggerPdfInput,
     triggerTargetImageInput,
-    handlePdfSelect, // Not used directly by current template but good to have
-    handlePdfDrop,
     clearPdfFile,
-    handleTargetImageSelect,
-    handleTargetImageDrop,
     clearTargetImageFile,
     detectApartmentsFromPdf: detectApi
   } = usePdfDetection()

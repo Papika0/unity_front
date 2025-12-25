@@ -58,11 +58,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { ApartmentDetail } from '@/types/apartments'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 
-const props = defineProps<{
+defineProps<{
   apartment: ApartmentDetail
 }>()
 

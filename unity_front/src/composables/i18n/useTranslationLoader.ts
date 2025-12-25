@@ -1,10 +1,10 @@
 import { useTranslationsStore } from '@/stores/ui/translations'
-import { useLocaleStore } from '@/stores/ui/locale'
+
 import { getTranslationsByGroup } from '@/services/translations'
 
 export function useTranslationLoader() {
   const translationsStore = useTranslationsStore()
-  const localeStore = useLocaleStore()
+
 
   /**
    * Load translations for specific groups
@@ -21,7 +21,7 @@ export function useTranslationLoader() {
       }
 
       // Get current locale
-      const locale = localeStore.currentLocale
+
 
       // Fetch all groups in parallel
       const promises = groupsToLoad.map(async (group) => {
