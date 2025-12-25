@@ -34,6 +34,7 @@ export function useApartmentEditor() {
   const backgroundImageUrl = ref('')
   const imageWidth = ref(1200)
   const imageHeight = ref(800)
+  const isSingleBuilding = ref(false)
 
   // Image upload
   const showImageModal = ref(false)
@@ -88,6 +89,16 @@ export function useApartmentEditor() {
       selectedBuilding.value = response.data.data || response.data
     } catch (error) {
       console.error('Failed to load building:', error)
+    }
+  }
+
+  async function checkBuildingCount() {
+    try {
+      const response = await adminBuildingsApi.getAll(Number(projectId.value))
+      const buildings = response.data.data || response.data
+      isSingleBuilding.value = buildings.length === 1
+    } catch (error) {
+      console.error('Failed to check building count:', error)
     }
   }
 
@@ -531,6 +542,7 @@ export function useApartmentEditor() {
 
   onMounted(async () => {
     await loadBuilding()
+    await checkBuildingCount()
 
     if (!selectedBuilding.value) {
       showError(`შენობა ID ${buildingId.value} არ მოიძებნა`)
@@ -583,6 +595,7 @@ export function useApartmentEditor() {
     imageHeight,
     isUploading,
     isPdfDetecting,
+    isSingleBuilding,
     
     // Modals
     showImageModal,

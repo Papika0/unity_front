@@ -11,7 +11,7 @@
       {{ t('admin.sidebar.projects') }}
     </router-link>
 
-    <template v-for="(item, index) in breadcrumbs" :key="index">
+    <template v-for="(item, index) in filteredBreadcrumbs" :key="index">
       <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd"
           d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
@@ -37,9 +37,27 @@ import { computed } from 'vue'
 import { useZoneEditorStore } from '@/stores/admin/zoneEditor'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 
+const props = defineProps<{
+  isSingleBuilding?: boolean
+}>()
+
 const { t } = useTranslations()
 const store = useZoneEditorStore()
 const breadcrumbs = computed(() => store.breadcrumbs)
+
+const filteredBreadcrumbs = computed(() => {
+  if (!props.isSingleBuilding) return breadcrumbs.value
+  
+  return breadcrumbs.value.filter(item => {
+    // Filter out the Building breadcrumb (which points to floor strips editor)
+    // The building breadcrumb usually has route.name === 'admin-zones-floor-strips'
+    // But verify the logic: Project level points to building-blocks.
+    // Building level points to floor-strips.
+    // If we are at Floor level, we see Project > Building > Floor.
+    // We want Project > Floor.
+    return !(item.route && item.route.name === 'admin-zones-floor-strips')
+  })
+})
 
 function formatLabel(label: string) {
   if (label.startsWith('floor_key:')) {

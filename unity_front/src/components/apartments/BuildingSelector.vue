@@ -55,10 +55,12 @@ import type { BuildingZone, ApartmentZone, FloorZone } from '@/types/apartments'
 interface Props {
   projectId: number
   autoNavigate?: boolean
+  autoSelect?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   autoNavigate: false,
+  autoSelect: false,
 })
 
 const emit = defineEmits<{
@@ -81,14 +83,22 @@ async function loadData() {
   try {
     await apartmentStore.loadNavigation(props.projectId, 'overview')
 
-    // Auto-navigate if only one building
+    // Auto-navigate or Auto-select if only one building
     if (
-      props.autoNavigate &&
       !apartmentStore.hasMultipleBuildings &&
       buildingZones.value.length === 1
     ) {
       const singleBuilding = buildingZones.value[0]
-      handleBuildingClick(singleBuilding)
+      
+      // If autoNavigate is on, we click which triggers route push
+      if (props.autoNavigate) {
+        handleBuildingClick(singleBuilding)
+      } 
+      // If autoSelect is on (and NOT autoNavigate), we just emit selected
+      else if (props.autoSelect) {
+        selectedBuildingId.value = singleBuilding.id
+        emit('building-selected', singleBuilding)
+      }
     }
   } catch (error) {
     console.error('Failed to load building data:', error)

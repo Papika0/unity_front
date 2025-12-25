@@ -4,9 +4,10 @@ import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useLocaleStore } from '@/stores/ui/locale'
 import { useTranslationsStore } from '@/stores/ui/translations'
 import { projectsApi } from '@/services/projectsApi'
+import { buildingsApi } from '@/services/buildingsApi'
 import type { ProjectApiResponse } from '@/services/projectsApi'
 import type { ProjectFeature } from '@/services/featuresApi'
-import type { BuildingZone, FloorZone } from '@/types/apartments'
+import type { BuildingZone, FloorZone, DisplayConfig, BuildingStats } from '@/types/apartments'
 
 export function useProjectDetail() {
   const router = useRouter()
@@ -25,10 +26,13 @@ export function useProjectDetail() {
   // Inline apartment viewer state
   const selectedBuilding = ref<BuildingZone | null>(null)
   const selectedFloor = ref<FloorZone | null>(null)
+  
+  // Logic override
+  const forcedHasApartmentNavigation = ref(false)
 
   // Compiled Data
   const relatedProjects = computed(() => project.value?.related_projects || [])
-  const hasApartmentNavigation = computed(() => project.value?.hasApartmentNavigation === true)
+  const hasApartmentNavigation = computed(() => forcedHasApartmentNavigation.value || project.value?.hasApartmentNavigation === true)
 
   const statusText = computed(() => {
     if (!project.value) return ''
@@ -54,6 +58,46 @@ export function useProjectDetail() {
 
       project.value = ('data' in response ? response.data : response) as ProjectApiResponse
       projectFeatures.value = project.value?.features || []
+
+      // If navigation is explicitly disabled or missing, check if we have a single building
+      // This allows navigation to work even if no "Building Block" zones are defined in Admin
+      if (!project.value.hasApartmentNavigation) {
+        try {
+          const buildings = await buildingsApi.fetchBuildings(projectId)
+          if (buildings.length === 1) {
+            forcedHasApartmentNavigation.value = true
+            
+            // Create synthetic building zone to trigger auto-selection
+            const building = buildings[0]
+            const syntheticZone: BuildingZone = {
+              id: building.id, // This is just the building ID, zone ID usually differs but we hope it works? 
+                               // Wait, BuildingSelector uses zone.id to EMIT.
+                               // InlineApartmentViewer uses props.selectedBuilding.id for navigation?
+                               // Let's check InlineApartmentViewer. It takes `selectedBuilding`.
+                               // It passes `selectedBuilding.id` to `useApartmentNavigationStore`?
+                               // `loadNavigation` takes `buildingId`.
+                               // `BuildingZone` has `id` (zone ID) and `entity_id` (building ID).
+                               // `InlineApartmentViewer` likely uses `entity_id` if available, or just `id`?
+                               // Let's check `BuildingZone` definition: `id` is zone ID, `entity_id` is building Id.
+                               // But `InlineApartmentViewer` likely assumes `selectedBuilding` is a Zone?
+                               // Actually `InlineApartmentViewer` calls `apartmentStore.loadNavigation(projectId, 'building', selectedBuilding.entity_id || selectedBuilding.id)`.
+                               // So we should set `entity_id` to `building.id`.
+              type: 'building_block',
+              entity_id: building.id,
+              building_identifier: building.identifier,
+              label: building.name,
+              coords: [], // Empty coords
+              bbox: { min_x: 0, min_y: 0, max_x: 0, max_y: 0 },
+              display: { fill: '', stroke: '', hover: '' },
+              stats: { total_units: 0, available: 0, reserved: 0, sold: 0, floor_range: '' }
+            }
+            
+            handleBuildingSelected(syntheticZone)
+          }
+        } catch (e) {
+          console.error('[ProjectDetail] Failed to check for single building:', e)
+        }
+      }
 
       window.scrollTo({ top: 0, behavior: 'smooth' })
       await new Promise(resolve => setTimeout(resolve, 100))

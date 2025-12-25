@@ -55,6 +55,11 @@ export function useApartmentsList() {
     try {
       await buildingsStore.fetchBuildings(selectedProjectId.value)
       buildings.value = buildingsStore.buildings
+
+      // Auto-select building if only one exists
+      if (buildings.value.length === 1) {
+        selectedBuildingId.value = buildings.value[0].id
+      }
     } catch (error) {
       console.error('Failed to load buildings:', error)
     }

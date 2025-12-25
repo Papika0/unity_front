@@ -13,6 +13,7 @@
       @open-pdf-modal="openPdfDetectionModal"
       @open-image-upload="openImageUpload"
       @save="saveZones"
+      :is-single-building="isSingleBuilding"
     />
 
     <!-- Confirm Dialog -->
@@ -153,6 +154,7 @@ const {
   imageHeight,
   isPdfDetecting,
   isUploading,
+  isSingleBuilding,
 
   // Modals state
   showImageModal,

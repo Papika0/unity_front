@@ -15,6 +15,7 @@
           :key="buildingSelectorKey"
           :project-id="projectId"
           :auto-navigate="false"
+          :auto-select="true"
           @building-selected="$emit('buildingSelected', $event)"
         />
 

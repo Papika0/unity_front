@@ -22,7 +22,7 @@
             {{ getBuildingName() }} - {{ t('admin.apartments.form.floor') }} {{ floorNumber }} - {{ t('admin.zones.draw_polygon') }}
           </p>
         </div>
-        <ZoneEditorBreadcrumbs class="ml-4" />
+        <ZoneEditorBreadcrumbs class="ml-4" :is-single-building="isSingleBuilding" />
       </div>
 
       <div class="flex items-center space-x-3">
@@ -138,6 +138,7 @@ const props = defineProps<{
   isPdfDetecting: boolean
   backgroundImageUrl: string
   isSaving: boolean
+  isSingleBuilding?: boolean
 }>()
 
 defineEmits<{

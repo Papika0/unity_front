@@ -12,6 +12,7 @@
       @discard="handleDiscard"
       @open-wizard="openSmartGenerateWizard"
       @open-image="openImageUpload"
+      :is-single-building="buildings.length === 1"
     />
 
     <!-- Main Content -->

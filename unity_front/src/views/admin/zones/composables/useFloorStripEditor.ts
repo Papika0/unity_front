@@ -241,10 +241,16 @@ export function useFloorStripEditor() {
     if (customBackRoute === '/admin/projects') {
       router.push(customBackRoute)
     } else {
-      router.push({
-        name: 'admin-zones-building-blocks',
-        params: { id: selectedProjectId.value }
-      })
+      // If only one building, going back to building blocks would auto-redirect loop back here
+      // So we go back to project list instead
+      if (buildings.value.length === 1) {
+        router.push('/admin/projects')
+      } else {
+        router.push({
+          name: 'admin-zones-building-blocks',
+          params: { id: selectedProjectId.value }
+        })
+      }
     }
   }
 

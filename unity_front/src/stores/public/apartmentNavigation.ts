@@ -22,6 +22,7 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
   const minFloor = ref<number | null>(null)
   const maxFloor = ref<number | null>(null)
   const imageLoading = ref(false)
+  const persistedHasMultipleBuildings = ref(false)
 
   // Cache for navigation data to prevent unnecessary refetches
   const navigationCache = new Map<string, { data: NavigationResponse; timestamp: number }>()
@@ -32,7 +33,8 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
 
   // ==================== GETTERS ====================
   const hasMultipleBuildings = computed(() => {
-    return navigationData.value?.has_multiple_buildings ?? false
+    // Return persisted value if available, fall back to current response
+    return persistedHasMultipleBuildings.value || (navigationData.value?.has_multiple_buildings ?? false)
   })
 
   const currentZones = computed(() => {
@@ -122,6 +124,10 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
     buildingId?: number,
     floorNumber?: number,
   ) {
+    if (currentProjectId.value !== projectId) {
+      persistedHasMultipleBuildings.value = false
+    }
+
     const cacheKey = getCacheKey(projectId, level, buildingId, floorNumber)
 
     // Check cache first
@@ -129,6 +135,10 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
     if (cachedData) {
       // Important: Set loading to false immediately for cached data
       isLoading.value = false
+
+      if (cachedData.has_multiple_buildings !== undefined) {
+        persistedHasMultipleBuildings.value = cachedData.has_multiple_buildings
+      }
 
       navigationData.value = cachedData
       currentLevel.value = level
@@ -171,6 +181,10 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
           minFloor.value = Math.min(...numbers)
           maxFloor.value = Math.max(...numbers)
         }
+      }
+
+      if (data.has_multiple_buildings !== undefined) {
+        persistedHasMultipleBuildings.value = data.has_multiple_buildings
       }
 
       navigationData.value = data
@@ -233,6 +247,7 @@ export const useApartmentNavigationStore = defineStore('apartmentNavigation', ()
     selectedApartment.value = null
     minFloor.value = null
     maxFloor.value = null
+    persistedHasMultipleBuildings.value = false
   }
 
   return {

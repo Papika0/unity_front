@@ -1,7 +1,7 @@
 <template>
   <section :class="autoNavigate ? 'py-20 bg-white' : 'bg-white'">
     <!-- Header with Back Button (Visible when not auto-navigating) -->
-    <div v-if="!autoNavigate" class="max-w-7xl mx-auto px-4 lg:px-16 xl:px-20 2xl:px-32 mb-6 pt-4">
+    <div v-if="!autoNavigate && !isSingleBuilding" class="w-full max-w-[1400px] mx-auto px-4 lg:px-6 mb-6 pt-4">
       <button 
         @click="emit('back')"
         class="w-10 h-10 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:bg-zinc-50 hover:border-[#FFCD4B] hover:text-[#FFCD4B] transition-all"
@@ -21,7 +21,7 @@
           <p class="text-lg text-[#FFCD4B] font-light uppercase tracking-wider">{{ t('common.loading') }}</p>
         </div>
       </div>
-
+      
       <!-- Error State -->
       <div v-else-if="apartmentStore.error" :key="'error'" class="max-w-7xl mx-auto px-8 lg:px-16 xl:px-20 2xl:px-32">
         <div class="text-center max-w-md mx-auto">
@@ -89,10 +89,12 @@ interface Props {
   buildingId: number
   buildingIdentifier: string
   autoNavigate?: boolean
+  isSingleBuilding?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  autoNavigate: true
+  autoNavigate: true,
+  isSingleBuilding: false
 })
 
 const emit = defineEmits<{

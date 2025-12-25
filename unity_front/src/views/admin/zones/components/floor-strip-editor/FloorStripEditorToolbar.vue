@@ -22,7 +22,7 @@
             {{ getBuildingName() }} - {{ t('admin.zones.floor_strip') }}
           </p>
         </div>
-        <ZoneEditorBreadcrumbs class="ml-4" />
+        <ZoneEditorBreadcrumbs class="ml-4" :is-single-building="isSingleBuilding" />
       </div>
 
       <div class="flex items-center space-x-3">
@@ -165,6 +165,7 @@ const props = defineProps<{
   isSaving: boolean
   lastSavedTime: string | null
   hasSelectedZone: boolean
+  isSingleBuilding?: boolean
 }>()
 
 defineEmits<{

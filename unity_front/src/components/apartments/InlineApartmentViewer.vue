@@ -5,6 +5,7 @@
       :selected-building="selectedBuilding"
       :selected-floor="selectedFloor"
       :selected-apartment-id="selectedApartmentId"
+      :is-single-building="!apartmentStore.hasMultipleBuildings"
       @reset-to-buildings="resetToBuildings"
       @reset-to-floors="resetToFloors"
       @apartment-back="handleApartmentBack"
@@ -19,6 +20,7 @@
         :building-id="selectedBuilding.entity_id"
         :building-identifier="selectedBuilding.building_identifier"
         :auto-navigate="false"
+        :is-single-building="!apartmentStore.hasMultipleBuildings"
         @floor-selected="handleFloorSelected"
         @back="resetToBuildings"
       />
@@ -55,6 +57,7 @@ import ApartmentBreadcrumb from './ApartmentBreadcrumb.vue'
 import FloorSelector from './FloorSelector.vue'
 import ApartmentGrid from './ApartmentGrid.vue'
 import ApartmentDetailView from '@/views/ApartmentDetailView.vue'
+import { useApartmentNavigationStore } from '@/stores/public/apartmentNavigation'
 import type { BuildingZone, FloorZone } from '@/types/apartments'
 
 interface Props {
@@ -72,6 +75,7 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const router = useRouter()
+const apartmentStore = useApartmentNavigationStore()
 
 const selectedFloor = ref<FloorZone | null>(null)
 const selectedApartmentId = ref<number | null>(

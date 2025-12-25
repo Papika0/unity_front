@@ -70,6 +70,8 @@ export function useBuildingBlockEditor() {
     try {
       const response = await adminBuildingsApi.getAll(Number(selectedProjectId.value))
       buildings.value = response.data.data || response.data
+      
+      buildings.value = response.data.data || response.data
     } catch (error) {
       console.error('Failed to load buildings:', error)
       buildings.value = []
@@ -415,6 +417,12 @@ export function useBuildingBlockEditor() {
       }
       await loadBuildings()
       await loadZones()
+
+      // Auto-navigate ONLY if setup is complete (zones exist)
+      if (buildings.value.length === 1 && zones.value.length > 0) {
+         navigateToBuildingFloors(buildings.value[0].id)
+         return
+      }
     }
 
     if (selectedProjectId.value && checkForDraft()) {
