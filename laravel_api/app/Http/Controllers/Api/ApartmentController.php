@@ -42,12 +42,18 @@ class ApartmentController extends Controller
                     $maxArea = $apartment->area_total * 1.1;
                     return $query->whereBetween('area_total', [$minArea, $maxArea]);
                 })
+                ->with(['image2d', 'image3d', 'interactiveZone.images', 'building'])
                 ->limit(5)
                 ->get()
                 ->map(function ($apt) {
+                    $image2d = $apt->image2d->first();
+                    $image3d = $apt->image3d->first();
+                    $floorPlan = $apt->interactiveZone?->images()->first();
+
                     return [
                         'id' => $apt->id,
                         'apartment_number' => $apt->apartment_number,
+                        'building_name' => $apt->building->name,
                         'floor_number' => $apt->floor_number,
                         'status' => $apt->status,
                         'price' => $apt->price,
@@ -57,6 +63,7 @@ class ApartmentController extends Controller
                         'bathrooms' => $apt->bathrooms,
                         'has_balcony' => $apt->has_balcony,
                         'has_parking' => $apt->has_parking,
+                        'image' => $image3d ? $image3d->full_url : ($image2d ? $image2d->full_url : ($floorPlan ? $floorPlan->url : null)),
                     ];
                 });
 

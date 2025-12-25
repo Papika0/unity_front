@@ -304,8 +304,23 @@
              </button>
           </div>
 
-        </div>
+
       </div>
+
+          <!-- Similar Apartments Section -->
+          <div v-if="apartment.similar_apartments && apartment.similar_apartments.length > 0" class="col-span-1 lg:col-span-12 pt-16 border-t border-zinc-100 mt-8 order-3">
+            <h2 class="text-2xl font-light text-zinc-900 mb-8">{{ t('apartments.similar_apartments') }}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <ApartmentCard 
+                v-for="similar in apartment.similar_apartments" 
+                :key="similar.id" 
+                :apartment="similar"
+                @click="handleSimilarClick(similar)"
+              />
+            </div>
+          </div>
+
+        </div>
       </Transition>
     </main>
 
@@ -433,6 +448,8 @@ import { useApartmentDetail } from './apartments/composables'
 import PhoneModal from '@/components/ui/PhoneModal.vue'
 import { useToastStore } from '@/stores/ui/toast'
 import { customerApi, type CustomerData } from '@/services/customerApi'
+import ApartmentCard from '@/components/apartments/ApartmentCard.vue'
+import type { ApartmentDetail } from '@/types/apartments'
 import jsPDF from 'jspdf'
 
 interface Props {
@@ -640,6 +657,34 @@ function openPhoneModal() {
 function closePhoneModal() {
   isPhoneModalOpen.value = false
 }
+
+function handleSimilarClick(similar: ApartmentDetail) {
+  // Smooth scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+
+  if (props.isInline) {
+    // Inline mode - update query
+    router.replace({
+      query: {
+        ...router.currentRoute.value.query,
+        apartment: similar.id.toString(),
+        floor: similar.floor_number.toString()
+      }
+    })
+  } else {
+    // Standalone mode
+    router.push({
+      name: 'apartment-detail',
+      params: {
+        id: props.projectId,
+        buildingIdentifier: props.buildingIdentifier,
+        floorNumber: similar.floor_number,
+        apartmentId: similar.id
+      }
+    })
+  }
+}
+
 
 interface FormData {
   name: string

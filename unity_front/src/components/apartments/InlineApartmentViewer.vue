@@ -185,6 +185,22 @@ function resetToFloors() {
 watch(() => route.query, (newQuery) => {
   if (!newQuery.floor && selectedFloor.value) {
     selectedFloor.value = null
+  } else if (newQuery.floor) {
+    // Update floor selection if query changes (e.g. from similar apartment click)
+    const floorNum = Number(newQuery.floor)
+    if (!selectedFloor.value || selectedFloor.value.floor_number !== floorNum) {
+      // Create synthetic floor zone for breadcrumb context if we don't have the full object
+      // This ensures proper breadcrumb navigation and text even if we navigated directly via URL
+      selectedFloor.value = {
+        id: 0, // Dummy ID as we reconstruct context
+        type: 'floor_strip',
+        floor_number: floorNum,
+        stats: { available: 0, reserved: 0, sold: 0, total: 0 },
+        display: { fill: '', stroke: '', hover: '' },
+        coords: [],
+        bbox: { min_x: 0, min_y: 0, max_x: 0, max_y: 0 }
+      }
+    }
   }
   
   if (newQuery.apartment) {

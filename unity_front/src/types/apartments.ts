@@ -166,5 +166,7 @@ export interface ApartmentDetail {
     bathrooms?: Record<string, number>
     other_rooms?: Record<string, number>
   } | null
+  image?: string | null
+  building_name?: string
   similar_apartments?: ApartmentDetail[]
 }
