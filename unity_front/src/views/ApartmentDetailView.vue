@@ -2,24 +2,24 @@
   <div 
     class="apartment-detail-view transition-colors duration-500"
     :class="[
-      isInline ? 'bg-white min-h-0 text-zinc-900' : 'min-h-screen bg-zinc-950 text-white'
+      isInline ? 'bg-white min-h-0 text-zinc-900' : 'min-h-screen bg-white text-zinc-900'
     ]"
   >
     <!-- Header Navigation (Only show if NOT inline) -->
-    <header v-if="!isInline" class="fixed top-0 left-0 right-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800">
+    <header v-if="!isInline" class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-zinc-100">
       <div class="max-w-[1920px] mx-auto px-6 h-20 flex items-center justify-between">
         <button
           @click="goBack"
-          class="group flex items-center gap-3 text-zinc-400 hover:text-white transition-colors"
+          class="group flex items-center gap-3 text-zinc-400 hover:text-zinc-900 transition-colors"
         >
-          <div class="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center group-hover:border-[#FFCD4B] group-hover:bg-[#FFCD4B]/10 transition-all">
+          <div class="w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center group-hover:border-[#FFCD4B] group-hover:bg-[#FFCD4B]/10 transition-all">
             <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
             </svg>
           </div>
           <div class="flex flex-col items-start">
-            <span class="text-xs uppercase tracking-widest text-[#FFCD4B]">{{ t('apartments.floor') }} {{ props.floorNumber }}</span>
-            <span class="text-sm font-light">{{ t('common.back') }}</span>
+            <span v-if="props.floorNumber" class="text-xs uppercase tracking-widest text-[#FFCD4B]">{{ t('apartments.floor') }} {{ props.floorNumber }}</span>
+            <span class="text-sm font-light">{{ props.floorNumber ? t('common.back') : t('apartments.back_to_search') }}</span>
           </div>
         </button>
       </div>
@@ -345,7 +345,7 @@
         </button>
 
         <!-- Zoom Controls -->
-        <div class="absolute top-6 right-24 z-10 flex gap-2">
+        <div class="absolute top-6 right-24 z-10 hidden md:flex gap-2">
           <button 
             class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-300"
             @click.stop="zoomIn"
@@ -453,10 +453,10 @@ import type { ApartmentDetail } from '@/types/apartments'
 import jsPDF from 'jspdf'
 
 interface Props {
-  projectId: number
-  buildingIdentifier: string
-  floorNumber: number
   apartmentId: number
+  projectId?: number
+  buildingIdentifier?: string
+  floorNumber?: number
   isInline?: boolean
 }
 
@@ -674,12 +674,9 @@ function handleSimilarClick(similar: ApartmentDetail) {
   } else {
     // Standalone mode
     router.push({
-      name: 'apartment-detail',
+      name: 'apartment-detail-global',
       params: {
-        id: props.projectId,
-        buildingIdentifier: props.buildingIdentifier,
-        floorNumber: similar.floor_number,
-        apartmentId: similar.id
+        id: similar.id
       }
     })
   }

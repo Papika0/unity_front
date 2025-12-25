@@ -1,4 +1,12 @@
 {
+    "header": {
+        "home": "Главная",
+        "about": "О нас",
+        "projects": "Проекты",
+        "gallery": "Галерея",
+        "contact": "Контакты",
+        "find_apartment": "Найти квартиру"
+    },
     "common": {
         "loading": "Загрузка...",
         "sqm": "м²",
@@ -11,7 +19,10 @@
         "contact_us": "Связаться с нами",
         "download_pdf": "Скачать PDF",
         "share": "Поделиться",
-        "link_copied": "Ссылка скопирована"
+        "link_copied": "Ссылка скопирована",
+        "min": "Мин",
+        "max": "Макс",
+        "all_projects": "Все проекты"
     },
     "status": {
         "available": "Свободно",
@@ -19,6 +30,8 @@
         "sold": "Продано"
     },
     "apartments": {
+        "projects": "Проекты",
+        "area": "Площадь",
         "floor": "Этаж",
         "apartment": "Квартира",
         "apartment_short": "Кв.",
@@ -28,6 +41,11 @@
         "available": "Свободно",
         "error_loading": "Ошибка",
         "no_apartments": "Квартиры не найдены",
+        "no_results": "Результатов не найдено",
+        "try_adjusting_filters": "Попробуйте изменить критерии поиска",
+        "back_to_search": "Вернуться к поиску",
+        "find_your_home": "Найдите свой идеальный дом",
+        "search_description": "Просмотрите доступные квартиры во всех наших проектах.",
         "no_apartments_description": "На этом этаже нет квартир",
         "no_floors": "Этажи не найдены",
         "no_floors_description": "В этом здании нет данных об этажах",
@@ -75,11 +93,15 @@
             "dressing_room": "Гардеробная",
             "entrance_hall": "Прихожая",
             "corridor": "Коридор",
-            "balcony": "Балкон"
+            "balcony": "Балкон",
+            "guest_room": "Гостиная",
+            "entrance": "Вход",
+            "auxiliary_room": "Подсобное помещение"
         }
     },
     "buttons": {
-        "retry": "Повторить"
+        "retry": "Повторить",
+        "search": "Поиск"
     },
     "admin": {
         "sidebar": {

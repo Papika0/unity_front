@@ -26,7 +26,7 @@ export function useTranslationLoader() {
       // Fetch all groups in parallel
       const promises = groupsToLoad.map(async (group) => {
         try {
-          const response = await getTranslationsByGroup(group, locale)
+          const response = await getTranslationsByGroup(group)
           
           if (response.data && response.data.success && response.data.data) {
             const translations = response.data.data

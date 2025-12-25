@@ -29,8 +29,11 @@
               <span class="text-zinc-300 text-base mr-0.5">N.</span>{{ apartment.apartment_number }}
             </h3>
           </div>
+          <p class="text-[10px] text-zinc-400 font-medium uppercase tracking-wider mb-1">
+            {{ apartment.project?.title }}
+          </p>
           <p class="text-xs text-zinc-400 font-medium uppercase tracking-wider">
-            {{ apartment.building_name }} • {{ t('apartments.floor') }} {{ apartment.floor_number }}
+            {{ apartment.building?.name }} • {{ t('apartments.floor') }} {{ apartment.floor_number }}
           </p>
         </div>
       </div>

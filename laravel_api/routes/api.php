@@ -143,6 +143,8 @@ Route::middleware('throttle:public-cached')->group(function () {
     Route::get('/projects/{projectId}/buildings/{buildingIdOrIdentifier}', [App\Http\Controllers\Api\BuildingsController::class, 'show']);
 
     // Apartment detail routes (public)
+    Route::get('/apartments/filters', [ApartmentController::class, 'filters']);
+    Route::get('/apartments', [ApartmentController::class, 'index']);
     Route::get('/apartments/{id}', [ApartmentController::class, 'show']);
 
     // Test cache endpoint (no auth required for testing)

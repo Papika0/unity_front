@@ -21,10 +21,10 @@ import {
 } from 'lucide-vue-next'
 
 interface Props {
-  projectId: number
-  buildingIdentifier: string
-  floorNumber: number
   apartmentId: number
+  projectId?: number
+  buildingIdentifier?: string
+  floorNumber?: number
   isInline?: boolean
 }
 
@@ -134,14 +134,12 @@ export function useApartmentDetail(props: Props, emit: (event: 'back') => void) 
     if (props.isInline) {
       emit('back')
     } else {
-      router.push({
-        name: 'apartment-selection', 
-        params: {
-          id: props.projectId,
-          buildingIdentifier: props.buildingIdentifier,
-          floorNumber: props.floorNumber,
-        },
-      })
+      // Global/Standalone mode - go back to preserve history/filters
+      if (window.history.length > 1) {
+        router.back()
+      } else {
+        router.push({ name: 'apartments' })
+      }
     }
   }
 

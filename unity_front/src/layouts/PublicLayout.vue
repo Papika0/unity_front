@@ -2,9 +2,15 @@
   <div class="min-h-screen flex flex-col">
     <AppHeader v-if="!route.meta.hideHeader" :transparent="isTransparentHeader" @open-phone-modal="openPhoneModal" />
     <main :class="isTransparentHeader ? '' : 'flex-1'">
-      <RouterView />
+      <RouterView v-slot="{ Component }">
+        <Transition name="page-fade" mode="out-in">
+          <KeepAlive include="apartments">
+            <component :is="Component" />
+          </KeepAlive>
+        </Transition>
+      </RouterView>
     </main>
-    <AppFooter />
+    <AppFooter v-if="!route.meta.hideFooter" />
 
     <!-- Phone Modal -->
     <PhoneModal :is-open="isPhoneModalOpen" @close="closePhoneModal" @submit="handlePhoneSubmit" />
@@ -77,3 +83,15 @@ const handlePhoneSubmit = async (formData: FormData) => {
   }
 }
 </script>
+
+<style scoped>
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
+}
+</style>

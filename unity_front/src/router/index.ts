@@ -62,36 +62,20 @@ const router = createRouter({
           name: 'project-detail',
           component: ProjectDetailView,
         },
+
         {
-          path: 'projects/:id/:buildingIdentifier',
-          name: 'floor-selection',
-          component: () => import('@/views/FloorSelectionView.vue'),
-          props: (route) => ({
-            projectId: Number(route.params.id),
-            buildingIdentifier: route.params.buildingIdentifier,
-          }),
+          path: 'apartments',
+          name: 'apartments',
+          component: () => import('@/views/ApartmentsView.vue'),
         },
         {
-          path: 'projects/:id/:buildingIdentifier/floor-:floorNumber',
-          name: 'apartment-selection',
-          component: () => import('@/views/ApartmentSelectionView.vue'),
-          props: (route) => ({
-            projectId: Number(route.params.id),
-            buildingIdentifier: route.params.buildingIdentifier,
-            floorNumber: Number(route.params.floorNumber),
-          }),
-        },
-        {
-          path: 'projects/:id/:buildingIdentifier/floor-:floorNumber/apartment-:apartmentId',
-          name: 'apartment-detail',
+          path: 'apartments/:id',
+          name: 'apartment-detail-global',
           component: () => import('@/views/ApartmentDetailView.vue'),
-          props: (route) => ({
-            projectId: Number(route.params.id),
-            buildingIdentifier: route.params.buildingIdentifier,
-            floorNumber: Number(route.params.floorNumber),
-            apartmentId: Number(route.params.apartmentId),
+          props: (route) => ({ 
+            apartmentId: Number(route.params.id) 
           }),
-          meta: { hideHeader: true },
+          meta: { hideHeader: true, hideFooter: true },
         },
         {
           path: 'news',

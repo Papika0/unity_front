@@ -127,6 +127,9 @@ watch(() => project.value, (newProject) => {
 
 const goBack = () => router.back()
 const navigateToProject = (id: number) => router.push(`/projects/${id}`)
+
+// Apartment Query Param Logic
+
 </script>
 
 <template>
@@ -138,6 +141,8 @@ const navigateToProject = (id: number) => router.push(`/projects/${id}`)
         :style="{ width: scrollProgress + '%' }"
       ></div>
     </div>
+
+
 
     <Transition name="fade" mode="out-in">
       <!-- Loading State -->

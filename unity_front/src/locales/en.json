@@ -1,4 +1,12 @@
 {
+    "header": {
+        "home": "Home",
+        "about": "About Us",
+        "projects": "Projects",
+        "gallery": "Gallery",
+        "contact": "Contact",
+        "find_apartment": "Find Apartment"
+    },
     "common": {
         "loading": "Loading...",
         "sqm": "m²",
@@ -11,7 +19,10 @@
         "contact_us": "Contact Us",
         "download_pdf": "Download PDF",
         "share": "Share",
-        "link_copied": "Link copied to clipboard"
+        "link_copied": "Link copied to clipboard",
+        "min": "Min",
+        "max": "Max",
+        "all_projects": "All Projects"
     },
     "status": {
         "available": "Available",
@@ -19,6 +30,8 @@
         "sold": "Sold"
     },
     "apartments": {
+        "projects": "Projects",
+        "area": "Area",
         "floor": "Floor",
         "apartment": "Apartment",
         "apartment_short": "Apt.",
@@ -28,6 +41,11 @@
         "available": "Available",
         "error_loading": "Error",
         "no_apartments": "No apartments found",
+        "no_results": "No results found",
+        "try_adjusting_filters": "Try adjusting your search criteria",
+        "back_to_search": "Back to Search",
+        "find_your_home": "Find Your Perfect Home",
+        "search_description": "Browse our available apartments across all projects using the filters below.",
         "no_apartments_description": "There are no apartments on this floor",
         "no_floors": "No floors found",
         "no_floors_description": "There is no floor data for this building",
@@ -75,11 +93,15 @@
             "dressing_room": "Dressing Room",
             "entrance_hall": "Entrance Hall",
             "corridor": "Corridor",
-            "balcony": "Balcony"
+            "balcony": "Balcony",
+            "guest_room": "Guest Room",
+            "entrance": "Entrance",
+            "auxiliary_room": "Auxiliary Room"
         }
     },
     "buttons": {
-        "retry": "Retry"
+        "retry": "Retry",
+        "search": "Search"
     },
     "admin": {
         "sidebar": {

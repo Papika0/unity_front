@@ -1,4 +1,12 @@
 {
+    "header": {
+        "home": "მთავარი",
+        "about": "ჩვენ შესახებ",
+        "projects": "პროექტები",
+        "gallery": "გალერეა",
+        "contact": "კონტაქტი",
+        "find_apartment": "ბინის ძებნა"
+    },
     "common": {
         "loading": "იტვირთება...",
         "sqm": "მ²",
@@ -11,7 +19,10 @@
         "contact_us": "დაგვიკავშირდით",
         "download_pdf": "PDF ჩამოტვირთვა",
         "share": "გაზიარება",
-        "link_copied": "ბმული კოპირებულია"
+        "link_copied": "ბმული კოპირებულია",
+        "min": "მინ",
+        "max": "მაქს",
+        "all_projects": "ყველა პროექტი"
     },
     "status": {
         "available": "თავისუფალი",
@@ -19,6 +30,8 @@
         "sold": "გაყიდული"
     },
     "apartments": {
+        "projects": "პროექტები",
+        "area": "ფართობი",
         "floor": "სართული",
         "apartment": "ბინა",
         "apartment_short": "ბინა",
@@ -28,6 +41,11 @@
         "available": "თავისუფალი",
         "error_loading": "შეცდომა",
         "no_apartments": "ბინები არ მოიძებნა",
+        "no_results": "შედეგები არ მოიძებნა",
+        "try_adjusting_filters": "სცადეთ ფილტრების შეცვლა",
+        "back_to_search": "უკან ძებნაზე",
+        "find_your_home": "იპოვე შენი იდეალური სახლი",
+        "search_description": "დაათვალიერეთ ხელმისაწვდომი ბინები ყველა პროექტში.",
         "no_apartments_description": "ამ სართულზე ბინები არ არის",
         "no_floors": "სართულები არ მოიძებნა",
         "no_floors_description": "ამ შენობაში სართულების მონაცემები არ არსებობს",
@@ -75,11 +93,15 @@
             "dressing_room": "საგარდერობე",
             "entrance_hall": "შემოსასვლელი",
             "corridor": "დერეფანი",
-            "balcony": "აივანი"
+            "balcony": "აივანი",
+            "guest_room": "მისაღები ოთახი",
+            "entrance": "შესასვლელი",
+            "auxiliary_room": "დამხმარე ფართი"
         }
     },
     "buttons": {
-        "retry": "თავიდან ცდა"
+        "retry": "თავიდან ცდა",
+        "search": "ძებნა"
     },
     "admin": {
         "sidebar": {

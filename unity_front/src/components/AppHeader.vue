@@ -71,7 +71,7 @@ onUnmounted(() => {
         : 'bg-white text-black border-b border-zinc-900/20 relative',
     ]"
   >
-    <div class="w-full px-8 lg:px-16 xl:px-20 2xl:px-32 flex items-center">
+    <div class="w-full px-8 lg:px-16 xl:px-20 2xl:px-32 flex items-center gap-6">
       <!-- Mobile menu button - Left side -->
       <div class="lg:hidden">
         <button
@@ -129,14 +129,13 @@ onUnmounted(() => {
         />
       </div>
 
-      <!-- Desktop Navigation -->
       <nav class="hidden lg:flex lg:space-x-4 xl:space-x-8 2xl:space-x-12 items-center flex-shrink lg:mx-auto xl:mx-0">
         <router-link
           v-for="item in navigation"
           :key="item.key"
           :to="item.path"
           :class="[
-            'text-sm lg:text-base xl:text-lg font-medium transition-colors duration-200 whitespace-nowrap',
+            'text-sm lg:text-sm xl:text-base 2xl:text-lg font-medium transition-colors duration-200 whitespace-nowrap',
             transparent
               ? 'text-orange-100 hover:text-orange-200'
               : 'text-zinc-900 hover:text-zinc-600',
@@ -144,6 +143,18 @@ onUnmounted(() => {
           :active-class="transparent ? 'text-orange-200' : 'text-zinc-600'"
         >
           {{ t(item.key as any) }}
+        </router-link>
+
+        <!-- Find Apartment Button (Desktop) -->
+        <router-link
+          to="/apartments"
+          class="hidden lg:inline-flex items-center gap-2 px-3 py-1.5 xl:px-4 xl:py-2 rounded-full transition-all duration-300 transform hover:scale-105 ml-4 xl:ml-6 whitespace-nowrap"
+          :class="transparent ? 'bg-orange-100 text-zinc-900 hover:bg-orange-200' : 'bg-zinc-900 text-white hover:bg-zinc-800'"
+        >
+          <svg class="w-3.5 h-3.5 xl:w-4 xl:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span class="text-[10px] lg:text-xs xl:text-sm font-bold uppercase tracking-wider">{{ t('header.find_apartment') || 'Find Apartment' }}</span>
         </router-link>
       </nav>
 
@@ -153,13 +164,13 @@ onUnmounted(() => {
         <button
           @click="openPhoneModal"
           :class="[
-            'inline-flex items-center gap-1.5 px-3 py-1.5 xl:px-4 xl:py-2 text-xs xl:text-sm font-normal font-roboto uppercase tracking-widest transition-all duration-200 whitespace-nowrap',
+            'inline-flex items-center gap-1.5 px-3 py-1.5 xl:px-4 xl:py-2 text-[10px] lg:text-xs xl:text-sm font-normal font-roboto uppercase tracking-widest transition-all duration-200 whitespace-nowrap',
             transparent
               ? 'border border-orange-100 text-orange-100 hover:bg-orange-100 hover:text-zinc-900'
               : 'border border-zinc-900 text-zinc-900 hover:bg-zinc-900 hover:text-white',
           ]"
         >
-          <IconPhone class="w-3.5 h-3.5 xl:w-4 xl:h-4" />
+          <IconPhone class="w-3 h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4" />
           {{ t('footer.callUS') || 'Call Us' }}
         </button>
 
@@ -269,6 +280,25 @@ onUnmounted(() => {
             "
           >
             {{ t(item.key as any) }}
+          </router-link>
+
+          <!-- Find Apartment Button (Mobile) -->
+          <router-link
+            to="/apartments"
+            @click="navigateTo('/apartments')"
+            :style="{ transitionDelay: `${navigation.length * 50}ms` }"
+            :class="[
+              'flex items-center gap-2 py-3 px-4 text-base font-medium rounded-lg transition-all duration-300 transform mt-2',
+              transparent
+                ? 'bg-orange-100/10 text-orange-100 hover:bg-orange-100/20'
+                : 'bg-zinc-50 text-zinc-900 hover:bg-zinc-100',
+              isMobileMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0',
+            ]"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>{{ t('header.find_apartment') || 'Find Apartment' }}</span>
           </router-link>
 
           <!-- Call Us Button in mobile -->

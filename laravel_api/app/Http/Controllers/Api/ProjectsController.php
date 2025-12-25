@@ -30,12 +30,22 @@ class ProjectsController extends Controller
     public function index(Request $request)
     {
         try {
+            $locale = App::getLocale();
+
             $projects = Projects::where('is_active', true)
+                ->where(function ($query) {
+                    $query->whereHas('interactiveZones')
+                        ->orWhereHas('apartments');
+                })
                 ->with(['mainImage', 'renderImage', 'galleryImages'])
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            $resources = ProjectResource::collection($projects);
+            // Manually map to resource to pass locale
+            $resources = $projects->map(function ($project) use ($locale) {
+                return new ProjectResource($project, $locale);
+            });
+
             return $this->success($resources);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch projects', 500);

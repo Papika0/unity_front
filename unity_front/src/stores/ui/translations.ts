@@ -28,6 +28,7 @@ export const useTranslationsStore = defineStore('translations', () => {
     news: ['messages', 'header', 'footer', 'contact', 'errors', 'news', 'buttons'],
     gallery: ['messages', 'header', 'footer', 'contact', 'errors', 'gallery', 'buttons'],
     contact: ['messages', 'header', 'footer', 'contact', 'buttons', 'errors'],
+    apartments: ['messages', 'header', 'footer', 'contact', 'errors', 'apartments', 'buttons'],
   }
   const isLoading = ref(false)
   const loadError = ref('')
@@ -40,7 +41,7 @@ export const useTranslationsStore = defineStore('translations', () => {
     return localeStore.currentLocale
   })
 
-  // Function to extract groups from translation keys
+  // Function to extract groups from translations
   function extractGroupsFromTranslations(translations: TranslationsRecord): Set<string> {
     const groups = new Set<string>()
 
@@ -261,3 +262,4 @@ export const useTranslationsStore = defineStore('translations', () => {
     $reset,
   }
 })
+
