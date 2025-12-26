@@ -27,7 +27,7 @@ class AdminApartmentDetectionController extends Controller
     {
         // Increase PHP execution time for this long-running process
         set_time_limit(180); // 3 minutes
-        
+
         $request->validate([
             'source_pdf' => 'required|file|mimes:pdf|max:20480', // max 20MB
             'target_image' => 'nullable|file|mimes:png,jpg,jpeg|max:20480', // optional clean image
@@ -51,18 +51,21 @@ class AdminApartmentDetectionController extends Controller
 
             // Run Python detection script
             $scriptPath = base_path('scripts/detect_apartments.py');
-            
+
             // Try virtual environment first, then system Python
             $venvPython = base_path('scripts/venv/bin/python3');
+            // cPanel Python App virtualenv path
+            $cpanelVenv = '/home/unitydge45f/virtualenv/backend_test/unity_front/laravel_api/scripts/3.9/bin/python3';
             $pythonPaths = [
-                $venvPython, // Virtual environment (preferred)
+                $cpanelVenv, // cPanel virtualenv (production)
+                $venvPython, // Local virtual environment
                 '/usr/bin/python3',
                 '/usr/local/bin/python3',
                 '/opt/homebrew/bin/python3',
                 'python3',
                 'python',
             ];
-            
+
             $pythonPath = null;
             foreach ($pythonPaths as $path) {
                 if (file_exists($path) || $this->commandExists($path)) {
@@ -101,16 +104,16 @@ class AdminApartmentDetectionController extends Controller
             if (!$process->isSuccessful()) {
                 $errorOutput = $process->getErrorOutput();
                 $stdOutput = $process->getOutput();
-                
+
                 Log::error('Apartment detection failed', [
                     'error' => $errorOutput,
                     'output' => $stdOutput,
                     'exitCode' => $process->getExitCode()
                 ]);
-                
+
                 // Try to get error from stdout if stderr is empty
                 $errorMessage = $errorOutput ?: $stdOutput ?: 'Unknown error occurred';
-                
+
                 return response()->json([
                     'success' => false,
                     'error' => 'Detection failed: ' . $errorMessage
@@ -128,10 +131,9 @@ class AdminApartmentDetectionController extends Controller
             }
 
             return response()->json($result);
-
         } catch (\Exception $e) {
             $this->cleanupTempFiles($tempPaths);
-            
+
             Log::error('Apartment detection exception', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
