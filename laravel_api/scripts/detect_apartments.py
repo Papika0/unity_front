@@ -14,13 +14,18 @@ try:
 except ImportError:
     fitz = None
 
-def pdf_to_image(pdf_path, dpi=150):
-    """Convert first page of PDF to image array using PyMuPDF"""
+def pdf_to_image(pdf_path, dpi=100):
+    """Convert first page of PDF to image array using PyMuPDF
+    
+    Note: Lower DPI (100) is used for shared hosting memory limits.
+    Increase to 150 for better quality if memory allows.
+    """
     if fitz is None:
         raise ImportError("PyMuPDF (fitz) is required. Install with: pip install PyMuPDF")
     
     doc = fitz.open(pdf_path)
     if len(doc) == 0:
+        doc.close()
         raise ValueError("PDF has no pages")
     
     page = doc[0]
@@ -31,15 +36,23 @@ def pdf_to_image(pdf_path, dpi=150):
     # Render page to pixmap
     pix = page.get_pixmap(matrix=mat)
     
-    # Convert to numpy array
-    img_data = np.frombuffer(pix.samples, dtype=np.uint8)
-    img_data = img_data.reshape(pix.height, pix.width, pix.n)
+    # Get dimensions before converting
+    height, width, n_channels = pix.height, pix.width, pix.n
+    
+    # Convert to numpy array using frombuffer and copy to own memory
+    img_data = np.frombuffer(pix.samples, dtype=np.uint8).copy()
+    img_data = img_data.reshape(height, width, n_channels)
+    
+    # Release pixmap memory
+    pix = None
     
     # Convert RGB to BGR for OpenCV
-    if pix.n == 4:  # RGBA
+    if n_channels == 4:  # RGBA
         img_bgr = cv2.cvtColor(img_data, cv2.COLOR_RGBA2BGR)
-    elif pix.n == 3:  # RGB
+        del img_data
+    elif n_channels == 3:  # RGB
         img_bgr = cv2.cvtColor(img_data, cv2.COLOR_RGB2BGR)
+        del img_data
     else:
         img_bgr = img_data
     
