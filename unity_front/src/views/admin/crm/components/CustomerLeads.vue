@@ -5,10 +5,12 @@
  */
 
 import { ref, onMounted } from 'vue'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { adminCustomerApi, type Customer, type CustomerStatistics } from '@/services/adminCustomerApi'
 import { useToastStore } from '@/stores/ui/toast'
 import { useCrmStore } from '@/stores/admin/crm'
 
+const { t } = useTranslations()
 const toast = useToastStore()
 const crmStore = useCrmStore()
 
@@ -58,18 +60,18 @@ const pagination = ref({
 })
 
 const statusOptions = [
-  { value: 'all', label: 'ყველა' },
-  { value: 'new', label: 'ახალი' },
-  { value: 'contacted', label: 'დაკავშირებული' },
-  { value: 'in_progress', label: 'მიმდინარე' },
-  { value: 'completed', label: 'დასრულებული' },
-  { value: 'cancelled', label: 'გაუქმებული' },
+  { value: 'all', label: () => t('admin.crm.leads.status.all') },
+  { value: 'new', label: () => t('admin.crm.leads.status.new') },
+  { value: 'contacted', label: () => t('admin.crm.leads.status.contacted') },
+  { value: 'in_progress', label: () => t('admin.crm.leads.status.in_progress') },
+  { value: 'completed', label: () => t('admin.crm.leads.status.completed') },
+  { value: 'cancelled', label: () => t('admin.crm.leads.status.cancelled') },
 ]
 
 const sourceOptions = [
-  { value: 'all', label: 'ყველა' },
-  { value: 'contact_form', label: 'კონტაქტის ფორმა' },
-  { value: 'call_request', label: 'ზარის მოთხოვნა' },
+  { value: 'all', label: () => t('admin.crm.leads.source.all') },
+  { value: 'contact_form', label: () => t('admin.crm.leads.source.contact_form') },
+  { value: 'call_request', label: () => t('admin.crm.leads.source.call_request') },
 ]
 
 // Load data
@@ -85,7 +87,7 @@ async function loadCustomers(): Promise<void> {
     pagination.value = response.meta
   } catch (error) {
     console.error('Failed to load customers:', error)
-    toast.error('კლიენტების ჩატვირთვა ვერ მოხერხდა')
+    toast.error(t('admin.crm.leads.messages.load_failed'))
   } finally {
     loading.value = false
   }
@@ -119,12 +121,12 @@ async function handleCreateDeal(): Promise<void> {
   try {
     await crmStore.createDeal({
       customer_id: selectedCustomer.value.id,
-      title: `${selectedCustomer.value.name} - ახალი გარიგება`,
-      value: newDealValue.value,
+      title: `${selectedCustomer.value.name} - ${t('admin.crm.leads.messages.new_deal_title')}`,
+      budget: newDealValue.value,
       currency: newDealCurrency.value,
     })
 
-    toast.success('გარიგება შეიქმნა')
+    toast.success(t('admin.crm.leads.messages.deal_created'))
     showCreateDealModal.value = false
     newDealValue.value = 0
     newDealCurrency.value = 'USD'
@@ -132,7 +134,7 @@ async function handleCreateDeal(): Promise<void> {
     // Update customer status
     await updateCustomerStatus(selectedCustomer.value.id, 'in_progress')
   } catch {
-    toast.error('გარიგების შექმნა ვერ მოხერხდა')
+    toast.error(t('admin.crm.leads.messages.deal_create_failed'))
   }
 }
 
@@ -140,12 +142,12 @@ async function handleCreateDeal(): Promise<void> {
 async function updateCustomerStatus(id: number, status: string): Promise<void> {
   try {
     await adminCustomerApi.update(id, { status })
-    toast.success('სტატუსი განახლდა')
+    toast.success(t('admin.crm.leads.messages.status_updated'))
     await loadCustomers()
     await loadStatistics()
   } catch (error) {
     console.error('Failed to update status:', error)
-    toast.error('სტატუსის განახლება ვერ მოხერხდა')
+    toast.error(t('admin.crm.leads.messages.status_update_failed'))
   }
 }
 
@@ -180,7 +182,7 @@ function getStatusBadgeClass(status: string): string {
 
 // Get source label
 function getSourceLabel(source: string): string {
-  return source === 'contact_form' ? 'კონტაქტის ფორმა' : 'ზარის მოთხოვნა'
+  return source === 'contact_form' ? t('admin.crm.leads.source.contact_form') : t('admin.crm.leads.source.call_request')
 }
 </script>
 
@@ -190,19 +192,19 @@ function getSourceLabel(source: string): string {
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="bg-white p-4 rounded-lg border border-gray-200">
         <div class="text-2xl font-bold text-gray-900">{{ statistics.total }}</div>
-        <div class="text-sm text-gray-500">სულ კლიენტები</div>
+        <div class="text-sm text-gray-700">{{ t('admin.crm.leads.statistics.total_customers') }}</div>
       </div>
       <div class="bg-white p-4 rounded-lg border border-gray-200">
         <div class="text-2xl font-bold text-blue-600">{{ statistics.new }}</div>
-        <div class="text-sm text-gray-500">ახალი</div>
+        <div class="text-sm text-gray-700">{{ t('admin.crm.leads.statistics.new') }}</div>
       </div>
       <div class="bg-white p-4 rounded-lg border border-gray-200">
         <div class="text-2xl font-bold text-purple-600">{{ statistics.in_progress }}</div>
-        <div class="text-sm text-gray-500">მიმდინარე</div>
+        <div class="text-sm text-gray-700">{{ t('admin.crm.leads.statistics.in_progress') }}</div>
       </div>
       <div class="bg-white p-4 rounded-lg border border-gray-200">
         <div class="text-2xl font-bold text-green-600">{{ statistics.completed }}</div>
-        <div class="text-sm text-gray-500">დასრულებული</div>
+        <div class="text-sm text-gray-700">{{ t('admin.crm.leads.statistics.completed') }}</div>
       </div>
     </div>
 
@@ -210,37 +212,37 @@ function getSourceLabel(source: string): string {
     <div class="bg-white p-4 rounded-lg border border-gray-200">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">სტატუსი</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.crm.leads.fields.status') }}</label>
           <select
             v-model="filters.status"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
             @change="loadCustomers"
           >
             <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value" class="text-gray-900">
-              {{ opt.label }}
+              {{ opt.label() }}
             </option>
           </select>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">წყარო</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.crm.leads.fields.source') }}</label>
           <select
             v-model="filters.source"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
             @change="loadCustomers"
           >
             <option v-for="opt in sourceOptions" :key="opt.value" :value="opt.value" class="text-gray-900">
-              {{ opt.label }}
+              {{ opt.label() }}
             </option>
           </select>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">ძიება</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.crm.leads.actions.search') }}</label>
           <input
             v-model="filters.search"
             type="text"
-            placeholder="სახელი, ტელეფონი, email..."
+            :placeholder="t('admin.crm.leads.placeholders.search')"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             @input="loadCustomers"
           />
@@ -251,7 +253,7 @@ function getSourceLabel(source: string): string {
             class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             @click="loadCustomers"
           >
-            ძიება
+            {{ t('admin.crm.leads.actions.search') }}
           </button>
         </div>
       </div>
@@ -260,7 +262,7 @@ function getSourceLabel(source: string): string {
     <!-- Loading -->
     <div v-if="loading" class="text-center py-12">
       <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto"></div>
-      <p class="mt-4 text-gray-500">იტვირთება...</p>
+      <p class="mt-4 text-gray-700">{{ t('admin.crm.leads.messages.loading') }}</p>
     </div>
 
     <!-- Table -->
@@ -269,12 +271,12 @@ function getSourceLabel(source: string): string {
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">სახელი</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">კონტაქტი</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">წყარო</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">სტატუსი</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">თარიღი</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">მოქმედებები</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">{{ t('admin.crm.leads.fields.name') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">{{ t('admin.crm.leads.fields.contact') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">{{ t('admin.crm.leads.fields.source') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">{{ t('admin.crm.leads.fields.status') }}</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">{{ t('admin.crm.leads.fields.date') }}</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">{{ t('admin.crm.leads.fields.actions') }}</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
@@ -284,7 +286,7 @@ function getSourceLabel(source: string): string {
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">{{ customer.email || '-' }}</div>
-                <div class="text-sm text-gray-500">{{ customer.phone || '-' }}</div>
+                <div class="text-sm text-gray-700">{{ customer.phone || '-' }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="text-sm text-gray-700">{{ getSourceLabel(customer.source) }}</span>
@@ -297,7 +299,7 @@ function getSourceLabel(source: string): string {
                   {{ statusOptions.find((s) => s.value === customer.status)?.label }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700">
                 {{ formatDate(customer.created_at) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
@@ -305,13 +307,13 @@ function getSourceLabel(source: string): string {
                   class="text-blue-600 hover:text-blue-900"
                   @click="initiateCreateDeal(customer)"
                 >
-                  გარიგების შექმნა
+                  {{ t('admin.crm.leads.actions.create_deal') }}
                 </button>
                 <button
                   class="text-gray-600 hover:text-gray-900"
                   @click="viewDetails(customer)"
                 >
-                  დეტალები
+                  {{ t('admin.crm.leads.actions.view_details') }}
                 </button>
               </td>
             </tr>
@@ -321,7 +323,7 @@ function getSourceLabel(source: string): string {
 
       <!-- Empty State -->
       <div v-if="customers.length === 0" class="text-center py-12">
-        <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -329,7 +331,7 @@ function getSourceLabel(source: string): string {
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
           />
         </svg>
-        <p class="text-gray-500">კლიენტები არ მოიძებნა</p>
+        <p class="text-gray-700">{{ t('admin.crm.leads.messages.no_customers') }}</p>
       </div>
     </div>
 
@@ -342,11 +344,11 @@ function getSourceLabel(source: string): string {
         <div class="absolute inset-0 bg-black/50" @click="showCreateDealModal = false"></div>
 
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">გარიგების შექმნა</h3>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ t('admin.crm.leads.modal.create_deal_title') }}</h3>
 
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">კლიენტი</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.crm.leads.fields.customer') }}</label>
               <input
                 type="text"
                 :value="selectedCustomer.name"
@@ -356,7 +358,7 @@ function getSourceLabel(source: string): string {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">ღირებულება</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.crm.leads.fields.value') }}</label>
               <input
                 v-model.number="newDealValue"
                 type="number"
@@ -367,14 +369,14 @@ function getSourceLabel(source: string): string {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">ვალუტა</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.crm.leads.fields.currency') }}</label>
               <select
                 v-model="newDealCurrency"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
               >
-                <option value="USD" class="text-gray-900">USD ($)</option>
-                <option value="GEL" class="text-gray-900">GEL (₾)</option>
-                <option value="EUR" class="text-gray-900">EUR (€)</option>
+                <option value="USD" class="text-gray-900">{{ t('admin.crm.currencies.usd') }}</option>
+                <option value="GEL" class="text-gray-900">{{ t('admin.crm.currencies.gel') }}</option>
+                <option value="EUR" class="text-gray-900">{{ t('admin.crm.currencies.eur') }}</option>
               </select>
             </div>
           </div>
@@ -384,13 +386,13 @@ function getSourceLabel(source: string): string {
               class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
               @click="showCreateDealModal = false"
             >
-              გაუქმება
+              {{ t('admin.crm.leads.actions.cancel') }}
             </button>
             <button
               class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               @click="handleCreateDeal"
             >
-              შექმნა
+              {{ t('admin.crm.leads.actions.create') }}
             </button>
           </div>
         </div>

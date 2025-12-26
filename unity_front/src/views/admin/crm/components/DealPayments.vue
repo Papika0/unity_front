@@ -4,7 +4,8 @@
  * Payment schedule management for a deal
  */
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useCrmStore } from '@/stores/admin/crm'
 import type { CrmDeal, PaymentScheduleData, PaymentStatus } from '@/types/crm'
 import { CURRENCY_SYMBOLS } from '@/types/crm'
@@ -17,18 +18,25 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Composables
+const { t } = useTranslations()
+
 // Store
 const crmStore = useCrmStore()
 
 // State
 const showScheduleModal = ref(false)
 const isLoading = ref(false)
+let timeoutId: ReturnType<typeof setTimeout> | null = null
 
 // Computed
 const currencySymbol = computed(() => CURRENCY_SYMBOLS[props.deal.currency])
 
 const totalPaid = computed(() => {
-  return crmStore.dealPayments
+  const payments = crmStore.dealPayments
+  if (!Array.isArray(payments)) return 0
+  
+  return payments
     .filter((p) => p.status === 'paid')
     .reduce((sum, p) => sum + p.amount, 0)
 })
@@ -48,6 +56,14 @@ onMounted(async () => {
   await loadPayments()
 })
 
+// Clean up timeout on unmount
+onBeforeUnmount(() => {
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+    timeoutId = null
+  }
+})
+
 // Load payments with timeout
 async function loadPayments(): Promise<void> {
   isLoading.value = true
@@ -55,23 +71,30 @@ async function loadPayments(): Promise<void> {
 
   let timedOut = false
 
+  // Clear any existing timeout
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+  }
+
   // Timeout failsafe
-  const timeoutId = setTimeout(() => {
+  timeoutId = setTimeout(() => {
     timedOut = true
     isLoading.value = false
-    loadError.value = 'დრო ამოიწურა. გთხოვთ განაახლოთ გვერდი.'
+    loadError.value = t('admin.crm.messages.timeout')
   }, 10000) // 10 second timeout
 
   try {
     await crmStore.fetchPayments(props.deal.id)
-    if (!timedOut) {
+    if (!timedOut && timeoutId) {
       clearTimeout(timeoutId)
+      timeoutId = null
     }
   } catch (error) {
     console.error('Failed to load payments:', error)
-    if (!timedOut) {
-      loadError.value = 'გადახდების ჩატვირთვა ვერ მოხერხდა'
+    if (!timedOut && timeoutId) {
+      loadError.value = t('admin.crm.messages.payments_load_failed')
       clearTimeout(timeoutId)
+      timeoutId = null
     }
   } finally {
     if (!timedOut) {
@@ -91,7 +114,13 @@ async function handleGenerateSchedule(data: PaymentScheduleData): Promise<void> 
 }
 
 // Handle mark as paid
-async function handleMarkAsPaid(paymentId: number): Promise<void> {
+async function handleMarkAsPaid(paymentId: number, amount: number): Promise<void> {
+  // Confirmation dialog
+  const confirmed = confirm(
+    t('admin.crm.payment.confirm_mark_paid', { amount: `${currencySymbol.value}${formatNumber(amount)}` })
+  )
+  if (!confirmed) return
+
   try {
     await crmStore.updatePayment(paymentId, {
       status: 'paid',
@@ -124,15 +153,15 @@ function getStatusClass(status: PaymentStatus): string {
 function getStatusLabel(status: PaymentStatus): string {
   switch (status) {
     case 'paid':
-      return 'გადახდილი'
+      return t('admin.crm.payment.status.paid')
     case 'pending':
-      return 'მოლოდინში'
+      return t('admin.crm.payment.status.pending')
     case 'overdue':
-      return 'просроченный'
+      return t('admin.crm.payment.status.overdue')
     case 'partially_paid':
-      return 'ნაწილობრივ გადახდილი'
+      return t('admin.crm.payment.status.partially_paid')
     case 'cancelled':
-      return 'გაუქმებული'
+      return t('admin.crm.payment.status.cancelled')
     default:
       return status
   }
@@ -159,22 +188,22 @@ function formatDate(dateStr: string): string {
     <!-- Header & Actions -->
     <div class="flex items-center justify-between">
       <div>
-        <h4 class="font-semibold text-gray-900">გადახდის გრაფიკი</h4>
-        <p class="text-sm text-gray-500 mt-1">{{ crmStore.dealPayments.length }} შენატანი</p>
+        <h4 class="font-semibold text-gray-900">{{ t('admin.crm.payment.schedule') }}</h4>
+        <p class="text-sm text-gray-700 mt-1">{{ crmStore.dealPayments.length }} {{ t('admin.crm.payment.installments') }}</p>
       </div>
 
       <button
         class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
         @click="showScheduleModal = true"
       >
-        + გრაფიკის შექმნა
+        + {{ t('admin.crm.payment.create_schedule') }}
       </button>
     </div>
 
     <!-- Progress Bar -->
     <div class="bg-gray-50 rounded-lg p-4">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-sm font-medium text-gray-700">გადახდის პროგრესი</span>
+        <span class="text-sm font-medium text-gray-700">{{ t('admin.crm.payment.progress') }}</span>
         <span class="text-lg font-bold text-gray-900">{{ paymentProgress }}%</span>
       </div>
       <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -185,10 +214,10 @@ function formatDate(dateStr: string): string {
       </div>
       <div class="flex items-center justify-between mt-2 text-sm">
         <span class="text-gray-600">
-          გადახდილი: {{ currencySymbol }}{{ formatNumber(totalPaid) }}
+          {{ t('admin.crm.payment.paid') }}: {{ currencySymbol }}{{ formatNumber(totalPaid) }}
         </span>
         <span class="text-gray-600">
-          სულ: {{ currencySymbol }}{{ formatNumber(deal.budget) }}
+          {{ t('admin.crm.payment.total') }}: {{ currencySymbol }}{{ formatNumber(deal.budget) }}
         </span>
       </div>
     </div>
@@ -205,7 +234,7 @@ function formatDate(dateStr: string): string {
             @click="loadPayments"
             class="mt-2 text-sm text-red-700 hover:text-red-900 underline"
           >
-            თავიდან ცდა
+            {{ t('admin.crm.messages.retry') }}
           </button>
         </div>
       </div>
@@ -216,7 +245,7 @@ function formatDate(dateStr: string): string {
       <div
         class="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mx-auto"
       ></div>
-      <p class="mt-4 text-gray-500 text-sm">იტვირთება...</p>
+      <p class="mt-4 text-gray-700 text-sm">{{ t('admin.crm.messages.loading') }}</p>
     </div>
 
     <!-- Payments List -->
@@ -229,7 +258,7 @@ function formatDate(dateStr: string): string {
         <div class="flex items-start justify-between">
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-2">
-              <span class="text-sm font-medium text-gray-900">შენატანი {{ index + 1 }}</span>
+              <span class="text-sm font-medium text-gray-900">{{ t('admin.crm.payment.installment') }} {{ index + 1 }}</span>
               <span
                 class="text-xs px-2 py-0.5 rounded border"
                 :class="getStatusClass(payment.status)"
@@ -247,16 +276,16 @@ function formatDate(dateStr: string): string {
               <span v-if="payment.paid_date">✅ {{ formatDate(payment.paid_date) }}</span>
             </div>
 
-            <p v-if="payment.notes" class="text-sm text-gray-500 mt-2">{{ payment.notes }}</p>
+            <p v-if="payment.notes" class="text-sm text-gray-600 mt-2">{{ payment.notes }}</p>
           </div>
 
           <!-- Actions -->
           <div v-if="payment.status !== 'paid'" class="flex flex-col gap-2">
             <button
               class="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors"
-              @click="handleMarkAsPaid(payment.id)"
+              @click="handleMarkAsPaid(payment.id, payment.amount)"
             >
-              გადახდილად მონიშვნა
+              {{ t('admin.crm.payment.mark_as_paid') }}
             </button>
           </div>
         </div>
@@ -265,7 +294,7 @@ function formatDate(dateStr: string): string {
 
     <!-- Empty State -->
     <div v-else class="text-center py-12 bg-gray-50 rounded-lg">
-      <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -273,8 +302,8 @@ function formatDate(dateStr: string): string {
           d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
         />
       </svg>
-      <p class="text-sm text-gray-500">არ არის გადახდის გრაფიკი</p>
-      <p class="text-xs text-gray-400 mt-1">შექმენით გრაფიკი ავტომატურად</p>
+      <p class="text-sm text-gray-700">{{ t('admin.crm.payment.no_schedule') }}</p>
+      <p class="text-xs text-gray-600 mt-1">{{ t('admin.crm.payment.create_schedule_auto') }}</p>
     </div>
 
     <!-- Payment Schedule Modal -->

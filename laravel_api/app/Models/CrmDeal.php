@@ -46,6 +46,7 @@ class CrmDeal extends Model
     protected $appends = [
         'is_stale',
         'days_since_activity',
+        'days_in_stage',
     ];
 
     /**
@@ -216,6 +217,33 @@ class CrmDeal extends Model
     {
         $lastActivity = $this->last_activity_at ?? $this->created_at;
         return Carbon::parse($lastActivity)->diffInDays(now());
+    }
+
+    /**
+     * Get days in current stage
+     */
+    public function getDaysInStageAttribute(): int
+    {
+        // Find the last status change for this deal
+        // Since we might not have activities loaded, we should be careful.
+        // Ideally controller eager loads them. If not, this triggers a query.
+        $lastStageChange = $this->activities
+            ->where('type', 'status_change')
+            ->where('metadata.new_stage_id', $this->stage_id)
+            ->sortByDesc('created_at')
+            ->first();
+
+        // If explicitly moved to this stage, use that time
+        if ($lastStageChange) {
+            return Carbon::parse($lastStageChange->created_at)->diffInDays(now());
+        }
+
+        // If no status change found to this stage, check if it was CREATED in this stage
+        // We assume if no history, it's been here since creation.
+        // However, if we only loaded recent activities, this might be inaccurate.
+        // But for Kanban view, accurate days is important.
+
+        return Carbon::parse($this->created_at)->diffInDays(now());
     }
 
     /**

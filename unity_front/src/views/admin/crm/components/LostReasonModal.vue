@@ -5,7 +5,11 @@
  */
 
 import { ref, onMounted } from 'vue'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useCrmStore } from '@/stores/admin/crm'
+
+// Composables
+const { t } = useTranslations()
 
 // Emits
 const emit = defineEmits<{
@@ -52,11 +56,16 @@ function handleSubmit(): void {
       ></div>
 
       <!-- Modal -->
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lost-reason-modal-title"
+        class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+      >
         <!-- Header -->
         <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4">
-          <h3 class="text-lg font-semibold text-white">წაგების მიზეზი</h3>
-          <p class="text-sm text-red-100 mt-1">აირჩიეთ რატომ დაიკარგა გარიგება</p>
+          <h3 id="lost-reason-modal-title" class="text-lg font-semibold text-white">{{ t('admin.crm.lost_reason.title') }}</h3>
+          <p class="text-sm text-red-100 mt-1">{{ t('admin.crm.lost_reason.subtitle') }}</p>
         </div>
 
         <!-- Content -->
@@ -66,11 +75,11 @@ function handleSubmit(): void {
             <div
               class="animate-spin rounded-full h-8 w-8 border-4 border-red-500 border-t-transparent mx-auto"
             ></div>
-            <p class="mt-4 text-gray-500 text-sm">იტვირთება...</p>
+            <p class="mt-4 text-gray-500 text-sm">{{ t('admin.crm.messages.loading') }}</p>
           </div>
 
           <!-- Reasons List -->
-          <div v-else class="space-y-2">
+          <div v-else role="radiogroup" aria-label="Lost reason options" class="space-y-2">
             <label
               v-for="reason in crmStore.activeLostReasons"
               :key="reason.id"
@@ -85,6 +94,7 @@ function handleSubmit(): void {
                 v-model.number="selectedReasonId"
                 type="radio"
                 :value="reason.id"
+                :aria-label="reason.reason"
                 class="mt-0.5 h-4 w-4 text-red-600 border-gray-300 focus:ring-red-500"
               />
               <span class="ml-3 text-sm text-gray-900">{{ reason.reason }}</span>
@@ -93,7 +103,7 @@ function handleSubmit(): void {
             <!-- Empty State -->
             <div
               v-if="crmStore.activeLostReasons.length === 0"
-              class="text-center py-8 text-gray-400"
+              class="text-center py-8 text-gray-600"
             >
               <svg
                 class="w-12 h-12 mx-auto mb-2"
@@ -108,7 +118,7 @@ function handleSubmit(): void {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <p class="text-sm">არ არის ხელმისაწვდომი მიზეზები</p>
+              <p class="text-sm">{{ t('admin.crm.lost_reason.no_reasons') }}</p>
             </div>
           </div>
         </div>
@@ -117,18 +127,20 @@ function handleSubmit(): void {
         <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-200">
           <button
             type="button"
+            aria-label="Cancel lost reason selection"
             class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             @click="$emit('cancel')"
           >
-            გაუქმება
+            {{ t('admin.crm.form.cancel') }}
           </button>
           <button
             type="button"
+            aria-label="Confirm lost reason and mark deal as lost"
             class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="!selectedReasonId"
             @click="handleSubmit"
           >
-            დადასტურება
+            {{ t('admin.crm.form.confirm') }}
           </button>
         </div>
       </div>

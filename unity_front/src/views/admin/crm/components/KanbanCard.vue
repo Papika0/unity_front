@@ -5,8 +5,16 @@
  */
 
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useTranslationsStore } from '@/stores/ui/translations'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import type { CrmDeal } from '@/types/crm'
 import { CURRENCY_SYMBOLS } from '@/types/crm'
+
+// Composables
+const { t } = useTranslations()
+const translationsStore = useTranslationsStore()
+const { currentLocale } = storeToRefs(translationsStore)
 
 // Props
 interface Props {
@@ -30,13 +38,13 @@ const currencySymbol = computed(() => CURRENCY_SYMBOLS[props.deal.currency])
 const priorityLabel = computed(() => {
   switch (props.deal.priority) {
     case 'high':
-      return 'მაღალი'
+      return t('admin.crm.priority.high')
     case 'medium':
-      return 'საშუალო'
+      return t('admin.crm.priority.medium')
     case 'low':
-      return 'დაბალი'
+      return t('admin.crm.priority.low')
     default:
-      return 'საშუალო'
+      return t('admin.crm.priority.medium')
   }
 })
 
@@ -44,6 +52,17 @@ const priorityLabel = computed(() => {
 function formatNumber(value: number | null | undefined): string {
   if (value === null || value === undefined || isNaN(value)) return '0'
   return new Intl.NumberFormat('ka-GE', { maximumFractionDigits: 0 }).format(value)
+}
+
+function getLocalizedValue(value: string | Record<string, string> | undefined | null): string {
+  if (!value) return ''
+  if (typeof value === 'string') return value
+  
+  if (currentLocale.value && value[currentLocale.value]) {
+    return value[currentLocale.value]
+  }
+  
+  return value['en'] || value['ka'] || Object.values(value)[0] || ''
 }
 </script>
 
@@ -60,7 +79,7 @@ function formatNumber(value: number | null | undefined): string {
   >
     <!-- Stale Warning Badge (Prominent) -->
     <div v-if="deal.is_stale" class="stale-indicator">
-      ⚠️ საჭიროებს ყურადღებას
+      ⚠️ {{ t('admin.crm.deal.needs_attention') }}
     </div>
 
     <!-- Header: Deal Title + Priority -->
@@ -75,7 +94,7 @@ function formatNumber(value: number | null | undefined): string {
 
     <!-- Customer Name (Secondary) -->
     <div v-if="deal.customer" class="card-customer">
-      👤 {{ deal.customer.full_name }}
+      👤 {{ deal.customer.name }}
     </div>
 
     <!-- Phone Number (Prominent) -->
@@ -84,20 +103,26 @@ function formatNumber(value: number | null | undefined): string {
     </div>
 
     <!-- Apartment Info (if linked) -->
-    <div v-if="deal.apartment" class="card-apartment">
-      🏠 {{ deal.apartment.building?.identifier }} - Appt #{{ deal.apartment.number }}
+    <div v-if="deal.apartment" class="card-apartment text-xs">
+      <div v-if="deal.apartment.building?.project">
+        🏙️ {{ getLocalizedValue(deal.apartment.building.project.title) }}
+      </div>
+      <div>
+        🏠 {{ getLocalizedValue(deal.apartment.building?.name) || deal.apartment.building?.identifier }} 
+        - #{{ deal.apartment.apartment_number }}
+      </div>
     </div>
 
     <!-- Budget/Value -->
     <div v-if="deal.budget" class="card-budget">
-      <span class="budget-label">ბიუჯეტი:</span>
+      <span class="budget-label">{{ t('admin.crm.deal.budget_label') }}</span>
       <span class="budget-value">{{ currencySymbol }}{{ formatNumber(deal.budget) }}</span>
     </div>
 
     <!-- Footer: Days + Assigned User -->
     <div class="card-footer">
       <div class="days-badge" :class="{ 'warning': deal.is_stale }">
-        {{ deal.days_in_stage || 0 }} დღე
+        {{ deal.days_in_stage || 0 }} {{ t('admin.crm.deal.days') }}
       </div>
       <div v-if="deal.assigned_user" class="assigned-user">
         👤 {{ deal.assigned_user.name }}
@@ -107,7 +132,7 @@ function formatNumber(value: number | null | undefined): string {
     <!-- Payment Progress (if available) -->
     <div v-if="deal.payment_progress && deal.payment_progress > 0" class="payment-progress">
       <div class="progress-header">
-        <span>გადახდა</span>
+        <span>{{ t('admin.crm.payment.title') }}</span>
         <span>{{ deal.payment_progress }}%</span>
       </div>
       <div class="progress-bar">

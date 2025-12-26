@@ -38,6 +38,10 @@ export const useCrmStore = defineStore('crm', () => {
   const isLoadingDeal = ref(false)
   const isLoadingActivities = ref(false)
   const isLoadingPayments = ref(false)
+  const isCreatingPayment = ref(false)
+  const isUpdatingPayment = ref(false)
+  const isDeletingPayment = ref(false)
+  const isGeneratingSchedule = ref(false)
   const error = ref<string | null>(null)
 
   // Computed
@@ -276,7 +280,8 @@ export const useCrmStore = defineStore('crm', () => {
     error.value = null
 
     try {
-      dealPayments.value = await crmApi.getPayments(dealId)
+      const response = await crmApi.getPayments(dealId)
+      dealPayments.value = Array.isArray(response) ? response : []
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load payments'
       error.value = message
@@ -287,6 +292,7 @@ export const useCrmStore = defineStore('crm', () => {
   }
 
   async function createPayment(data: PaymentFormData): Promise<CrmPayment> {
+    isCreatingPayment.value = true
     try {
       const payment = await crmApi.createPayment(data)
       dealPayments.value.push(payment)
@@ -295,10 +301,13 @@ export const useCrmStore = defineStore('crm', () => {
       const message = err instanceof Error ? err.message : 'Failed to create payment'
       error.value = message
       throw err
+    } finally {
+      isCreatingPayment.value = false
     }
   }
 
   async function updatePayment(id: number, data: PaymentUpdateData): Promise<CrmPayment> {
+    isUpdatingPayment.value = true
     try {
       const payment = await crmApi.updatePayment(id, data)
 
@@ -312,10 +321,13 @@ export const useCrmStore = defineStore('crm', () => {
       const message = err instanceof Error ? err.message : 'Failed to update payment'
       error.value = message
       throw err
+    } finally {
+      isUpdatingPayment.value = false
     }
   }
 
   async function deletePayment(id: number): Promise<void> {
+    isDeletingPayment.value = true
     try {
       await crmApi.deletePayment(id)
 
@@ -327,6 +339,8 @@ export const useCrmStore = defineStore('crm', () => {
       const message = err instanceof Error ? err.message : 'Failed to delete payment'
       error.value = message
       throw err
+    } finally {
+      isDeletingPayment.value = false
     }
   }
 
@@ -334,6 +348,7 @@ export const useCrmStore = defineStore('crm', () => {
     dealId: number,
     data: PaymentScheduleData
   ): Promise<void> {
+    isGeneratingSchedule.value = true
     try {
       const payments = await crmApi.generatePaymentSchedule(dealId, data)
       dealPayments.value = payments
@@ -341,6 +356,8 @@ export const useCrmStore = defineStore('crm', () => {
       const message = err instanceof Error ? err.message : 'Failed to generate payment schedule'
       error.value = message
       throw err
+    } finally {
+      isGeneratingSchedule.value = false
     }
   }
 
@@ -380,6 +397,10 @@ export const useCrmStore = defineStore('crm', () => {
     isLoadingDeal,
     isLoadingActivities,
     isLoadingPayments,
+    isCreatingPayment,
+    isUpdatingPayment,
+    isDeletingPayment,
+    isGeneratingSchedule,
     error,
 
     // Computed

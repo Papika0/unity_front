@@ -501,7 +501,8 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
     // Building Management (standalone routes without project context)
     Route::prefix('admin/buildings')->middleware('role:admin')->controller(AdminBuildingController::class)->group(function () {
         Route::get('/{buildingId}', 'showStandalone');      // Get single building
-        Route::get('/{buildingId}/apartments', 'getApartments'); // Get apartments for building (filtered by floor if needed)
+        Route::get('/{buildingId}/floors', 'getFloors');    // Get available floors
+        Route::get('/{buildingId}/apartments', 'getApartments'); // Get apartments for building
     });
 });
 

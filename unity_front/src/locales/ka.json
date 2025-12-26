@@ -122,6 +122,7 @@
             "users": "მომხმარებლების მართვა",
             "calculator": "კალკულატორი",
             "bank_rates": "საბანკო განაკვეთები",
+            "crm": "CRM გაყიდვები",
             "apartments_nav": "ბინების ნავიგაცია",
             "logout": "გასვლა"
         },
@@ -821,6 +822,240 @@
                 "usage": "თარგმანის გამოყენება",
                 "translate_all": "ორივე ენაზე თარგმნა",
                 "saving": "ინახება..."
+            }
+        },
+        "crm": {
+            "title": "CRM - გაყიდვების მართვა",
+            "subtitle": "კლიენტები და გარიგებების მართვა",
+            "pipeline": {
+                "title": "გაყიდვების Pipeline",
+                "new_lead": "ახალი ლიდი",
+                "search_placeholder": "მოძებნე სახელით, ტელეფონით ან ბინით...",
+                "all_priorities": "ყველა პრიორიტეტი",
+                "stale_deals": "გადავადებული",
+                "clear_filters": "გაწმენდა",
+                "loading": "იტვირთება...",
+                "deal_moved": "გარიგება გადატანილია",
+                "move_failed": "გადატანა ვერ მოხერხდა"
+            },
+            "statistics": {
+                "total_deals": "სულ გარიგება",
+                "total_value": "ჯამური ღირებულება",
+                "conversion_rate": "კონვერსია",
+                "won": "მოგებული",
+                "lost": "წაგებული"
+            },
+            "deal": {
+                "new_lead": "ახალი ლიდი",
+                "create_lead": "ლიდის შექმნა",
+                "title": "გარიგების სათაური",
+                "customer_name": "კლიენტის სახელი",
+                "phone": "ტელეფონი",
+                "email": "ელ. ფოსტა",
+                "budget": "ბიუჯეტი",
+                "agreed_price": "შეთანხმებული ფასი",
+                "priority": "პრიორიტეტი",
+                "expected_close": "მოსალოდნელი დახურვა",
+                "days_in_stage": "სტადიაში",
+                "days": "დღე",
+                "notes": "შენიშვნა",
+                "assigned_to": "პასუხისმგებელი",
+                "needs_attention": "საჭიროებს ყურადღებას",
+                "priority_label": "პრიორიტეტი",
+                "currency": "ვალუტა",
+                "building": "შენობა",
+                "apartment_number": "ბინის ნომერი",
+                "apartment": "ბინის ინფორმაცია",
+                "expected_close_date": "მოსალოდნელი დახურვის თარიღი",
+                "connect_apartment": "ბინის მიბმა",
+                "select_project": "აირჩიეთ პროექტი",
+                "select_building": "აირჩიეთ შენობა",
+                "select_floor": "აირჩიეთ სართული",
+                "select_apartment": "აირჩიეთ ბინა",
+                "no_available_apartments": "თავისუფალი ბინები არ არის",
+                "connecting": "მიმდინარეობს მიბმა...",
+                "save_connection": "ბინის დამახსოვრება"
+            },
+            "priority": {
+                "high": "მაღალი",
+                "medium": "საშუალო",
+                "low": "დაბალი"
+            },
+            "activity": {
+                "activities": "აქტივობები",
+                "new_activity": "ახალი აქტივობა",
+                "type": "ტიპი",
+                "description": "აღწერა",
+                "description_placeholder": "დაწერეთ აქტივობის დეტალები...",
+                "add": "აქტივობის დამატება",
+                "adding": "ემატება...",
+                "no_activities": "არ არის აქტივობები",
+                "add_first": "დაამატეთ პირველი აქტივობა ზემოთ",
+                "types": {
+                    "note": "შენიშვნა",
+                    "call": "ზარი",
+                    "email": "ელ. ფოსტა",
+                    "meeting": "შეხვედრა",
+                    "status_change": "სტატუსის ცვლილება",
+                    "payment": "გადახდა",
+                    "system": "სისტემა"
+                }
+            },
+            "payment": {
+                "payments": "გადახდები",
+                "schedule": "გადახდის გრაფიკი",
+                "generate_schedule": "გრაფიკის შექმნა",
+                "total_amount": "მთლიანი თანხა",
+                "down_payment": "საწყისი შენატანი",
+                "installments": "შენატანების რაოდენობა",
+                "start_date": "დაწყების თარიღი",
+                "interval": "ინტერვალი (თვეები)",
+                "remaining": "დარჩენილი თანხა",
+                "per_installment": "შენატანი",
+                "preview": "გრაფიკის გადახედვა",
+                "initial_payment": "საწყისი შენატანი",
+                "installment": "შენატანი",
+                "installment_num": "შენატანი",
+                "and_more": "... და კიდევ",
+                "more_installments": "შენატანი",
+                "creating": "იქმნება...",
+                "create": "გრაფიკის შექმნა",
+                "progress": "გადახდის პროგრესი",
+                "paid": "გადახდილი",
+                "total": "სულ",
+                "mark_paid": "გადახდილად მონიშვნა",
+                "no_schedule": "არ არის გადახდის გრაფიკი",
+                "create_auto": "შექმენით გრაფიკი ავტომატურად"
+            },
+            "lost_reason": {
+                "title": "წაგების მიზეზი",
+                "subtitle": "აირჩიეთ რატომ დაიკარგა გარიგება",
+                "select": "მიზეზის არჩევა",
+                "no_reasons": "არ არის ხელმისაწვდომი მიზეზები",
+                "loading": "იტვირთება..."
+            },
+            "form": {
+                "name": "სახელი",
+                "surname": "გვარი",
+                "name_required": "სახელი სავალდებულოა",
+                "phone_required": "ტელეფონი სავალდებულოა",
+                "phone_placeholder": "+995 5XX XXX XXX",
+                "email_placeholder": "email@example.com",
+                "first_name_placeholder": "სახელი",
+                "last_name_placeholder": "გვარი",
+                "projects": "დაინტერესებული პროექტები",
+                "apartment_info": "ბლოკი / ბინა",
+                "apartment_info_placeholder": "მაგ: A ბლოკი, 45 ბინა",
+                "notes_placeholder": "დამატებითი ინფორმაცია...",
+                "cancel": "გაუქმება",
+                "submit": "გაგზავნა",
+                "creating": "იქმნება...",
+                "saving": "ინახება...",
+                "confirm": "დადასტურება"
+            },
+            "tabs": {
+                "details": "დეტალები",
+                "activities": "აქტივობები",
+                "payments": "გადახდები"
+            },
+            "customer": {
+                "info": "კლიენტის ინფორმაცია",
+                "contact": "კონტაქტი",
+                "full_name": "სრული სახელი",
+                "title": "კლიენტის ინფორმაცია",
+                "name": "სახელი",
+                "email": "ელ. ფოსტა",
+                "phone": "ტელეფონი",
+                "apartment": "ბინა",
+                "building": "შენობა",
+                "number": "ნომერი"
+            },
+            "fields": {
+                "currency": "ვალუტა",
+                "created": "შექმნილი:",
+                "updated": "განახლებული:",
+                "last_activity": "ბოლო აქტივობა:",
+                "metadata": "მეტა-ინფორმაცია"
+            },
+            "messages": {
+                "deal_created": "გარიგება წარმატებით შეიქმნა",
+                "deal_updated": "გარიგება წარმატებით განახლდა",
+                "deal_moved": "გარიგება გადატანილია",
+                "activity_added": "აქტივობა დამატებულია",
+                "load_failed": "CRM მონაცემების ჩატვირთვა ვერ მოხერხდა",
+                "create_failed": "გარიგების შექმნა ვერ მოხერხდა",
+                "move_failed": "გადატანა ვერ მოხერხდა",
+                "fill_required": "შეავსეთ სავალდებულო ველები (სახელი და ტელეფონი)",
+                "activity_add_failed": "აქტივობის დამატება ვერ მოხერხდა",
+                "deal_load_failed": "გარიგების ჩატვირთვა ვერ მოხერხდა",
+                "lead_created": "ლიდი წარმატებით შეიქმნა",
+                "lead_create_failed": "ლიდის შექმნა ვერ მოხერხდა",
+                "wait_loading": "გთხოვთ დაელოდოთ მონაცემების ჩატვირთვას",
+                "no_projects": "პროექტები ვერ მოიძებნა",
+                "apartment_connected": "ბინა წარმატებით მიება",
+                "save_failed": "შენახვა ვერ მოხერხდა",
+                "saved": "წარმატებით შეინახა"
+            },
+            "currencies": {
+                "usd": "USD ($)",
+                "gel": "GEL (₾)",
+                "eur": "EUR (€)"
+            },
+            "leads": {
+                "title": "კლიენტების მოთხოვნები",
+                "statistics": {
+                    "total_customers": "სულ კლიენტები",
+                    "new": "ახალი",
+                    "in_progress": "მიმდინარე",
+                    "completed": "დასრულებული"
+                },
+                "status": {
+                    "all": "ყველა",
+                    "new": "ახალი",
+                    "contacted": "დაკავშირებული",
+                    "in_progress": "მიმდინარე",
+                    "completed": "დასრულებული",
+                    "cancelled": "გაუქმებული"
+                },
+                "source": {
+                    "all": "ყველა",
+                    "contact_form": "კონტაქტის ფორმა",
+                    "call_request": "ზარის მოთხოვნა"
+                },
+                "fields": {
+                    "name": "სახელი",
+                    "contact": "კონტაქტი",
+                    "source": "წყარო",
+                    "status": "სტატუსი",
+                    "date": "თარიღი",
+                    "actions": "მოქმედებები",
+                    "customer": "კლიენტი",
+                    "value": "ღირებულება",
+                    "currency": "ვალუტა"
+                },
+                "actions": {
+                    "search": "ძიება",
+                    "create_deal": "გარიგების შექმნა",
+                    "view_details": "დეტალები",
+                    "cancel": "გაუქმება",
+                    "create": "შექმნა"
+                },
+                "placeholders": {
+                    "search": "სახელი, ტელეფონი, email..."
+                },
+                "messages": {
+                    "loading": "იტვირთება...",
+                    "no_customers": "კლიენტები არ მოიძებნა",
+                    "load_failed": "კლიენტების ჩატვირთვა ვერ მოხერხდა",
+                    "deal_created": "გარიგება შეიქმნა",
+                    "deal_create_failed": "გარიგების შექმნა ვერ მოხერხდა",
+                    "status_updated": "სტატუსი განახლდა",
+                    "status_update_failed": "სტატუსის განახლება ვერ მოხერხდა",
+                    "new_deal_title": "ახალი გარიგება"
+                },
+                "modal": {
+                    "create_deal_title": "გარიგების შექმნა"
+                }
             }
         },
         "months": {

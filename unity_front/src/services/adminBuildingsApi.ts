@@ -36,4 +36,8 @@ export const adminBuildingsApi = {
   delete: async (projectId: number, buildingId: number) => {
     return api.delete(`/admin/projects/${projectId}/buildings/${buildingId}`)
   },
+
+  getFloors: async (buildingId: number) => {
+    return api.get(`/admin/buildings/${buildingId}/floors`)
+  },
 }

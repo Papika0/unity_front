@@ -12,6 +12,7 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class CrmDealController extends Controller
@@ -96,6 +97,7 @@ class CrmDealController extends Controller
                 $dealArray = $deal->toArray();
                 $dealArray['is_stale'] = $deal->is_stale;
                 $dealArray['days_since_activity'] = $deal->days_since_activity;
+                $dealArray['days_in_stage'] = $deal->days_in_stage;
                 return $dealArray;
             });
 
@@ -125,7 +127,8 @@ class CrmDealController extends Controller
             $stages = CrmStage::ordered()->get();
 
             $pipeline = $stages->map(function ($stage) use ($request) {
-                $query = CrmDeal::with(['customer', 'user', 'apartment.building'])
+                // Eager load activities to prevent N+1 calculation of days_in_stage
+                $query = CrmDeal::with(['customer', 'user', 'apartment.building', 'activities'])
                     ->where('stage_id', $stage->id)
                     ->orderBy('last_activity_at', 'desc');
 
@@ -152,20 +155,29 @@ class CrmDealController extends Controller
                             'id' => $deal->apartment->id,
                             'apartment_number' => $deal->apartment->apartment_number,
                             'floor_number' => $deal->apartment->floor_number,
-                            'building_name' => $deal->apartment->building?->name,
+                            'building' => $deal->apartment->building ? [
+                                'id' => $deal->apartment->building->id,
+                                'identifier' => $deal->apartment->building->identifier,
+                                'name' => $deal->apartment->building->getTranslations('name'),
+                                'project' => $deal->apartment->building->project ? [
+                                    'id' => $deal->apartment->building->project->id,
+                                    'title' => $deal->apartment->building->project->getTranslations('title'),
+                                ] : null,
+                            ] : null,
                         ] : null,
                         'budget' => $deal->budget,
                         'currency' => $deal->currency,
                         'priority' => $deal->priority,
                         'is_stale' => $deal->is_stale,
                         'days_since_activity' => $deal->days_since_activity,
+                        'days_in_stage' => $deal->days_in_stage,
                         'last_activity_at' => $deal->last_activity_at,
                         'created_at' => $deal->created_at,
                     ];
                 });
 
-                // Calculate total value from deals
-                $totalValue = $query->sum('budget') ?? 0;
+                // Calculate total value from already-fetched deals (avoid re-querying)
+                $totalValue = $deals->sum('budget') ?? 0;
 
                 return [
                     'id' => $stage->id,
@@ -230,6 +242,7 @@ class CrmDealController extends Controller
             'user_id' => 'nullable|exists:users,id',
             'apartment_id' => 'nullable|exists:apartments,id',
             'title' => 'nullable|string|max:255',
+            'value' => 'nullable|numeric|min:0',  // Support legacy 'value' field
             'budget' => 'nullable|numeric|min:0',
             'agreed_price' => 'nullable|numeric|min:0',
             'currency' => 'nullable|in:USD,GEL,EUR',
@@ -257,13 +270,16 @@ class CrmDealController extends Controller
             // Generate title if not provided
             $title = $request->title ?: CrmDeal::generateTitle($customer, $apartment);
 
+            // Handle legacy 'value' field - map to 'budget' if provided
+            $budget = $request->budget ?? $request->value;
+
             $deal = CrmDeal::create([
                 'customer_id' => $customer->id,
                 'user_id' => $request->user_id ?? auth()->id(),
                 'apartment_id' => $request->apartment_id,
                 'stage_id' => $stage->id,
                 'title' => $title,
-                'budget' => $request->budget,
+                'budget' => $budget,
                 'agreed_price' => $request->agreed_price,
                 'currency' => $request->currency ?? 'USD',
                 'priority' => $request->priority ?? 'medium',
@@ -331,8 +347,10 @@ class CrmDealController extends Controller
                 ]);
             }
 
-            // Get the "New Lead" stage
-            $newLeadStage = CrmStage::where('slug', 'new-lead')->first();
+            // Get the first 'open' stage (dynamic lookup instead of hardcoded slug)
+            $newLeadStage = CrmStage::where('type', 'open')->where('is_active', true)->ordered()->first();
+
+            // Fallback to any first stage if no open stage found
             if (!$newLeadStage) {
                 $newLeadStage = CrmStage::ordered()->first();
             }
@@ -375,7 +393,7 @@ class CrmDealController extends Controller
                     'deal_id' => $deal->id,
                     'user_id' => auth()->id(),
                     'type' => 'note',
-                    'description' => 'ლიდი შეიქმნა ადმინ პანელიდან',
+                    'content' => 'ლიდი შეიქმნა ადმინ პანელიდან',  // Fixed: use 'content' instead of 'description'
                     'metadata' => [
                         'project_ids' => $request->project_ids,
                         'apartment_info' => $request->apartment_info,
@@ -473,7 +491,7 @@ class CrmDealController extends Controller
             if ($newStage->locks_apartment && $deal->apartment_id) {
                 $existingDeal = CrmDeal::where('apartment_id', $deal->apartment_id)
                     ->where('id', '!=', $deal->id)
-                    ->whereHas('stage', function($q) {
+                    ->whereHas('stage', function ($q) {
                         $q->where('locks_apartment', true);
                     })
                     ->first();
@@ -490,6 +508,23 @@ class CrmDealController extends Controller
             }
 
             $deal->update($updateData);
+
+            // Sync Apartment Status
+            if ($deal->apartment_id) {
+                // Default to available
+                $status = 'available';
+
+                if ($newStage->type === 'won') {
+                    $status = 'sold';
+                } elseif ($newStage->locks_apartment || stripos($newStage->name, 'Reserved') !== false || stripos($newStage->name, 'დაჯავშნილი') !== false) {
+                    $status = 'reserved';
+                }
+
+                if ($status) {
+                    // Use relation to update
+                    $deal->apartment()->update(['status' => $status]);
+                }
+            }
 
             DB::commit();
 

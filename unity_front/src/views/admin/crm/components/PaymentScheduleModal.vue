@@ -5,8 +5,12 @@
  */
 
 import { ref, computed, watch } from 'vue'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import type { PaymentScheduleData, DealCurrency } from '@/types/crm'
 import { CURRENCY_SYMBOLS } from '@/types/crm'
+
+// Composables
+const { t } = useTranslations()
 
 // Props
 interface Props {
@@ -57,7 +61,7 @@ const schedulePreview = computed(() => {
     preview.push({
       date: new Date().toISOString().split('T')[0],
       amount: downPayment.value,
-      label: 'საწყისი შენატანი',
+      label: t('admin.crm.payment.down_payment'),
     })
   }
 
@@ -70,14 +74,14 @@ const schedulePreview = computed(() => {
       preview.push({
         date: date.toISOString().split('T')[0],
         amount: installmentAmount.value,
-        label: `შენატანი ${i + 1}`,
+        label: `${t('admin.crm.payment.installment')} ${i + 1}`,
       })
     }
     if (numberOfInstallments.value > 6) {
       preview.push({
         date: '',
         amount: 0,
-        label: `... და კიდევ ${numberOfInstallments.value - 6} შენატანი`,
+        label: `... ${t('admin.crm.payment.and_more', { count: numberOfInstallments.value - 6 })}`,
       })
     }
   }
@@ -150,20 +154,25 @@ function formatNumber(value: number): string {
       ></div>
 
       <!-- Modal -->
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="payment-schedule-modal-title"
+        class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden"
+      >
         <!-- Header -->
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
-          <h3 class="text-lg font-semibold text-white">გადახდის გრაფიკის შექმნა</h3>
-          <p class="text-sm text-blue-100 mt-1">განსაზღვრეთ გადახდის პირობები</p>
+          <h3 id="payment-schedule-modal-title" class="text-lg font-semibold text-white">{{ t('admin.crm.payment.create_payment_schedule') }}</h3>
+          <p class="text-sm text-blue-100 mt-1">{{ t('admin.crm.payment.define_terms') }}</p>
         </div>
 
         <div class="p-6 space-y-6">
           <!-- Amount Settings -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">სრული თანხა</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.crm.payment.total_amount') }}</label>
               <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{{
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-700">{{
                   currencySymbol
                 }}</span>
                 <input
@@ -171,15 +180,16 @@ function formatNumber(value: number): string {
                   type="number"
                   min="0"
                   step="100"
+                  :aria-label="t('admin.crm.payment.total_amount')"
                   class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 />
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">საწყისი შენატანი</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.crm.payment.down_payment') }}</label>
               <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{{
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-700">{{
                   currencySymbol
                 }}</span>
                 <input
@@ -188,6 +198,7 @@ function formatNumber(value: number): string {
                   min="0"
                   :max="totalAmount - 1"
                   step="100"
+                  :aria-label="t('admin.crm.payment.down_payment')"
                   class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 />
               </div>
@@ -197,36 +208,39 @@ function formatNumber(value: number): string {
           <!-- Installment Settings -->
           <div class="grid grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">შენატანების რაოდენობა</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.crm.payment.number_of_installments') }}</label>
               <input
                 v-model.number="numberOfInstallments"
                 type="number"
                 min="1"
                 max="120"
+                :aria-label="t('admin.crm.payment.number_of_installments')"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">დაწყების თარიღი</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.crm.payment.start_date') }}</label>
               <input
                 v-model="startDate"
                 type="date"
+                :aria-label="t('admin.crm.payment.start_date')"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">ინტერვალი (თვე)</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('admin.crm.payment.interval') }}</label>
               <select
                 v-model.number="intervalMonths"
+                :aria-label="t('admin.crm.payment.interval')"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               >
-                <option :value="1">ყოველთვიური</option>
-                <option :value="2">2 თვეში ერთხელ</option>
-                <option :value="3">კვარტალური</option>
-                <option :value="6">ნახევარწლიური</option>
-                <option :value="12">წლიური</option>
+                <option :value="1">{{ t('admin.crm.payment.intervals.monthly') }}</option>
+                <option :value="2">{{ t('admin.crm.payment.intervals.bimonthly') }}</option>
+                <option :value="3">{{ t('admin.crm.payment.intervals.quarterly') }}</option>
+                <option :value="6">{{ t('admin.crm.payment.intervals.semiannual') }}</option>
+                <option :value="12">{{ t('admin.crm.payment.intervals.annual') }}</option>
               </select>
             </div>
           </div>
@@ -234,22 +248,22 @@ function formatNumber(value: number): string {
           <!-- Summary -->
           <div class="bg-blue-50 rounded-xl p-4">
             <div class="flex items-center justify-between mb-3">
-              <span class="text-sm font-medium text-blue-900">გადახდის გეგმა</span>
+              <span class="text-sm font-medium text-blue-900">{{ t('admin.crm.payment.payment_plan') }}</span>
               <span class="text-lg font-bold text-blue-600">
-                {{ currencySymbol }}{{ formatNumber(installmentAmount) }} / თვე
+                {{ currencySymbol }}{{ formatNumber(installmentAmount) }} / {{ t('admin.crm.payment.per_month') }}
               </span>
             </div>
             <div class="text-sm text-blue-700 space-y-1">
               <div class="flex justify-between">
-                <span>სრული თანხა:</span>
+                <span>{{ t('admin.crm.payment.total_amount') }}:</span>
                 <span>{{ currencySymbol }}{{ formatNumber(totalAmount) }}</span>
               </div>
               <div class="flex justify-between">
-                <span>საწყისი შენატანი:</span>
+                <span>{{ t('admin.crm.payment.down_payment') }}:</span>
                 <span>{{ currencySymbol }}{{ formatNumber(downPayment) }}</span>
               </div>
               <div class="flex justify-between font-medium">
-                <span>განვადების თანხა:</span>
+                <span>{{ t('admin.crm.payment.installment_amount') }}:</span>
                 <span>{{ currencySymbol }}{{ formatNumber(remainingAmount) }}</span>
               </div>
             </div>
@@ -258,7 +272,7 @@ function formatNumber(value: number): string {
           <!-- Preview -->
           <div class="border border-gray-200 rounded-xl overflow-hidden">
             <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
-              <span class="text-sm font-medium text-gray-700">გრაფიკის გადახედვა</span>
+              <span class="text-sm font-medium text-gray-700">{{ t('admin.crm.payment.schedule_preview') }}</span>
             </div>
             <div class="max-h-48 overflow-y-auto">
               <div
@@ -281,7 +295,7 @@ function formatNumber(value: number): string {
                     <div class="text-sm font-medium text-gray-900">{{ item.label }}</div>
                     <div
                       v-if="item.date"
-                      class="text-xs text-gray-500"
+                      class="text-xs text-gray-600"
                     >
                       {{ formatDate(item.date) }}
                     </div>
@@ -302,18 +316,20 @@ function formatNumber(value: number): string {
         <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3">
           <button
             type="button"
+            aria-label="Cancel payment schedule creation"
             class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
             @click="$emit('cancel')"
           >
-            გაუქმება
+            {{ t('admin.crm.form.cancel') }}
           </button>
           <button
             type="button"
+            aria-label="Create payment schedule"
             class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="!isValid || isSubmitting"
             @click="handleSubmit"
           >
-            {{ isSubmitting ? 'იქმნება...' : 'გრაფიკის შექმნა' }}
+            {{ isSubmitting ? t('admin.crm.messages.creating') : t('admin.crm.payment.create_schedule') }}
           </button>
         </div>
       </div>

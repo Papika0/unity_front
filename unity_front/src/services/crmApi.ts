@@ -110,12 +110,21 @@ export const crmApi = {
   // Activities
   // ======================
   async getActivities(dealId: number): Promise<CrmActivity[]> {
-    const response = await api.get<CrmActivitiesResponse>(`/admin/crm/deals/${dealId}/activities`)
-    return response.data.data
+    // The response is paginated, so data.data contains { data: [], meta: ... }
+    // We need to cast it to any first to access the nested structure since types might be slightly off
+    const response = await api.get<any>(`/admin/crm/deals/${dealId}/activities`)
+    
+    // Check if we have the nested pagination structure
+    if (response.data.data && Array.isArray(response.data.data.data)) {
+      return response.data.data.data
+    }
+    
+    // Fallback for non-paginated or direct array response
+    return Array.isArray(response.data.data) ? response.data.data : []
   },
 
   async createActivity(data: ActivityFormData): Promise<CrmActivity> {
-    const response = await api.post<{ data: CrmActivity }>(`/admin/crm/deals/${data.deal_id}/activities`, {
+    const response = await api.post<{ success: boolean; data: CrmActivity }>(`/admin/crm/deals/${data.deal_id}/activities`, {
       type: data.type,
       content: data.content,
       scheduled_at: data.scheduled_at,
@@ -147,7 +156,7 @@ export const crmApi = {
 
   async generatePaymentSchedule(dealId: number, data: PaymentScheduleData): Promise<CrmPayment[]> {
     const response = await api.post<CrmPaymentsResponse>(
-      `/admin/crm/deals/${dealId}/payments/schedule`,
+      `/admin/crm/deals/${dealId}/payments/generate-schedule`,
       data
     )
     return response.data.data

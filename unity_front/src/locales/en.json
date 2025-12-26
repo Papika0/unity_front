@@ -122,6 +122,7 @@
             "users": "User Management",
             "calculator": "Calculator",
             "bank_rates": "Bank Rates",
+            "crm": "CRM Sales",
             "apartments_nav": "Apartments Navigation",
             "logout": "Logout"
         },
@@ -821,6 +822,241 @@
                 "usage": "Translation usage",
                 "translate_all": "Translate All",
                 "saving": "Saving..."
+            }
+        },
+        "crm": {
+            "title": "CRM - Sales Management",
+            "subtitle": "Manage customers and deals",
+            "pipeline": {
+                "title": "Sales Pipeline",
+                "new_lead": "New Lead",
+                "search_placeholder": "Search by name, phone, or apartment...",
+                "all_priorities": "All Priorities",
+                "stale_deals": "Overdue",
+                "clear_filters": "Clear",
+                "loading": "Loading...",
+                "deal_moved": "Deal moved",
+                "move_failed": "Failed to move"
+            },
+            "statistics": {
+                "total_deals": "Total Deals",
+                "total_value": "Total Value",
+                "conversion_rate": "Conversion",
+                "won": "Won",
+                "lost": "Lost"
+            },
+            "deal": {
+                "new_lead": "New Lead",
+                "create_lead": "Create Lead",
+                "title": "Deal Title",
+                "customer_name": "Customer Name",
+                "phone": "Phone",
+                "email": "Email",
+                "budget": "Budget",
+                "agreed_price": "Agreed Price",
+                "priority": "Priority",
+                "expected_close": "Expected Close",
+                "days_in_stage": "In Stage",
+                "days": "days",
+                "notes": "Notes",
+                "assigned_to": "Assigned To",
+                "needs_attention": "Needs Attention",
+                "priority_label": "Priority",
+                "currency": "Currency",
+                "building": "Building",
+                "apartment_number": "Apartment Number",
+                "apartment": "Apartment Info",
+                "expected_close_date": "Expected Close Date",
+                "connect_apartment": "Connect Apartment",
+                "select_project": "Select Project",
+                "select_building": "Select Building",
+                "select_floor": "Select Floor",
+                "select_apartment": "Select Apartment",
+                "no_available_apartments": "No available apartments",
+                "connecting": "Connecting...",
+                "save_connection": "Save Connection"
+            },
+            "priority": {
+                "high": "High",
+                "medium": "Medium",
+                "low": "Low"
+            },
+            "activity": {
+                "activities": "Activities",
+                "new_activity": "New Activity",
+                "type": "Type",
+                "description": "Description",
+                "description_placeholder": "Write activity details...",
+                "add": "Add Activity",
+                "adding": "Adding...",
+                "no_activities": "No activities",
+                "add_first": "Add first activity above",
+                "types": {
+                    "note": "Note",
+                    "call": "Call",
+                    "email": "Email",
+                    "meeting": "Meeting",
+                    "status_change": "Status Change",
+                    "payment": "Payment",
+                    "system": "System"
+                }
+            },
+            "payment": {
+                "payments": "Payments",
+                "schedule": "Payment Schedule",
+                "generate_schedule": "Generate Schedule",
+                "total_amount": "Total Amount",
+                "down_payment": "Down Payment",
+                "installments": "Number of Installments",
+                "start_date": "Start Date",
+                "interval": "Interval (months)",
+                "remaining": "Remaining Amount",
+                "per_installment": "Installment",
+                "preview": "Schedule Preview",
+                "initial_payment": "Down Payment",
+                "installment": "Installment",
+                "installment_num": "Installment",
+                "and_more": "... and",
+                "more_installments": "more",
+                "creating": "Creating...",
+                "create": "Create Schedule",
+                "progress": "Payment Progress",
+                "paid": "Paid",
+                "total": "Total",
+                "mark_paid": "Mark as Paid",
+                "no_schedule": "No payment schedule",
+                "create_auto": "Create schedule automatically"
+            },
+            "lost_reason": {
+                "title": "Lost Reason",
+                "subtitle": "Select why the deal was lost",
+                "select": "Select Reason",
+                "no_reasons": "No reasons available",
+                "loading": "Loading..."
+            },
+            "form": {
+                "name": "Name",
+                "surname": "Surname",
+                "name_required": "Name is required",
+                "phone_required": "Phone is required",
+                "phone_placeholder": "+995 5XX XXX XXX",
+                "email_placeholder": "email@example.com",
+                "first_name_placeholder": "First name",
+                "last_name_placeholder": "Last name",
+                "projects": "Interested Projects",
+                "apartment_info": "Block / Apartment",
+                "apartment_placeholder": "e.g., Block A, Apt 45",
+                "apartment_info_placeholder": "e.g., Block A, Apt 45",
+                "notes_placeholder": "Additional information...",
+                "cancel": "Cancel",
+                "submit": "Submit",
+                "creating": "Creating...",
+                "saving": "Saving...",
+                "confirm": "Confirm"
+            },
+            "tabs": {
+                "details": "Details",
+                "activities": "Activities",
+                "payments": "Payments"
+            },
+            "customer": {
+                "info": "Customer Information",
+                "contact": "Contact",
+                "full_name": "Full Name",
+                "title": "Customer Information",
+                "name": "Name",
+                "email": "Email",
+                "phone": "Phone",
+                "apartment": "Apartment",
+                "building": "Building",
+                "number": "Number"
+            },
+            "fields": {
+                "currency": "Currency",
+                "created": "Created:",
+                "updated": "Updated:",
+                "last_activity": "Last Activity:",
+                "metadata": "Metadata"
+            },
+            "messages": {
+                "deal_created": "Deal successfully created",
+                "deal_updated": "Deal successfully updated",
+                "deal_moved": "Deal moved",
+                "activity_added": "Activity added",
+                "load_failed": "Failed to load CRM data",
+                "create_failed": "Failed to create deal",
+                "move_failed": "Failed to move deal",
+                "fill_required": "Fill required fields (name and phone)",
+                "activity_add_failed": "Failed to add activity",
+                "deal_load_failed": "Failed to load deal",
+                "lead_created": "Lead successfully created",
+                "lead_create_failed": "Failed to create lead",
+                "wait_loading": "Please wait for data to load",
+                "no_projects": "No projects found",
+                "apartment_connected": "Apartment successfully connected",
+                "save_failed": "Failed to save",
+                "saved": "Successfully saved"
+            },
+            "currencies": {
+                "usd": "USD ($)",
+                "gel": "GEL (₾)",
+                "eur": "EUR (€)"
+            },
+            "leads": {
+                "title": "Customer Requests",
+                "statistics": {
+                    "total_customers": "Total Customers",
+                    "new": "New",
+                    "in_progress": "In Progress",
+                    "completed": "Completed"
+                },
+                "status": {
+                    "all": "All",
+                    "new": "New",
+                    "contacted": "Contacted",
+                    "in_progress": "In Progress",
+                    "completed": "Completed",
+                    "cancelled": "Cancelled"
+                },
+                "source": {
+                    "all": "All",
+                    "contact_form": "Contact Form",
+                    "call_request": "Call Request"
+                },
+                "fields": {
+                    "name": "Name",
+                    "contact": "Contact",
+                    "source": "Source",
+                    "status": "Status",
+                    "date": "Date",
+                    "actions": "Actions",
+                    "customer": "Customer",
+                    "value": "Value",
+                    "currency": "Currency"
+                },
+                "actions": {
+                    "search": "Search",
+                    "create_deal": "Create Deal",
+                    "view_details": "Details",
+                    "cancel": "Cancel",
+                    "create": "Create"
+                },
+                "placeholders": {
+                    "search": "Name, phone, email..."
+                },
+                "messages": {
+                    "loading": "Loading...",
+                    "no_customers": "No customers found",
+                    "load_failed": "Failed to load customers",
+                    "deal_created": "Deal created",
+                    "deal_create_failed": "Failed to create deal",
+                    "status_updated": "Status updated",
+                    "status_update_failed": "Failed to update status",
+                    "new_deal_title": "New Deal"
+                },
+                "modal": {
+                    "create_deal_title": "Create Deal"
+                }
             }
         },
         "months": {

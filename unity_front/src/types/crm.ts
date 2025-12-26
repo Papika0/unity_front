@@ -62,7 +62,7 @@ export interface CrmDeal {
   // Relationships
   customer?: {
     id: number
-    full_name: string
+    name: string
     email: string | null
     phone: string | null
   }
@@ -74,9 +74,18 @@ export interface CrmDeal {
   }
   apartment?: {
     id: number
-    number: string
+    apartment_number: string
     building?: {
+      id: number
       identifier: string
+      name?: string | Record<string, string> // Can be string or translations object
+      name_ka?: string
+      name_en?: string
+      name_ru?: string
+      project?: {
+        id: number
+        title?: string | Record<string, string>
+      }
     }
   }
   lost_reason?: CrmLostReason
@@ -95,7 +104,6 @@ export interface DealFormData {
   customer_id: number
   stage_id?: number  // If not provided, will use first 'open' stage
   title: string
-  value?: number
   budget?: number
   agreed_price?: number
   currency?: DealCurrency
@@ -110,10 +118,12 @@ export interface DealFormData {
 // Deal update data
 export interface DealUpdateData {
   title?: string
-  value?: number
+  budget?: number
+  agreed_price?: number
   currency?: DealCurrency
   apartment_id?: number
   assigned_to?: number
+  user_id?: number
   priority?: DealPriority
   expected_close_date?: string
   notes?: string
@@ -133,7 +143,7 @@ export interface CrmActivity {
   deal_id: number
   user_id: number | null
   type: ActivityType
-  description: string
+  content: string  // Fixed: use 'content' to match backend schema
   metadata: Record<string, unknown> | null
   created_at: string
   updated_at: string

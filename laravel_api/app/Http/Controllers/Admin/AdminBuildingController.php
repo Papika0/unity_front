@@ -21,7 +21,7 @@ class AdminBuildingController extends Controller
     public function index(int $projectId): AnonymousResourceCollection
     {
         $project = Projects::findOrFail($projectId);
-        
+
         $buildings = Building::where('project_id', $projectId)
             ->withCount(['apartments', 'apartments as available_count' => function ($query) {
                 $query->where('status', 'available');
@@ -160,5 +160,25 @@ class AdminBuildingController extends Controller
         $apartments = $query->orderBy('apartment_number')->get();
 
         return AdminApartmentResource::collection($apartments);
+    }
+
+    /**
+     * Get unique floors for available apartments in building
+     */
+    public function getFloors(int $buildingId): JsonResponse
+    {
+        $building = Building::findOrFail($buildingId);
+
+        $floors = $building->apartments()
+            ->where('status', 'available')
+            ->select('floor_number')
+            ->distinct()
+            ->orderBy('floor_number')
+            ->pluck('floor_number');
+
+        return response()->json([
+            'success' => true,
+            'data' => $floors
+        ]);
     }
 }

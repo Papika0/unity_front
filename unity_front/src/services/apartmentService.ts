@@ -10,6 +10,7 @@ export interface ApartmentFilters {
   min_price?: number | null
   max_price?: number | null
   page?: number
+  per_page?: number
 }
 
 // Re-using the structure from the controller response, adapted to TS

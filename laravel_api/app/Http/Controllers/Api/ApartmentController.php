@@ -84,7 +84,10 @@ class ApartmentController extends Controller
             }
 
             /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
-            $paginator = $query->paginate(12);
+            $perPage = (int) request('per_page', 12);
+            // Cap at 500 to prevent abuse
+            $perPage = min($perPage, 500);
+            $paginator = $query->paginate($perPage);
             $paginator->through(function ($apt) {
                 // Determine main image logic
                 $image2d = $apt->image2d->first();
