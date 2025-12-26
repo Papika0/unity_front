@@ -286,28 +286,28 @@ function initialize() {
 }
 
 function loadPriceForStage(stage: 'offered' | 'reserved' | 'final') {
-  let price = 0
+  let price: number = 0
   
   switch(stage) {
     case 'final':
-      price = props.deal.final_price_per_sqm || 0
+      price = Number(props.deal.final_price_per_sqm) || 0
       break
     case 'reserved':
-      price = props.deal.reserved_price_per_sqm || 0
+      price = Number(props.deal.reserved_price_per_sqm) || 0
       break
     case 'offered':
-      price = props.deal.offered_price_per_sqm || 0
+      price = Number(props.deal.offered_price_per_sqm) || 0
       break
   }
 
   // Fallback to agreed_price / budget based logic if specific fields empty
   if (!price && area.value > 0) {
     if (stage === 'offered' && props.deal.budget) {
-      price = props.deal.budget / area.value
+      price = Number(props.deal.budget) / area.value
     } else if (stage === 'reserved' && props.deal.agreed_price) {
-      price = props.deal.agreed_price / area.value
+      price = Number(props.deal.agreed_price) / area.value
     } else if (stage === 'final' && props.deal.agreed_price) {
-      price = props.deal.agreed_price / area.value
+      price = Number(props.deal.agreed_price) / area.value
     }
   }
 

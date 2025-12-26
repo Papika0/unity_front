@@ -54,17 +54,17 @@ class AdminApartmentDetectionController extends Controller
 
             // Try virtual environment first, then system Python
             $venvPython = base_path('scripts/venv/bin/python3');
-            // cPanel Python App virtualenv path
-            $cpanelVenv = '/home/unitydge45f/virtualenv/backend_test/unity_front/laravel_api/scripts/3.9/bin/python3';
-            $pythonPaths = [
-                $cpanelVenv, // cPanel virtualenv (production)
+            // Get Python path from environment (for cPanel or custom setups)
+            $envPython = env('PYTHON_PATH');
+            $pythonPaths = array_filter([
+                $envPython, // From .env (production cPanel, etc.)
                 $venvPython, // Local virtual environment
                 '/usr/bin/python3',
                 '/usr/local/bin/python3',
                 '/opt/homebrew/bin/python3',
                 'python3',
                 'python',
-            ];
+            ]);
 
             $pythonPath = null;
             foreach ($pythonPaths as $path) {
