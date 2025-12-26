@@ -4,77 +4,81 @@ import json
 import argparse
 import sys
 import os
-import subprocess
-import xml.etree.ElementTree as ET
-from pdf2image import convert_from_path
-
-# Poppler path for macOS (Homebrew installation)
-# Poppler path for macOS (Homebrew installation)
-POPPLER_PATH = '/opt/homebrew/bin'
+import re
 import time
 import shutil
 
+# Use PyMuPDF (fitz) instead of pdf2image - no system dependencies needed
+try:
+    import fitz  # PyMuPDF
+except ImportError:
+    fitz = None
+
 def pdf_to_image(pdf_path, dpi=150):
-    """Convert first page of PDF to image array"""
-    # Try with poppler_path for macOS, fall back to system PATH
-    try:
-        pages = convert_from_path(pdf_path, dpi=dpi, poppler_path=POPPLER_PATH)
-    except Exception:
-        pages = convert_from_path(pdf_path, dpi=dpi)
-    if not pages:
-        raise ValueError("Could not convert PDF to image")
-    return cv2.cvtColor(np.array(pages[0]), cv2.COLOR_RGB2BGR)
+    """Convert first page of PDF to image array using PyMuPDF"""
+    if fitz is None:
+        raise ImportError("PyMuPDF (fitz) is required. Install with: pip install PyMuPDF")
+    
+    doc = fitz.open(pdf_path)
+    if len(doc) == 0:
+        raise ValueError("PDF has no pages")
+    
+    page = doc[0]
+    # Calculate zoom factor for desired DPI (PDF default is 72 DPI)
+    zoom = dpi / 72
+    mat = fitz.Matrix(zoom, zoom)
+    
+    # Render page to pixmap
+    pix = page.get_pixmap(matrix=mat)
+    
+    # Convert to numpy array
+    img_data = np.frombuffer(pix.samples, dtype=np.uint8)
+    img_data = img_data.reshape(pix.height, pix.width, pix.n)
+    
+    # Convert RGB to BGR for OpenCV
+    if pix.n == 4:  # RGBA
+        img_bgr = cv2.cvtColor(img_data, cv2.COLOR_RGBA2BGR)
+    elif pix.n == 3:  # RGB
+        img_bgr = cv2.cvtColor(img_data, cv2.COLOR_RGB2BGR)
+    else:
+        img_bgr = img_data
+    
+    doc.close()
+    return img_bgr
 
 def get_pdf_text_data(pdf_path, image_w, image_h):
     """
-    Extract text and coordinates from PDF using pdftotext
+    Extract text and coordinates from PDF using PyMuPDF
     Returns a list of dicts: {'text': str, 'center': (x, y)}
     mapped to image dimensions
     """
+    if fitz is None:
+        sys.stderr.write("PyMuPDF not available for text extraction\n")
+        return None
+        
     try:
-        # Run pdftotext -bbox
-        # Use absolute path to ensure it works in web context
-        pdftotext_path = '/opt/homebrew/bin/pdftotext'
-        if not os.path.exists(pdftotext_path):
-             pdftotext_path = 'pdftotext'
-
-        cmd = [pdftotext_path, '-bbox', pdf_path, '-']
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        
-        if result.returncode != 0:
-            sys.stderr.write(f"pdftotext failed: {result.stderr}\n")
-            return None
-
-        # Fix XML namespace (strip it to simplify parsing)
-        xml_content = result.stdout
-        import re
-        xml_content = re.sub(r' xmlns="[^"]+"', '', xml_content, count=1)
-        
-        # Parse XML
-        root = ET.fromstring(xml_content)
-        
-        # Get page dimensions
-        page_node = root.find('.//page')
-        if page_node is None:
+        doc = fitz.open(pdf_path)
+        if len(doc) == 0:
             return None
             
-        page_w = float(page_node.get('width'))
-        page_h = float(page_node.get('height'))
+        page = doc[0]
+        page_rect = page.rect
+        page_w = page_rect.width
+        page_h = page_rect.height
         
         scale_x = image_w / page_w
         scale_y = image_h / page_h
         
-        # Extract words
+        # Extract words with positions using get_text("words")
+        # Returns list of tuples: (x0, y0, x1, y1, "word", block_no, line_no, word_no)
+        word_list = page.get_text("words")
+        
         words = []
-        for word in root.findall('.//word'):
-            text = word.text
+        for w in word_list:
+            x_min, y_min, x_max, y_max, text = w[0], w[1], w[2], w[3], w[4]
+            
             if not text:
                 continue
-                
-            x_min = float(word.get('xMin'))
-            y_min = float(word.get('yMin'))
-            x_max = float(word.get('xMax'))
-            y_max = float(word.get('yMax'))
             
             # center in image coordinates
             cx = ((x_min + x_max) / 2) * scale_x
@@ -88,6 +92,8 @@ def get_pdf_text_data(pdf_path, image_w, image_h):
                 'y_max': y_max,
                 'center': (cx, cy)
             })
+        
+        doc.close()
             
         # Group words into lines (simple clustering by mid-y)
         lines = []
