@@ -997,6 +997,43 @@
                 "save_failed": "Failed to save",
                 "saved": "Successfully saved"
             },
+            "pricing": {
+                "title": "Set Deal Pricing",
+                "stages": {
+                    "offered": "Offered Price",
+                    "reserved": "Reserved Price",
+                    "final": "Final Price"
+                },
+                "price_per_sqm": "Price per m²",
+                "total_price": "Total Price",
+                "area": "Area",
+                "payment_alternatives": "Payment Alternatives",
+                "no_calculator": "Calculator settings not available for this project.",
+                "option": "Option",
+                "down_payment": "Down Payment",
+                "down_payment_percent": "Down Payment %",
+                "monthly_payment": "Monthly Payment",
+                "total": "Total",
+                "save": "Save Pricing",
+                "saving": "Saving...",
+                "cancel": "Cancel",
+                "price_label": "Price",
+                "pricing_title": "Pricing & Terms",
+                "set_price": "Set Price",
+                "edit_price": "Edit Price",
+                "current_price": "Current Price",
+                "no_pricing_set": "No pricing information set.",
+                "offered": "Offered",
+                "reserved": "Reserved",
+                "final": "Final",
+                "selected_plan": "Selected Payment Plan"
+            },
+            "stage_change": {
+                "title": "Pricing Confirmation",
+                "message": "This deal has existing pricing. Has the pricing changed for this new stage?",
+                "keep_same": "Keep Same Price",
+                "update_price": "Update Price"
+            },
             "currencies": {
                 "usd": "USD ($)",
                 "gel": "GEL (₾)",

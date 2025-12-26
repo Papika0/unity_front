@@ -13,6 +13,8 @@ import { crmApi } from '@/services/crmApi'
 import KanbanBoard from './components/KanbanBoard.vue'
 import DealDrawer from './components/DealDrawer.vue'
 import LostReasonModal from './components/LostReasonModal.vue'
+import StageChangeConfirmModal from './components/StageChangeConfirmModal.vue'
+import DealPricingModal from './components/DealPricingModal.vue'
 import type { CrmDeal } from '@/types/crm'
 import { User, Phone, Mail, Building, FileText, Search } from 'lucide-vue-next'
 
@@ -32,7 +34,10 @@ const toast = useToastStore()
 const showDealDrawer = ref(false)
 const showCreateModal = ref(false)
 const showLostModal = ref(false)
+const showStageChangeModal = ref(false)
+const showPricingModalFromStageChange = ref(false)
 const pendingLostDeal = ref<{ dealId: number; targetStageId: number } | null>(null)
+const pendingStageChangeDeal = ref<{ deal: CrmDeal; targetStageId: number } | null>(null)
 const selectedDealId = ref<number | null>(null)
 const filterUserId = ref<number | null>(null)
 const isCreating = ref(false)
@@ -130,7 +135,7 @@ function handleDealClick(deal: CrmDeal): void {
 }
 
 // Handle stage change
-async function handleStageChange(dealId: number, newStageId: number, lostReasonId?: number): Promise<void> {
+async function handleStageChange(dealId: number, newStageId: number, lostReasonId?: number, skipPricingCheck = false): Promise<void> {
   // Check if stages are loaded
   if (!crmStore.stages || crmStore.stages.length === 0) {
     toast.error(t('admin.crm.messages.wait_for_data'))
@@ -147,12 +152,65 @@ async function handleStageChange(dealId: number, newStageId: number, lostReasonI
       return
     }
 
+    // Check if deal has pricing and moving to reserved/won stage - show confirmation
+    if (!skipPricingCheck) {
+      const deal = findDealById(dealId)
+      if (deal && deal.current_price && deal.current_price > 0) {
+        // Check if moving to a stage that might require pricing update
+        if (targetStage?.type === 'open' || targetStage?.type === 'won') {
+          const isProgressingStage = targetStage.name?.toLowerCase().includes('reserved') || 
+                                     targetStage.name?.toLowerCase().includes('final') ||
+                                     targetStage.type === 'won'
+          if (isProgressingStage) {
+            pendingStageChangeDeal.value = { deal, targetStageId: newStageId }
+            showStageChangeModal.value = true
+            return
+          }
+        }
+      }
+    }
+
     await crmStore.updateDealStage(dealId, { stage_id: newStageId, lost_reason_id: lostReasonId })
     toast.success(t('admin.crm.messages.deal_moved'))
   } catch {
     toast.error(t('admin.crm.messages.move_failed'))
     // Reload pipeline to restore state
     await crmStore.fetchPipeline(filterUserId.value ?? undefined)
+  }
+}
+
+// Find deal by ID in pipeline
+function findDealById(dealId: number): CrmDeal | null {
+  for (const column of crmStore.pipeline) {
+    const deal = column.deals.find(d => d.id === dealId)
+    if (deal) return deal
+  }
+  return null
+}
+
+// Handle stage change modal - keep same price
+async function handleStageChangeKeepSame(dealId: number, stageId: number): Promise<void> {
+  showStageChangeModal.value = false
+  pendingStageChangeDeal.value = null
+  await handleStageChange(dealId, stageId, undefined, true) // Skip pricing check
+}
+
+// Handle stage change modal - update price
+function handleStageChangeUpdatePrice(_dealId: number, _stageId: number): void {
+  showStageChangeModal.value = false
+  // Open pricing modal with the pending deal
+  if (pendingStageChangeDeal.value) {
+    showPricingModalFromStageChange.value = true
+  }
+}
+
+// Handle pricing saved from stage change flow
+async function handlePricingSavedFromStageChange(): Promise<void> {
+  showPricingModalFromStageChange.value = false
+  if (pendingStageChangeDeal.value) {
+    const { deal, targetStageId } = pendingStageChangeDeal.value
+    pendingStageChangeDeal.value = null
+    await handleStageChange(deal.id, targetStageId, undefined, true) // Skip pricing check
   }
 }
 
@@ -172,6 +230,7 @@ function handleLostModalCancel(): void {
   // Reload pipeline to restore card position
   crmStore.fetchPipeline(filterUserId.value ?? undefined)
 }
+
 
 // Toggle project selection
 function toggleProject(projectId: number): void {
@@ -391,6 +450,25 @@ function formatCurrency(value: number): string {
       v-if="showLostModal"
       @select="handleLostReasonSelected"
       @cancel="handleLostModalCancel"
+    />
+
+    <!-- Stage Change Confirm Modal (for pricing confirmation) -->
+    <StageChangeConfirmModal
+      :is-open="showStageChangeModal"
+      :deal="pendingStageChangeDeal?.deal || null"
+      :target-stage-id="pendingStageChangeDeal?.targetStageId || null"
+      @keep-same="handleStageChangeKeepSame"
+      @update-price="handleStageChangeUpdatePrice"
+      @close="showStageChangeModal = false; pendingStageChangeDeal = null"
+    />
+
+    <!-- Pricing Modal from Stage Change Flow -->
+    <DealPricingModal
+      v-if="pendingStageChangeDeal"
+      :is-open="showPricingModalFromStageChange"
+      :deal="pendingStageChangeDeal.deal"
+      @close="showPricingModalFromStageChange = false"
+      @saved="handlePricingSavedFromStageChange"
     />
 
     <!-- Create Lead Modal -->

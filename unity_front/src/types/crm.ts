@@ -75,6 +75,7 @@ export interface CrmDeal {
   apartment?: {
     id: number
     apartment_number: string
+    area_total: number
     building?: {
       id: number
       identifier: string
@@ -85,6 +86,7 @@ export interface CrmDeal {
       project?: {
         id: number
         title?: string | Record<string, string>
+        calculator_settings?: Record<string, any> // Calculator settings
       }
     }
   }
@@ -92,11 +94,37 @@ export interface CrmDeal {
   activities?: CrmActivity[]
   payments?: CrmPayment[]
 
+  // Offers & Pricing (New fields)
+  offered_price_per_sqm?: number
+  offered_price_total?: number
+  offered_at?: string
+  
+  reserved_price_per_sqm?: number
+  reserved_price_total?: number
+  reserved_at?: string
+  
+  final_price_per_sqm?: number
+  final_price_total?: number
+  final_at?: string
+  
+  selected_payment_alternative?: number
+  payment_alternative_params?: PaymentAlternativeParams
+  
+  current_price?: number // Accessor from backend
+
   // Computed properties
   is_stale?: boolean
   days_in_stage?: number
   total_paid?: number
   payment_progress?: number
+}
+
+// Payment Calculator Params (Stored in JSON)
+export interface PaymentAlternativeParams {
+  internal_installment_months?: number
+  bank_installment_months?: number
+  initial_payment_percent?: number
+  price_per_sqm?: number
 }
 
 // Deal form data
@@ -127,6 +155,27 @@ export interface DealUpdateData {
   priority?: DealPriority
   expected_close_date?: string
   notes?: string
+}
+
+// Pricing update data
+export interface DealPricingFormData {
+  stage: 'offered' | 'reserved' | 'final'
+  price_per_sqm: number
+  payment_alternative?: number // 1-6
+  payment_params?: PaymentAlternativeParams
+}
+
+// Calculator result (frontend helper)
+export interface DealCalculatorResult {
+  total: number
+  initialPercentage: number
+  initialAmount: number
+  internalMonths: number
+  internalMonthly: number
+  bankMonths: number
+  bankMonthly: number
+  discount: number
+  finalPricePerSqm: number
 }
 
 // Stage change data

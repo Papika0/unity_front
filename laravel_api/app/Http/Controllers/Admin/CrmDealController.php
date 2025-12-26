@@ -665,4 +665,89 @@ class CrmDealController extends Controller
             return $this->error('მინიჭება ვერ მოხერხდა', 500);
         }
     }
+
+    /**
+     * Update deal pricing
+     */
+    public function updatePricing(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'stage' => 'required|in:offered,reserved,final',
+            'price_per_sqm' => 'required|numeric|min:0',
+            'payment_alternative' => 'nullable|integer|min:1|max:6',
+            'payment_params' => 'nullable|array',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error($validator->errors()->first(), 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $deal = CrmDeal::with('apartment')->findOrFail($id);
+
+            if (!$deal->apartment) {
+                return $this->error('გარიგებას არ აქვს მითითებული ბინა', 422);
+            }
+
+            $pricePerSqm = $request->price_per_sqm;
+            $area = $deal->apartment->area_total;
+            $totalPrice = $pricePerSqm * $area;
+
+            $updateData = [];
+            $prefix = $request->stage; // offered, reserved, or final
+
+            $updateData["{$prefix}_price_per_sqm"] = $pricePerSqm;
+            $updateData["{$prefix}_price_total"] = $totalPrice;
+            $updateData["{$prefix}_at"] = now();
+
+            // Also update main budget/agreed_price fields for compatibility
+            if ($request->stage === 'offered') {
+                $updateData['budget'] = $totalPrice;
+            } elseif ($request->stage === 'final') {
+                $updateData['agreed_price'] = $totalPrice;
+                $updateData['budget'] = $totalPrice; // Final price overrides budget
+            } elseif ($request->stage === 'reserved') {
+                // For reserved, we update agreed_price if it's not set or update it to match
+                $updateData['agreed_price'] = $totalPrice;
+            }
+
+            // Save calculator selection if provided
+            if ($request->has('payment_alternative')) {
+                $updateData['selected_payment_alternative'] = $request->payment_alternative;
+                $updateData['payment_alternative_params'] = $request->payment_params;
+            }
+
+            $deal->update($updateData);
+
+            // Log activity
+            $stageLabels = [
+                'offered' => 'შეთავაზებული ფასი',
+                'reserved' => 'დაჯავშნის ფასი',
+                'final' => 'საბოლოო ფასი'
+            ];
+
+            CrmActivity::create([
+                'deal_id' => $deal->id,
+                'user_id' => auth()->id(),
+                'type' => 'note',
+                'content' => "განახლდა {$stageLabels[$request->stage]}: {$totalPrice} ({$pricePerSqm}/მ²)",
+                'metadata' => [
+                    'stage' => $request->stage,
+                    'price_per_sqm' => $pricePerSqm,
+                    'total_price' => $totalPrice,
+                    'payment_alternative' => $request->payment_alternative
+                ],
+            ]);
+
+            DB::commit();
+
+            return $this->success($deal->fresh(), 'ფასი განახლდა');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Failed to update deal pricing: ' . $e->getMessage());
+            return $this->error('ფასის განახლება ვერ მოხერხდა', 500);
+        }
+    }
 }

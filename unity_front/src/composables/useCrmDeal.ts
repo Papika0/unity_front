@@ -9,7 +9,7 @@ import type { DealFormData, DealUpdateData, DealCurrency, DealPriority } from '@
 interface DealForm {
   customer_id: number | null
   title: string
-  value: number
+  budget: number
   currency: DealCurrency
   apartment_id: number | null
   assigned_to: number | null
@@ -22,7 +22,7 @@ export function useCrmDeal() {
   const form = ref<DealForm>({
     customer_id: null,
     title: '',
-    value: 0,
+    budget: 0,
     currency: 'USD',
     apartment_id: null,
     assigned_to: null,
@@ -37,7 +37,7 @@ export function useCrmDeal() {
    * Validation
    */
   const isValid = computed(() => {
-    return form.value.customer_id !== null && form.value.title.trim() !== '' && form.value.value > 0
+    return form.value.customer_id !== null && form.value.title.trim() !== '' && form.value.budget > 0
   })
 
   /**
@@ -54,8 +54,8 @@ export function useCrmDeal() {
       errors.value.title = 'სათაური სავალდებულოა'
     }
 
-    if (form.value.value <= 0) {
-      errors.value.value = 'ღირებულება უნდა იყოს დადებითი'
+    if (form.value.budget <= 0) {
+      errors.value.budget = 'ღირებულება უნდა იყოს დადებითი'
     }
 
     return Object.keys(errors.value).length === 0
@@ -68,7 +68,7 @@ export function useCrmDeal() {
     form.value = {
       customer_id: null,
       title: '',
-      value: 0,
+      budget: 0,
       currency: 'USD',
       apartment_id: null,
       assigned_to: null,
@@ -96,7 +96,7 @@ export function useCrmDeal() {
     return {
       customer_id: form.value.customer_id!,
       title: form.value.title,
-      value: form.value.value,
+      budget: form.value.budget,
       currency: form.value.currency,
       apartment_id: form.value.apartment_id ?? undefined,
       assigned_to: form.value.assigned_to ?? undefined,
@@ -113,7 +113,7 @@ export function useCrmDeal() {
     const data: DealUpdateData = {}
 
     if (form.value.title) data.title = form.value.title
-    if (form.value.value > 0) data.value = form.value.value
+    if (form.value.budget > 0) data.budget = form.value.budget
     if (form.value.currency) data.currency = form.value.currency
     if (form.value.apartment_id !== null) data.apartment_id = form.value.apartment_id
     if (form.value.assigned_to !== null) data.assigned_to = form.value.assigned_to

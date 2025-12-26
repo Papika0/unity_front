@@ -330,6 +330,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
             Route::post('/lead', [CrmDealController::class, 'storeLead']);    // Create lead (customer + deal)
             Route::put('/{id}', [CrmDealController::class, 'update']);        // Update deal
             Route::put('/{id}/stage', [CrmDealController::class, 'updateStage']); // Move deal on Kanban
+            Route::put('/{id}/pricing', [CrmDealController::class, 'updatePricing']); // Update deal pricing
             Route::put('/{id}/assign', [CrmDealController::class, 'assign']); // Assign deal to user
         });
 

@@ -21,6 +21,7 @@ import type {
   PaymentFormData,
   PaymentUpdateData,
   PaymentScheduleData,
+  DealPricingFormData,
 } from '@/types/crm'
 
 export const useCrmStore = defineStore('crm', () => {
@@ -175,6 +176,34 @@ export const useCrmStore = defineStore('crm', () => {
       return deal
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update deal'
+      error.value = message
+      throw err
+    }
+  }
+
+  async function updateDealPricing(id: number, data: DealPricingFormData): Promise<CrmDeal> {
+    try {
+      const deal = await crmApi.updateDealPricing(id, data)
+
+      // Update in currentDeal if it's the same
+      if (currentDeal.value?.id === id) {
+        currentDeal.value = deal
+      }
+      
+      // Update in pipeline
+      for (const column of pipeline.value) {
+        const index = column.deals.findIndex((d) => d.id === id)
+        if (index !== -1) {
+          const oldValue = column.deals[index].budget ?? 0
+          column.deals[index] = deal
+          column.total_value = column.total_value - oldValue + (deal.budget ?? 0)
+          break
+        }
+      }
+
+      return deal
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to update deal pricing'
       error.value = message
       throw err
     }
@@ -414,6 +443,7 @@ export const useCrmStore = defineStore('crm', () => {
     fetchDeal,
     createDeal,
     updateDeal,
+    updateDealPricing,
     updateDealStage,
     deleteDeal,
     fetchActivities,

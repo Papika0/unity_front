@@ -26,6 +26,7 @@ import type {
   CrmActivitiesResponse,
   CrmPaymentsResponse,
   CrmStatisticsResponse,
+  DealPricingFormData,
 
 } from '@/types/crm'
 
@@ -103,6 +104,16 @@ export const crmApi = {
 
   async updateDealStage(id: number, data: StageChangeData): Promise<CrmDeal> {
     const response = await api.put<CrmDealResponse>(`/admin/crm/deals/${id}/stage`, data)
+    return response.data.data
+  },
+
+  async updateDealPricing(id: number, data: DealPricingFormData): Promise<CrmDeal> {
+    const response = await api.put<CrmDealResponse>(`/admin/crm/deals/${id}/pricing`, {
+      stage: data.stage,
+      price_per_sqm: data.price_per_sqm,
+      payment_alternative: data.payment_alternative,
+      payment_params: data.payment_params // JSON field for calculator params
+    })
     return response.data.data
   },
 

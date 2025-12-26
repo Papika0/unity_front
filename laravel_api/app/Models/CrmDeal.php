@@ -28,6 +28,18 @@ class CrmDeal extends Model
         'last_activity_at',
         'closed_at',
         'notes',
+        // Offers & Pricing
+        'offered_price_per_sqm',
+        'offered_price_total',
+        'offered_at',
+        'reserved_price_per_sqm',
+        'reserved_price_total',
+        'reserved_at',
+        'final_price_per_sqm',
+        'final_price_total',
+        'final_at',
+        'selected_payment_alternative',
+        'payment_alternative_params',
     ];
 
     protected $casts = [
@@ -39,6 +51,17 @@ class CrmDeal extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        // Pricing casts
+        'offered_price_per_sqm' => 'decimal:2',
+        'offered_price_total' => 'decimal:2',
+        'offered_at' => 'datetime',
+        'reserved_price_per_sqm' => 'decimal:2',
+        'reserved_price_total' => 'decimal:2',
+        'reserved_at' => 'datetime',
+        'final_price_per_sqm' => 'decimal:2',
+        'final_price_total' => 'decimal:2',
+        'final_at' => 'datetime',
+        'payment_alternative_params' => 'array',
     ];
 
     protected $with = ['stage'];
@@ -47,6 +70,7 @@ class CrmDeal extends Model
         'is_stale',
         'days_since_activity',
         'days_in_stage',
+        'current_price',
     ];
 
     /**
@@ -225,23 +249,15 @@ class CrmDeal extends Model
     public function getDaysInStageAttribute(): int
     {
         // Find the last status change for this deal
-        // Since we might not have activities loaded, we should be careful.
-        // Ideally controller eager loads them. If not, this triggers a query.
         $lastStageChange = $this->activities
             ->where('type', 'status_change')
             ->where('metadata.new_stage_id', $this->stage_id)
             ->sortByDesc('created_at')
             ->first();
 
-        // If explicitly moved to this stage, use that time
         if ($lastStageChange) {
             return Carbon::parse($lastStageChange->created_at)->diffInDays(now());
         }
-
-        // If no status change found to this stage, check if it was CREATED in this stage
-        // We assume if no history, it's been here since creation.
-        // However, if we only loaded recent activities, this might be inaccurate.
-        // But for Kanban view, accurate days is important.
 
         return Carbon::parse($this->created_at)->diffInDays(now());
     }
@@ -280,6 +296,27 @@ class CrmDeal extends Model
     public function getIsClosedAttribute(): bool
     {
         return $this->stage && $this->stage->isClosing();
+    }
+
+    /**
+     * Get the most relevant price based on deal progress
+     * Priority: Final > Reserved > Offered > Budget
+     */
+    public function getCurrentPriceAttribute(): float
+    {
+        if ($this->final_price_total) {
+            return (float) $this->final_price_total;
+        }
+
+        if ($this->reserved_price_total) {
+            return (float) $this->reserved_price_total;
+        }
+
+        if ($this->offered_price_total) {
+            return (float) $this->offered_price_total;
+        }
+
+        return (float) $this->budget;
     }
 
     // ==================== METHODS ====================

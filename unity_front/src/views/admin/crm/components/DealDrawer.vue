@@ -16,6 +16,7 @@ import type { ActivityType } from '@/types/crm'
 import { CURRENCY_SYMBOLS } from '@/types/crm'
 import DealActivityForm from './DealActivityForm.vue'
 import DealPayments from './DealPayments.vue'
+import DealPricingModal from './DealPricingModal.vue'
 import {
   FileText,
   Phone,
@@ -68,6 +69,9 @@ const selectedApartmentId = ref<number | null>(null)
 const availableFloorsList = ref<number[]>([]) // Store available floors
 const availableApartments = ref<ApartmentSearchResult[]>([]) // Store apartments for floor
 const loadingApartments = ref(false)
+
+// Pricing Modal State
+const isPricingModalOpen = ref(false)
 
 // Use buildings from store (or local ref if store overwrites too much)
 // Using store is fine as this is admin context
@@ -610,6 +614,63 @@ function getActivityTypeLabel(type: ActivityType): string {
               </div>
             </div>
 
+            <!-- Pricing & Terms Card -->
+            <div class="bg-white p-6 rounded-lg border border-gray-200">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-gray-900">{{ t('admin.crm.pricing.pricing_title') }}</h3>
+                <button
+                  type="button"
+                  class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  @click="isPricingModalOpen = true"
+                >
+                  {{ deal.current_price ? t('admin.crm.pricing.edit_price') : t('admin.crm.pricing.set_price') }}
+                </button>
+              </div>
+
+              <div v-if="deal.current_price" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <div class="text-sm text-gray-500">{{ t('admin.crm.pricing.current_price') }}</div>
+                    <div class="text-lg font-bold text-gray-900">{{ currencySymbol }}{{ formatNumber(deal.current_price) }}</div>
+                  </div>
+                  <div v-if="deal.apartment">
+                    <div class="text-sm text-gray-500">{{ t('admin.crm.pricing.price_per_sqm') }}</div>
+                    <div class="text-lg font-medium text-gray-900">
+                      {{ currencySymbol }}{{ formatNumber(deal.current_price / deal.apartment.area_total) }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Stage Specific Prices -->
+                <div class="pt-3 border-t border-gray-100 text-sm space-y-1">
+                  <div v-if="deal.offered_price_total" class="flex justify-between text-gray-600">
+                    <span>{{ t('admin.crm.pricing.offered') }}:</span>
+                    <span>{{ currencySymbol }}{{ formatNumber(deal.offered_price_total) }}</span>
+                  </div>
+                  <div v-if="deal.reserved_price_total" class="flex justify-between text-gray-600">
+                    <span>{{ t('admin.crm.pricing.reserved') }}:</span>
+                    <span>{{ currencySymbol }}{{ formatNumber(deal.reserved_price_total) }}</span>
+                  </div>
+                  <div v-if="deal.final_price_total" class="flex justify-between text-gray-900 font-medium">
+                    <span>{{ t('admin.crm.pricing.final') }}:</span>
+                    <span>{{ currencySymbol }}{{ formatNumber(deal.final_price_total) }}</span>
+                  </div>
+                </div>
+
+                 <!-- Selected Payment Alternative -->
+                <div v-if="deal.selected_payment_alternative" class="pt-3 border-t border-gray-100">
+                   <div class="text-sm text-gray-500 mb-1">{{ t('admin.crm.pricing.selected_plan') }}</div>
+                   <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                     {{ t('admin.crm.pricing.option') }} {{ deal.selected_payment_alternative }}
+                   </div>
+                </div>
+              </div>
+              
+              <div v-else class="text-sm text-gray-500 italic">
+                {{ t('admin.crm.pricing.no_pricing_set') }}
+              </div>
+            </div>
+
             <!-- Customer Info -->
             <div v-if="deal.customer" class="bg-white p-6 rounded-lg border border-gray-200">
               <h3 class="font-semibold text-gray-900 mb-4">{{ t('admin.crm.customer.title') }}</h3>
@@ -844,6 +905,15 @@ function getActivityTypeLabel(type: ActivityType): string {
         </div>
       </template>
     </div>
+
+    <!-- Pricing Modal -->
+    <DealPricingModal
+      v-if="isPricingModalOpen && deal"
+      :is-open="isPricingModalOpen"
+      :deal="deal"
+      @close="isPricingModalOpen = false"
+      @saved="loadDeal"
+    />
   </Teleport>
 </template>
 

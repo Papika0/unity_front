@@ -113,10 +113,10 @@ function getLocalizedValue(value: string | Record<string, string> | undefined | 
       </div>
     </div>
 
-    <!-- Budget/Value -->
-    <div v-if="deal.budget" class="card-budget">
-      <span class="budget-label">{{ t('admin.crm.deal.budget_label') }}</span>
-      <span class="budget-value">{{ currencySymbol }}{{ formatNumber(deal.budget) }}</span>
+    <!-- Price/Budget (prefer current_price over budget) -->
+    <div v-if="deal.current_price || deal.budget" class="card-budget">
+      <span class="budget-label">{{ deal.current_price ? t('admin.crm.deal.price_label') || 'Price' : t('admin.crm.deal.budget_label') }}</span>
+      <span class="budget-value">{{ currencySymbol }}{{ formatNumber(deal.current_price || deal.budget) }}</span>
     </div>
 
     <!-- Footer: Days + Assigned User -->
