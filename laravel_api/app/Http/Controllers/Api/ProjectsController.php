@@ -34,7 +34,7 @@ class ProjectsController extends Controller
             $locale = App::getLocale();
             $cacheKey = "projects_index_{$locale}";
 
-            $resources = Cache::rememberForever($cacheKey, function () use ($locale) {
+            $data = Cache::rememberForever($cacheKey, function () use ($locale, $request) {
                 $projects = Projects::where('is_active', true)
                     ->where(function ($query) {
                         $query->whereHas('interactiveZones')
@@ -50,13 +50,14 @@ class ProjectsController extends Controller
                     ->orderBy('created_at', 'desc')
                     ->get();
 
-                // Manually map to resource to pass locale
-                return $projects->map(function ($project) use ($locale) {
-                    return new ProjectResource($project, $locale);
-                });
+                // Convert resources to arrays BEFORE caching
+                return $projects->map(function ($project) use ($locale, $request) {
+                    $resource = new ProjectResource($project, $locale);
+                    return $resource->toArray($request);
+                })->toArray();
             });
 
-            return $this->success($resources);
+            return $this->success($data);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch projects', 500);
         }
@@ -71,7 +72,7 @@ class ProjectsController extends Controller
             $locale = App::getLocale();
             $cacheKey = "projects_featured_{$locale}";
 
-            $resources = Cache::rememberForever($cacheKey, function () use ($locale) {
+            $data = Cache::rememberForever($cacheKey, function () use ($locale, $request) {
                 $projects = Projects::where('is_active', true)
                     ->where('is_featured', true)
                     ->with([
@@ -84,13 +85,14 @@ class ProjectsController extends Controller
                     ->orderBy('created_at', 'desc')
                     ->get();
 
-                // Map to resource with locale
-                return $projects->map(function ($project) use ($locale) {
-                    return new ProjectResource($project, $locale);
-                });
+                // Convert resources to arrays BEFORE caching
+                return $projects->map(function ($project) use ($locale, $request) {
+                    $resource = new ProjectResource($project, $locale);
+                    return $resource->toArray($request);
+                })->toArray();
             });
 
-            return $this->success($resources);
+            return $this->success($data);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch featured projects', 500);
         }
@@ -105,7 +107,7 @@ class ProjectsController extends Controller
             $locale = App::getLocale();
             $cacheKey = "projects_homepage_{$locale}";
 
-            $resources = Cache::rememberForever($cacheKey, function () use ($locale) {
+            $data = Cache::rememberForever($cacheKey, function () use ($locale, $request) {
                 $projects = Projects::where('is_active', true)
                     ->where('is_onHomepage', true)
                     ->with([
@@ -118,13 +120,14 @@ class ProjectsController extends Controller
                     ->orderBy('created_at', 'desc')
                     ->get();
 
-                // Map to resource with locale
-                return $projects->map(function ($project) use ($locale) {
-                    return new ProjectResource($project, $locale);
-                });
+                // Convert resources to arrays BEFORE caching
+                return $projects->map(function ($project) use ($locale, $request) {
+                    $resource = new ProjectResource($project, $locale);
+                    return $resource->toArray($request);
+                })->toArray();
             });
 
-            return $this->success($resources);
+            return $this->success($data);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch homepage projects', 500);
         }

@@ -33,7 +33,8 @@ class FeaturesController extends Controller
         $features = Cache::rememberForever($cacheKey, function () {
             return Feature::where('is_active', true)
                 ->orderBy('sort_order')
-                ->get();
+                ->get()
+                ->toArray();  // Convert collection to array before caching
         });
 
         return $this->success($features);
@@ -75,7 +76,7 @@ class FeaturesController extends Controller
         $cacheKey = "feature_show_{$id}";
 
         $feature = Cache::rememberForever($cacheKey, function () use ($id) {
-            return Feature::findOrFail($id);
+            return Feature::findOrFail($id)->toArray();  // Convert model to array before caching
         });
 
         return $this->success($feature);

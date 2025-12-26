@@ -36,7 +36,8 @@ class BuildingsController extends Controller
                         'identifier' => $building->identifier,
                         'sort_order' => $building->sort_order,
                     ];
-                });
+                })
+                ->toArray();  // Convert collection to array before caching
         });
 
         return response()->json([
