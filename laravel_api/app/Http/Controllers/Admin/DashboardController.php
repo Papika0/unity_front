@@ -17,21 +17,42 @@ class DashboardController extends Controller
 
     /**
      * Get all dashboard statistics in one call
+     * Cached for 10 minutes to reduce database load
      */
     public function statistics()
     {
         try {
-            // Customer statistics
+            $cacheKey = 'dashboard_statistics';
+
+            $data = Cache::remember($cacheKey, 600, function () {
+                // Customer statistics - Single optimized query instead of 9 separate queries
+            $customerCounts = Customer::selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN status = "new" THEN 1 ELSE 0 END) as new,
+                SUM(CASE WHEN status = "in_progress" THEN 1 ELSE 0 END) as in_progress,
+                SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN source = "contact_form" THEN 1 ELSE 0 END) as contact_form,
+                SUM(CASE WHEN source = "call_request" THEN 1 ELSE 0 END) as call_request,
+                SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today,
+                SUM(CASE WHEN created_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as this_week,
+                SUM(CASE WHEN MONTH(created_at) = ? AND YEAR(created_at) = ? THEN 1 ELSE 0 END) as this_month
+            ', [
+                now()->startOfWeek(),
+                now()->endOfWeek(),
+                now()->month,
+                now()->year
+            ])->first();
+
             $customerStats = [
-                'total' => Customer::count(),
-                'new' => Customer::where('status', 'new')->count(),
-                'in_progress' => Customer::where('status', 'in_progress')->count(),
-                'completed' => Customer::where('status', 'completed')->count(),
-                'contact_form' => Customer::where('source', 'contact_form')->count(),
-                'call_request' => Customer::where('source', 'call_request')->count(),
-                'today' => Customer::whereDate('created_at', today())->count(),
-                'this_week' => Customer::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
-                'this_month' => Customer::whereMonth('created_at', now()->month)->count(),
+                'total' => (int) $customerCounts->total,
+                'new' => (int) $customerCounts->new,
+                'in_progress' => (int) $customerCounts->in_progress,
+                'completed' => (int) $customerCounts->completed,
+                'contact_form' => (int) $customerCounts->contact_form,
+                'call_request' => (int) $customerCounts->call_request,
+                'today' => (int) $customerCounts->today,
+                'this_week' => (int) $customerCounts->this_week,
+                'this_month' => (int) $customerCounts->this_month,
             ];
 
             // Project count
@@ -43,12 +64,15 @@ class DashboardController extends Controller
             // Chart data for last 30 days
             $chartData = $this->getChartData();
 
-            return $this->success([
-                'customer_stats' => $customerStats,
-                'projects_count' => $projectsCount,
-                'translations_count' => $translationsCount,
-                'chart_data' => $chartData,
-            ]);
+                return [
+                    'customer_stats' => $customerStats,
+                    'projects_count' => $projectsCount,
+                    'translations_count' => $translationsCount,
+                    'chart_data' => $chartData,
+                ];
+            });  // Close Cache::remember
+
+            return $this->success($data);
         } catch (\Exception $e) {
             Log::error('Failed to fetch dashboard statistics: ' . $e->getMessage());
             return $this->error('დაფის სტატისტიკის ჩატვირთვა ვერ მოხერხდა', 500);
@@ -57,19 +81,27 @@ class DashboardController extends Controller
 
     /**
      * Get customer activity chart data for last 30 days
+     * Optimized: Single query with GROUP BY instead of 30 separate queries
      */
     private function getChartData()
     {
         $days = 30;
-        $data = [];
+        $startDate = now()->subDays($days - 1)->startOfDay();
 
+        // Single query to get all counts grouped by date
+        $counts = Customer::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->where('created_at', '>=', $startDate)
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->pluck('count', 'date');
+
+        // Fill in missing dates with 0
+        $data = [];
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = now()->subDays($i)->format('Y-m-d');
-            $count = Customer::whereDate('created_at', $date)->count();
-
             $data[] = [
                 'date' => $date,
-                'count' => $count,
+                'count' => $counts[$date] ?? 0,
             ];
         }
 

@@ -77,4 +77,24 @@ class CrmStage extends Model
     {
         return in_array($this->type, ['won', 'lost']);
     }
+
+    // ==================== CACHE METHODS ====================
+
+    /**
+     * Get all stages with caching (reference data - rarely changes)
+     */
+    public static function getCached()
+    {
+        return \Cache::rememberForever('crm_stages_all', function () {
+            return static::ordered()->get();
+        });
+    }
+
+    /**
+     * Clear stages cache (call when stages are modified)
+     */
+    public static function clearCache(): void
+    {
+        \Cache::forget('crm_stages_all');
+    }
 }

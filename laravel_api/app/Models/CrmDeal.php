@@ -267,6 +267,10 @@ class CrmDeal extends Model
      */
     public function getTotalPaidAttribute(): float
     {
+        // Use eager-loaded aggregate if available (from withSum), otherwise query
+        if (array_key_exists('total_paid', $this->attributes)) {
+            return (float) $this->attributes['total_paid'] ?? 0;
+        }
         return $this->payments()->sum('amount_paid');
     }
 
@@ -275,6 +279,10 @@ class CrmDeal extends Model
      */
     public function getTotalDueAttribute(): float
     {
+        // Use eager-loaded aggregate if available (from withSum), otherwise query
+        if (array_key_exists('total_due', $this->attributes)) {
+            return (float) $this->attributes['total_due'] ?? 0;
+        }
         return $this->payments()->sum('amount_due');
     }
 

@@ -10,9 +10,18 @@ use App\Models\Projects;
 use App\Models\Building;
 use App\Models\Apartment;
 use App\Models\CrmDeal;
+use App\Models\CrmStage;
+use App\Models\Customer;
+use App\Models\Translation;
+use App\Models\Feature;
 use App\Observers\NewsObserver;
 use App\Observers\ProjectsObserver;
 use App\Observers\CrmDealObserver;
+use App\Observers\CrmStageObserver;
+use App\Observers\CustomerObserver;
+use App\Observers\TranslationObserver;
+use App\Observers\BuildingObserver;
+use App\Observers\FeatureObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,8 +44,15 @@ class AppServiceProvider extends ServiceProvider
         News::observe(NewsObserver::class);
         Projects::observe(ProjectsObserver::class);
 
-        // Register CRM observer for apartment status automation
+        // Register CRM observers for apartment status automation and cache invalidation
         CrmDeal::observe(CrmDealObserver::class);
+        CrmStage::observe(CrmStageObserver::class);
+        Customer::observe(CustomerObserver::class);
+
+        // Register public API observers for cache invalidation
+        Translation::observe(TranslationObserver::class);
+        Building::observe(BuildingObserver::class);
+        Feature::observe(FeatureObserver::class);
         
         // Register morph map for polymorphic relationships (for InteractiveZone only)
         // Using morphMap instead of enforceMorphMap to avoid breaking other polymorphic relations

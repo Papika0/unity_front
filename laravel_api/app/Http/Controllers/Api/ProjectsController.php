@@ -10,6 +10,7 @@ use App\Http\Resources\Api\ProjectResource;
 use App\Services\PageCacheService;
 use App\Services\TranslationService;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
 
 class ProjectsController extends Controller
 {
@@ -31,19 +32,28 @@ class ProjectsController extends Controller
     {
         try {
             $locale = App::getLocale();
+            $cacheKey = "projects_index_{$locale}";
 
-            $projects = Projects::where('is_active', true)
-                ->where(function ($query) {
-                    $query->whereHas('interactiveZones')
-                        ->orWhereHas('apartments');
-                })
-                ->with(['mainImage', 'renderImage', 'galleryImages'])
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $resources = Cache::rememberForever($cacheKey, function () use ($locale) {
+                $projects = Projects::where('is_active', true)
+                    ->where(function ($query) {
+                        $query->whereHas('interactiveZones')
+                            ->orWhereHas('apartments');
+                    })
+                    ->with([
+                        'mainImage',
+                        'renderImage',
+                        'galleryImages',
+                        'interactiveZones',  // Fix N+1: eager load for hasApartmentNavigation check
+                        'features',          // Eager load features for consistency
+                    ])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
 
-            // Manually map to resource to pass locale
-            $resources = $projects->map(function ($project) use ($locale) {
-                return new ProjectResource($project, $locale);
+                // Manually map to resource to pass locale
+                return $projects->map(function ($project) use ($locale) {
+                    return new ProjectResource($project, $locale);
+                });
             });
 
             return $this->success($resources);
@@ -58,13 +68,28 @@ class ProjectsController extends Controller
     public function featured(Request $request)
     {
         try {
-            $projects = Projects::where('is_active', true)
-                ->where('is_featured', true)
-                ->with(['mainImage', 'renderImage', 'galleryImages'])
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $locale = App::getLocale();
+            $cacheKey = "projects_featured_{$locale}";
 
-            $resources = ProjectResource::collection($projects);
+            $resources = Cache::rememberForever($cacheKey, function () use ($locale) {
+                $projects = Projects::where('is_active', true)
+                    ->where('is_featured', true)
+                    ->with([
+                        'mainImage',
+                        'renderImage',
+                        'galleryImages',
+                        'interactiveZones',  // Fix N+1: eager load for hasApartmentNavigation check
+                        'features',          // Eager load features for consistency
+                    ])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+
+                // Map to resource with locale
+                return $projects->map(function ($project) use ($locale) {
+                    return new ProjectResource($project, $locale);
+                });
+            });
+
             return $this->success($resources);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch featured projects', 500);
@@ -77,13 +102,28 @@ class ProjectsController extends Controller
     public function homepage(Request $request)
     {
         try {
-            $projects = Projects::where('is_active', true)
-                ->where('is_onHomepage', true)
-                ->with(['mainImage', 'renderImage', 'galleryImages'])
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $locale = App::getLocale();
+            $cacheKey = "projects_homepage_{$locale}";
 
-            $resources = ProjectResource::collection($projects);
+            $resources = Cache::rememberForever($cacheKey, function () use ($locale) {
+                $projects = Projects::where('is_active', true)
+                    ->where('is_onHomepage', true)
+                    ->with([
+                        'mainImage',
+                        'renderImage',
+                        'galleryImages',
+                        'interactiveZones',  // Fix N+1: eager load for hasApartmentNavigation check
+                        'features',          // Eager load features for consistency
+                    ])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+
+                // Map to resource with locale
+                return $projects->map(function ($project) use ($locale) {
+                    return new ProjectResource($project, $locale);
+                });
+            });
+
             return $this->success($resources);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch homepage projects', 500);

@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\CrmDeal;
 use App\Models\CrmStage;
 use App\Models\CrmActivity;
+use App\Http\Controllers\Admin\CrmDealController;
 use Illuminate\Support\Facades\Log;
 
 class CrmDealObserver
@@ -42,6 +43,9 @@ class CrmDealObserver
             'customer_id' => $deal->customer_id,
             'stage' => $deal->stage?->name,
         ]);
+
+        // Clear pipeline and statistics cache
+        CrmDealController::clearPipelineCache();
     }
 
     /**
@@ -134,6 +138,11 @@ class CrmDealObserver
                 ]);
             }
         }
+
+        // Clear pipeline cache on any meaningful change
+        if ($deal->wasChanged(['stage_id', 'user_id', 'customer_id', 'apartment_id', 'budget', 'priority', 'last_activity_at'])) {
+            CrmDealController::clearPipelineCache();
+        }
     }
 
     /**
@@ -162,6 +171,9 @@ class CrmDealObserver
                 }
             }
         }
+
+        // Clear pipeline cache when deal is deleted
+        CrmDealController::clearPipelineCache();
     }
 
     /**

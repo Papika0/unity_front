@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 use App\Services\PageCacheService;
+use Illuminate\Support\Facades\Cache;
 
 class FeaturesController extends Controller
 {
@@ -27,9 +28,13 @@ class FeaturesController extends Controller
      */
     public function index(): JsonResponse
     {
-        $features = Feature::where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
+        $cacheKey = "features_index";
+
+        $features = Cache::rememberForever($cacheKey, function () {
+            return Feature::where('is_active', true)
+                ->orderBy('sort_order')
+                ->get();
+        });
 
         return $this->success($features);
     }
@@ -67,7 +72,12 @@ class FeaturesController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $feature = Feature::findOrFail($id);
+        $cacheKey = "feature_show_{$id}";
+
+        $feature = Cache::rememberForever($cacheKey, function () use ($id) {
+            return Feature::findOrFail($id);
+        });
+
         return $this->success($feature);
     }
 

@@ -13,11 +13,33 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class CrmDealController extends Controller
 {
     use ApiResponse;
+
+    // Cache configuration
+    private const PIPELINE_CACHE_PREFIX = 'crm_pipeline_';
+    private const STATISTICS_CACHE_PREFIX = 'crm_statistics_';
+    private const PIPELINE_VERSION_KEY = 'crm_pipeline_version';
+
+    /**
+     * Get pipeline cache version (for version-based invalidation)
+     */
+    private function getPipelineCacheVersion(): string
+    {
+        return (string) Cache::rememberForever(self::PIPELINE_VERSION_KEY, fn() => now()->timestamp);
+    }
+
+    /**
+     * Clear pipeline cache (rotates version to invalidate all pipeline caches)
+     */
+    public static function clearPipelineCache(): void
+    {
+        Cache::forever(self::PIPELINE_VERSION_KEY, now()->timestamp);
+    }
 
     /**
      * Get all deals with pagination and filtering
@@ -26,6 +48,8 @@ class CrmDealController extends Controller
     {
         try {
             $query = CrmDeal::with(['customer', 'user', 'apartment.building', 'stage', 'lostReason'])
+                ->withSum('payments as total_paid', 'amount_paid')
+                ->withSum('payments as total_due', 'amount_due')
                 ->orderBy('last_activity_at', 'desc');
 
             // Filter by stage
@@ -120,15 +144,24 @@ class CrmDealController extends Controller
 
     /**
      * Get deals grouped by stage (for Kanban board)
+     * Cached with version-based invalidation for optimal performance
      */
     public function pipeline(Request $request)
     {
         try {
-            $stages = CrmStage::ordered()->get();
+            $userId = $request->get('user_id', 'all');
+            $version = $this->getPipelineCacheVersion();
+            $cacheKey = self::PIPELINE_CACHE_PREFIX . "v{$version}_{$userId}";
 
-            $pipeline = $stages->map(function ($stage) use ($request) {
+            $pipeline = Cache::rememberForever($cacheKey, function () use ($request) {
+                // Use cached stages (reference data)
+                $stages = CrmStage::getCached();
+
+                return $stages->map(function ($stage) use ($request) {
                 // Eager load activities to prevent N+1 calculation of days_in_stage
                 $query = CrmDeal::with(['customer', 'user', 'apartment.building', 'activities'])
+                    ->withSum('payments as total_paid', 'amount_paid')
+                    ->withSum('payments as total_due', 'amount_due')
                     ->where('stage_id', $stage->id)
                     ->orderBy('last_activity_at', 'desc');
 
@@ -189,7 +222,8 @@ class CrmDealController extends Controller
                     'total_value' => (float) $totalValue,
                     'deals' => $deals,
                 ];
-            });
+            });  // Close the map function
+            });  // Close the Cache::rememberForever
 
             return $this->success($pipeline);
         } catch (\Exception $e) {
@@ -216,7 +250,10 @@ class CrmDealController extends Controller
                 'payments' => function ($q) {
                     $q->orderBy('due_date', 'asc');
                 },
-            ])->findOrFail($id);
+            ])
+            ->withSum('payments as total_paid', 'amount_paid')
+            ->withSum('payments as total_due', 'amount_due')
+            ->findOrFail($id);
 
             $dealData = $deal->toArray();
             $dealData['is_stale'] = $deal->is_stale;
@@ -556,39 +593,46 @@ class CrmDealController extends Controller
 
     /**
      * Get deal statistics
+     * Optimized: Using aggregated queries instead of multiple cloned queries
+     * Cached for 5 minutes to reduce database load
      */
     public function statistics(Request $request)
     {
         try {
-            $query = CrmDeal::query();
+            $dateFrom = $request->date_from ?? '';
+            $dateTo = $request->date_to ?? '';
+            $cacheKey = self::STATISTICS_CACHE_PREFIX . "{$dateFrom}_{$dateTo}";
 
-            // Filter by date range
-            if ($request->has('date_from') && !empty($request->date_from)) {
-                $query->whereDate('created_at', '>=', $request->date_from);
-            }
+            $stats = Cache::remember($cacheKey, 300, function () use ($request, $dateFrom, $dateTo) {
+                // Single query for all deal counts and values with JOIN
+            $dealStats = CrmDeal::selectRaw('
+                COUNT(*) as total_deals,
+                SUM(CASE WHEN crm_stages.type = "open" THEN 1 ELSE 0 END) as open_deals,
+                SUM(CASE WHEN crm_stages.type = "won" THEN 1 ELSE 0 END) as won_deals,
+                SUM(CASE WHEN crm_stages.type = "lost" THEN 1 ELSE 0 END) as lost_deals,
+                SUM(CASE
+                    WHEN crm_stages.days_until_stale IS NOT NULL
+                    AND DATEDIFF(NOW(), crm_deals.last_activity_at) > crm_stages.days_until_stale
+                    THEN 1 ELSE 0
+                END) as stale_deals,
+                SUM(CASE WHEN crm_stages.type = "won" AND crm_deals.agreed_price IS NOT NULL
+                    THEN crm_deals.agreed_price ELSE 0 END) as won_value,
+                SUM(CASE WHEN crm_deals.agreed_price IS NOT NULL
+                    THEN crm_deals.agreed_price ELSE 0 END) as total_value
+            ')
+            ->join('crm_stages', 'crm_deals.stage_id', '=', 'crm_stages.id')
+            ->when($dateFrom, fn($q) => $q->whereDate('crm_deals.created_at', '>=', $dateFrom))
+            ->when($dateTo, fn($q) => $q->whereDate('crm_deals.created_at', '<=', $dateTo))
+            ->first();
 
-            if ($request->has('date_to') && !empty($request->date_to)) {
-                $query->whereDate('created_at', '<=', $request->date_to);
-            }
-
-            $totalDeals = (clone $query)->count();
-            $openDeals = (clone $query)->open()->count();
-            $wonDeals = (clone $query)->won()->count();
-            $lostDeals = (clone $query)->lost()->count();
-            $staleDeals = (clone $query)->stale()->count();
-
-            // Calculate values
-            $totalValue = (clone $query)->whereNotNull('agreed_price')->sum('agreed_price');
-            $wonValue = (clone $query)->won()->whereNotNull('agreed_price')->sum('agreed_price');
-
-            // Deals by stage
+            // Deals by stage (already optimized with withCount)
             $dealsByStage = CrmStage::ordered()
-                ->withCount(['deals' => function ($q) use ($request) {
-                    if ($request->has('date_from') && !empty($request->date_from)) {
-                        $q->whereDate('created_at', '>=', $request->date_from);
+                ->withCount(['deals' => function ($q) use ($dateFrom, $dateTo) {
+                    if ($dateFrom) {
+                        $q->whereDate('created_at', '>=', $dateFrom);
                     }
-                    if ($request->has('date_to') && !empty($request->date_to)) {
-                        $q->whereDate('created_at', '<=', $request->date_to);
+                    if ($dateTo) {
+                        $q->whereDate('created_at', '<=', $dateTo);
                     }
                 }])
                 ->get()
@@ -600,29 +644,38 @@ class CrmDealController extends Controller
                     ];
                 });
 
-            // Conversion rate
-            $closedDeals = $wonDeals + $lostDeals;
-            $conversionRate = $closedDeals > 0 ? round(($wonDeals / $closedDeals) * 100, 1) : 0;
+            // This month stats - Single query
+            $thisMonthStats = CrmDeal::selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN crm_stages.type = "won" THEN 1 ELSE 0 END) as won
+            ')
+            ->join('crm_stages', 'crm_deals.stage_id', '=', 'crm_stages.id')
+            ->whereMonth('crm_deals.created_at', now()->month)
+            ->whereYear('crm_deals.created_at', now()->year)
+            ->first();
 
-            // This month stats
-            $thisMonth = CrmDeal::whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year);
-            $dealsThisMonth = (clone $thisMonth)->count();
-            $wonThisMonth = (clone $thisMonth)->won()->count();
+            // Calculate conversion rate
+            $closedDeals = $dealStats->won_deals + $dealStats->lost_deals;
+            $conversionRate = $closedDeals > 0
+                ? round(($dealStats->won_deals / $closedDeals) * 100, 1)
+                : 0;
 
             $stats = [
-                'total' => $totalDeals,
-                'open' => $openDeals,
-                'won' => $wonDeals,
-                'lost' => $lostDeals,
-                'stale' => $staleDeals,
-                'total_value' => $totalValue,
-                'won_value' => $wonValue,
+                'total' => (int) $dealStats->total_deals,
+                'open' => (int) $dealStats->open_deals,
+                'won' => (int) $dealStats->won_deals,
+                'lost' => (int) $dealStats->lost_deals,
+                'stale' => (int) $dealStats->stale_deals,
+                'total_value' => (float) $dealStats->total_value,
+                'won_value' => (float) $dealStats->won_value,
                 'conversion_rate' => $conversionRate,
-                'this_month' => $dealsThisMonth,
-                'won_this_month' => $wonThisMonth,
+                'this_month' => (int) $thisMonthStats->total,
+                'won_this_month' => (int) $thisMonthStats->won,
                 'by_stage' => $dealsByStage,
             ];
+
+                return $stats;
+            });  // Close Cache::remember
 
             return $this->success($stats);
         } catch (\Exception $e) {

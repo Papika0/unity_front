@@ -7,6 +7,7 @@ use App\Models\Translation;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
 
 class TranslationsController extends Controller
 {
@@ -21,19 +22,24 @@ class TranslationsController extends Controller
         try {
             // Locale is now set by middleware from Accept-Language header
             $locale = App::getLocale();
+            $cacheKey = "translations_group_{$group}_{$locale}";
 
-            // Get all active translations for this group
-            $translations = Translation::where('group', $group)
-                ->where('active', true)
-                ->get();
+            $result = Cache::rememberForever($cacheKey, function () use ($group, $locale) {
+                // Get all active translations for this group
+                $translations = Translation::where('group', $group)
+                    ->where('active', true)
+                    ->get();
 
-            // Transform to flat key-value object for current locale
-            $result = [];
-            foreach ($translations as $translation) {
-                $key = $translation->key;
-                $text = $translation->getTranslation('text', $locale);
-                $result[$key] = $text;
-            }
+                // Transform to flat key-value object for current locale
+                $result = [];
+                foreach ($translations as $translation) {
+                    $key = $translation->key;
+                    $text = $translation->getTranslation('text', $locale);
+                    $result[$key] = $text;
+                }
+
+                return $result;
+            });
 
             return $this->success($result);
         } catch (\Exception $e) {
@@ -57,18 +63,27 @@ class TranslationsController extends Controller
                 return $this->error('Groups must be a non-empty array', 400);
             }
 
-            // Get all active translations for these groups
-            $translations = Translation::whereIn('group', $groups)
-                ->where('active', true)
-                ->get();
+            // Create stable cache key from sorted groups
+            sort($groups);
+            $groupsHash = md5(implode(',', $groups));
+            $cacheKey = "translations_groups_{$groupsHash}_{$locale}";
 
-            // Transform to flat key-value object for current locale
-            $result = [];
-            foreach ($translations as $translation) {
-                $key = $translation->key;
-                $text = $translation->getTranslation('text', $locale);
-                $result[$key] = $text;
-            }
+            $result = Cache::rememberForever($cacheKey, function () use ($groups, $locale) {
+                // Get all active translations for these groups
+                $translations = Translation::whereIn('group', $groups)
+                    ->where('active', true)
+                    ->get();
+
+                // Transform to flat key-value object for current locale
+                $result = [];
+                foreach ($translations as $translation) {
+                    $key = $translation->key;
+                    $text = $translation->getTranslation('text', $locale);
+                    $result[$key] = $text;
+                }
+
+                return $result;
+            });
 
             return $this->success($result);
         } catch (\Exception $e) {
