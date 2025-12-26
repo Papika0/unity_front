@@ -21,7 +21,8 @@ def pdf_to_image(pdf_path, dpi=100):
     Increase to 150 for better quality if memory allows.
     """
     if fitz is None:
-        raise ImportError("PyMuPDF (fitz) is required. Install with: pip install PyMuPDF")
+        pass # Optional dependency
+
     
     doc = fitz.open(pdf_path)
     if len(doc) == 0:
@@ -145,9 +146,7 @@ def get_pdf_text_data(pdf_path, image_w, image_h):
         numbers = []
         import re
         
-        for line in lines:
-            line_text = ' '.join(w['text'] for w in line)
-            
+
         for line in lines:
             line_text = ' '.join(w['text'] for w in line)
             
@@ -221,64 +220,37 @@ def clean_mask(mask, thickness=5):
 
 def flood_fill_apartments(image, barrier_mask):
     """
-    Use flood fill to find enclosed apartment areas
+    Use connected components to find enclosed apartment areas
+    (Optimized replacement for iterative flood fill)
     """
     h, w = barrier_mask.shape
+    total_area = h * w
     
     # Create fillable area (inverse of barrier)
+    # 255 = potentially empty space (apartment), 0 = barrier
     fillable = 255 - barrier_mask
     
-    # Create seed points in a grid pattern
-    grid_step = 30
-    seed_points = []
-    for y in range(grid_step, h - grid_step, grid_step):
-        for x in range(grid_step, w - grid_step, grid_step):
-            if fillable[y, x] > 0:
-                seed_points.append((x, y))
+    # Connected components analysis
+    # connectivity=4 means pixels must share an edge (not just corner)
+    # We use 4-connectivity to match floodFill's typical behavior for tight seals
+    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(fillable, connectivity=4)
     
-    # Track which regions we've found
     regions = []
-    filled_mask = np.zeros((h, w), dtype=np.uint8)
     
-    for seed in seed_points:
-        x, y = seed
-        # Skip if already filled
-        if filled_mask[y, x] > 0:
-            continue
-        
-        # Create a mask for flood fill (needs to be h+2, w+2)
-        ff_mask = np.zeros((h + 2, w + 2), dtype=np.uint8)
-        # Set barriers in the flood fill mask
-        ff_mask[1:-1, 1:-1] = barrier_mask // 255
-        
-        # Flood fill from this seed
-        temp_image = fillable.copy()
-        cv2.floodFill(temp_image, ff_mask, seed, 128)
-        
-        # Extract the filled region
-        region = (temp_image == 128).astype(np.uint8) * 255
-        
-        # Calculate area
-        area = np.sum(region > 0)
-        total_area = h * w
-        
-        # Filter by reasonable apartment size (0.5% to 20% of image)
-        min_area = total_area * 0.005
-        max_area = total_area * 0.20
+    # Filter by reasonable apartment size (0.5% to 20% of image)
+    min_area = total_area * 0.005
+    max_area = total_area * 0.20
+    
+    # Start from 1 (0 is background/barrier)
+    for i in range(1, num_labels):
+        area = stats[i, cv2.CC_STAT_AREA]
         
         if min_area < area < max_area:
-            # Check if this overlaps significantly with existing regions
-            is_new = True
-            for existing in regions:
-                overlap = np.sum((region > 0) & (existing > 0))
-                if overlap > area * 0.5:
-                    is_new = False
-                    break
+            # Create a mask for this component
+            # This is fast: numpy boolean comparison optimized in C
+            component_mask = (labels == i).astype(np.uint8) * 255
+            regions.append(component_mask)
             
-            if is_new:
-                regions.append(region)
-                filled_mask = cv2.bitwise_or(filled_mask, region)
-    
     return regions
 
 def region_to_polygon(region_mask, simplify_epsilon=5):
