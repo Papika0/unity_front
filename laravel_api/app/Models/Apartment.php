@@ -15,6 +15,26 @@ class Apartment extends Model
     use HasFactory;
 
     /**
+     * Boot the model
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Clear apartments cache when apartment data changes
+        $clearCacheCallback = function ($apartment) {
+            // Only clear cache if relevant fields changed
+            if ($apartment->isDirty(['status', 'price', 'is_active', 'bedrooms', 'area_total'])) {
+                \App\Http\Controllers\Api\ApartmentsPageController::clearCache();
+            }
+        };
+
+        static::updated($clearCacheCallback);
+        static::created(fn() => \App\Http\Controllers\Api\ApartmentsPageController::clearCache());
+        static::deleted(fn() => \App\Http\Controllers\Api\ApartmentsPageController::clearCache());
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

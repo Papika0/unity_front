@@ -25,9 +25,16 @@ class ApartmentController extends Controller
         $queryString = http_build_query($queryParams);
         $cacheKey = "apartments_search_{$locale}_{$queryString}";
 
-        // Cache for 5 minutes as inventory changes frequently
-        $apartments = Cache::remember($cacheKey, 300, function () {
-            $query = Apartment::with(['project', 'building', 'image2d', 'image3d', 'interactiveZone.images'])
+        // Cache for 30 minutes - apartment inventory doesn't change that frequently
+        // Different filter combinations create different cache keys for targeted caching
+        $apartments = Cache::remember($cacheKey, 1800, function () {
+            // Optimize eager loading: select only needed fields
+            // Only load 3D images for listing (no need for 2D in list view)
+            $query = Apartment::with([
+                'project:id,title',
+                'building:id,name,identifier',
+                'image3d',
+            ])
                 ->where('is_active', true)
                 ->where('status', 'available');
 
@@ -89,18 +96,16 @@ class ApartmentController extends Controller
             $perPage = min($perPage, 500);
             $paginator = $query->paginate($perPage);
             $paginator->through(function ($apt) {
-                // Determine main image logic
-                $image2d = $apt->image2d->first();
+                // Use 3D image for listing
                 $image3d = $apt->image3d->first();
-                $floorPlan = $apt->interactiveZone?->images()->first();
 
                 return [
                     'id' => $apt->id,
                     'project_id' => $apt->project_id,
                     'building_id' => $apt->building_id,
-                    'building_identifier' => $apt->building->identifier, // Added identifier
-                    'project_title' => $apt->project->title,
-                    'building_name' => $apt->building->name,
+                    'building_identifier' => $apt->building?->identifier,
+                    'project_title' => $apt->project?->title,
+                    'building_name' => $apt->building?->name,
                     'apartment_number' => $apt->apartment_number,
                     'floor_number' => $apt->floor_number,
                     'rooms' => $apt->rooms,
@@ -111,9 +116,7 @@ class ApartmentController extends Controller
                     'has_balcony' => $apt->has_balcony,
                     'price' => $apt->price,
                     'status' => $apt->status,
-                    'image' => $image3d ? $image3d->full_url : ($image2d ? $image2d->full_url : ($floorPlan ? $floorPlan->url : null)),
-                    'image_2d' => $image2d ? $image2d->full_url : null,
-                    'image_3d' => $image3d ? $image3d->full_url : null,
+                    'image' => $image3d?->full_url,
                 ];
             });
 

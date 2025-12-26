@@ -1,4 +1,5 @@
 import { computed, ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useFooterStore } from '@/stores/public/footer'
 
@@ -10,6 +11,7 @@ interface NavigationProject {
 
 export function useNavigationLinks() {
   const { t } = useTranslations()
+  const route = useRoute()
   const footerStore = useFooterStore()
   const loadingProjects = ref(false)
 
@@ -17,7 +19,12 @@ export function useNavigationLinks() {
   const ensureFooterDataLoaded = async () => {
     if (loadingProjects.value) return // Prevent multiple simultaneous loads
 
-    // Always try to load if we don't have data, regardless of loading state
+    // If on apartments page, the apartments bootstrap will load this data.
+    // We skip fetching here to avoid duplicate requests.
+    if (route.name === 'apartments') {
+       return 
+    }
+
     if (!footerStore.isFetched || footerStore.isDataEmpty) {
       loadingProjects.value = true
       try {

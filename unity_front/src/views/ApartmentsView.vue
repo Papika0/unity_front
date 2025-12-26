@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useLocaleStore } from '@/stores/ui/locale'
 import { useTranslationLoader } from '@/composables/i18n/useTranslationLoader'
+import { useTranslationsStore } from '@/stores/ui/translations'
+import { useFooterStore } from '@/stores/public/footer'
 import { apartmentService } from '@/services/apartmentService'
 import type { ApartmentFilters, ApartmentSearchResult } from '@/services/apartmentService'
 import type { ApartmentDetail } from '@/types/apartments'
@@ -14,16 +16,23 @@ const { t } = useTranslations()
 const router = useRouter()
 const { loadPageTranslations } = useTranslationLoader()
 const localeStore = useLocaleStore()
+const translationsStore = useTranslationsStore()
+const footerStore = useFooterStore()
 
 defineOptions({
   name: 'ApartmentsView'
 })
 
-const loading = ref(false)
+// Initialize loading to true to prevent child components (Filter) from fetching prematurely
+const loading = ref(true)
 const apartments = ref<ApartmentSearchResult[]>([])
 const totalApartments = ref(0)
 const currentPage = ref(1)
 const lastPage = ref(1)
+
+// Data for filters
+const projects = ref<any[]>([])
+const filterStats = ref<any>(null)
 
 const filters = ref<ApartmentFilters & { bedrooms: number[]; min_area: number | null; max_area: number | null }>({
   project_id: null,
@@ -38,6 +47,67 @@ const filters = ref<ApartmentFilters & { bedrooms: number[]; min_area: number | 
 // Scroll to top function
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const initPage = async () => {
+  try {
+    loading.value = true
+    const response = await apartmentService.bootstrap(filters.value)
+    
+    // 1. Set Translations
+    if (response.translations) {
+      translationsStore.mergeTranslations(response.translations)
+    }
+
+    // 2. Set Apartments Data
+    const aptData = response.apartments
+    apartments.value = aptData.data
+    currentPage.value = aptData.current_page
+    lastPage.value = aptData.last_page
+    totalApartments.value = aptData.total
+
+    // 3. Set Filter Data
+    projects.value = response.projects || []
+    filterStats.value = response.filters || null
+    
+    // 4. Populate Footer Store to prevent extra fetch
+    if (response.contact || response.social_links || response.projects) {
+      // Map generic bootstrap types to specific Footer store types
+      const mappedProjects = (response.projects || []).map(p => ({
+        id: p.id,
+        title: p.title,
+        main_image: null // Projects in footer only need ID/Title usually, but store expects full shape
+      }));
+
+      const mappedContact = response.contact ? {
+        ...response.contact,
+        phone2: response.contact.phone2 || '',
+        phone_numbers: response.contact.phone_numbers || []
+      } : undefined;
+
+      const mappedSocial = response.social_links ? {
+        facebook: response.social_links.facebook || '',
+        instagram: response.social_links.instagram || '',
+        twitter: '',
+        linkedin: '',
+        youtube: response.social_links.youtube || ''
+      } : undefined;
+
+      footerStore.setDataFromHomepage({
+        contact: mappedContact as any,
+        social_links: mappedSocial as any,
+        projects: mappedProjects as any
+      })
+    }
+
+  } catch (error) {
+    console.error('Failed to bootstrap apartments page:', error)
+    // Fallback to individual loads if bootstrap fails
+    loadPageTranslations('apartments')
+    fetchApartments()
+  } finally {
+    loading.value = false
+  }
 }
 
 const fetchApartments = async (resetPage = true) => {
@@ -107,11 +177,11 @@ const navigateToApartment = (apt: ApartmentSearchResult) => {
 }
 
 onMounted(() => {
-  // Load translations for this page
-  loadPageTranslations('apartments')
-
   if (apartments.value.length === 0) {
-    fetchApartments()
+    initPage()
+  } else {
+    // If we already have data (keep-alive), we stop loading immediately
+    loading.value = false
   }
 })
 
@@ -119,7 +189,11 @@ onMounted(() => {
 watch(
   () => localeStore.currentLocale,
   () => {
+    // If locale changes, we might want to re-bootstrap or just reload translations
+    // Reloading just translations is safer to keep current filter state
     loadPageTranslations('apartments')
+    // Re-fetch apartments to get translated content if any (though apartments data is mostly numeric/relational)
+    fetchApartments(false) 
   }
 )
 
@@ -152,6 +226,8 @@ onActivated(() => {
         <ApartmentFilter 
           v-model="filters as any" 
           :loading="loading"
+          :initial-projects="projects"
+          :initial-stats="filterStats"
           @search="fetchApartments(true)" 
         />
       </div>

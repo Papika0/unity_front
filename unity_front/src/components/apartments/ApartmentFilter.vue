@@ -4,6 +4,7 @@ import { useTranslations } from '@/composables/i18n/useTranslations'
 import { projectsApi } from '@/services/projectsApi'
 import { apartmentService } from '@/services/apartmentService'
 import type { Project } from '@/types/index'
+import type { FilterResponse } from '@/services/apartmentService'
 
 const { t } = useTranslations()
 
@@ -18,11 +19,15 @@ interface Props {
   modelValue: FilterState
   loading?: boolean
   compact?: boolean
+  initialProjects?: Project[]
+  initialStats?: FilterResponse
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
   compact: false,
+  initialProjects: undefined,
+  initialStats: undefined,
 })
 
 const emit = defineEmits<{
@@ -61,6 +66,15 @@ watch(() => props.modelValue, (newValue) => {
   }
 }, { deep: true })
 
+// Watch for initial data changes (in case they load late)
+watch(() => props.initialProjects, (newVal) => {
+  if (newVal) projects.value = newVal
+}, { immediate: true })
+
+watch(() => props.initialStats, (newVal) => {
+  if (newVal) maxBedrooms.value = newVal.max_bedrooms
+}, { immediate: true })
+
 const toggleBedroom = (count: number) => {
   const index = form.value.bedrooms.indexOf(count)
   if (index === -1) {
@@ -81,6 +95,11 @@ const handleSearch = () => {
 
 // Load filters
 const loadFilters = async () => {
+  if (props.initialStats) {
+    maxBedrooms.value = props.initialStats.max_bedrooms
+    return
+  }
+
   try {
     const filters = await apartmentService.getFilters()
     maxBedrooms.value = filters.max_bedrooms
@@ -89,13 +108,15 @@ const loadFilters = async () => {
   }
 }
 
-// Load projects for dropdown
-onMounted(async () => {
-  loadFilters()
+const loadProjects = async () => {
+  if (props.initialProjects && props.initialProjects.length > 0) {
+    projects.value = props.initialProjects
+    return
+  }
+
   try {
     loadingProjects.value = true
     const response = await projectsApi.getAll()
-    // Check if response is array or object with data property
     if (Array.isArray(response)) {
       projects.value = response as unknown as Project[]
     } else if (response && 'data' in response) {
@@ -109,6 +130,34 @@ onMounted(async () => {
   } finally {
     loadingProjects.value = false
   }
+}
+
+// Watch loading prop to fetch if parent failed or didn't provide data
+watch(() => props.loading, async (isLoading, wasLoading) => {
+  if (!isLoading && wasLoading) {
+    // Parent finished loading. If we still don't have data (bootstrap failed or didn't include it), fetch it ourselves.
+    if (!props.initialStats && maxBedrooms.value === 4) {
+      await loadFilters()
+    }
+    if ((!props.initialProjects || props.initialProjects.length === 0) && projects.value.length === 0) {
+      await loadProjects()
+    }
+  }
+})
+
+onMounted(async () => {
+  // If parent is loading (bootstrap), wait for it.
+  if (props.loading) {
+     return
+  }
+
+  // Check if we already have initial data
+  if (props.initialStats || (props.initialProjects && props.initialProjects.length > 0)) {
+     return
+  }
+
+  await loadFilters()
+  await loadProjects()
 })
 </script>
 

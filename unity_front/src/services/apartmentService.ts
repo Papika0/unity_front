@@ -32,8 +32,6 @@ export interface ApartmentSearchResult {
   price: number
   status: 'available' | 'sold' | 'reserved'
   image: string | null
-  image_2d: string | null
-  image_3d: string | null
 }
 
 export interface PaginatedApartments {
@@ -44,7 +42,76 @@ export interface PaginatedApartments {
   total: number
 }
 
+export interface FilterResponse {
+  max_bedrooms: number
+  area: {
+    min: number
+    max: number
+  }
+  price: {
+    min: number
+    max: number
+  }
+}
+
+export interface ProjectOption {
+  id: number
+  title: string
+  status: string
+}
+
+export interface ContactInfo {
+  phone: string
+  phone2?: string
+  email: string
+  address: string
+  google_maps_url?: string
+  phone_numbers?: Array<{
+    number: string
+    display: string
+    href: string
+  }>
+}
+
+export interface SocialLinks {
+  facebook?: string
+  instagram?: string
+  youtube?: string
+  tiktok?: string
+}
+
+export interface ApartmentsBootstrap {
+  translations: Record<string, string>
+  apartments: PaginatedApartments
+  filters: FilterResponse
+  projects: ProjectOption[]
+  contact: ContactInfo
+  social_links: SocialLinks
+  meta: {
+    locale: string
+    cached_at: string
+    cache_key?: string
+    groups?: string[]
+  }
+}
+
 export const apartmentService = {
+  /**
+   * Get combined bootstrap data for apartments page
+   * Returns apartments, filters, and projects in one cached request
+   */
+  async bootstrap(filters: ApartmentFilters = {}): Promise<ApartmentsBootstrap> {
+    const params = Object.entries(filters).reduce((acc, [key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        acc[key] = value
+      }
+      return acc
+    }, {} as Record<string, string | number | boolean>)
+
+    const { data } = await api.get<ApartmentsBootstrap>('/apartments/bootstrap', { params })
+    return data
+  },
+
   /**
    * Search for apartments with filters
    */
@@ -67,17 +134,5 @@ export const apartmentService = {
   async getFilters(): Promise<FilterResponse> {
     const { data } = await api.get('/apartments/filters')
     return data
-  }
-}
-
-export interface FilterResponse {
-  max_bedrooms: number
-  area: {
-    min: number
-    max: number
-  }
-  price: {
-    min: number
-    max: number
-  }
+  },
 }

@@ -48,10 +48,14 @@ class ApartmentNavigationController extends Controller
 
         // Build cache key
         $locale = App::getLocale();
-        $cacheKey = "apartment_nav:{$locale}:{$projectId}:{$level}:" . ($buildingId ?? 'null') . ':' . ($floorNumber ?? 'null');
 
-        // Return cached response if available
-        $response = Cache::remember($cacheKey, 1800, function () use ($projectId, $level, $buildingId, $floorNumber) {
+        // Get current cache version (shared with ApartmentsPageController)
+        $version = Cache::rememberForever('apartments_data_version', fn() => now()->timestamp);
+
+        $cacheKey = "apartment_nav:v{$version}:{$locale}:{$projectId}:{$level}:" . ($buildingId ?? 'null') . ':' . ($floorNumber ?? 'null');
+
+        // Return cached response if available - cache forever as version rotation handles invalidation
+        $response = Cache::rememberForever($cacheKey, function () use ($projectId, $level, $buildingId, $floorNumber) {
             switch ($level) {
                 case 'overview':
                     return $this->getOverviewLevel($projectId);

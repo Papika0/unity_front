@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Api\ApartmentNavigationController;
 use App\Http\Controllers\Api\ApartmentController;
+use App\Http\Controllers\Api\ApartmentsPageController;
 use App\Http\Controllers\Admin\AdminBuildingController;
 use App\Http\Controllers\Admin\AdminApartmentController;
 use App\Http\Controllers\Admin\AdminInteractiveZoneController;
@@ -142,7 +143,8 @@ Route::middleware('throttle:public-cached')->group(function () {
     Route::get('/projects/{projectId}/buildings', [App\Http\Controllers\Api\BuildingsController::class, 'index']);
     Route::get('/projects/{projectId}/buildings/{buildingIdOrIdentifier}', [App\Http\Controllers\Api\BuildingsController::class, 'show']);
 
-    // Apartment detail routes (public)
+    // Apartment routes (public)
+    Route::get('/apartments/bootstrap', [ApartmentsPageController::class, 'bootstrap']); // Combined data endpoint
     Route::get('/apartments/filters', [ApartmentController::class, 'filters']);
     Route::get('/apartments', [ApartmentController::class, 'index']);
     Route::get('/apartments/{id}', [ApartmentController::class, 'show']);
