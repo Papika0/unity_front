@@ -48,19 +48,19 @@ class HomepageController extends Controller
         $cacheKey = "HomePageCache({$locale})";
 
         // Check if cache exists first
+        // Check if cache exists first
         if ($this->pageCacheService->has($cacheKey)) {
-            return $this->pageCacheService->get($cacheKey);
+            $data = $this->pageCacheService->get($cacheKey);
+            return response()->json($data);
         }
 
         // If not cached, fetch data and cache forever using optimized queries
         $data = $this->buildHomepageData($locale, $groups);
 
-        $response = response()->json($data);
+        // Cache the raw data array forever (null TTL)
+        $this->pageCacheService->put($cacheKey, $data, null);
 
-        // Cache forever (null TTL)
-        $this->pageCacheService->put($cacheKey, $response, null);
-
-        return $response;
+        return response()->json($data);
     }
 
     /**
