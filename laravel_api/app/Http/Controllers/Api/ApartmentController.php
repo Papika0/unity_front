@@ -239,7 +239,7 @@ class ApartmentController extends Controller
     {
         // Cache filter options for 1 hour since they don't change often
         $stats = Cache::remember('apartment_filters_stats', 3600, function () {
-            return Apartment::query()
+            $result = Apartment::query()
                 ->where('is_active', true)
                 ->where('status', 'available')
                 ->selectRaw('MAX(bedrooms) as max_bedrooms')
@@ -248,17 +248,26 @@ class ApartmentController extends Controller
                 ->selectRaw('MIN(price) as min_price')
                 ->selectRaw('MAX(price) as max_price')
                 ->first();
+
+            // Convert to array to avoid caching the model object
+            return [
+                'max_bedrooms' => (int) $result->max_bedrooms,
+                'min_area' => (float) $result->min_area,
+                'max_area' => (float) $result->max_area,
+                'min_price' => (float) $result->min_price,
+                'max_price' => (float) $result->max_price,
+            ];
         });
 
         return response()->json([
-            'max_bedrooms' => (int) $stats->max_bedrooms,
+            'max_bedrooms' => $stats['max_bedrooms'],
             'area' => [
-                'min' => (float) $stats->min_area,
-                'max' => (float) $stats->max_area,
+                'min' => $stats['min_area'],
+                'max' => $stats['max_area'],
             ],
             'price' => [
-                'min' => (float) $stats->min_price,
-                'max' => (float) $stats->max_price,
+                'min' => $stats['min_price'],
+                'max' => $stats['max_price'],
             ]
         ]);
     }

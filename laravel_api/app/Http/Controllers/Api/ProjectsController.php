@@ -205,19 +205,19 @@ class ProjectsController extends Controller
                 ];
             })->values()->all();
 
-            $result = $this->success([
+            $response = [
                 'data' => $resourceData,
                 'translations' => $translations,
                 'meta' => [
                     'locale' => $locale,
                     'cached_at' => now()->toISOString(),
                 ]
-            ]);
+            ];
 
-            // Cache forever
-            $this->pageCacheService->put($cacheKey, $result, null);
+            // Cache the data array (not the JsonResponse)
+            $this->pageCacheService->put($cacheKey, $response, null);
 
-            return $result;
+            return $this->success($response);
         } catch (\Exception $e) {
             return $this->error('Project not found', 404);
         }

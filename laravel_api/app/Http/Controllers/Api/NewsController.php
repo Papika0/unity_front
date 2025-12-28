@@ -89,12 +89,10 @@ class NewsController extends Controller
             $response['meta']['locale'] = $locale;
             $response['meta']['cached_at'] = now()->toISOString();
 
-            $result = $this->success($response);
+            // Cache the data array (not the JsonResponse)
+            $this->pageCacheService->put($cacheKey, $response, null);
 
-            // Cache forever (null TTL)
-            $this->pageCacheService->put($cacheKey, $result, null);
-
-            return $result;
+            return $this->success($response);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch news', 500);
         }
@@ -213,19 +211,19 @@ class NewsController extends Controller
                 return new NewsResource($item, $locale);
             });
 
-            $result = $this->success([
+            $response = [
                 'data' => $newsCollection,
                 'translations' => $translations,
                 'meta' => [
                     'locale' => $locale,
                     'cached_at' => now()->toISOString(),
                 ]
-            ]);
+            ];
 
-            // Cache forever
-            $this->pageCacheService->put($cacheKey, $result, null);
+            // Cache the data array (not the JsonResponse)
+            $this->pageCacheService->put($cacheKey, $response, null);
 
-            return $result;
+            return $this->success($response);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch featured news', 500);
         }
@@ -267,19 +265,19 @@ class NewsController extends Controller
                 return new NewsResource($item, $locale);
             });
 
-            $result = $this->success([
+            $response = [
                 'data' => $newsCollection,
                 'translations' => $translations,
                 'meta' => [
                     'locale' => $locale,
                     'cached_at' => now()->toISOString(),
                 ]
-            ]);
+            ];
 
-            // Cache forever
-            $this->pageCacheService->put($cacheKey, $result, null);
+            // Cache the data array (not the JsonResponse)
+            $this->pageCacheService->put($cacheKey, $response, null);
 
-            return $result;
+            return $this->success($response);
         } catch (\Exception $e) {
             return $this->error('Failed to fetch latest news', 500);
         }
