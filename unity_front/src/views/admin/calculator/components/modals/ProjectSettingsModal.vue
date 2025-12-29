@@ -117,7 +117,7 @@
                           <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                         </label>
                       </div>
-                      <p class="text-xs text-slate-500">{{ t.alt1Desc }}</p>
+                      <p class="text-xs text-slate-500">{{ getDynamicDesc(1) }}</p>
                     </div>
 
                     <!-- Alt 2 -->
@@ -129,7 +129,7 @@
                           <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                         </label>
                       </div>
-                      <p class="text-xs text-slate-500 mb-2">{{ t.alt2Desc }}</p>
+                      <p class="text-xs text-slate-500 mb-2">{{ getDynamicDesc(2) }}</p>
                       <div v-if="formData.alternatives.alt2.enabled">
                         <label class="block text-xs font-medium text-slate-700 mb-1">{{ t.surchargePercent }}</label>
                         <div class="relative">
@@ -210,7 +210,7 @@
                           <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                         </label>
                       </div>
-                      <p class="text-xs text-slate-500 mb-2">{{ t.alt5Desc }}</p>
+                      <p class="text-xs text-slate-500 mb-2">{{ getDynamicDesc(5) }}</p>
                       <div v-if="formData.alternatives.alt5.enabled">
                         <label class="block text-xs font-medium text-slate-700 mb-1">{{ t.priceIncrease }}</label>
                         <div class="relative">
@@ -237,7 +237,7 @@
                           <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                         </label>
                       </div>
-                      <p class="text-xs text-slate-500 mb-2">{{ t.alt6Desc }}</p>
+                      <p class="text-xs text-slate-500 mb-2">{{ getDynamicDesc(6) }}</p>
                       <div v-if="formData.alternatives.alt6.enabled">
                         <label class="block text-xs font-medium text-slate-700 mb-1">{{ t.priceIncrease }}</label>
                         <div class="relative">
@@ -297,6 +297,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { adminCalculatorApi } from '@/services/adminCalculatorApi'
+import { useAlternativeDescriptions } from '@/composables/calculator/useAlternativeDescriptions'
 import type { ActiveProject } from '@/types/admin/calculator'
 import { format } from 'date-fns'
 
@@ -475,6 +476,60 @@ const originalValues = ref({
 const hasChanges = computed(() => {
   return JSON.stringify(formData.value) !== JSON.stringify(originalValues.value)
 })
+
+// Build calculator settings from current form data for live preview
+const previewCalculatorSettings = computed(() => {
+  if (!formData.value.deadline) return null
+
+  return {
+    alternatives: {
+      alt1: { enabled: formData.value.alternatives.alt1.enabled, deadline: formData.value.deadline },
+      alt2: {
+        enabled: formData.value.alternatives.alt2.enabled,
+        deadline: formData.value.deadline,
+        surcharge_percent: formData.value.alternatives.alt2.surcharge_percent
+      },
+      alt3: {
+        enabled: formData.value.alternatives.alt3.enabled,
+        deadline: formData.value.deadline,
+        discount_percent: formData.value.alternatives.alt3.discount_percent
+      },
+      alt4: {
+        enabled: formData.value.alternatives.alt4.enabled,
+        deadline: formData.value.deadline,
+        discount_percent: formData.value.alternatives.alt4.discount_percent
+      },
+      alt5: {
+        enabled: formData.value.alternatives.alt5.enabled,
+        deadline: formData.value.deadline,
+        price_increase_per_sqm: formData.value.alternatives.alt5.price_increase_per_sqm
+      },
+      alt6: {
+        enabled: formData.value.alternatives.alt6.enabled,
+        deadline: formData.value.deadline,
+        price_increase_per_sqm: formData.value.alternatives.alt6.price_increase_per_sqm
+      }
+    },
+    payment_terms: {
+      min_down_payment_percent: 20,
+      max_down_payment_percent: 30,
+      min_monthly_payment: 800,
+      min_monthly_payment_alt6: 1500
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any
+})
+
+// Get dynamic descriptions based on current form settings
+const dynamicDescriptions = computed(() =>
+  useAlternativeDescriptions(previewCalculatorSettings.value)
+)
+
+// Create dynamic description getters for the template
+const getDynamicDesc = (altId: number) => {
+  const alt = dynamicDescriptions.value.find(a => a.id === altId)
+  return alt ? alt.description[props.currentLang] : ''
+}
 
 const loadProjectSettings = async () => {
   if (!selectedProjectId.value) return

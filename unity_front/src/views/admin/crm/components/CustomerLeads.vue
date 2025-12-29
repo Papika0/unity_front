@@ -6,11 +6,13 @@
 
 import { ref, onMounted } from 'vue'
 import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import { adminCustomerApi, type Customer, type CustomerStatistics } from '@/services/adminCustomerApi'
 import { useToastStore } from '@/stores/ui/toast'
 import { useCrmStore } from '@/stores/admin/crm'
 
 const { t } = useTranslations()
+const { formatDate: formatDt } = useLocaleFormatter()
 const toast = useToastStore()
 const crmStore = useCrmStore()
 
@@ -153,7 +155,7 @@ async function updateCustomerStatus(id: number, status: string): Promise<void> {
 
 // Format date
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('ka-GE', {
+  return formatDt(dateStr, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

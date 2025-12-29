@@ -877,6 +877,13 @@
                     "system": "Система"
                 }
             },
+            "kanban": {
+                "no_stages": "Нет этапов Pipeline",
+                "add_stages_hint": "Пожалуйста, добавьте этапы из настроек",
+                "no_deals": "Нет сделок",
+                "empty_column_hint": "Перетащите сюда или создайте новую",
+                "average_value": "Средняя стоимость"
+            },
             "payment": {
                 "payments": "Платежи",
                 "schedule": "График платежей",
@@ -901,7 +908,20 @@
                 "total": "Всего",
                 "mark_paid": "Отметить как оплаченный",
                 "no_schedule": "Нет графика платежей",
-                "create_auto": "Создать график автоматически"
+                "create_auto": "Создать график автоматически",
+                "monthly_payment": "Ежемесячный платеж",
+                "generate_from_pricing": "Сгенерировать из цены",
+                "regenerate": "Перегенерировать график",
+                "confirm_regenerate": "Вы уверены, что хотите перегенерировать график платежей?",
+                "regenerate_warning": "Это заменит все ожидающие платежи новым графиком на основе текущих цен.",
+                "payments_kept": "Сохранено",
+                "payments_replaced": "Заменено",
+                "no_pricing_set": "Цена не установлена",
+                "set_pricing_first": "Сначала установите цену для генерации автоматического графика платежей.",
+                "set_pricing_button": "Установить цену",
+                "manual_schedule": "Ручной график",
+                "payment_history": "История платежей",
+                "schedule_regenerated": "График платежей успешно перегенерирован"
             },
             "lost_reason": {
                 "title": "Причина потери",
@@ -928,7 +948,8 @@
                 "submit": "Отправить",
                 "creating": "Создание...",
                 "saving": "Сохранение...",
-                "confirm": "Подтвердить"
+                "confirm": "Подтвердить",
+                "select_date": "Выберите дату"
             },
             "tabs": {
                 "details": "Детали",
@@ -1027,6 +1048,64 @@
                 "modal": {
                     "create_deal_title": "Создать сделку"
                 }
+            },
+            "pricing": {
+                "title": "Установить цену сделки",
+                "stages": {
+                    "offered": "Предложенная цена",
+                    "reserved": "Зарезервированная цена",
+                    "final": "Финальная цена"
+                },
+                "price_per_sqm": "Цена за м²",
+                "total_price": "Общая цена",
+                "area": "Площадь",
+                "payment_alternatives": "Варианты оплаты",
+                "no_calculator": "Настройки калькулятора недоступны для этого проекта.",
+                "option": "Вариант",
+                "down_payment": "Первоначальный взнос",
+                "down_payment_percent": "Первоначальный взнос %",
+                "monthly_payment": "Ежемесячный платеж",
+                "total": "Итого",
+                "save": "Сохранить",
+                "saving": "Сохранение...",
+                "cancel": "Отмена",
+                "price_label": "Цена",
+                "pricing_title": "Цена и условия",
+                "set_price": "Установить цену",
+                "edit_price": "Редактировать цену",
+                "current_price": "Текущая цена",
+                "no_pricing_set": "Ценовая информация не установлена.",
+                "offered": "Предложено",
+                "reserved": "Зарезервировано",
+                "final": "Финально",
+                "selected_plan": "Выбранный план оплаты",
+                "payment_plan": "План оплаты",
+                "down_payment_range": "Диапазон первоначального взноса",
+                "min_monthly_payment": "Минимальный ежемесячный платеж",
+                "alternative_disabled": "Отключено",
+                "constraints": {
+                    "down_payment_range": "Первоначальный взнос: {min}-{max}%",
+                    "min_monthly": "Минимальный ежемесячный платеж: {amount}",
+                    "fixed_down_payment": "Первоначальный взнос: {percent}%"
+                },
+                "validation": {
+                    "down_payment_range": "Первоначальный взнос должен быть между {min}% и {max}%",
+                    "monthly_minimum": "Ежемесячный платеж должен быть не менее {min}",
+                    "pricing_saved": "Цена успешно сохранена"
+                }
+            },
+            "stage_change": {
+                "title": "Подтверждение цены",
+                "message": "У этой сделки есть существующая цена. Изменилась ли цена для этого нового этапа?",
+                "keep_same": "Оставить ту же цену",
+                "update_price": "Обновить цену",
+                "offer_changed_question": "Изменилось ли предложение?",
+                "offer_changed_hint": "Выберите, сохранить ту же цену или обновить её",
+                "no_keep_same": "Нет, оставить ту же",
+                "yes_update": "Да, обновить",
+                "carry_forward": "Цена будет перенесена",
+                "open_pricing_modal": "Откроет окно ценообразования",
+                "pricing_carried_forward": "Цена успешно перенесена"
             }
         }
     },

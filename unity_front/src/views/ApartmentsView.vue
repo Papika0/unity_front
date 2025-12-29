@@ -31,7 +31,9 @@ const currentPage = ref(1)
 const lastPage = ref(1)
 
 // Data for filters
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const projects = ref<any[]>([])
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const filterStats = ref<any>(null)
 
 const filters = ref<ApartmentFilters & { bedrooms: number[]; min_area: number | null; max_area: number | null }>({
@@ -93,9 +95,13 @@ const initPage = async () => {
         youtube: response.social_links.youtube || ''
       } : undefined;
 
+        
       footerStore.setDataFromHomepage({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         contact: mappedContact as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         social_links: mappedSocial as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         projects: mappedProjects as any
       })
     }

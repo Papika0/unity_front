@@ -32,6 +32,18 @@ export const useCrmStore = defineStore('crm', () => {
   const currentDeal = ref<CrmDeal | null>(null)
   const dealActivities = ref<CrmActivity[]>([])
   const dealPayments = ref<CrmPayment[]>([])
+  const paymentSummary = ref<{
+    total_due: number
+    total_paid: number
+    payment_progress: number
+    remaining: number
+  } | null>(null)
+  const paymentPagination = ref<{
+    total: number
+    per_page: number
+    current_page: number
+    last_page: number
+  } | null>(null)
   const statistics = ref<CrmStatistics | null>(null)
 
   const isLoadingStages = ref(false)
@@ -304,13 +316,15 @@ export const useCrmStore = defineStore('crm', () => {
   // ======================
   // Payments
   // ======================
-  async function fetchPayments(dealId: number): Promise<void> {
+  async function fetchPayments(dealId: number, page: number = 1, perPage: number = 10): Promise<void> {
     isLoadingPayments.value = true
     error.value = null
 
     try {
-      const response = await crmApi.getPayments(dealId)
-      dealPayments.value = Array.isArray(response) ? response : []
+      const { payments, summary, pagination } = await crmApi.getPayments(dealId, page, perPage)
+      dealPayments.value = payments
+      paymentSummary.value = summary
+      paymentPagination.value = pagination
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load payments'
       error.value = message
@@ -390,6 +404,88 @@ export const useCrmStore = defineStore('crm', () => {
     }
   }
 
+  async function markPaymentAsPaid(
+    paymentId: number,
+    data: {
+      paidDate: string
+      amountPaid: number
+      paymentMethod?: string | null
+      transactionReference?: string | null
+      notes?: string | null
+    }
+  ): Promise<CrmPayment> {
+    isUpdatingPayment.value = true
+    try {
+      const payment = await crmApi.markPaymentAsPaid(paymentId, {
+        paid_date: data.paidDate,
+        amount_paid: data.amountPaid,
+        payment_method: data.paymentMethod,
+        transaction_reference: data.transactionReference,
+        notes: data.notes,
+      })
+
+      const index = dealPayments.value.findIndex((p) => p.id === paymentId)
+      if (index !== -1) {
+        dealPayments.value[index] = payment
+      }
+
+      return payment
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to mark payment as paid'
+      error.value = message
+      throw err
+    } finally {
+      isUpdatingPayment.value = false
+    }
+  }
+
+  async function editPaymentAmount(
+    paymentId: number,
+    data: {
+      newAmount: number
+      reason: string
+      notes?: string | null
+    }
+  ): Promise<CrmPayment> {
+    isUpdatingPayment.value = true
+    try {
+      const payment = await crmApi.editPaymentAmount(paymentId, {
+        new_amount: data.newAmount,
+        reason: data.reason,
+        notes: data.notes,
+      })
+
+      const index = dealPayments.value.findIndex((p) => p.id === paymentId)
+      if (index !== -1) {
+        dealPayments.value[index] = payment
+      }
+
+      return payment
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to edit payment amount'
+      error.value = message
+      throw err
+    } finally {
+      isUpdatingPayment.value = false
+    }
+  }
+
+  async function regeneratePaymentSchedule(dealId: number, page: number = 1, perPage: number = 10): Promise<void> {
+    isGeneratingSchedule.value = true
+    try {
+      const { payments, summary, pagination } = await crmApi.regeneratePaymentSchedule(dealId, page, perPage)
+      dealPayments.value = payments
+      paymentSummary.value = summary
+      paymentPagination.value = pagination
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to regenerate payment schedule'
+      error.value = message
+      throw err
+    } finally {
+      isGeneratingSchedule.value = false
+    }
+  }
+
   // ======================
   // Statistics
   // ======================
@@ -420,6 +516,8 @@ export const useCrmStore = defineStore('crm', () => {
     currentDeal,
     dealActivities,
     dealPayments,
+    paymentSummary,
+    paymentPagination,
     statistics,
     isLoadingStages,
     isLoadingPipeline,
@@ -453,6 +551,9 @@ export const useCrmStore = defineStore('crm', () => {
     updatePayment,
     deletePayment,
     generatePaymentSchedule,
+    markPaymentAsPaid,
+    editPaymentAmount,
+    regeneratePaymentSchedule,
     fetchStatistics,
     resetCurrentDeal,
   }

@@ -334,6 +334,9 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
             Route::put('/{id}/stage', [CrmDealController::class, 'updateStage']); // Move deal on Kanban
             Route::put('/{id}/pricing', [CrmDealController::class, 'updatePricing']); // Update deal pricing
             Route::put('/{id}/assign', [CrmDealController::class, 'assign']); // Assign deal to user
+            Route::post('/{id}/payments/regenerate', [CrmDealController::class, 'regeneratePaymentSchedule']); // Regenerate payment schedule
+            Route::put('/payments/{paymentId}/mark-paid', [CrmDealController::class, 'markPaymentAsPaid']); // Mark payment as paid
+            Route::put('/payments/{paymentId}/edit-amount', [CrmDealController::class, 'editPaymentAmount']); // Edit payment amount
         });
 
         // Routes accessible by admin only

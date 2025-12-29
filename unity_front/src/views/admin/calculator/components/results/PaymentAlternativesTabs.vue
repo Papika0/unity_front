@@ -87,6 +87,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { ActiveProject, CalculationResult, BankLoanResult } from '@/types/admin/calculator'
+import { useAlternativeDescriptions } from '@/composables/calculator/useAlternativeDescriptions'
 import AlternativeCalculator from './AlternativeCalculator.vue'
 import BankCalculator from './BankCalculator.vue'
 
@@ -147,89 +148,36 @@ const numericTab = computed((): 1 | 2 | 3 | 4 | 5 | 6 => {
   return selectedTab.value
 })
 
+// Get dynamic alternative descriptions based on project settings
+const alternativeDescriptions = computed(() =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  useAlternativeDescriptions(props.project?.calculator_settings as any)
+)
+
 const alternatives = computed(() => {
   if (!props.project?.calculator_settings) {
-    // Return all disabled if no project
-    return [
-      { id: 1, name: 'ვარიანტი 1', description: 'Standard', enabled: false },
-      { id: 2, name: 'ვარიანტი 2', description: 'Internal', enabled: false },
-      { id: 3, name: 'ვარიანტი 3', description: 'Full Upfront', enabled: false },
-      { id: 4, name: 'ვარიანტი 4', description: 'Large Upfront', enabled: false },
-      { id: 5, name: 'ვარიანტი 5', description: '0% Down', enabled: false },
-      { id: 6, name: 'ვარიანტი 6', description: '0% Down', enabled: false }
-    ]
+    // Return all disabled if no project - use dynamic descriptions with null settings
+    const fallbackDescs = useAlternativeDescriptions(null)
+    return fallbackDescs.map(alt => ({
+      id: alt.id,
+      name: alt.title[props.currentLang],
+      description: alt.description[props.currentLang],
+      enabled: false
+    }))
   }
 
   const settings = props.project.calculator_settings
-  
-  // Get localized labels based on currentLang
-  const labels = {
-    ka: [
-      { name: 'სტანდარტული განვადება', desc: '20-30% შენატანი' },
-      { name: 'შიდა განვადება', desc: '20-30% შენატანი' },
-      { name: 'სრული წინასწარი', desc: '80-100% ფასდაკლებით' },
-      { name: 'დიდი წინასწარი', desc: '50-80% ფასდაკლებით' },
-      { name: 'უპირველესი $800/თვე', desc: '0% შენატანი' },
-      { name: 'უპირველესი $1500/თვე', desc: '0% შენატანი' }
-    ],
-    en: [
-      { name: 'Standard Installment', desc: '20-30% down payment' },
-      { name: 'Internal Installment', desc: '20-30% down payment' },
-      { name: 'Full Upfront', desc: '80-100% with discount' },
-      { name: 'Large Upfront', desc: '50-80% with discount' },
-      { name: 'Priority $800/month', desc: '0% down payment' },
-      { name: 'Priority $1500/month', desc: '0% down payment' }
-    ],
-    ru: [
-      { name: 'Стандартная рассрочка', desc: '20-30% первонач. взнос' },
-      { name: 'Внутренняя рассрочка', desc: '20-30% первонач. взнос' },
-      { name: 'Полная предоплата', desc: '80-100% со скидкой' },
-      { name: 'Большая предоплата', desc: '50-80% со скидкой' },
-      { name: 'Приоритет $800/мес', desc: '0% первонач. взнос' },
-      { name: 'Приоритет $1500/мес', desc: '0% первонач. взнос' }
-    ]
-  }
-  
-  const currentLabels = labels[props.currentLang]
 
-  return [
-    {
-      id: 1 as const,
-      name: currentLabels[0].name,
-      description: currentLabels[0].desc,
-      enabled: settings.alternatives.alt1.enabled
-    },
-    {
-      id: 2 as const,
-      name: currentLabels[1].name,
-      description: currentLabels[1].desc,
-      enabled: settings.alternatives.alt2.enabled
-    },
-    {
-      id: 3 as const,
-      name: currentLabels[2].name,
-      description: currentLabels[2].desc,
-      enabled: settings.alternatives.alt3.enabled
-    },
-    {
-      id: 4 as const,
-      name: currentLabels[3].name,
-      description: currentLabels[3].desc,
-      enabled: settings.alternatives.alt4.enabled
-    },
-    {
-      id: 5 as const,
-      name: currentLabels[4].name,
-      description: currentLabels[4].desc,
-      enabled: settings.alternatives.alt5.enabled
-    },
-    {
-      id: 6 as const,
-      name: currentLabels[5].name,
-      description: currentLabels[5].desc,
-      enabled: settings.alternatives.alt6.enabled
+  // NOW DYNAMIC: Use descriptions from composable
+  return alternativeDescriptions.value.map(alt => {
+    const altKey = `alt${alt.id}` as 'alt1' | 'alt2' | 'alt3' | 'alt4' | 'alt5' | 'alt6'
+    return {
+      id: alt.id,
+      name: alt.title[props.currentLang],
+      description: alt.description[props.currentLang],
+      enabled: settings.alternatives[altKey].enabled
     }
-  ]
+  })
 })
 
 const selectTab = (tabId: 1 | 2 | 3 | 4 | 5 | 6 | 'bank') => {

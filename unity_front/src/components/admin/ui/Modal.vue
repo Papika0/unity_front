@@ -32,8 +32,13 @@
         </div>
 
         <!-- Modal Content -->
-        <div class="p-8 max-h-[80vh] overflow-y-auto">
+        <div class="p-8 max-h-[60vh] overflow-y-auto">
           <slot />
+        </div>
+
+        <!-- Modal Footer -->
+        <div v-if="$slots.footer" class="px-8 py-6 border-t border-slate-200 bg-slate-50 rounded-b-3xl">
+          <slot name="footer" />
         </div>
       </div>
     </div>

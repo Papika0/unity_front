@@ -901,12 +901,32 @@
                     "system": "სისტემა"
                 }
             },
+            "kanban": {
+                "no_stages": "არ არის Pipeline-ის სტადიები",
+                "add_stages_hint": "გთხოვთ დაამატოთ სტადიები პარამეტრებიდან",
+                "no_deals": "არ არის გარიგებები",
+                "empty_column_hint": "გადაიტანეთ აქ ან შექმენით ახალი",
+                "average_value": "საშუალო ღირებულება"
+            },
             "payment": {
                 "payments": "გადახდები",
                 "schedule": "გადახდის გრაფიკი",
                 "generate_schedule": "გრაფიკის შექმნა",
+                "generate_from_pricing": "გენერაცია ფასიდან",
+                "regenerate": "თავიდან შექმნა",
+                "confirm_regenerate": "თავიდან შეიქმნება გადახდის გრაფიკი მიმდინარე ფასებიდან. გადახდილი გადახდები შენარჩუნდება. გავაგრძელოთ?",
+                "regenerate_warning": "ეს შეცვლის ყველა მიმდინარე გადახდას ახალი განრიგით მიმდინარე ფასების საფუძველზე.",
+                "payments_kept": "შენარჩუნებული",
+                "payments_replaced": "ჩანაცვლებული",
+                "no_pricing_set": "ფასი არ არის დაყენებული",
+                "set_pricing_first": "ჯერ დააყენეთ ფასი ავტომატური გადახდის განრიგის გენერირებისთვის.",
+                "set_pricing_button": "ფასის დაყენება",
+                "manual_schedule": "ხელით განრიგი",
+                "payment_history": "გადახდების ისტორია",
+                "schedule_regenerated": "გადახდის განრიგი წარმატებით რეგენერირდა",
                 "total_amount": "მთლიანი თანხა",
                 "down_payment": "საწყისი შენატანი",
+                "monthly_payment": "ყოველთვიური გადახდა",
                 "installments": "შენატანების რაოდენობა",
                 "start_date": "დაწყების თარიღი",
                 "interval": "ინტერვალი (თვეები)",
@@ -924,8 +944,70 @@
                 "paid": "გადახდილი",
                 "total": "სულ",
                 "mark_paid": "გადახდილად მონიშვნა",
+                "mark_as_paid": "გადახდილად მონიშვნა",
                 "no_schedule": "არ არის გადახდის გრაფიკი",
-                "create_auto": "შექმენით გრაფიკი ავტომატურად"
+                "create_auto": "შექმენით გრაფიკი ავტომატურად",
+                "no_pricing": "ფასი არ არის დაყენებული",
+                "pricing_set_but_no_schedule": "ფასი დაყენებულია, მაგრამ გრაფიკი ჯერ არ არის შექმნილი",
+                "create_manual_schedule": "ხელით შექმნა",
+                "refresh": "განახლება",
+                "description": "აღწერა",
+                "due_date": "ვადა",
+                "amount": "თანხა",
+                "status_label": "სტატუსი",
+                "actions": "მოქმედებები",
+                "status": {
+                    "paid": "გადახდილი",
+                    "pending": "მოლოდინში",
+                    "overdue": "ვადაგადაცილებული",
+                    "partially_paid": "ნაწილობრივ გადახდილი",
+                    "cancelled": "გაუქმებული"
+                },
+                "showing": "ნაჩვენებია",
+                "of": "-დან",
+                "payment_date_question": "გადახდა განხორციელდა ვადის დღეს?",
+                "on_due_date": "დიახ, ვადის დღეს",
+                "different_date": "არა, სხვა თარიღზე",
+                "partial_payment": "ნაწილობრივი გადახდა",
+                "full_payment": "სრული გადახდა",
+                "payment_method": "გადახდის მეთოდი",
+                "select_method": "აირჩიეთ მეთოდი",
+                "methods": {
+                    "bank_transfer": "საბანკო გადარიცხვა",
+                    "credit_card": "საკრედიტო ბარათი",
+                    "cash": "ნაღდი ფული",
+                    "check": "ჩეკი",
+                    "other": "სხვა"
+                },
+                "transaction_reference": "ტრანზაქციის ნომერი",
+                "transaction_reference_placeholder": "მაგ: TXN123456",
+                "notes_placeholder": "დამატებითი ინფორმაცია...",
+                "amount_due": "გადასახდელი თანხა",
+                "edit_payment": "გადახდის რედაქტირება",
+                "original_amount": "თავდაპირველი თანხა",
+                "new_amount": "ახალი თანხა",
+                "reason_for_change": "ცვლილების მიზეზი",
+                "select_reason": "აირჩიეთ მიზეზი",
+                "specify_reason": "მიუთითეთ მიზეზი",
+                "reasons": {
+                    "discount_applied": "ფასდაკლება გამოყენებული",
+                    "price_adjustment": "ფასის კორექტირება",
+                    "customer_negotiation": "კლიენტთან მოლაპარაკება",
+                    "correction": "შეცდომის გამოსწორება",
+                    "other": "სხვა"
+                },
+                "save_changes": "ცვლილებების შენახვა",
+                "edit_warning": "გადახდის თანხის შეცვლა გავლენას მოახდენს დარჩენილ ბალანსზე",
+                "edit_notes_placeholder": "მიუთითეთ რატომ შეიცვალა თანხა...",
+                "increase": "გაზრდა",
+                "decrease": "შემცირება",
+                "cannot_edit_paid": "გადახდილი გადახდის რედაქტირება შეუძლებელია",
+                "cannot_edit_paid_desc": "გადახდის რედაქტირება შესაძლებელია მხოლოდ 'მოლოდინში' ან 'ნაწილობრივ გადახდილი' სტატუსით",
+                "full_payment_desc": "სრული თანხა იქნება მონიშნული გადახდილად"
+            },
+            "pagination": {
+                "previous": "წინა",
+                "next": "შემდეგი"
             },
             "lost_reason": {
                 "title": "წაგების მიზეზი",
@@ -947,11 +1029,15 @@
                 "apartment_info": "ბლოკი / ბინა",
                 "apartment_info_placeholder": "მაგ: A ბლოკი, 45 ბინა",
                 "notes_placeholder": "დამატებითი ინფორმაცია...",
+                "notes": "შენიშვნები",
+                "optional": "არასავალდებულო",
                 "cancel": "გაუქმება",
                 "submit": "გაგზავნა",
+                "edit": "რედაქტირება",
                 "creating": "იქმნება...",
                 "saving": "ინახება...",
-                "confirm": "დადასტურება"
+                "confirm": "დადასტურება",
+                "select_date": "აირჩიეთ თარიღი"
             },
             "tabs": {
                 "details": "დეტალები",
@@ -994,7 +1080,13 @@
                 "no_projects": "პროექტები ვერ მოიძებნა",
                 "apartment_connected": "ბინა წარმატებით მიება",
                 "save_failed": "შენახვა ვერ მოხერხდა",
-                "saved": "წარმატებით შეინახა"
+                "saved": "წარმატებით შეინახა",
+                "saving": "ინახება...",
+                "loading": "იტვირთება...",
+                "generating": "გენერირდება...",
+                "retry": "თავიდან ცდა",
+                "timeout": "დრო ამოიწურა",
+                "payments_load_failed": "გადახდების ჩატვირთვა ვერ მოხერხდა"
             },
             "pricing": {
                 "title": "ფასის დაწესება",
@@ -1025,13 +1117,34 @@
                 "offered": "შემოთავაზებული",
                 "reserved": "დაჯავშნილი",
                 "final": "საბოლოო",
-                "selected_plan": "არჩეული გადახდის გეგმა"
+                "selected_plan": "არჩეული გადახდის გეგმა",
+                "payment_plan": "გადახდის გეგმა",
+                "down_payment_range": "პირველადი შენატანის დიაპაზონი",
+                "min_monthly_payment": "მინიმალური ყოველთვიური გადახდა",
+                "alternative_disabled": "გამორთული",
+                "constraints": {
+                    "down_payment_range": "შენატანი: {min}-{max}%",
+                    "min_monthly": "მინიმალური ყოველთვიური გადახდა: {amount}",
+                    "fixed_down_payment": "შენატანი: {percent}%"
+                },
+                "validation": {
+                    "down_payment_range": "შენატანი უნდა იყოს {min}% და {max}% შორის",
+                    "monthly_minimum": "ყოველთვიური გადახდა უნდა იყოს მინიმუმ {min}",
+                    "pricing_saved": "ფასი წარმატებით შეინახა"
+                }
             },
             "stage_change": {
                 "title": "ფასის დადასტურება",
                 "message": "ამ გარიგებას აქვს არსებული ფასი. შეიცვალა ფასი ამ ახალი ეტაპისთვის?",
                 "keep_same": "იგივე ფასი",
-                "update_price": "ფასის განახლება"
+                "update_price": "ფასის განახლება",
+                "offer_changed_question": "შეიცვალა შეთავაზება?",
+                "offer_changed_hint": "აირჩიეთ შეინარჩუნოთ იგივე ფასი თუ განაახლოთ",
+                "no_keep_same": "არა, იგივე ფასი",
+                "yes_update": "დიახ, განახლება",
+                "carry_forward": "ფასი გადატანილი იქნება",
+                "open_pricing_modal": "გაიხსნება ფასის ფანჯარა",
+                "pricing_carried_forward": "ფასი წარმატებით გადატანილია"
             },
             "currencies": {
                 "usd": "USD ($)",

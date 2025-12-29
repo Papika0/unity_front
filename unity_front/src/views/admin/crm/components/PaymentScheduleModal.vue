@@ -6,11 +6,13 @@
 
 import { ref, computed, watch } from 'vue'
 import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import type { PaymentScheduleData, DealCurrency } from '@/types/crm'
 import { CURRENCY_SYMBOLS } from '@/types/crm'
 
 // Composables
 const { t } = useTranslations()
+const { formatNumber: formatNum, formatDate: formatDt } = useLocaleFormatter()
 
 // Props
 interface Props {
@@ -131,7 +133,7 @@ async function handleSubmit(): Promise<void> {
 // Format date for display
 function formatDate(dateStr: string): string {
   if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('ka-GE', {
+  return formatDt(dateStr, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -140,7 +142,7 @@ function formatDate(dateStr: string): string {
 
 // Format number
 function formatNumber(value: number): string {
-  return new Intl.NumberFormat('ka-GE', { maximumFractionDigits: 0 }).format(value)
+  return formatNum(value, { maximumFractionDigits: 0 })
 }
 </script>
 

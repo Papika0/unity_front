@@ -172,6 +172,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { usePaymentCalculator } from '@/composables/calculator/usePaymentCalculator'
+import { useAlternativeDescriptions } from '@/composables/calculator/useAlternativeDescriptions'
 import type { ActiveProject, CalculationResult } from '@/types/admin/calculator'
 
 interface Props {
@@ -294,17 +295,36 @@ const emit = defineEmits<{ calculate: [result: CalculationResult] }>()
 
 const paymentCalculator = usePaymentCalculator()
 
+// Get dynamic alternative descriptions based on project settings
+const alternativeDescriptions = computed(() =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  useAlternativeDescriptions(props.project?.calculator_settings as any)
+)
+
 const downPaymentPercent = ref(
   props.alternative === 3 ? 80 :
   props.alternative === 4 ? 50 :
   20
 )
 
-// Ensure downPaymentPercent is always at least minDownPayment on load and when alternative changes
+// Auto-adjust down payment when alternative changes to respect dynamic constraints
 watch(() => props.alternative, (alt) => {
-  if (alt === 3 && downPaymentPercent.value < 80) downPaymentPercent.value = 80
-  if (alt === 4 && downPaymentPercent.value < 50) downPaymentPercent.value = 50
-  if ((alt === 1 || alt === 2) && downPaymentPercent.value < 20) downPaymentPercent.value = 20
+  const altInfo = alternativeDescriptions.value.find(a => a.id === alt)
+  if (!altInfo?.downPaymentRange) return
+
+  const { min, max } = altInfo.downPaymentRange
+
+  // Adjust downPaymentPercent to fit within constraints
+  if (downPaymentPercent.value < min) {
+    downPaymentPercent.value = min
+  } else if (downPaymentPercent.value > max) {
+    downPaymentPercent.value = max
+  }
+
+  // Auto-set monthly payment to minimum if constraint exists
+  if (altInfo.minMonthlyPayment && monthlyPayment.value < altInfo.minMonthlyPayment) {
+    monthlyPayment.value = altInfo.minMonthlyPayment
+  }
 })
 const downPaymentDollars = ref(0)
 const downPaymentMode = ref<'percent' | 'dollars'>('percent')
@@ -367,28 +387,15 @@ watch(() => [props.basePrice, props.area, downPaymentPercent.value, downPaymentD
   }
 }, { immediate: true })
 
+// NOW DYNAMIC: Get title and description from composable based on project settings
 const alternativeTitle = computed(() => {
-  const titles: Record<number, string> = {
-    1: t.value.alt1Title,
-    2: t.value.alt2Title,
-    3: t.value.alt3Title,
-    4: t.value.alt4Title,
-    5: t.value.alt5Title,
-    6: t.value.alt6Title
-  }
-  return titles[props.alternative]
+  const altInfo = alternativeDescriptions.value.find(a => a.id === props.alternative)
+  return altInfo ? altInfo.title[props.currentLang] : t.value.alt1Title
 })
 
 const alternativeDescription = computed(() => {
-  const descriptions: Record<number, string> = {
-    1: t.value.alt1Desc,
-    2: t.value.alt2Desc,
-    3: t.value.alt3Desc,
-    4: t.value.alt4Desc,
-    5: t.value.alt5Desc,
-    6: t.value.alt6Desc
-  }
-  return descriptions[props.alternative]
+  const altInfo = alternativeDescriptions.value.find(a => a.id === props.alternative)
+  return altInfo ? altInfo.description[props.currentLang] : t.value.alt1Desc
 })
 
 // Computed property for effective total price (with discount for Alt 3 & 4)

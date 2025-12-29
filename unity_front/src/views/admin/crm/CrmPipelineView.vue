@@ -6,6 +6,7 @@
 
 import { ref, computed, onMounted, watch } from 'vue'
 import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import { useCrmStore } from '@/stores/admin/crm'
 import { useToastStore } from '@/stores/ui/toast'
 import { getAdminProjects } from '@/services/projects'
@@ -16,6 +17,7 @@ import LostReasonModal from './components/LostReasonModal.vue'
 import StageChangeConfirmModal from './components/StageChangeConfirmModal.vue'
 import DealPricingModal from './components/DealPricingModal.vue'
 import type { CrmDeal } from '@/types/crm'
+import type { ProjectCalculatorSettings } from '@/types/admin/calculator'
 import { User, Phone, Mail, Building, FileText, Search } from 'lucide-vue-next'
 
 interface Project {
@@ -25,6 +27,7 @@ interface Project {
 
 // Composables
 const { t } = useTranslations()
+const { formatNumber, getCurrencySymbol } = useLocaleFormatter()
 
 // Stores
 const crmStore = useCrmStore()
@@ -41,6 +44,12 @@ const pendingStageChangeDeal = ref<{ deal: CrmDeal; targetStageId: number } | nu
 const selectedDealId = ref<number | null>(null)
 const filterUserId = ref<number | null>(null)
 const isCreating = ref(false)
+
+// Extract calculator settings from pending deal for stage change modal
+const stageChangeCalculatorSettings = computed(() => {
+  const settings = pendingStageChangeDeal.value?.deal?.apartment?.building?.project?.calculator_settings ?? null
+  return settings as ProjectCalculatorSettings | null
+})
 
 // Search and filter state
 const searchQuery = ref('')
@@ -192,11 +201,23 @@ function findDealById(dealId: number): CrmDeal | null {
 async function handleStageChangeKeepSame(dealId: number, stageId: number): Promise<void> {
   showStageChangeModal.value = false
   pendingStageChangeDeal.value = null
-  await handleStageChange(dealId, stageId, undefined, true) // Skip pricing check
+
+  try {
+    // Pass carry_forward_pricing flag to auto-carry forward pricing
+    await crmStore.updateDealStage(dealId, {
+      stage_id: stageId,
+      carry_forward_pricing: true
+    })
+    toast.success(t('admin.crm.messages.deal_moved'))
+  } catch {
+    toast.error(t('admin.crm.messages.move_failed'))
+    // Reload pipeline to restore state
+    await crmStore.fetchPipeline(filterUserId.value ?? undefined)
+  }
 }
 
 // Handle stage change modal - update price
-function handleStageChangeUpdatePrice(_dealId: number, _stageId: number): void {
+function handleStageChangeUpdatePrice(): void {
   showStageChangeModal.value = false
   // Open pricing modal with the pending deal
   if (pendingStageChangeDeal.value) {
@@ -300,7 +321,7 @@ function closeDealDrawer(): void {
 
 // Format currency
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('ka-GE', { maximumFractionDigits: 0 }).format(value)
+  return formatNumber(value, { maximumFractionDigits: 0 })
 }
 </script>
 
@@ -327,7 +348,7 @@ function formatCurrency(value: number): string {
             <div class="w-px h-8 bg-gray-200"></div>
             <div class="text-center">
               <div class="text-lg font-bold text-green-600">
-                ${{ formatCurrency(statistics.total_value) }}
+                {{ getCurrencySymbol('USD') }}{{ formatCurrency(statistics.total_value) }}
               </div>
               <div class="text-xs text-gray-700">{{ t('admin.crm.statistics.total_value') }}</div>
             </div>
@@ -457,6 +478,7 @@ function formatCurrency(value: number): string {
       :is-open="showStageChangeModal"
       :deal="pendingStageChangeDeal?.deal || null"
       :target-stage-id="pendingStageChangeDeal?.targetStageId || null"
+      :calculator-settings="stageChangeCalculatorSettings"
       @keep-same="handleStageChangeKeepSame"
       @update-price="handleStageChangeUpdatePrice"
       @close="showStageChangeModal = false; pendingStageChangeDeal = null"
@@ -532,7 +554,7 @@ function formatCurrency(value: number): string {
                   v-model="newLeadForm.phone"
                   type="tel"
                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 font-medium"
-                  placeholder="+995 5XX XXX XXX"
+                  :placeholder="t('admin.crm.form.phone_placeholder')"
                 />
               </div>
             </div>
@@ -548,7 +570,7 @@ function formatCurrency(value: number): string {
                   v-model="newLeadForm.email"
                   type="email"
                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                  placeholder="email@example.com"
+                  :placeholder="t('admin.crm.form.email_placeholder')"
                 />
               </div>
             </div>

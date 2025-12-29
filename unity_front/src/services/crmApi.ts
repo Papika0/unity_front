@@ -23,11 +23,10 @@ import type {
   CrmLostReasonsResponse,
   CrmDealResponse,
   CrmDealsResponse,
-  CrmActivitiesResponse,
   CrmPaymentsResponse,
   CrmStatisticsResponse,
   DealPricingFormData,
-
+  CrmPaymentSummary,
 } from '@/types/crm'
 
 export const crmApi = {
@@ -102,8 +101,12 @@ export const crmApi = {
     await api.delete(`/admin/crm/deals/${id}`)
   },
 
-  async updateDealStage(id: number, data: StageChangeData): Promise<CrmDeal> {
-    const response = await api.put<CrmDealResponse>(`/admin/crm/deals/${id}/stage`, data)
+  async updateDealStage(id: number, data: StageChangeData & { carry_forward_pricing?: boolean }): Promise<CrmDeal> {
+    const response = await api.put<CrmDealResponse>(`/admin/crm/deals/${id}/stage`, {
+      stage_id: data.stage_id,
+      lost_reason_id: data.lost_reason_id,
+      carry_forward_pricing: data.carry_forward_pricing,
+    })
     return response.data.data
   },
 
@@ -123,6 +126,7 @@ export const crmApi = {
   async getActivities(dealId: number): Promise<CrmActivity[]> {
     // The response is paginated, so data.data contains { data: [], meta: ... }
     // We need to cast it to any first to access the nested structure since types might be slightly off
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await api.get<any>(`/admin/crm/deals/${dealId}/activities`)
     
     // Check if we have the nested pagination structure
@@ -146,8 +150,26 @@ export const crmApi = {
   // ======================
   // Payments
   // ======================
-  async getPayments(dealId: number): Promise<CrmPayment[]> {
-    const response = await api.get<CrmPaymentsResponse>(`/admin/crm/deals/${dealId}/payments`)
+  async getPayments(
+    dealId: number,
+    page: number = 1,
+    perPage: number = 10
+  ): Promise<{
+    payments: CrmPayment[]
+    summary: CrmPaymentSummary
+    pagination: {
+      total: number
+      per_page: number
+      current_page: number
+      last_page: number
+    }
+  }> {
+    const response = await api.get<CrmPaymentsResponse>(
+      `/admin/crm/deals/${dealId}/payments`,
+      {
+        params: { page, per_page: perPage },
+      }
+    )
     return response.data.data
   },
 
@@ -170,6 +192,65 @@ export const crmApi = {
       `/admin/crm/deals/${dealId}/payments/generate-schedule`,
       data
     )
+    return response.data.data.payments
+  },
+
+  async markPaymentAsPaid(
+    paymentId: number,
+    data: {
+      paid_date: string
+      amount_paid: number
+      payment_method?: string | null
+      transaction_reference?: string | null
+      notes?: string | null
+    }
+  ): Promise<CrmPayment> {
+    const response = await api.put<{ data: CrmPayment }>(
+      `/admin/crm/deals/payments/${paymentId}/mark-paid`,
+      data
+    )
+    return response.data.data
+  },
+
+  async editPaymentAmount(
+    paymentId: number,
+    data: {
+      new_amount: number
+      reason: string
+      notes?: string | null
+    }
+  ): Promise<CrmPayment> {
+    const response = await api.put<{ data: CrmPayment }>(
+      `/admin/crm/deals/payments/${paymentId}/edit-amount`,
+      data
+    )
+    return response.data.data
+  },
+
+  async regeneratePaymentSchedule(
+    dealId: number,
+    page: number = 1,
+    perPage: number = 10
+  ): Promise<{
+    payments: CrmPayment[]
+    summary: CrmPaymentSummary
+    pagination: { total: number; per_page: number; current_page: number; last_page: number }
+  }> {
+    const response = await api.post<{
+      data: {
+        payments: CrmPayment[]
+        summary: CrmPaymentSummary
+        pagination: {
+          total: number
+          per_page: number
+          current_page: number
+          last_page: number
+        }
+      }
+    }>(`/admin/crm/deals/${dealId}/payments/regenerate`, {
+      page,
+      per_page: perPage,
+    })
     return response.data.data
   },
 

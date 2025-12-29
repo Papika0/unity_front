@@ -7,7 +7,7 @@ import { projectsApi } from '@/services/projectsApi'
 import { buildingsApi } from '@/services/buildingsApi'
 import type { ProjectApiResponse } from '@/services/projectsApi'
 import type { ProjectFeature } from '@/services/featuresApi'
-import type { BuildingZone, FloorZone, DisplayConfig, BuildingStats } from '@/types/apartments'
+import type { BuildingZone, FloorZone } from '@/types/apartments'
 
 export function useProjectDetail() {
   const router = useRouter()

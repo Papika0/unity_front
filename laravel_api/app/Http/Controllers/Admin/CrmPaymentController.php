@@ -23,8 +23,19 @@ class CrmPaymentController extends Controller
         try {
             $deal = CrmDeal::findOrFail($dealId);
 
-            $payments = $deal->payments()
-                ->orderBy('due_date', 'asc')
+            // Pagination parameters
+            $perPage = $request->input('per_page', 10);
+            $page = $request->input('page', 1);
+
+            // Get paginated payments
+            $paymentsQuery = $deal->payments()
+                ->orderBy('due_date', 'asc');
+
+            $total = $paymentsQuery->count();
+
+            $payments = $paymentsQuery
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
                 ->get()
                 ->map(function ($payment) {
                     $paymentArray = $payment->toArray();
@@ -46,6 +57,12 @@ class CrmPaymentController extends Controller
             return $this->success([
                 'payments' => $payments,
                 'summary' => $summary,
+                'pagination' => [
+                    'total' => $total,
+                    'per_page' => $perPage,
+                    'current_page' => $page,
+                    'last_page' => ceil($total / $perPage),
+                ],
             ]);
         } catch (\Exception $e) {
             \Log::error('Failed to fetch payments: ' . $e->getMessage());

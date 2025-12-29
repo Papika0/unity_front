@@ -8,11 +8,13 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTranslationsStore } from '@/stores/ui/translations'
 import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import type { CrmDeal } from '@/types/crm'
 import { CURRENCY_SYMBOLS } from '@/types/crm'
 
 // Composables
 const { t } = useTranslations()
+const { formatNumber: formatNum } = useLocaleFormatter()
 const translationsStore = useTranslationsStore()
 const { currentLocale } = storeToRefs(translationsStore)
 
@@ -51,7 +53,7 @@ const priorityLabel = computed(() => {
 // Format number with null handling
 function formatNumber(value: number | null | undefined): string {
   if (value === null || value === undefined || isNaN(value)) return '0'
-  return new Intl.NumberFormat('ka-GE', { maximumFractionDigits: 0 }).format(value)
+  return formatNum(value, { maximumFractionDigits: 0 })
 }
 
 function getLocalizedValue(value: string | Record<string, string> | undefined | null): string {

@@ -5,6 +5,8 @@
  */
 
 import { computed } from 'vue'
+import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import type { KanbanColumn, CrmDeal } from '@/types/crm'
 import KanbanCard from './KanbanCard.vue'
 
@@ -14,7 +16,7 @@ interface Props {
   draggedDealId?: number | null
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   draggedDealId: null,
 })
 
@@ -26,15 +28,27 @@ defineEmits<{
   (e: 'drop', event: DragEvent, stageId: number): void
 }>()
 
+// Composables
+const { t } = useTranslations()
+const { formatNumber, getCurrencySymbol } = useLocaleFormatter()
+
 // Computed
 const isDraggingOver = computed(() => false) // Can be enhanced with hover state
+
+// Get currency from first deal in column, default to USD
+const columnCurrency = computed(() => {
+  return props.column.deals?.[0]?.currency || 'USD'
+})
+
+// Currency symbol
+const currencySymbol = computed(() => getCurrencySymbol(columnCurrency.value))
 
 // Format currency
 function formatCurrency(value: number | undefined | null): string {
   if (value === undefined || value === null || isNaN(value)) {
     return '0'
   }
-  return new Intl.NumberFormat('ka-GE', { maximumFractionDigits: 0 }).format(value)
+  return formatNumber(value, { maximumFractionDigits: 0 })
 }
 </script>
 
@@ -57,7 +71,7 @@ function formatCurrency(value: number | undefined | null): string {
         </span>
       </div>
       <div class="text-xs font-medium text-gray-600">
-        ${{ formatCurrency(column.total_value) }}
+        {{ currencySymbol }}{{ formatCurrency(column.total_value) }}
       </div>
     </div>
 
@@ -85,17 +99,17 @@ function formatCurrency(value: number | undefined | null): string {
             d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
           />
         </svg>
-        <p class="text-sm text-gray-400">არ არის გარიგებები</p>
-        <p class="text-xs text-gray-400 mt-1">გადაიტანეთ აქ ან შექმენით ახალი</p>
+        <p class="text-sm text-gray-400">{{ t('admin.crm.kanban.no_deals') }}</p>
+        <p class="text-xs text-gray-400 mt-1">{{ t('admin.crm.kanban.empty_column_hint') }}</p>
       </div>
     </div>
 
     <!-- Column Footer (Stats) -->
     <div v-if="column.deals.length > 0" class="px-4 py-2 bg-white rounded-b-xl border-t border-gray-200">
       <div class="flex items-center justify-between text-xs text-gray-500">
-        <span>საშუალო ღირებულება</span>
+        <span>{{ t('admin.crm.kanban.average_value') }}</span>
         <span class="font-medium text-gray-700">
-          ${{
+          {{ currencySymbol }}{{
             formatCurrency(column.deal_count > 0 ? column.total_value / column.deal_count : 0)
           }}
         </span>

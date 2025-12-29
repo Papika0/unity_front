@@ -901,12 +901,20 @@
                     "system": "System"
                 }
             },
+            "kanban": {
+                "no_stages": "No Pipeline Stages",
+                "add_stages_hint": "Please add stages from settings",
+                "no_deals": "No deals",
+                "empty_column_hint": "Drag here or create new",
+                "average_value": "Average Value"
+            },
             "payment": {
                 "payments": "Payments",
                 "schedule": "Payment Schedule",
                 "generate_schedule": "Generate Schedule",
                 "total_amount": "Total Amount",
                 "down_payment": "Down Payment",
+                "monthly_payment": "Monthly Payment",
                 "installments": "Number of Installments",
                 "start_date": "Start Date",
                 "interval": "Interval (months)",
@@ -924,8 +932,33 @@
                 "paid": "Paid",
                 "total": "Total",
                 "mark_paid": "Mark as Paid",
+                "mark_as_paid": "Mark as Paid",
                 "no_schedule": "No payment schedule",
-                "create_auto": "Create schedule automatically"
+                "create_auto": "Create schedule automatically",
+                "generate_from_pricing": "Generate from Pricing",
+                "regenerate": "Regenerate Schedule",
+                "confirm_regenerate": "Are you sure you want to regenerate the payment schedule?",
+                "regenerate_warning": "This will replace all pending payments with a new schedule based on current pricing.",
+                "payments_kept": "Kept",
+                "payments_replaced": "Replaced",
+                "no_pricing_set": "No Pricing Set",
+                "set_pricing_first": "Set pricing first to generate automatic payment schedule.",
+                "set_pricing_button": "Set Pricing",
+                "manual_schedule": "Manual Schedule",
+                "payment_history": "Payment History",
+                "schedule_regenerated": "Payment schedule regenerated successfully"
+            },
+            "pricing": {
+                "constraints": {
+                    "down_payment_range": "Down payment: {min}-{max}%",
+                    "min_monthly": "Minimum monthly payment: {amount}",
+                    "fixed_down_payment": "Down payment: {percent}%"
+                },
+                "validation": {
+                    "down_payment_range": "Down payment must be between {min}% and {max}%",
+                    "monthly_minimum": "Monthly payment must be at least {min}",
+                    "pricing_saved": "Pricing saved successfully"
+                }
             },
             "lost_reason": {
                 "title": "Lost Reason",
@@ -952,7 +985,8 @@
                 "submit": "Submit",
                 "creating": "Creating...",
                 "saving": "Saving...",
-                "confirm": "Confirm"
+                "confirm": "Confirm",
+                "select_date": "Select date"
             },
             "tabs": {
                 "details": "Details",
@@ -1026,13 +1060,24 @@
                 "offered": "Offered",
                 "reserved": "Reserved",
                 "final": "Final",
-                "selected_plan": "Selected Payment Plan"
+                "selected_plan": "Selected Payment Plan",
+                "payment_plan": "Payment Plan",
+                "down_payment_range": "Down Payment Range",
+                "min_monthly_payment": "Minimum Monthly Payment",
+                "alternative_disabled": "Disabled"
             },
             "stage_change": {
                 "title": "Pricing Confirmation",
                 "message": "This deal has existing pricing. Has the pricing changed for this new stage?",
                 "keep_same": "Keep Same Price",
-                "update_price": "Update Price"
+                "update_price": "Update Price",
+                "offer_changed_question": "Has the offer changed?",
+                "offer_changed_hint": "Choose whether to keep the same pricing or update it",
+                "no_keep_same": "No, Keep Same",
+                "yes_update": "Yes, Update",
+                "carry_forward": "Pricing will be carried forward",
+                "open_pricing_modal": "Opens pricing modal",
+                "pricing_carried_forward": "Pricing carried forward successfully"
             },
             "currencies": {
                 "usd": "USD ($)",

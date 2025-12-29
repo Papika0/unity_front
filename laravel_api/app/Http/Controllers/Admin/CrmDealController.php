@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\CrmDeal;
 use App\Models\CrmStage;
 use App\Models\CrmActivity;
+use App\Models\CrmPayment;
 use App\Models\Customer;
 use App\Models\Apartment;
+use App\Services\PaymentScheduleCalculatorService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -503,6 +505,7 @@ class CrmDealController extends Controller
         $validator = Validator::make($request->all(), [
             'stage_id' => 'required|exists:crm_stages,id',
             'lost_reason_id' => 'nullable|exists:crm_lost_reasons,id',
+            'carry_forward_pricing' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -545,6 +548,11 @@ class CrmDealController extends Controller
             }
 
             $deal->update($updateData);
+
+            // Auto-carry forward pricing if requested
+            if ($request->carry_forward_pricing) {
+                $this->carryForwardPricing($deal, $newStage);
+            }
 
             // Sync Apartment Status
             if ($deal->apartment_id) {
@@ -735,6 +743,66 @@ class CrmDealController extends Controller
             return $this->error($validator->errors()->first(), 422);
         }
 
+        // Validate payment alternative constraints - NOW DYNAMIC
+        if ($request->has('payment_alternative')) {
+            $alternative = $request->payment_alternative;
+            $downPaymentPercent = $request->payment_params['initial_payment_percent'] ?? null;
+            $monthlyPayment = $request->payment_params['monthly_payment'] ?? null;
+
+            // Load deal to get project calculator settings
+            $deal = CrmDeal::with('apartment.building.project')->findOrFail($id);
+            $project = $deal->apartment->building->project ?? null;
+
+            if (!$project || !$project->calculator_settings) {
+                return $this->error('პროექტის კალკულატორის პარამეტრები ვერ მოიძებნა', 422);
+            }
+
+            $settings = $project->calculator_settings;
+            $paymentTerms = $settings['payment_terms'] ?? null;
+
+            if (!$paymentTerms) {
+                return $this->error('გადახდის პირობები ვერ მოიძებნა', 422);
+            }
+
+            // Extract dynamic values with fallback defaults
+            $minDown = $paymentTerms['min_down_payment_percent'] ?? 20;
+            $maxDown = $paymentTerms['max_down_payment_percent'] ?? 30;
+            $minMonthly = $paymentTerms['min_monthly_payment'] ?? 800;
+            $minMonthlyAlt6 = $paymentTerms['min_monthly_payment_alt6'] ?? 1500;
+
+            // Build dynamic constraints array
+            $constraints = [
+                1 => ['down_min' => $minDown, 'down_max' => $maxDown, 'monthly_min' => null],
+                2 => ['down_min' => $minDown, 'down_max' => $maxDown, 'monthly_min' => $minMonthly],
+                3 => ['down_min' => 80, 'down_max' => 100, 'monthly_min' => null], // Business rule
+                4 => ['down_min' => 50, 'down_max' => 80, 'monthly_min' => null], // Business rule
+                5 => ['down_min' => 0, 'down_max' => 0, 'monthly_min' => $minMonthly],
+                6 => ['down_min' => 0, 'down_max' => 0, 'monthly_min' => $minMonthlyAlt6],
+            ];
+
+            $constraint = $constraints[$alternative] ?? null;
+
+            if ($constraint) {
+                if ($downPaymentPercent !== null) {
+                    if ($downPaymentPercent < $constraint['down_min'] || $downPaymentPercent > $constraint['down_max']) {
+                        return $this->error(
+                            "ალტერნატივა {$alternative}-ისთვის შენატანი უნდა იყოს {$constraint['down_min']}-{$constraint['down_max']}% შორის",
+                            422
+                        );
+                    }
+                }
+
+                if ($constraint['monthly_min'] && $monthlyPayment !== null) {
+                    if ($monthlyPayment < $constraint['monthly_min']) {
+                        return $this->error(
+                            "ალტერნატივა {$alternative}-ისთვის ყოველთვიური გადახდა უნდა იყოს მინიმუმ \${$constraint['monthly_min']}",
+                            422
+                        );
+                    }
+                }
+            }
+        }
+
         try {
             DB::beginTransaction();
 
@@ -794,6 +862,11 @@ class CrmDealController extends Controller
                 ],
             ]);
 
+            // Generate payment schedule if payment alternative is selected
+            if ($request->has('payment_alternative') && $request->payment_alternative) {
+                $this->generateCalculatorPaymentSchedule($deal->fresh());
+            }
+
             DB::commit();
 
             return $this->success($deal->fresh(), 'ფასი განახლდა');
@@ -801,6 +874,327 @@ class CrmDealController extends Controller
             DB::rollBack();
             \Log::error('Failed to update deal pricing: ' . $e->getMessage());
             return $this->error('ფასის განახლება ვერ მოხერხდა', 500);
+        }
+    }
+
+    /**
+     * Generate calculator-based payment schedule for a deal
+     */
+    private function generateCalculatorPaymentSchedule(CrmDeal $deal): void
+    {
+        // Validate required data
+        if (!$deal->selected_payment_alternative || !$deal->apartment) {
+            return;
+        }
+
+        // Get project calculator settings
+        $deal->load('apartment.building.project');
+        $project = $deal->apartment->building->project ?? null;
+
+        if (!$project || !$project->calculator_settings) {
+            \Log::warning("Cannot generate payment schedule: project calculator settings not found for deal {$deal->id}");
+            return;
+        }
+
+        try {
+            // Extract payment parameters
+            $params = $deal->payment_alternative_params ?? [];
+            $basePrice = $deal->current_price / $deal->apartment->area_total;
+            $area = $deal->apartment->area_total;
+            $downPaymentPercent = $params['initial_payment_percent'] ?? null;
+            $monthlyPayment = $params['monthly_payment'] ?? null;
+
+            // Calculate payment schedule using calculator service with current locale
+            $locale = app()->getLocale();
+            $calculator = new PaymentScheduleCalculatorService($locale);
+            $result = $calculator->calculate(
+                $deal->selected_payment_alternative,
+                $basePrice,
+                $area,
+                $project->calculator_settings,
+                $downPaymentPercent,
+                $monthlyPayment
+            );
+
+            // Delete existing calculator-generated pending payments for this deal
+            CrmPayment::where('deal_id', $deal->id)
+                ->where('calculator_generated', true)
+                ->whereIn('status', ['pending', 'partially_paid'])
+                ->delete();
+
+            // Create new payment records from schedule
+            foreach ($result['schedule'] as $item) {
+                CrmPayment::create([
+                    'deal_id' => $deal->id,
+                    'calculator_generated' => true,
+                    'title' => $item['description'],
+                    'installment_number' => $item['month'],
+                    'amount_due' => $item['amount'],
+                    'currency' => $deal->currency,
+                    'due_date' => $item['date'],
+                    'amount_paid' => 0,
+                    'status' => 'pending',
+                ]);
+            }
+
+            // Log activity
+            CrmActivity::create([
+                'deal_id' => $deal->id,
+                'user_id' => auth()->id(),
+                'type' => 'system',
+                'content' => 'გადახდის გრაფიკი ავტომატურად შეიქმნა (' . count($result['schedule']) . ' გადახდა)',
+                'metadata' => [
+                    'payment_alternative' => $deal->selected_payment_alternative,
+                    'payments_count' => count($result['schedule']),
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to generate payment schedule for deal ' . $deal->id . ': ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+        }
+    }
+
+    /**
+     * Mark payment as paid with enhanced tracking
+     */
+    public function markPaymentAsPaid(Request $request, $paymentId)
+    {
+        try {
+            $payment = CrmPayment::findOrFail($paymentId);
+            $deal = $payment->deal;
+
+            $validator = Validator::make($request->all(), [
+                'paid_date' => 'required|date',
+                'amount_paid' => 'required|numeric|min:0',
+                'payment_method' => 'nullable|string|max:50',
+                'transaction_reference' => 'nullable|string|max:255',
+                'notes' => 'nullable|string',
+            ]);
+
+            if ($validator->fails()) {
+                return $this->error($validator->errors()->first(), 422);
+            }
+
+            $amountPaid = $request->amount_paid;
+            $isFullPayment = $amountPaid >= $payment->amount_due;
+
+            // Update payment
+            $payment->update([
+                'paid_date' => $request->paid_date,
+                'amount_paid' => $amountPaid,
+                'payment_method' => $request->payment_method,
+                'transaction_reference' => $request->transaction_reference,
+                'notes' => $request->notes,
+                'status' => $isFullPayment ? 'paid' : 'partially_paid',
+            ]);
+
+            // Log activity
+            $activityContent = $isFullPayment
+                ? "გადახდა #{$payment->installment_number} მონიშნულია როგორც გადახდილი - {$payment->currency} {$amountPaid}"
+                : "ნაწილობრივი გადახდა #{$payment->installment_number} - {$payment->currency} {$amountPaid} / {$payment->amount_due}";
+
+            CrmActivity::create([
+                'deal_id' => $deal->id,
+                'user_id' => auth()->id(),
+                'type' => 'payment',
+                'content' => $activityContent,
+                'metadata' => [
+                    'payment_id' => $payment->id,
+                    'amount_paid' => $amountPaid,
+                    'amount_due' => $payment->amount_due,
+                    'paid_date' => $request->paid_date,
+                    'payment_method' => $request->payment_method,
+                    'transaction_reference' => $request->transaction_reference,
+                ],
+            ]);
+
+            // Update deal's last activity timestamp
+            $deal->touch('last_activity_at');
+
+            // Clear cache
+            self::clearPipelineCache();
+
+            return $this->success($payment->fresh(), 'გადახდა წარმატებით განახლდა');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to mark payment as paid: ' . $e->getMessage());
+            return $this->error('გადახდის განახლება ვერ მოხერხდა', 500);
+        }
+    }
+
+    /**
+     * Edit payment amount with reason tracking
+     */
+    public function editPaymentAmount(Request $request, $paymentId)
+    {
+        try {
+            $payment = CrmPayment::findOrFail($paymentId);
+            $deal = $payment->deal;
+
+            // Only allow editing if payment is pending or partially paid
+            if (!in_array($payment->status, ['pending', 'partially_paid'])) {
+                return $this->error('მხოლოდ მიმდინარე ან ნაწილობრივ გადახდილი გადახდების რედაქტირებაა შესაძლებელი', 422);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'new_amount' => 'required|numeric|min:0',
+                'reason' => 'required|string|max:255',
+                'notes' => 'nullable|string',
+            ]);
+
+            if ($validator->fails()) {
+                return $this->error($validator->errors()->first(), 422);
+            }
+
+            $oldAmount = $payment->amount_due;
+            $newAmount = $request->new_amount;
+
+            // Update payment amount
+            $payment->update([
+                'amount_due' => $newAmount,
+                'notes' => $request->notes,
+            ]);
+
+            // Log activity
+            $difference = $newAmount - $oldAmount;
+            $differenceText = $difference > 0 ? "+{$difference}" : "{$difference}";
+
+            CrmActivity::create([
+                'deal_id' => $deal->id,
+                'user_id' => auth()->id(),
+                'type' => 'payment',
+                'content' => "გადახდის თანხა შეცვლილია #{$payment->installment_number}: {$payment->currency} {$oldAmount} → {$newAmount} ({$differenceText}). მიზეზი: {$request->reason}",
+                'metadata' => [
+                    'payment_id' => $payment->id,
+                    'old_amount' => $oldAmount,
+                    'new_amount' => $newAmount,
+                    'reason' => $request->reason,
+                ],
+            ]);
+
+            // Update deal's last activity timestamp
+            $deal->touch('last_activity_at');
+
+            // Clear cache
+            self::clearPipelineCache();
+
+            return $this->success($payment->fresh(), 'გადახდის თანხა წარმატებით შეიცვალა');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to edit payment amount: ' . $e->getMessage());
+            return $this->error('გადახდის რედაქტირება ვერ მოხერხდა', 500);
+        }
+    }
+
+    /**
+     * Regenerate payment schedule while preserving paid payments
+     */
+    public function regeneratePaymentSchedule(Request $request, $dealId)
+    {
+        try {
+            // Use transaction with pessimistic locking to prevent race conditions
+            return DB::transaction(function () use ($dealId) {
+                // Lock the deal row to prevent concurrent modifications
+                $deal = CrmDeal::with(['apartment.building.project', 'payments'])
+                    ->lockForUpdate()
+                    ->findOrFail($dealId);
+
+                if (!$deal->selected_payment_alternative || !$deal->apartment) {
+                    return $this->error('გადახდის ალტერნატივა არ არის არჩეული', 422);
+                }
+
+                // Count payments by status before regeneration
+                $paidCount = $deal->payments()->where('status', 'paid')->count();
+                $pendingCount = $deal->payments()->whereIn('status', ['pending', 'partially_paid'])->count();
+
+                // Regenerate schedule (this will delete pending/partial payments and create new ones)
+                $this->generateCalculatorPaymentSchedule($deal);
+
+                // Log activity
+                CrmActivity::create([
+                    'deal_id' => $deal->id,
+                    'user_id' => auth()->id(),
+                    'type' => 'system',
+                    'content' => "გადახდის გრაფიკი თავიდან შეიქმნა. შენარჩუნებულია: {$paidCount} გადახდილი, შეცვლილია: {$pendingCount} მიმდინარე",
+                    'metadata' => [
+                        'paid_preserved' => $paidCount,
+                        'pending_replaced' => $pendingCount,
+                    ],
+                ]);
+
+                // Clear cache
+                self::clearPipelineCache();
+
+                // Pagination parameters
+                $perPage = $request->input('per_page', 10);
+                $page = $request->input('page', 1);
+
+                // Get paginated payments
+                $paymentsQuery = CrmPayment::where('deal_id', $dealId)
+                    ->orderBy('due_date');
+
+                $total = $paymentsQuery->count();
+
+                $payments = $paymentsQuery
+                    ->skip(($page - 1) * $perPage)
+                    ->take($perPage)
+                    ->get();
+
+                return $this->success([
+                    'payments' => $payments,
+                    'pagination' => [
+                        'total' => $total,
+                        'per_page' => $perPage,
+                        'current_page' => $page,
+                        'last_page' => ceil($total / $perPage),
+                    ],
+                ], 'გადახდის გრაფიკი წარმატებით განახლდა');
+            });
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to regenerate payment schedule: ' . $e->getMessage());
+            return $this->error('გადახდის გრაფიკის თავიდან შექმნა ვერ მოხერხდა', 500);
+        }
+    }
+
+    /**
+     * Auto-carry forward pricing from one stage to another
+     */
+    private function carryForwardPricing(CrmDeal $deal, CrmStage $newStage)
+    {
+        $stageName = strtolower($newStage->name);
+
+        // Offered → Reserved
+        if (str_contains($stageName, 'reserved') || str_contains($stageName, 'contract') ||
+            str_contains($stageName, 'დაჯავშნ') || str_contains($stageName, 'კონტრაქტ')) {
+            if ($deal->offered_price_per_sqm) {
+                $deal->reserved_price_per_sqm = $deal->offered_price_per_sqm;
+                $deal->reserved_price_total = $deal->offered_price_total;
+                $deal->reserved_at = now();
+                $deal->save();
+            }
+        }
+
+        // Reserved → Final (Won)
+        if ($newStage->type === 'won') {
+            if ($deal->reserved_price_per_sqm) {
+                $deal->final_price_per_sqm = $deal->reserved_price_per_sqm;
+                $deal->final_price_total = $deal->reserved_price_total;
+                $deal->final_at = now();
+                $deal->save();
+            } elseif ($deal->offered_price_per_sqm) {
+                // Fallback: copy from offered if reserved not set
+                $deal->final_price_per_sqm = $deal->offered_price_per_sqm;
+                $deal->final_price_total = $deal->offered_price_total;
+                $deal->final_at = now();
+                $deal->save();
+            }
+
+            // Auto-generate payment schedule when moving to Won stage
+            if ($deal->selected_payment_alternative && $deal->apartment) {
+                $this->generateCalculatorPaymentSchedule($deal->fresh());
+            }
         }
     }
 }

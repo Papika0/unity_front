@@ -86,7 +86,8 @@ export interface CrmDeal {
       project?: {
         id: number
         title?: string | Record<string, string>
-        calculator_settings?: Record<string, any> // Calculator settings
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        calculator_settings?: Record<string, any> // Calculator settings (flexible structure)
       }
     }
   }
@@ -182,6 +183,7 @@ export interface DealCalculatorResult {
 export interface StageChangeData {
   stage_id: number
   lost_reason_id?: number
+  carry_forward_pricing?: boolean
 }
 
 // Activity types
@@ -218,13 +220,17 @@ export type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'partially_paid' | 
 export interface CrmPayment {
   id: number
   deal_id: number
-  amount: number
+  calculator_generated: boolean // NEW: flag for calculator vs manual payments
+  title: string // Description of the payment
+  installment_number: number | null // Month number in schedule (0 = down payment, 1+ = installments)
+  amount_due: number // Original scheduled amount
+  amount_paid: number // Actual amount paid (for partial payments)
   currency: DealCurrency
   due_date: string
   paid_date: string | null
   status: PaymentStatus
   payment_method: string | null
-  transaction_reference: string | null
+  transaction_reference: string | null // NEW: transaction ID
   notes: string | null
   created_at: string
   updated_at: string
@@ -243,6 +249,7 @@ export interface PaymentFormData {
 export interface PaymentUpdateData {
   status?: PaymentStatus
   paid_date?: string
+  amount_paid?: number // For tracking partial/full payments
   payment_method?: string
   transaction_reference?: string
   notes?: string
@@ -311,8 +318,24 @@ export interface CrmActivitiesResponse {
   data: CrmActivity[]
 }
 
+export interface CrmPaymentSummary {
+  total_due: number
+  total_paid: number
+  payment_progress: number
+  remaining: number
+}
+
 export interface CrmPaymentsResponse {
-  data: CrmPayment[]
+  data: {
+    payments: CrmPayment[]
+    summary: CrmPaymentSummary
+    pagination: {
+      total: number
+      per_page: number
+      current_page: number
+      last_page: number
+    }
+  }
 }
 
 export interface CrmStatisticsResponse {

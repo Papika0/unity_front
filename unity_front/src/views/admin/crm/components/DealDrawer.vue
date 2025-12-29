@@ -6,6 +6,7 @@
 
 import { ref, computed, onMounted, watch } from 'vue'
 import { useTranslations } from '@/composables/i18n/useTranslations'
+import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import { useCrmStore } from '@/stores/admin/crm'
 import { useToastStore } from '@/stores/ui/toast'
 import { useBuildingsAdminStore } from '@/stores/admin/buildings'
@@ -42,6 +43,7 @@ const emit = defineEmits<{
 
 // Composables
 const { t, currentLocale } = useTranslations()
+const { formatNumber: formatNum, formatDate: formatDt, formatCurrency: formatCurr } = useLocaleFormatter()
 
 // Stores
 const crmStore = useCrmStore()
@@ -107,12 +109,13 @@ const availableFloors = computed(() => {
   return availableFloorsList.value
 })
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getLocalizedName(item: any): string {
   if (!item) return ''
-  
+
   // Try to find a name/title property
   const nameVal = item.name || item.title
-  
+
   // If value is an object (translations), pick the current locale
   if (nameVal && typeof nameVal === 'object') {
     const locale = (currentLocale as unknown as string) || 'ka'
@@ -121,20 +124,20 @@ function getLocalizedName(item: any): string {
     // Fallbacks
     return nameVal['en'] || nameVal['ka'] || nameVal['ru'] || Object.values(nameVal)[0]
   }
-  
+
   // If it's a string, return it
   if (typeof nameVal === 'string') return nameVal
-  
+
   // Fallback to legacy flat fields
   const locale = (currentLocale as unknown as string) || 'ka'
   const key = `name_${locale}`
   if (item[key]) return item[key]
-  
+
   // Fallbacks
   if (locale === 'ka' && item.name_ka) return item.name_ka
   if (locale === 'en' && item.name_en) return item.name_en
   if (locale === 'ru' && item.name_ru) return item.name_ru
-  
+
   return item.identifier || ''
 }
 
@@ -243,7 +246,7 @@ async function startConnectingApartment() {
     loadingProjects.value = true
     try {
       projects.value = await projectsApi.getAll()
-    } catch (e) {
+    } catch {
       toast.error(t('admin.crm.messages.load_failed'))
     } finally {
       loadingProjects.value = false
@@ -271,7 +274,7 @@ watch(selectedProjectId, async (newId) => {
   if (newId) {
     try {
       await buildingsStore.fetchBuildings(newId)
-    } catch (e) {
+    } catch {
       toast.error(t('admin.crm.messages.load_failed'))
     }
   } else {
@@ -292,7 +295,7 @@ watch(selectedBuildingId, async (newId) => {
       if (data && data.success) {
         availableFloorsList.value = data.data
       }
-    } catch (e) {
+    } catch {
       toast.error(t('admin.crm.messages.load_failed'))
     } finally {
       loadingApartments.value = false
@@ -314,7 +317,7 @@ watch(selectedFloor, async (newFloor) => {
         per_page: 100,
       })
       availableApartments.value = result.data
-    } catch (e) {
+    } catch {
       toast.error(t('admin.crm.messages.load_failed'))
     } finally {
       loadingApartments.value = false
@@ -334,7 +337,7 @@ async function saveConnection() {
     isConnectingApartment.value = false
     // Refresh deal
     crmStore.fetchDeal(deal.value.id)
-  } catch (e) {
+  } catch {
     toast.error(t('admin.crm.messages.save_failed'))
   } finally {
     isSavingConnection.value = false
@@ -342,7 +345,7 @@ async function saveConnection() {
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+  return formatCurr(amount, 'USD')
 }
 
 // Handle close
@@ -354,12 +357,12 @@ function handleClose(): void {
 // Format number with null handling
 function formatNumber(value: number | null | undefined): string {
   if (value === null || value === undefined || isNaN(value)) return '0'
-  return new Intl.NumberFormat('ka-GE', { maximumFractionDigits: 0 }).format(value)
+  return formatNum(value, { maximumFractionDigits: 0 })
 }
 
 // Format date
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('ka-GE', {
+  return formatDt(dateStr, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -368,7 +371,7 @@ function formatDate(dateStr: string): string {
 
 // Format date time
 function formatDateTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('ka-GE', {
+  return formatDt(dateStr, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
