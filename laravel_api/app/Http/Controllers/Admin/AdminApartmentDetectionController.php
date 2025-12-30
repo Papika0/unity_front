@@ -153,12 +153,13 @@ class AdminApartmentDetectionController extends Controller
             if (json_last_error() !== JSON_ERROR_NONE || $result === null) {
                 Log::error('Invalid JSON from detection script', [
                     'error' => json_last_error_msg(),
-                    'output' => $output
+                    'output' => $output,
+                    'stderr' => $process->getErrorOutput() // Capture stderr too
                 ]);
 
                 return response()->json([
                     'success' => false,
-                    'error' => 'Invalid response from detection script: ' . substr($output, 0, 100)
+                    'error' => 'Invalid response from detection script'
                 ], 500);
             }
 

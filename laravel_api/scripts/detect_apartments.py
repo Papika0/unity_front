@@ -1,18 +1,34 @@
-import cv2
-import numpy as np
-import json
-import argparse
 import sys
-import os
-import re
-import time
-import shutil
+import json
 
-# Use PyMuPDF (fitz) instead of pdf2image - no system dependencies needed
+# Wrap imports to catch missing dependencies
 try:
-    import fitz  # PyMuPDF
-except ImportError:
-    fitz = None
+    import cv2
+    import numpy as np
+    import argparse
+    import os
+    import re
+    import time
+    import shutil
+
+    # Use PyMuPDF (fitz) instead of pdf2image
+    try:
+        import fitz  # PyMuPDF
+    except ImportError:
+        fitz = None
+
+except ImportError as e:
+    # Print valid JSON error so the PHP controller can display it nicely
+    error_msg = {
+        "success": False,
+        "error": f"Python dependency missing: {str(e)}. Please install requirements (opencv-python-headless, numpy, pymupdf)."
+    }
+    print(json.dumps(error_msg), flush=True) # Force flush
+    sys.exit(0) # Exit success so PHP parses the JSON response
+
+# Debug: Print to stderr to confirm we passed imports
+sys.stderr.write("DEBUG: Imports successful, starting processing...\n")
+sys.stderr.flush()
 
 def pdf_to_image(pdf_path, dpi=100):
     """Convert first page of PDF to image array using PyMuPDF
