@@ -95,6 +95,13 @@ export const crmApi = {
     return response.data.data
   },
 
+  async bulkCreateLeads(customerIds: number[]): Promise<{ count: number }> {
+    const response = await api.post<{ success: boolean; data: { count: number } }>('/admin/crm/deals/lead/bulk', {
+      customer_ids: customerIds
+    })
+    return response.data.data
+  },
+
   async createSoldDeal(data: {
     customer: {
       name: string
@@ -109,6 +116,8 @@ export const crmApi = {
       initial_payment_percent?: number
       internal_installment_months?: number
       price_per_sqm?: number
+      start_date?: string
+      paid_installments?: number[]
     }
     payment_schedule?: {
       total_amount: number

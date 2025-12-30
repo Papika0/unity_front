@@ -53,6 +53,7 @@ function onDrop(event: DragEvent, targetStageId: number): void {
         @dragstart="onDragStart"
         @dragover="handleDragOver"
         @drop="onDrop"
+        @move-deal="(deal, stageId) => $emit('stage-change', deal.id, stageId)"
       />
 
       <!-- Empty State -->

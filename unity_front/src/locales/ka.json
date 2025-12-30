@@ -191,6 +191,7 @@
                 "source": "წყარო",
                 "actions": "მოქმედებები",
                 "details": "დეტალები",
+                "create_leads": "CRM ლიდების შექმნა",
                 "not_found": "კლიენტები არ მოიძებნა"
             },
             "filters": {
@@ -919,7 +920,8 @@
                 "empty_column_hint": "გადაიტანეთ აქ ან შექმენით ახალი",
                 "average_value": "საშუალო ღირებულება",
                 "average_agreed_price": "საშუალო შეთანხმებული ფასი",
-                "average_sale_price": "საშუალო გაყიდვის ფასი"
+                "average_sale_price": "საშუალო გაყიდვის ფასი",
+                "move_to": "გადატანა"
             },
             "payment": {
                 "payments": "გადახდები",
@@ -1305,7 +1307,11 @@
                 "apartments_reserved": "დაჯავშნილი",
                 "apartments_sold": "გაყიდული",
                 "overdue_payments": "ვადაგადაცილებული გადახდები",
-                "upcoming_payments": "მომავალი გადახდები (მომდევნო 90 დღე)",
+                "upcoming_payments": "მომავალი გადახდები (მომდევნო 30 დღე)",
+                "total_upcoming": "სულ მომავალი გადახდები",
+                "next_30_days": "მომდევნო 30 დღე",
+                "payments": "გადახდა",
+                "items": "ელემენტი",
                 "no_upcoming_payments": "მომავალი გადახდები არ არის",
                 "filter_project": "პროექტი",
                 "filter_user": "გაყიდვების მენეჯერი",

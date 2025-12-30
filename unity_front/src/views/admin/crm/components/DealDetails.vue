@@ -72,10 +72,6 @@ function formatDate(dateStr: string): string {
   return formatDt(dateStr, { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-function formatDateTime(dateStr: string): string {
-  return formatDt(dateStr, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
-
 function formatCurrency(amount: number) {
   return formatCurr(amount, 'USD')
 }

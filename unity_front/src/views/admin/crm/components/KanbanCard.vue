@@ -4,13 +4,15 @@
  * Individual deal card with drag support
  */
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useCrmStore } from '@/stores/admin/crm'
 import { useTranslationsStore } from '@/stores/ui/translations'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import type { CrmDeal } from '@/types/crm'
 import { CURRENCY_SYMBOLS } from '@/types/crm'
+import { MoreHorizontal } from 'lucide-vue-next'
 
 // Composables
 const { t } = useTranslations()
@@ -29,9 +31,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // Emits
-defineEmits<{
+const emit = defineEmits<{
   (e: 'click', deal: CrmDeal): void
   (e: 'dragstart', deal: CrmDeal): void
+  (e: 'move-deal', deal: CrmDeal, stageId: number): void
 }>()
 
 // Computed
@@ -66,6 +69,94 @@ function getLocalizedValue(value: string | Record<string, string> | undefined | 
   
   return value['en'] || value['ka'] || Object.values(value)[0] || ''
 }
+
+// Dropdown State
+const showMenu = ref(false)
+const menuButton = ref<HTMLElement | null>(null)
+const dropdownRef = ref<HTMLElement | null>(null)
+const menuPosition = ref({ top: 0, left: 0 })
+
+// Get active stages excluding current
+const availableStages = computed(() => {
+  const store = useCrmStore()
+  return store.activeStages.filter(s => s.id !== props.deal.stage_id)
+})
+
+import { nextTick } from 'vue'
+
+const toggleMenu = async () => {
+  if (showMenu.value) {
+    showMenu.value = false
+    return
+  }
+  
+  showMenu.value = true
+  await nextTick()
+  
+  if (menuButton.value) {
+    const rect = menuButton.value.getBoundingClientRect()
+    // Align right edge of menu with right edge of button (minus offset if needed)
+    // Menu width is w-48 (12rem = 192px)
+    menuPosition.value = {
+      top: rect.bottom + 4, // 4px gap
+      left: rect.right - 192 // Align right
+    }
+  }
+}
+
+function onMoveTo(stageId: number) {
+  emit('move-deal', props.deal, stageId)
+  showMenu.value = false
+}
+
+// Close menu on click outside
+import { onBeforeUnmount } from 'vue'
+const closeMenu = () => { showMenu.value = false }
+
+if (typeof window !== 'undefined') {
+  const handleGlobalClick = (e: MouseEvent) => {
+    if (!showMenu.value) return
+    
+    const target = e.target as Node
+    const isClickInsideButton = menuButton.value?.contains(target)
+    const isClickInsideDropdown = dropdownRef.value?.contains(target)
+    
+    if (!isClickInsideButton && !isClickInsideDropdown) {
+      closeMenu()
+    }
+  }
+
+  // Handle scroll to close menu (as it's fixed position)
+  const handleScroll = (e: Event) => {
+    if (!showMenu.value) return
+    
+    // If scrolling inside the dropdown, don't close
+    if (dropdownRef.value && dropdownRef.value.contains(e.target as Node)) {
+      return
+    }
+    
+    // If scrolling strictly outside (e.g. main window or kanban board), update position or close
+    // For now, re-calculating position is better UX than closing, but tricky with complex nested scrolls.
+    // Let's try to update position first. if that fails/looks janky, we revert to close.
+    if (menuButton.value) {
+      const rect = menuButton.value.getBoundingClientRect()
+      menuPosition.value = {
+        top: rect.bottom + 4,
+        left: rect.right - 192
+      }
+    }
+  }
+
+  window.addEventListener('click', handleGlobalClick)
+  window.addEventListener('scroll', handleScroll, { capture: true, passive: true })
+  window.addEventListener('resize', handleScroll) // Handle resize same as scroll
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('click', handleGlobalClick)
+    window.removeEventListener('scroll', handleScroll, { capture: true })
+    window.removeEventListener('resize', handleScroll)
+  })
+}
 </script>
 
 <template>
@@ -86,9 +177,54 @@ function getLocalizedValue(value: string | Record<string, string> | undefined | 
 
     <!-- Header: Deal Title + Priority -->
     <div class="card-header">
-      <div class="deal-title">
-        {{ deal.title }}
+      <div class="deal-title-row">
+        <div class="deal-title">
+          {{ deal.title }}
+        </div>
+        
+        <!-- Action Menu -->
+        <div class="card-menu relative" @click.stop>
+          <button 
+            ref="menuButton"
+            @click="toggleMenu"
+            class="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <MoreHorizontal class="w-4 h-4 text-gray-500" />
+          </button>
+          
+          <!-- Dropdown using Teleport -->
+          <Teleport to="body">
+            <div 
+              v-if="showMenu"
+              ref="dropdownRef"
+              :style="{
+                top: `${menuPosition.top}px`,
+                left: `${menuPosition.left}px`
+              }"
+              class="fixed w-48 bg-white rounded-md shadow-lg border border-gray-200 z-[9999] py-1"
+            >
+              <div class="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-100">
+                {{ t('admin.crm.kanban.move_to') }}
+              </div>
+              <div class="max-h-48 overflow-y-auto">
+                <button
+                  v-for="stage in availableStages"
+                  :key="stage.id"
+                  @click="onMoveTo(stage.id)"
+                  class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors flex items-center gap-2"
+                >
+                  <span 
+                    class="w-2 h-2 rounded-full"
+                    :style="{ backgroundColor: stage.color || '#CBD5E1' }"
+                  ></span>
+                  {{ stage.name }}
+                </button>
+              </div>
+            </div>
+          </Teleport>
+        </div>
       </div>
+      
       <div class="priority-badge" :class="`priority-${deal.priority}`">
         {{ priorityLabel }}
       </div>
@@ -194,17 +330,22 @@ function getLocalizedValue(value: string | Record<string, string> | undefined | 
 
 .card-header {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.deal-title-row {
+  display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 8px;
-  margin-bottom: 8px;
 }
 
 .deal-title {
   font-weight: 700;
   color: #111827;
   font-size: 14px;
-  flex: 1;
   line-height: 1.3;
 }
 

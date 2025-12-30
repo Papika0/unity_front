@@ -94,10 +94,10 @@ function handleSubmit(): void {
                 v-model.number="selectedReasonId"
                 type="radio"
                 :value="reason.id"
-                :aria-label="reason.reason"
+                :aria-label="reason.label"
                 class="mt-0.5 h-4 w-4 text-red-600 border-gray-300 focus:ring-red-500"
               />
-              <span class="ml-3 text-sm text-gray-900">{{ reason.reason }}</span>
+              <span class="ml-3 text-sm text-gray-900">{{ reason.label }}</span>
             </label>
 
             <!-- Empty State -->

@@ -11,16 +11,16 @@
     </div>
 
     <!-- Filters Bar -->
-    <div class="mb-8 bg-white/80 backdrop-blur-sm shadow-sm border border-gray-100 rounded-2xl p-6 transition-all hover:shadow-md">
+    <div class="mb-8 bg-gradient-to-r from-white to-gray-50 shadow-sm border border-gray-200 rounded-2xl p-6 transition-all hover:shadow-md">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- User Filter -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
             {{ t('admin.crm.financial.filter_user') }}
           </label>
           <select
             v-model="filters.userId"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-sm transition-all"
           >
             <option :value="null">{{ t('admin.crm.financial.all_users') }}</option>
           </select>
@@ -28,25 +28,25 @@
 
         <!-- Date From -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
             {{ t('admin.crm.financial.date_from') }}
           </label>
           <input
             v-model="filters.dateFrom"
             type="date"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-sm transition-all"
           />
         </div>
 
         <!-- Date To -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
             {{ t('admin.crm.financial.date_to') }}
           </label>
           <input
             v-model="filters.dateTo"
             type="date"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-sm transition-all"
           />
         </div>
 
@@ -55,14 +55,14 @@
           <button
             @click="applyFilters"
             :disabled="loading"
-            class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+            class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
           >
             {{ t('admin.crm.financial.apply_filters') }}
           </button>
           <button
             @click="resetFilters"
             :disabled="loading"
-            class="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {{ t('admin.crm.financial.reset_filters') }}
           </button>
@@ -155,6 +155,28 @@
           </span>
         </div>
 
+        <!-- Sum Banner -->
+        <div class="px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-600">
+                {{ t('admin.crm.financial.total_upcoming') }}
+              </p>
+              <p class="text-xs text-gray-500 mt-0.5">
+                {{ t('admin.crm.financial.next_30_days') }}
+              </p>
+            </div>
+            <div class="text-right">
+              <p class="text-2xl font-bold text-blue-900">
+                {{ formatCurrency(upcomingPaymentsTotal) }}
+              </p>
+              <p class="text-xs text-blue-600 mt-0.5">
+                {{ upcomingPayments.length }} {{ t('admin.crm.financial.payments') }}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <!-- Empty State -->
         <div v-if="upcomingPayments.length === 0" class="px-6 py-12 text-center">
           <p class="text-gray-500">{{ t('admin.crm.financial.no_upcoming_payments') }}</p>
@@ -163,62 +185,80 @@
         <!-- Table -->
         <div v-else class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+            <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   {{ t('admin.crm.financial.customer') }}
                 </th>
-                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   {{ t('admin.crm.financial.apartment') }}
                 </th>
-                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   {{ t('admin.crm.financial.amount') }}
                 </th>
-                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   {{ t('admin.crm.financial.due_date') }}
                 </th>
-                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   {{ t('admin.crm.financial.status') }}
                 </th>
-                <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   {{ t('admin.crm.financial.days_until_due') }}
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-white divide-y divide-gray-100">
               <tr
-                v-for="payment in upcomingPayments"
+                v-for="(payment, index) in upcomingPayments"
                 :key="payment.id"
                 @click="navigateToDeal(payment.deal_id)"
-                class="hover:bg-gray-50 cursor-pointer transition-colors"
-                :class="{ 'bg-red-50 hover:bg-red-100': payment.is_overdue }"
+                class="hover:bg-blue-50 cursor-pointer transition-colors duration-150"
+                :class="{
+                  'bg-red-50 hover:bg-red-100': payment.is_overdue,
+                  'bg-gray-50': !payment.is_overdue && index % 2 === 1
+                }"
               >
-                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {{ payment.customer_name }}
-                </td>
-                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <div class="flex flex-col">
-                    <span class="font-medium">{{ payment.project_title }}</span>
-                    <span class="text-xs text-gray-400">{{ payment.apartment_number }}</span>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                      <span class="text-sm font-semibold text-blue-700">
+                        {{ payment.customer_name.charAt(0).toUpperCase() }}
+                      </span>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-900">{{ payment.customer_name }}</p>
+                    </div>
                   </div>
                 </td>
-                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ getCurrencySymbol(payment.currency) }}{{ formatNumber(payment.remaining_amount) }}
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-medium text-gray-900">{{ payment.project_title }}</span>
+                    <span class="text-xs text-gray-500">{{ payment.apartment_number }}</span>
+                  </div>
                 </td>
-                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ formatDate(payment.due_date) }}
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-semibold text-gray-900">
+                    {{ getCurrencySymbol(payment.currency) }}{{ formatNumber(payment.remaining_amount) }}
+                  </div>
                 </td>
-                <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-600">{{ formatDate(payment.due_date) }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
                   <span
-                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                    class="inline-flex px-3 py-1 text-xs font-semibold rounded-full"
                     :class="getStatusBadgeClass(payment.status)"
                   >
                     {{ getStatusLabel(payment.status) }}
                   </span>
                 </td>
-                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm"
-                    :class="payment.is_overdue ? 'text-red-600 font-semibold' : 'text-gray-500'">
-                  {{ payment.days_until_due }} {{ t('admin.crm.financial.days') }}
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <span class="text-sm font-medium"
+                          :class="payment.is_overdue ? 'text-red-600' : 'text-gray-600'">
+                      {{ payment.days_until_due }} {{ t('admin.crm.financial.days') }}
+                    </span>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -230,7 +270,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
@@ -256,6 +296,13 @@ const metrics = ref<FinancialDashboardMetrics>({
   payment_collection_rate: 0,
 })
 const upcomingPayments = ref<UpcomingPayment[]>([])
+
+// Computed sum of upcoming payments
+const upcomingPaymentsTotal = computed(() => {
+  return upcomingPayments.value.reduce((sum, payment) => {
+    return sum + (payment.remaining_amount || 0)
+  }, 0)
+})
 
 const filters = ref({
   projectIds: [],

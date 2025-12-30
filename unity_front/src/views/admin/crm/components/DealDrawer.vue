@@ -10,7 +10,6 @@ import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import { useCrmStore } from '@/stores/admin/crm'
 import { useToastStore } from '@/stores/ui/toast'
-import { useBuildingsAdminStore } from '@/stores/admin/buildings'
 import { CURRENCY_SYMBOLS } from '@/types/crm'
 import DealDetails from './DealDetails.vue'
 import DealActivities from './DealActivities.vue'
@@ -37,7 +36,6 @@ const { formatNumber: formatNum } = useLocaleFormatter()
 // Stores
 const crmStore = useCrmStore()
 const toast = useToastStore()
-const buildingsStore = useBuildingsAdminStore() // Kept if needed for dependency injection or future use
 
 // State
 const activeTab = ref<'details' | 'activities' | 'payments'>('details')

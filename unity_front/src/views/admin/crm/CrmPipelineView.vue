@@ -5,6 +5,7 @@
  */
 
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import { useCrmStore } from '@/stores/admin/crm'
@@ -22,6 +23,7 @@ import type { ProjectCalculatorSettings } from '@/types/admin/calculator'
 import { Search, ChevronDown, Plus, FileCheck } from 'lucide-vue-next'
 
 // Composables
+const route = useRoute()
 const { t } = useTranslations()
 const { formatNumber, getCurrencySymbol } = useLocaleFormatter()
 
@@ -123,6 +125,15 @@ onMounted(async () => {
     await nextTick()
     perfMonitor.markRenderEnd()
     perfMonitor.calculateInitialLoad()
+
+    // Check if there's a deal ID in the query parameter and open it
+    if (route.query.deal) {
+      const dealId = parseInt(route.query.deal as string)
+      if (!isNaN(dealId)) {
+        selectedDealId.value = dealId
+        showDealDrawer.value = true
+      }
+    }
 
   } catch (error) {
     console.error('Failed to load CRM data:', error)

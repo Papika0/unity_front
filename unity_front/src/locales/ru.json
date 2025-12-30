@@ -191,6 +191,7 @@
                 "source": "Источник",
                 "actions": "Действия",
                 "details": "Детали",
+                "create_leads": "Создать CRM лиды",
                 "not_found": "Клиенты не найдены"
             },
             "filters": {
@@ -889,7 +890,8 @@
                 "empty_column_hint": "Перетащите сюда или создайте новую",
                 "average_value": "Средняя стоимость",
                 "average_agreed_price": "Средняя согласованная цена",
-                "average_sale_price": "Средняя цена продажи"
+                "average_sale_price": "Средняя цена продажи",
+                "move_to": "Переместить в"
             },
             "payment": {
                 "payments": "Платежи",
@@ -1142,7 +1144,11 @@
                 "apartments_reserved": "Зарезервировано",
                 "apartments_sold": "Продано",
                 "overdue_payments": "Просроченные платежи",
-                "upcoming_payments": "Предстоящие платежи (следующие 90 дней)",
+                "upcoming_payments": "Предстоящие платежи (следующие 30 дней)",
+                "total_upcoming": "Всего предстоящих платежей",
+                "next_30_days": "Следующие 30 дней",
+                "payments": "платежей",
+                "items": "элементов",
                 "no_upcoming_payments": "Нет предстоящих платежей",
                 "filter_project": "Проект",
                 "filter_user": "Менеджер по продажам",

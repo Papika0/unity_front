@@ -24,6 +24,7 @@
       @update-status="updateCustomerStatus"
       @bulk-update-status="bulkUpdateStatus"
       @bulk-delete="bulkDelete"
+      @bulk-create-leads="bulkCreateLeads"
       @change-page="changePage"
     />
 
@@ -73,6 +74,7 @@ const {
   deleteCustomer,
   bulkUpdateStatus,
   bulkDelete,
+  bulkCreateLeads,
   applyFilters,
   resetFilters,
   changePage

@@ -29,6 +29,7 @@ defineEmits<{
   (e: 'dragstart', deal: CrmDeal, stageId: number): void
   (e: 'dragover', event: DragEvent): void
   (e: 'drop', event: DragEvent, stageId: number): void
+  (e: 'move-deal', deal: CrmDeal, stageId: number): void
 }>()
 
 // Composables
@@ -124,6 +125,7 @@ function formatCurrency(value: number | undefined | null): string {
             :is-dragging="draggedDealId === deal.id"
             @click="$emit('deal-click', deal)"
             @dragstart="$emit('dragstart', deal, column.id)"
+            @move-deal="(deal, stageId) => $emit('move-deal', deal, stageId)"
           />
         </div>
       </template>
@@ -138,6 +140,7 @@ function formatCurrency(value: number | undefined | null): string {
         :is-dragging="draggedDealId === deal.id"
         @click="$emit('deal-click', deal)"
         @dragstart="$emit('dragstart', deal, column.id)"
+        @move-deal="(deal, stageId) => $emit('move-deal', deal, stageId)"
       />
 
       <!-- Empty State -->

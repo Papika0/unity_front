@@ -24,6 +24,12 @@
         >
           {{ t('admin.common.delete') }}
         </button>
+        <button
+          @click="$emit('bulkCreateLeads')"
+          class="px-4 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+        >
+          {{ t('admin.customers.table.create_leads') }}
+        </button>
       </div>
     </div>
 
@@ -188,6 +194,7 @@ const emit = defineEmits<{
   (e: 'updateStatus', id: number, status: string): void
   (e: 'bulkUpdateStatus', status: string): void
   (e: 'bulkDelete'): void
+  (e: 'bulkCreateLeads'): void
   (e: 'changePage', page: number): void
 }>()
 

@@ -10,7 +10,7 @@ import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import { useAlternativeDescriptions } from '@/composables/calculator/useAlternativeDescriptions'
 import { useCrmStore } from '@/stores/admin/crm'
-import type { CrmDeal, PaymentScheduleData, PaymentStatus, CrmPayment } from '@/types/crm'
+import type { CrmDeal, PaymentStatus, CrmPayment } from '@/types/crm'
 import type { ProjectCalculatorSettings } from '@/types/admin/calculator'
 import { CURRENCY_SYMBOLS } from '@/types/crm'
 
@@ -76,11 +76,6 @@ const itemsPerPage = ref(10)
 // Computed
 const currencySymbol = computed(() => CURRENCY_SYMBOLS[props.deal.currency])
 
-// Check if calculator-generated schedule exists
-const hasCalculatorSchedule = computed(() => {
-  return Array.isArray(crmStore.dealPayments) && crmStore.dealPayments.some(p => p.calculator_generated)
-})
-
 // Check if any payments exist (manual or calculator-generated)
 const hasAnyPayments = computed(() => {
   return Array.isArray(crmStore.dealPayments) && crmStore.dealPayments.length > 0
@@ -114,11 +109,6 @@ const totalPaymentsCount = computed(() => {
 })
 
 const hasMultiplePages = computed(() => totalPages.value > 1)
-
-// Safe payments count for template (current page)
-const paymentsCount = computed(() => {
-  return Array.isArray(crmStore.dealPayments) ? crmStore.dealPayments.length : 0
-})
 
 // Pagination controls - now fetches from backend
 async function goToPage(page: number): Promise<void> {

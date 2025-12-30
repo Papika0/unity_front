@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { adminCustomerApi, type Customer, type CustomerStatistics } from '@/services/adminCustomerApi'
+import { crmApi } from '@/services/crmApi'
 import { useToastStore } from '@/stores/ui/toast'
 
 export function useAdminCustomers() {
@@ -175,6 +176,24 @@ export function useAdminCustomers() {
     }
   }
 
+  const bulkCreateLeads = async () => {
+    if (selectedIds.value.length === 0) {
+      toastStore.warning('გაფრთხილება', 'გთხოვთ აირჩიოთ კლიენტები')
+      return
+    }
+
+    if (!confirm(`დარწმუნებული ხართ, რომ გსურთ ${selectedIds.value.length} ლიდის შექმნა?`)) return
+
+    try {
+      await crmApi.bulkCreateLeads(selectedIds.value)
+      toastStore.success('წარმატება', 'ლიდები წარმატებით შეიქმნა')
+      selectedIds.value = []
+    } catch (error) {
+      console.error('Failed to bulk create leads:', error)
+      toastStore.error('შეცდომა', 'ლიდების შექმნა ვერ მოხერხდა')
+    }
+  }
+
   const applyFilters = () => {
     filters.value.page = 1
     loadCustomers()
@@ -224,6 +243,7 @@ export function useAdminCustomers() {
     deleteCustomer,
     bulkUpdateStatus,
     bulkDelete,
+    bulkCreateLeads,
     applyFilters,
     resetFilters,
     changePage

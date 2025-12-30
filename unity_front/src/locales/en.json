@@ -191,6 +191,7 @@
                 "source": "Source",
                 "actions": "Actions",
                 "details": "Details",
+                "create_leads": "Create CRM Leads",
                 "not_found": "Customers not found"
             },
             "filters": {
@@ -913,7 +914,8 @@
                 "empty_column_hint": "Drag here or create new",
                 "average_value": "Average Value",
                 "average_agreed_price": "Average Agreed Price",
-                "average_sale_price": "Average Sale Price"
+                "average_sale_price": "Average Sale Price",
+                "move_to": "Move to"
             },
             "payment": {
                 "payments": "Payments",
@@ -1224,7 +1226,11 @@
                 "apartments_reserved": "Reserved",
                 "apartments_sold": "Sold",
                 "overdue_payments": "Overdue Payments",
-                "upcoming_payments": "Upcoming Payments (Next 90 Days)",
+                "upcoming_payments": "Upcoming Payments (Next 30 Days)",
+                "total_upcoming": "Total Upcoming Payments",
+                "next_30_days": "Next 30 days",
+                "payments": "payments",
+                "items": "items",
                 "no_upcoming_payments": "No upcoming payments",
                 "filter_project": "Project",
                 "filter_user": "Salesperson",

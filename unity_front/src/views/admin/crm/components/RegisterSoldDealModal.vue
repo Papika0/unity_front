@@ -8,7 +8,6 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useToastStore } from '@/stores/ui/toast'
-import { useCrmStore } from '@/stores/admin/crm'
 import { useApartmentSelector } from '@/composables/crm/useApartmentSelector'
 import { crmApi } from '@/services/crmApi'
 import { adminCalculatorApi } from '@/services/adminCalculatorApi'
@@ -16,7 +15,7 @@ import { usePaymentCalculator } from '@/composables/calculator/usePaymentCalcula
 import { useAlternativeDescriptions } from '@/composables/calculator/useAlternativeDescriptions'
 import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import type { ProjectCalculatorSettings, CalculationInput, PaymentScheduleItem } from '@/types/admin/calculator'
-import { User, Phone, Mail, Building, DollarSign, ChevronLeft, ChevronRight, Check, FileCheck, Calendar, AlertTriangle } from 'lucide-vue-next'
+import { User, Phone, Mail, Building, ChevronLeft, ChevronRight, Check, Calendar, AlertTriangle } from 'lucide-vue-next'
 import { format } from 'date-fns'
 
 // Props
@@ -24,7 +23,7 @@ interface Props {
   isOpen: boolean
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 // Emits
 const emit = defineEmits<{
@@ -36,7 +35,6 @@ const emit = defineEmits<{
 const { t, currentLocale } = useTranslations()
 const { getCurrencySymbol, formatNumber } = useLocaleFormatter()
 const toast = useToastStore()
-const crmStore = useCrmStore()
 const { calculate } = usePaymentCalculator()
 
 // Apartment selector composable
@@ -158,7 +156,7 @@ function selectAlternative(id: number) {
 function formatDate(date: Date | string): string {
   try {
     return format(new Date(date), 'MMM dd, yyyy')
-  } catch (e) {
+  } catch {
     return String(date)
   }
 }
@@ -382,7 +380,7 @@ async function handleCreate() {
 
   isCreating.value = true
   try {
-    const requestData: any = {
+    const requestData: Parameters<typeof crmApi.createSoldDeal>[0] = {
       customer: {
         name: customerData.value.name,
         surname: customerData.value.surname || undefined,
@@ -417,9 +415,9 @@ async function handleCreate() {
     resetForm()
     emit('created', createdDeal.id)
     emit('close')
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to create sold deal:', error)
-    const errorMessage = error?.response?.data?.message || t('admin.crm.messages.create_failed')
+    const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || t('admin.crm.messages.create_failed')
     toast.error(errorMessage)
   } finally {
     isCreating.value = false
@@ -465,13 +463,13 @@ function handleClose() {
 }
 
 // Get localized building name
-function getLocalizedName(item: any): string {
+function getLocalizedName(item: { name?: string | Record<string, string>; title?: string | Record<string, string> } | null | undefined): string {
   if (!item) return ''
   const nameVal = item.name || item.title
-  if (typeof nameVal === 'object') {
+  if (typeof nameVal === 'object' && nameVal !== null) {
     return nameVal.en || nameVal.ka || nameVal.ru || Object.values(nameVal)[0] || ''
   }
-  return nameVal || ''
+  return String(nameVal || '')
 }
 
 </script>

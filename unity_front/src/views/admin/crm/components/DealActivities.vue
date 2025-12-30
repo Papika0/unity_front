@@ -21,7 +21,6 @@ import {
   Settings,
   Pin,
   MessageSquare,
-  Plus,
   Send
 } from 'lucide-vue-next'
 

@@ -1,5 +1,11 @@
 import { ref, onUnmounted } from 'vue'
 
+interface PerformanceMemory {
+  usedJSHeapSize: number
+  totalJSHeapSize: number
+  jsHeapSizeLimit: number
+}
+
 export interface PerformanceMetrics {
   initialLoadTime: number
   apiCallTime: number
@@ -73,7 +79,7 @@ export function usePerformanceMonitor() {
 
       try {
         performance.measure(name, startMark, endMark)
-      } catch (e) {
+      } catch {
         // Marks might not exist, ignore
       }
     }
@@ -227,7 +233,7 @@ export function usePerformanceMonitor() {
    */
   function getMemoryUsage(): number | undefined {
     if (typeof performance !== 'undefined' && 'memory' in performance) {
-      const memory = (performance as any).memory
+      const memory = (performance as Performance & { memory: PerformanceMemory }).memory
       // Convert bytes to MB
       return Math.round(memory.usedJSHeapSize / 1024 / 1024)
     }

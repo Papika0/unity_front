@@ -12,7 +12,7 @@ import { useCrmStore } from '@/stores/admin/crm'
 import { crmApi } from '@/services/crmApi'
 import { getAdminProjects } from '@/services/projects'
 import { useApartmentSelector } from '@/composables/crm/useApartmentSelector'
-import { User, Phone, Mail, Building, FileText, MapPin } from 'lucide-vue-next'
+import { User, Phone, Mail, Building, FileText } from 'lucide-vue-next'
 
 interface Project {
   id: number
@@ -25,7 +25,7 @@ interface Props {
   isOpen: boolean
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 // Emits
 const emit = defineEmits<{
@@ -189,13 +189,13 @@ function handleClose(): void {
 }
 
 // Get localized name
-function getLocalizedName(item: any): string {
+function getLocalizedName(item: { name?: string | Record<string, string>; title?: string | Record<string, string> } | null | undefined): string {
   if (!item) return ''
   const nameVal = item.name || item.title
-  if (typeof nameVal === 'object') {
+  if (typeof nameVal === 'object' && nameVal !== null) {
     return nameVal.en || nameVal.ka || nameVal.ru || Object.values(nameVal)[0] || ''
   }
-  return nameVal || ''
+  return nameVal?.toString() || ''
 }
 </script>
 

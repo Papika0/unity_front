@@ -11,7 +11,7 @@ import { ref, computed, watch, type Ref, type ComputedRef } from 'vue'
 import { useBuildingsAdminStore } from '@/stores/admin/buildings'
 import { projectsApi, type ProjectApiResponse } from '@/services/projectsApi'
 import { apartmentService, type ApartmentSearchResult } from '@/services/apartmentService'
-import { adminBuildingsApi } from '@/services/adminBuildingsApi'
+import { adminBuildingsApi, type BuildingWithStats } from '@/services/adminBuildingsApi'
 
 export interface ApartmentSelectorOptions {
   onError?: (message: string) => void
@@ -26,7 +26,7 @@ export interface ApartmentSelector {
 
   // Data lists
   projects: Ref<ProjectApiResponse[]>
-  buildings: ComputedRef<any[]>
+  buildings: ComputedRef<BuildingWithStats[]>
   availableFloors: Ref<number[]>
   availableApartments: Ref<ApartmentSearchResult[]>
 
@@ -38,7 +38,7 @@ export interface ApartmentSelector {
 
   // Computed
   selectedApartment: ComputedRef<ApartmentSearchResult | null>
-  selectedBuilding: ComputedRef<any | null>
+  selectedBuilding: ComputedRef<BuildingWithStats | null>
   selectedProject: ComputedRef<ProjectApiResponse | null>
 
   // Methods
@@ -94,7 +94,7 @@ export function useApartmentSelector(options: ApartmentSelectorOptions = {}): Ap
     loadingProjects.value = true
     try {
       projects.value = await projectsApi.getAll()
-    } catch (error) {
+    } catch {
       onError?.('Failed to load projects')
     } finally {
       loadingProjects.value = false
@@ -121,7 +121,7 @@ export function useApartmentSelector(options: ApartmentSelectorOptions = {}): Ap
     if (newId) {
       try {
         await buildingsStore.fetchBuildings(newId)
-      } catch (error) {
+      } catch {
         onError?.('Failed to load buildings')
       }
     } else {
@@ -142,7 +142,7 @@ export function useApartmentSelector(options: ApartmentSelectorOptions = {}): Ap
         if (data && data.success) {
           availableFloors.value = data.data
         }
-      } catch (error) {
+      } catch {
         onError?.('Failed to load floors')
       } finally {
         loadingFloors.value = false
@@ -163,7 +163,7 @@ export function useApartmentSelector(options: ApartmentSelectorOptions = {}): Ap
           per_page: 100,
         })
         availableApartments.value = result.data
-      } catch (error) {
+      } catch {
         onError?.('Failed to load apartments')
       } finally {
         loadingApartments.value = false

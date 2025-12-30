@@ -478,6 +478,62 @@ class CrmDealController extends Controller
     }
 
     /**
+     * Bulk create leads from existing customers
+     */
+    public function bulkStoreLead(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'customer_ids' => 'required|array',
+            'customer_ids.*' => 'exists:customers,id',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error($validator->errors()->first(), 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $customerIds = $request->customer_ids;
+            $createdCount = 0;
+            $defaultStage = CrmStage::where('type', 'open')->where('is_active', true)->ordered()->first();
+
+            if (!$defaultStage) {
+                $defaultStage = CrmStage::ordered()->first();
+            }
+
+            foreach ($customerIds as $customerId) {
+                $customer = Customer::find($customerId);
+
+                // Avoid duplicates if needed, but per request "create crm leads ... for old data" implies just create them.
+                // We'll proceed to create deals for them.
+
+                CrmDeal::create([
+                    'customer_id' => $customerId,
+                    'stage_id' => $defaultStage->id,
+                    'user_id' => auth()->id(),
+                    'title' => CrmDeal::generateTitle($customer),
+                    'currency' => 'USD',
+                    'priority' => 'medium',
+                    'notes' => 'Bulk imported from Customers list',
+                    'last_activity_at' => now(),
+                ]);
+
+                $createdCount++;
+            }
+
+            DB::commit();
+            self::clearPipelineCache();
+
+            return $this->success(['count' => $createdCount], $createdCount . ' leads created successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Failed to bulk create leads: ' . $e->getMessage());
+            return $this->error('ლიდების შექმნა ვერ მოხერხდა', 500);
+        }
+    }
+
+    /**
      * Create a sold deal (register already-sold apartment with ongoing payments)
      * This endpoint creates a deal directly in the "Won" stage with apartment and payment schedule
      */
@@ -1482,11 +1538,11 @@ class CrmDealController extends Controller
                     SUM(amount_due - amount_paid) as total_overdue
                 ')->first();
 
-                // 6. Future payments (next 90 days) - for upcoming section
+                // 6. Future payments (next 30 days) - for upcoming section
                 $upcomingPayments = CrmPayment::query()
                     ->with(['deal.customer', 'deal.apartment.building.project', 'deal.user'])
                     ->whereIn('status', ['pending', 'partially_paid'])
-                    ->whereBetween('due_date', [now()->startOfDay(), now()->addDays(90)])
+                    ->whereBetween('due_date', [now()->startOfDay(), now()->addDays(30)])
                     ->whereHas('deal', function ($q) use ($stageIds, $userId, $dateFrom, $dateTo, $projectIds) {
                         if (!empty($stageIds)) {
                             $q->whereIn('stage_id', $stageIds);

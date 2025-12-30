@@ -331,6 +331,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
             Route::get('/{id}', [CrmDealController::class, 'show']);          // Get single deal
             Route::post('/', [CrmDealController::class, 'store']);            // Create new deal
             Route::post('/lead', [CrmDealController::class, 'storeLead']);    // Create lead (customer + deal)
+            Route::post('/lead/bulk', [CrmDealController::class, 'bulkStoreLead']); // Bulk create leads
             Route::post('/sold', [CrmDealController::class, 'createSoldDeal']);  // Register sold deal with payments
             Route::put('/{id}', [CrmDealController::class, 'update']);        // Update deal
             Route::put('/{id}/stage', [CrmDealController::class, 'updateStage']); // Move deal on Kanban

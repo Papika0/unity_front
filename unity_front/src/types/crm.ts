@@ -30,7 +30,7 @@ export interface CrmStage {
 // Lost reasons
 export interface CrmLostReason {
   id: number
-  reason: string
+  label: string
   is_active: boolean
   created_at: string
   updated_at: string
