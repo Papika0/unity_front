@@ -52,11 +52,13 @@ export function useProjectDetail() {
     try {
       const response = await projectsApi.getById(projectId)
 
-      if ('translations' in response && response.translations) {
-        translationsStore.mergeTranslations(response.translations as Record<string, string>)
+      // Merge translations from API response (response.data contains {data, translations, meta})
+      if (response.data.translations) {
+        translationsStore.mergeTranslations(response.data.translations)
       }
 
-      project.value = ('data' in response ? response.data : response) as ProjectApiResponse
+      // Extract project data from nested response structure
+      project.value = response.data.data
       projectFeatures.value = project.value?.features || []
 
       // If navigation is explicitly disabled or missing, check if we have a single building

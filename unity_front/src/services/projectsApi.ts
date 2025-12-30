@@ -70,11 +70,10 @@ export const projectsApi = {
 
     const queryString = new URLSearchParams()
 
-    // Request missing translation groups for projects page
-    const missingGroups = translationsStore.getMissingGroups('projects')
-    if (missingGroups.length > 0) {
-      missingGroups.forEach((group) => queryString.append('groups[]', group))
-    }
+    // Always request translation groups for projects page to ensure server translations are fetched
+    // This prevents issues when local JSON preloads groups marking them as "loaded"
+    const requiredGroups = translationsStore.getPageGroups('projects')
+    requiredGroups.forEach((group) => queryString.append('groups[]', group))
 
     const queryPart = queryString.toString() ? `?${queryString}` : ''
 
@@ -82,7 +81,7 @@ export const projectsApi = {
       success: boolean;
       data: {
         data: ProjectApiResponse;
-        translations?: Record<string, unknown>;
+        translations?: Record<string, string>;
         meta?: {
           locale: string;
           cached_at: string;
@@ -92,7 +91,8 @@ export const projectsApi = {
       `/projects/${id}${queryPart}`,
     )
 
-    // Return the full response data (includes data, translations, and meta)
-    return response.data.data
+    // Return the full response data object (includes data, translations, and meta)
+    // Caller can access response.data for project and response.translations for translations
+    return response.data
   },
 }
