@@ -77,22 +77,19 @@ export const projectsApi = {
 
     const queryPart = queryString.toString() ? `?${queryString}` : ''
 
+    // API returns: { data: ProjectApiResponse, translations?: {...}, meta?: {...} }
     const response = await api.get<{
-      success: boolean;
-      data: {
-        data: ProjectApiResponse;
-        translations?: Record<string, string>;
-        meta?: {
-          locale: string;
-          cached_at: string;
-        }
+      data: ProjectApiResponse;
+      translations?: Record<string, string>;
+      meta?: {
+        locale: string;
+        cached_at: string;
       }
     }>(
       `/projects/${id}${queryPart}`,
     )
 
     // Return the full response data object (includes data, translations, and meta)
-    // Caller can access response.data for project and response.translations for translations
     return response.data
   },
 }
