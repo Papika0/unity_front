@@ -473,7 +473,7 @@ function getLocalizedName(item: { name?: string | Record<string, string>; title?
                  </div>
                  <div>
                    <p class="font-bold text-sm text-gray-900">{{ t('admin.crm.form.apartment') }} #{{ apartmentSelector.selectedApartment.value.apartment_number }}</p>
-                   <p class="text-xs text-gray-500">{{ apartmentSelector.selectedBuilding.value?.title }} • {{ apartmentSelector.selectedApartment.value.area_total }}m²</p>
+                   <p class="text-xs text-gray-500">{{ getLocalizedName(apartmentSelector.selectedBuilding.value) }} • {{ apartmentSelector.selectedApartment.value.area_total }}m²</p>
                  </div>
                </div>
             </div>
