@@ -56,6 +56,19 @@ class AdminApartmentDetectionController extends Controller
             $venvPython = base_path('scripts/venv/bin/python3');
             // Get Python path from environment (for cPanel or custom setups)
             $envPython = env('PYTHON_PATH');
+
+            // Debug logging for path resolution
+            if ($envPython) {
+                Log::info('Checking configured PYTHON_PATH', [
+                    'path' => $envPython,
+                    'exists' => file_exists($envPython),
+                    'is_file' => is_file($envPython),
+                    'is_executable' => is_executable($envPython),
+                    'cwd' => getcwd(),
+                    'user' => get_current_user()
+                ]);
+            }
+
             $pythonPaths = array_filter([
                 $envPython, // From .env (production cPanel, etc.)
                 $venvPython, // Local virtual environment
