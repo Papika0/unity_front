@@ -121,12 +121,31 @@ class AdminApartmentDetectionController extends Controller
             }
 
             $output = $process->getOutput();
+
+            // Attempt clean decode first
             $result = json_decode($output, true);
 
+            // If failed, try to extract JSON from mixed output (e.g. system warnings + JSON)
             if (json_last_error() !== JSON_ERROR_NONE) {
+                // Find first '{' and last '}'
+                $start = strpos($output, '{');
+                $end = strrpos($output, '}');
+
+                if ($start !== false && $end !== false && $end > $start) {
+                    $cleanJson = substr($output, $start, $end - $start + 1);
+                    $result = json_decode($cleanJson, true);
+                }
+            }
+
+            if (json_last_error() !== JSON_ERROR_NONE || $result === null) {
+                Log::error('Invalid JSON from detection script', [
+                    'error' => json_last_error_msg(),
+                    'output' => $output
+                ]);
+
                 return response()->json([
                     'success' => false,
-                    'error' => 'Invalid response from detection script'
+                    'error' => 'Invalid response from detection script: ' . substr($output, 0, 100)
                 ], 500);
             }
 
