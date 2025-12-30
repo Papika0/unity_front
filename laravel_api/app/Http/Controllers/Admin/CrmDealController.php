@@ -41,6 +41,18 @@ class CrmDealController extends Controller
     public static function clearPipelineCache(): void
     {
         Cache::forever(self::PIPELINE_VERSION_KEY, now()->timestamp);
+
+        // Clear financial dashboard cache pattern
+        try {
+            $keys = Cache::getRedis()->keys('*crm_financial_dashboard_*');
+            foreach ($keys as $key) {
+                // Remove the Redis prefix from the key
+                $cleanKey = str_replace(config('database.redis.options.prefix'), '', $key);
+                Cache::forget($cleanKey);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to clear financial dashboard cache: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -160,71 +172,74 @@ class CrmDealController extends Controller
                 $stages = CrmStage::getCached();
 
                 return $stages->map(function ($stage) use ($request) {
-                // Eager load activities to prevent N+1 calculation of days_in_stage
-                $query = CrmDeal::with(['customer', 'user', 'apartment.building', 'activities'])
-                    ->withSum('payments as total_paid', 'amount_paid')
-                    ->withSum('payments as total_due', 'amount_due')
-                    ->where('stage_id', $stage->id)
-                    ->orderBy('last_activity_at', 'desc');
+                    // Eager load activities to prevent N+1 calculation of days_in_stage
+                    $query = CrmDeal::with(['customer', 'user', 'apartment.building', 'activities'])
+                        ->withSum('payments as total_paid', 'amount_paid')
+                        ->withSum('payments as total_due', 'amount_due')
+                        ->where('stage_id', $stage->id)
+                        ->orderBy('last_activity_at', 'desc');
 
-                // Filter by assigned user
-                if ($request->has('user_id') && $request->user_id) {
-                    $query->where('user_id', $request->user_id);
-                }
+                    // Filter by assigned user
+                    if ($request->has('user_id') && $request->user_id) {
+                        $query->where('user_id', $request->user_id);
+                    }
 
-                $deals = $query->get()->map(function ($deal) {
-                    return [
-                        'id' => $deal->id,
-                        'title' => $deal->title,
-                        'customer' => $deal->customer ? [
-                            'id' => $deal->customer->id,
-                            'name' => $deal->customer->name,
-                            'phone' => $deal->customer->phone,
-                            'email' => $deal->customer->email,
-                        ] : null,
-                        'user' => $deal->user ? [
-                            'id' => $deal->user->id,
-                            'name' => $deal->user->name,
-                        ] : null,
-                        'apartment' => $deal->apartment ? [
-                            'id' => $deal->apartment->id,
-                            'apartment_number' => $deal->apartment->apartment_number,
-                            'floor_number' => $deal->apartment->floor_number,
-                            'building' => $deal->apartment->building ? [
-                                'id' => $deal->apartment->building->id,
-                                'identifier' => $deal->apartment->building->identifier,
-                                'name' => $deal->apartment->building->getTranslations('name'),
-                                'project' => $deal->apartment->building->project ? [
-                                    'id' => $deal->apartment->building->project->id,
-                                    'title' => $deal->apartment->building->project->getTranslations('title'),
+                    $deals = $query->get()->map(function ($deal) {
+                        return [
+                            'id' => $deal->id,
+                            'title' => $deal->title,
+                            'customer' => $deal->customer ? [
+                                'id' => $deal->customer->id,
+                                'name' => $deal->customer->name,
+                                'phone' => $deal->customer->phone,
+                                'email' => $deal->customer->email,
+                            ] : null,
+                            'user' => $deal->user ? [
+                                'id' => $deal->user->id,
+                                'name' => $deal->user->name,
+                            ] : null,
+                            'apartment' => $deal->apartment ? [
+                                'id' => $deal->apartment->id,
+                                'apartment_number' => $deal->apartment->apartment_number,
+                                'floor_number' => $deal->apartment->floor_number,
+                                'building' => $deal->apartment->building ? [
+                                    'id' => $deal->apartment->building->id,
+                                    'identifier' => $deal->apartment->building->identifier,
+                                    'name' => $deal->apartment->building->getTranslations('name'),
+                                    'project' => $deal->apartment->building->project ? [
+                                        'id' => $deal->apartment->building->project->id,
+                                        'title' => $deal->apartment->building->project->getTranslations('title'),
+                                    ] : null,
                                 ] : null,
                             ] : null,
-                        ] : null,
-                        'budget' => $deal->budget,
-                        'currency' => $deal->currency,
-                        'priority' => $deal->priority,
-                        'is_stale' => $deal->is_stale,
-                        'days_since_activity' => $deal->days_since_activity,
-                        'days_in_stage' => $deal->days_in_stage,
-                        'last_activity_at' => $deal->last_activity_at,
-                        'created_at' => $deal->created_at,
+                            'budget' => $deal->budget,
+                            'currency' => $deal->currency,
+                            'priority' => $deal->priority,
+                            'is_stale' => $deal->is_stale,
+                            'days_since_activity' => $deal->days_since_activity,
+                            'days_in_stage' => $deal->days_in_stage,
+                            'last_activity_at' => $deal->last_activity_at,
+                            'created_at' => $deal->created_at,
+                        ];
+                    });
+
+                    // Calculate total value using current_price accessor
+                    // (uses final_price_total > reserved_price_total > offered_price_total > budget)
+                    $totalValue = $deals->reduce(function ($carry, $deal) {
+                        return $carry + ($deal->current_price ?? 0);
+                    }, 0);
+
+                    return [
+                        'id' => $stage->id,
+                        'name' => $stage->name,
+                        'slug' => $stage->slug,
+                        'color' => $stage->color,
+                        'type' => $stage->type,
+                        'deal_count' => $deals->count(),
+                        'total_value' => (float) $totalValue,
+                        'deals' => $deals,
                     ];
-                });
-
-                // Calculate total value from already-fetched deals (avoid re-querying)
-                $totalValue = $deals->sum('budget') ?? 0;
-
-                return [
-                    'id' => $stage->id,
-                    'name' => $stage->name,
-                    'slug' => $stage->slug,
-                    'color' => $stage->color,
-                    'type' => $stage->type,
-                    'deal_count' => $deals->count(),
-                    'total_value' => (float) $totalValue,
-                    'deals' => $deals,
-                ];
-            });  // Close the map function
+                });  // Close the map function
             });  // Close the Cache::rememberForever
 
             return $this->success($pipeline);
@@ -253,9 +268,9 @@ class CrmDealController extends Controller
                     $q->orderBy('due_date', 'asc');
                 },
             ])
-            ->withSum('payments as total_paid', 'amount_paid')
-            ->withSum('payments as total_due', 'amount_due')
-            ->findOrFail($id);
+                ->withSum('payments as total_paid', 'amount_paid')
+                ->withSum('payments as total_due', 'amount_due')
+                ->findOrFail($id);
 
             $dealData = $deal->toArray();
             $dealData['is_stale'] = $deal->is_stale;
@@ -352,7 +367,8 @@ class CrmDealController extends Controller
             'email' => 'nullable|email|max:255',
             'project_ids' => 'nullable|array',
             'project_ids.*' => 'integer|exists:projects,id',
-            'apartment_info' => 'nullable|string|max:255',
+            'apartment_id' => 'nullable|integer|exists:apartments,id',
+            'stage_id' => 'nullable|integer|exists:crm_stages,id',
             'notes' => 'nullable|string',
         ]);
 
@@ -386,16 +402,28 @@ class CrmDealController extends Controller
                 ]);
             }
 
-            // Get the first 'open' stage (dynamic lookup instead of hardcoded slug)
-            $newLeadStage = CrmStage::where('type', 'open')->where('is_active', true)->ordered()->first();
+            // Determine which stage to use
+            if ($request->stage_id) {
+                // Use the provided stage
+                $newLeadStage = CrmStage::where('id', $request->stage_id)
+                    ->where('is_active', true)
+                    ->first();
 
-            // Fallback to any first stage if no open stage found
-            if (!$newLeadStage) {
-                $newLeadStage = CrmStage::ordered()->first();
-            }
+                if (!$newLeadStage) {
+                    return $this->error('არჩეული სტატუსი ვერ მოიძებნა', 422);
+                }
+            } else {
+                // Get the first 'open' stage (default behavior)
+                $newLeadStage = CrmStage::where('type', 'open')->where('is_active', true)->ordered()->first();
 
-            if (!$newLeadStage) {
-                return $this->error('CRM სტეიჯი ვერ მოიძებნა', 422);
+                // Fallback to any first stage if no open stage found
+                if (!$newLeadStage) {
+                    $newLeadStage = CrmStage::ordered()->first();
+                }
+
+                if (!$newLeadStage) {
+                    return $this->error('CRM სტეიჯი ვერ მოიძებნა', 422);
+                }
             }
 
             // Build notes with project interests
@@ -406,9 +434,6 @@ class CrmDealController extends Controller
                     ->toArray();
                 $notesArray[] = 'დაინტერესებული პროექტები: ' . implode(', ', $projectNames);
             }
-            if ($request->apartment_info) {
-                $notesArray[] = 'ბლოკი/ბინა: ' . $request->apartment_info;
-            }
             if ($request->notes) {
                 $notesArray[] = $request->notes;
             }
@@ -418,6 +443,7 @@ class CrmDealController extends Controller
                 'customer_id' => $customer->id,
                 'stage_id' => $newLeadStage->id,
                 'user_id' => auth()->id(),
+                'apartment_id' => $request->apartment_id,
                 'title' => CrmDeal::generateTitle($customer),
                 'currency' => 'USD',
                 'priority' => 'medium',
@@ -432,23 +458,188 @@ class CrmDealController extends Controller
                     'deal_id' => $deal->id,
                     'user_id' => auth()->id(),
                     'type' => 'note',
-                    'content' => 'ლიდი შეიქმნა ადმინ პანელიდან',  // Fixed: use 'content' instead of 'description'
+                    'content' => 'ლიდი შეიქმნა ადმინ პანელიდან',
                     'metadata' => [
                         'project_ids' => $request->project_ids,
-                        'apartment_info' => $request->apartment_info,
                     ],
                 ]);
             }
 
             DB::commit();
 
-            $deal->load(['customer', 'user', 'stage']);
+            $deal->load(['customer', 'user', 'stage', 'apartment']);
 
             return $this->success($deal, 'ლიდი წარმატებით შეიქმნა', 201);
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Failed to create lead: ' . $e->getMessage());
             return $this->error('ლიდის შექმნა ვერ მოხერხდა', 500);
+        }
+    }
+
+    /**
+     * Create a sold deal (register already-sold apartment with ongoing payments)
+     * This endpoint creates a deal directly in the "Won" stage with apartment and payment schedule
+     */
+    public function createSoldDeal(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            // Customer information
+            'customer.name' => 'required|string|min:2|max:255',
+            'customer.surname' => 'nullable|string|max:255',
+            'customer.phone' => 'required|string|max:50',
+            'customer.email' => 'nullable|email|max:255',
+
+            // Apartment (required)
+            'apartment_id' => 'required|exists:apartments,id',
+
+            // Pricing (required)
+            'final_price_per_sqm' => 'required|numeric|min:0',
+
+            // Payment alternative (calculator)
+            'payment_alternative' => 'nullable|integer|min:1|max:6',
+            'payment_params' => 'nullable|array',
+            'payment_params.initial_payment_percent' => 'nullable|numeric|min:0|max:100',
+            'payment_params.internal_installment_months' => 'nullable|integer|min:1',
+            'payment_params.price_per_sqm' => 'nullable|numeric|min:0',
+
+            // Manual payment schedule
+            'payment_schedule.total_amount' => 'required_without:payment_alternative|numeric|min:0',
+            'payment_schedule.down_payment' => 'nullable|numeric|min:0',
+            'payment_schedule.number_of_installments' => 'nullable|integer|min:0',
+            'payment_schedule.start_date' => 'nullable|date',
+            'payment_schedule.interval_months' => 'nullable|integer|min:1',
+
+            // Optional
+            'notes' => 'nullable|string',
+            'closed_at' => 'nullable|date',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error($validator->errors()->first(), 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // 1. Validate apartment is available
+            $apartment = Apartment::with(['building.project'])->findOrFail($request->apartment_id);
+
+            if ($apartment->status !== 'available') {
+                return $this->error('ბინა აღარ არის ხელმისაწვდომი გასაყიდად', 422);
+            }
+
+            // 2. Find or create customer by phone
+            $fullName = trim($request->input('customer.name') . ' ' . ($request->input('customer.surname') ?? ''));
+            $customer = Customer::where('phone', $request->input('customer.phone'))->first();
+
+            if ($customer) {
+                // Update existing customer
+                $customer->update([
+                    'name' => $fullName,
+                    'email' => $request->input('customer.email') ?? $customer->email,
+                ]);
+            } else {
+                // Create new customer
+                $customer = Customer::create([
+                    'name' => $fullName,
+                    'phone' => $request->input('customer.phone'),
+                    'email' => $request->input('customer.email'),
+                    'source' => 'admin_panel',
+                    'status' => 'new',
+                ]);
+            }
+
+            // 3. Get "Won" stage
+            $wonStage = CrmStage::where('type', 'won')->where('is_active', true)->first();
+
+            if (!$wonStage) {
+                return $this->error('გაყიდული ეტაპი ვერ მოიძებნა', 422);
+            }
+
+            // 4. Calculate total price
+            $finalPricePerSqm = $request->final_price_per_sqm;
+            $finalPriceTotal = $finalPricePerSqm * $apartment->area_total;
+
+            // 5. Create deal
+            $deal = CrmDeal::create([
+                'customer_id' => $customer->id,
+                'stage_id' => $wonStage->id,
+                'user_id' => auth()->id(),
+                'apartment_id' => $apartment->id,
+                'title' => CrmDeal::generateTitle($customer, $apartment),
+                'currency' => 'USD', // Default to USD, can be made configurable
+                'priority' => 'high', // Sold deals are high priority
+                'agreed_price' => $finalPriceTotal,
+                'final_price_per_sqm' => $finalPricePerSqm,
+                'final_price_total' => $finalPriceTotal,
+                'selected_payment_alternative' => $request->payment_alternative,
+                'payment_alternative_params' => $request->payment_params,
+                'notes' => $request->notes,
+                'closed_at' => $request->closed_at ?? now(),
+                'last_activity_at' => now(),
+            ]);
+
+            // 6. Update apartment status to 'sold'
+            $apartment->update(['status' => 'sold']);
+
+            // 7. Generate payment schedule if requested
+            if ($request->payment_alternative && $request->payment_params) {
+                // Use calculator service to generate schedule
+                $calculatorService = new PaymentScheduleCalculatorService();
+                $calculatorService->generate($deal->id);
+            } elseif ($request->payment_schedule) {
+                // Generate manual schedule
+                $schedule = $request->payment_schedule;
+                CrmPayment::generateSchedule(
+                    $deal->id,
+                    $schedule['total_amount'],
+                    $schedule['down_payment'] ?? 0,
+                    $schedule['number_of_installments'] ?? 0,
+                    Carbon::parse($schedule['start_date'] ?? now()),
+                    $schedule['interval_months'] ?? 1
+                );
+            }
+
+            // 8. Create activity log
+            CrmActivity::create([
+                'deal_id' => $deal->id,
+                'user_id' => auth()->id(),
+                'type' => 'system',
+                'content' => 'გარიგება დარეგისტრირდა როგორც გაყიდული',
+                'metadata' => [
+                    'apartment_id' => $apartment->id,
+                    'final_price_per_sqm' => $finalPricePerSqm,
+                    'final_price_total' => $finalPriceTotal,
+                ],
+            ]);
+
+            // Clear pipeline cache to update Kanban/List
+            self::clearPipelineCache();
+
+
+            DB::commit();
+
+            // 9. Load relationships and return
+            $deal->load([
+                'customer',
+                'user',
+                'apartment.building.project',
+                'stage',
+                'payments' => function ($q) {
+                    $q->orderBy('due_date', 'asc');
+                },
+            ]);
+
+            // Clear pipeline cache
+            self::clearPipelineCache();
+
+            return $this->success($deal, 'გაყიდული გარიგება წარმატებით დარეგისტრირდა', 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to create sold deal: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            return $this->error('გაყიდული გარიგების რეგისტრაცია ვერ მოხერხდა: ' . $e->getMessage(), 500);
         }
     }
 
@@ -613,7 +804,7 @@ class CrmDealController extends Controller
 
             $stats = Cache::remember($cacheKey, 300, function () use ($request, $dateFrom, $dateTo) {
                 // Single query for all deal counts and values with JOIN
-            $dealStats = CrmDeal::selectRaw('
+                $dealStats = CrmDeal::selectRaw('
                 COUNT(*) as total_deals,
                 SUM(CASE WHEN crm_stages.type = "open" THEN 1 ELSE 0 END) as open_deals,
                 SUM(CASE WHEN crm_stages.type = "won" THEN 1 ELSE 0 END) as won_deals,
@@ -628,59 +819,59 @@ class CrmDealController extends Controller
                 SUM(CASE WHEN crm_deals.agreed_price IS NOT NULL
                     THEN crm_deals.agreed_price ELSE 0 END) as total_value
             ')
-            ->join('crm_stages', 'crm_deals.stage_id', '=', 'crm_stages.id')
-            ->when($dateFrom, fn($q) => $q->whereDate('crm_deals.created_at', '>=', $dateFrom))
-            ->when($dateTo, fn($q) => $q->whereDate('crm_deals.created_at', '<=', $dateTo))
-            ->first();
+                    ->join('crm_stages', 'crm_deals.stage_id', '=', 'crm_stages.id')
+                    ->when($dateFrom, fn($q) => $q->whereDate('crm_deals.created_at', '>=', $dateFrom))
+                    ->when($dateTo, fn($q) => $q->whereDate('crm_deals.created_at', '<=', $dateTo))
+                    ->first();
 
-            // Deals by stage (already optimized with withCount)
-            $dealsByStage = CrmStage::ordered()
-                ->withCount(['deals' => function ($q) use ($dateFrom, $dateTo) {
-                    if ($dateFrom) {
-                        $q->whereDate('created_at', '>=', $dateFrom);
-                    }
-                    if ($dateTo) {
-                        $q->whereDate('created_at', '<=', $dateTo);
-                    }
-                }])
-                ->get()
-                ->map(function ($stage) {
-                    return [
-                        'name' => $stage->name,
-                        'color' => $stage->color,
-                        'count' => $stage->deals_count,
-                    ];
-                });
+                // Deals by stage (already optimized with withCount)
+                $dealsByStage = CrmStage::ordered()
+                    ->withCount(['deals' => function ($q) use ($dateFrom, $dateTo) {
+                        if ($dateFrom) {
+                            $q->whereDate('created_at', '>=', $dateFrom);
+                        }
+                        if ($dateTo) {
+                            $q->whereDate('created_at', '<=', $dateTo);
+                        }
+                    }])
+                    ->get()
+                    ->map(function ($stage) {
+                        return [
+                            'name' => $stage->name,
+                            'color' => $stage->color,
+                            'count' => $stage->deals_count,
+                        ];
+                    });
 
-            // This month stats - Single query
-            $thisMonthStats = CrmDeal::selectRaw('
+                // This month stats - Single query
+                $thisMonthStats = CrmDeal::selectRaw('
                 COUNT(*) as total,
                 SUM(CASE WHEN crm_stages.type = "won" THEN 1 ELSE 0 END) as won
             ')
-            ->join('crm_stages', 'crm_deals.stage_id', '=', 'crm_stages.id')
-            ->whereMonth('crm_deals.created_at', now()->month)
-            ->whereYear('crm_deals.created_at', now()->year)
-            ->first();
+                    ->join('crm_stages', 'crm_deals.stage_id', '=', 'crm_stages.id')
+                    ->whereMonth('crm_deals.created_at', now()->month)
+                    ->whereYear('crm_deals.created_at', now()->year)
+                    ->first();
 
-            // Calculate conversion rate
-            $closedDeals = $dealStats->won_deals + $dealStats->lost_deals;
-            $conversionRate = $closedDeals > 0
-                ? round(($dealStats->won_deals / $closedDeals) * 100, 1)
-                : 0;
+                // Calculate conversion rate
+                $closedDeals = $dealStats->won_deals + $dealStats->lost_deals;
+                $conversionRate = $closedDeals > 0
+                    ? round(($dealStats->won_deals / $closedDeals) * 100, 1)
+                    : 0;
 
-            $stats = [
-                'total' => (int) $dealStats->total_deals,
-                'open' => (int) $dealStats->open_deals,
-                'won' => (int) $dealStats->won_deals,
-                'lost' => (int) $dealStats->lost_deals,
-                'stale' => (int) $dealStats->stale_deals,
-                'total_value' => (float) $dealStats->total_value,
-                'won_value' => (float) $dealStats->won_value,
-                'conversion_rate' => $conversionRate,
-                'this_month' => (int) $thisMonthStats->total,
-                'won_this_month' => (int) $thisMonthStats->won,
-                'by_stage' => $dealsByStage,
-            ];
+                $stats = [
+                    'total' => (int) $dealStats->total_deals,
+                    'open' => (int) $dealStats->open_deals,
+                    'won' => (int) $dealStats->won_deals,
+                    'lost' => (int) $dealStats->lost_deals,
+                    'stale' => (int) $dealStats->stale_deals,
+                    'total_value' => (float) $dealStats->total_value,
+                    'won_value' => (float) $dealStats->won_value,
+                    'conversion_rate' => $conversionRate,
+                    'this_month' => (int) $thisMonthStats->total,
+                    'won_this_month' => (int) $thisMonthStats->won,
+                    'by_stage' => $dealsByStage,
+                ];
 
                 return $stats;
             });  // Close Cache::remember
@@ -948,7 +1139,6 @@ class CrmDealController extends Controller
                     'payments_count' => count($result['schedule']),
                 ],
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Failed to generate payment schedule for deal ' . $deal->id . ': ' . $e->getMessage());
             \Log::error($e->getTraceAsString());
@@ -1016,7 +1206,6 @@ class CrmDealController extends Controller
             self::clearPipelineCache();
 
             return $this->success($payment->fresh(), 'გადახდა წარმატებით განახლდა');
-
         } catch (\Exception $e) {
             \Log::error('Failed to mark payment as paid: ' . $e->getMessage());
             return $this->error('გადახდის განახლება ვერ მოხერხდა', 500);
@@ -1080,7 +1269,6 @@ class CrmDealController extends Controller
             self::clearPipelineCache();
 
             return $this->success($payment->fresh(), 'გადახდის თანხა წარმატებით შეიცვალა');
-
         } catch (\Exception $e) {
             \Log::error('Failed to edit payment amount: ' . $e->getMessage());
             return $this->error('გადახდის რედაქტირება ვერ მოხერხდა', 500);
@@ -1151,7 +1339,6 @@ class CrmDealController extends Controller
                     ],
                 ], 'გადახდის გრაფიკი წარმატებით განახლდა');
             });
-
         } catch (\Exception $e) {
             \Log::error('Failed to regenerate payment schedule: ' . $e->getMessage());
             return $this->error('გადახდის გრაფიკის თავიდან შექმნა ვერ მოხერხდა', 500);
@@ -1166,8 +1353,10 @@ class CrmDealController extends Controller
         $stageName = strtolower($newStage->name);
 
         // Offered → Reserved
-        if (str_contains($stageName, 'reserved') || str_contains($stageName, 'contract') ||
-            str_contains($stageName, 'დაჯავშნ') || str_contains($stageName, 'კონტრაქტ')) {
+        if (
+            str_contains($stageName, 'reserved') || str_contains($stageName, 'contract') ||
+            str_contains($stageName, 'დაჯავშნ') || str_contains($stageName, 'კონტრაქტ')
+        ) {
             if ($deal->offered_price_per_sqm) {
                 $deal->reserved_price_per_sqm = $deal->offered_price_per_sqm;
                 $deal->reserved_price_total = $deal->offered_price_total;
@@ -1196,5 +1385,176 @@ class CrmDealController extends Controller
                 $this->generateCalculatorPaymentSchedule($deal->fresh());
             }
         }
+    }
+
+    /**
+     * Get financial dashboard data with metrics and upcoming payments
+     */
+    public function financialDashboard(Request $request)
+    {
+        try {
+            // Extract filters
+            $projectIds = $request->input('project_ids', []);
+            $userId = $request->input('user_id');
+            $dateFrom = $request->input('date_from');
+            $dateTo = $request->input('date_to');
+            $stageIds = $request->input('stage_ids', []);
+
+            // Build cache key from all parameters
+            $cacheKey = $this->buildFinancialDashboardCacheKey($projectIds, $userId, $dateFrom, $dateTo, $stageIds);
+
+            $data = Cache::remember($cacheKey, 300, function () use ($projectIds, $userId, $dateFrom, $dateTo, $stageIds) {
+                // Default to won deals only if no stage filter provided
+                if (empty($stageIds)) {
+                    $wonStage = CrmStage::where('type', 'won')->first();
+                    $stageIds = $wonStage ? [$wonStage->id] : [];
+                }
+
+                // 1. Query deals with filters
+                $dealsQuery = CrmDeal::query()
+                    ->with(['apartment.building.project', 'stage'])
+                    ->when(!empty($stageIds), fn($q) => $q->whereIn('stage_id', $stageIds))
+                    ->when($userId, fn($q) => $q->where('user_id', $userId))
+                    ->when($dateFrom, fn($q) => $q->whereDate('closed_at', '>=', $dateFrom))
+                    ->when($dateTo, fn($q) => $q->whereDate('closed_at', '<=', $dateTo));
+
+                // Add project filter via apartment relationship
+                if (!empty($projectIds)) {
+                    $dealsQuery->whereHas('apartment.building', function ($q) use ($projectIds) {
+                        $q->whereIn('project_id', $projectIds);
+                    });
+                }
+
+                // 2. Get all matching deals with payment sums (single query)
+                $deals = $dealsQuery
+                    ->withSum('payments as total_paid', 'amount_paid')
+                    ->withSum('payments as total_due', 'amount_due')
+                    ->get();
+
+                // 3. Calculate key metrics from deals collection
+                $totalSoldValue = $deals->sum('final_price_total') ?? 0;
+                $totalPaid = $deals->sum('total_paid') ?? 0;
+                $totalDue = $deals->sum('total_due') ?? 0;
+                $totalOutstanding = $totalDue - $totalPaid;
+                $paymentCollectionRate = $totalDue > 0 ? ($totalPaid / $totalDue) * 100 : 0;
+
+                // 4. Apartment statistics (single query with conditional aggregation)
+                $apartmentQuery = Apartment::query();
+
+                // Apply project filter
+                if (!empty($projectIds)) {
+                    $apartmentQuery->whereHas('building', function ($q) use ($projectIds) {
+                        $q->whereIn('project_id', $projectIds);
+                    });
+                }
+
+                $apartmentStats = $apartmentQuery->selectRaw('
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = "available" THEN 1 ELSE 0 END) as available,
+                    SUM(CASE WHEN status = "reserved" THEN 1 ELSE 0 END) as reserved,
+                    SUM(CASE WHEN status = "sold" THEN 1 ELSE 0 END) as sold
+                ')->first();
+
+                // 5. Overdue payments (single query)
+                $overdueQuery = CrmPayment::query()
+                    ->whereIn('status', ['pending', 'partially_paid', 'overdue'])
+                    ->where('due_date', '<', now()->startOfDay())
+                    ->whereHas('deal', function ($q) use ($stageIds, $userId, $dateFrom, $dateTo, $projectIds) {
+                        if (!empty($stageIds)) {
+                            $q->whereIn('stage_id', $stageIds);
+                        }
+                        if ($userId) {
+                            $q->where('user_id', $userId);
+                        }
+                        if ($dateFrom) {
+                            $q->whereDate('closed_at', '>=', $dateFrom);
+                        }
+                        if ($dateTo) {
+                            $q->whereDate('closed_at', '<=', $dateTo);
+                        }
+                        if (!empty($projectIds)) {
+                            $q->whereHas('apartment.building', fn($sq) => $sq->whereIn('project_id', $projectIds));
+                        }
+                    });
+
+                $overdueStats = $overdueQuery->selectRaw('
+                    COUNT(*) as count,
+                    SUM(amount_due - amount_paid) as total_overdue
+                ')->first();
+
+                // 6. Future payments (next 90 days) - for upcoming section
+                $upcomingPayments = CrmPayment::query()
+                    ->with(['deal.customer', 'deal.apartment.building.project', 'deal.user'])
+                    ->whereIn('status', ['pending', 'partially_paid'])
+                    ->whereBetween('due_date', [now()->startOfDay(), now()->addDays(90)])
+                    ->whereHas('deal', function ($q) use ($stageIds, $userId, $dateFrom, $dateTo, $projectIds) {
+                        if (!empty($stageIds)) {
+                            $q->whereIn('stage_id', $stageIds);
+                        }
+                        if ($userId) {
+                            $q->where('user_id', $userId);
+                        }
+                        if ($dateFrom) {
+                            $q->whereDate('closed_at', '>=', $dateFrom);
+                        }
+                        if ($dateTo) {
+                            $q->whereDate('closed_at', '<=', $dateTo);
+                        }
+                        if (!empty($projectIds)) {
+                            $q->whereHas('apartment.building', fn($sq) => $sq->whereIn('project_id', $projectIds));
+                        }
+                    })
+                    ->orderBy('due_date', 'asc')
+                    ->limit(20)
+                    ->get()
+                    ->map(function ($payment) {
+                        return [
+                            'id' => $payment->id,
+                            'deal_id' => $payment->deal_id,
+                            'customer_name' => $payment->deal->customer->name ?? '',
+                            'apartment_number' => $payment->deal->apartment->apartment_number ?? '',
+                            'project_title' => $payment->deal->apartment->building->project->title ?? '',
+                            'amount_due' => $payment->amount_due,
+                            'amount_paid' => $payment->amount_paid,
+                            'remaining_amount' => $payment->remaining_amount,
+                            'currency' => $payment->currency,
+                            'due_date' => $payment->due_date,
+                            'status' => $payment->status,
+                            'days_until_due' => $payment->days_until_due,
+                            'is_overdue' => $payment->is_overdue,
+                        ];
+                    });
+
+                return [
+                    'metrics' => [
+                        'total_sold_value' => (float) $totalSoldValue,
+                        'total_paid' => (float) $totalPaid,
+                        'total_outstanding' => (float) $totalOutstanding,
+                        'apartments_available' => (int) ($apartmentStats->available ?? 0),
+                        'apartments_reserved' => (int) ($apartmentStats->reserved ?? 0),
+                        'apartments_sold' => (int) ($apartmentStats->sold ?? 0),
+                        'overdue_payments_count' => (int) ($overdueStats->count ?? 0),
+                        'overdue_payments_value' => (float) ($overdueStats->total_overdue ?? 0),
+                        'payment_collection_rate' => round($paymentCollectionRate, 2),
+                    ],
+                    'upcoming_payments' => $upcomingPayments,
+                ];
+            });
+
+            return $this->success($data);
+        } catch (\Exception $e) {
+            \Log::error('Failed to fetch financial dashboard: ' . $e->getMessage());
+            return $this->error('ფინანსური დაშბორდის ჩატვირთვა ვერ მოხერხდა', 500);
+        }
+    }
+
+    /**
+     * Build cache key for financial dashboard
+     */
+    private function buildFinancialDashboardCacheKey($projectIds, $userId, $dateFrom, $dateTo, $stageIds): string
+    {
+        $projects = is_array($projectIds) ? implode(',', $projectIds) : '';
+        $stages = is_array($stageIds) ? implode(',', $stageIds) : '';
+        return "crm_financial_dashboard_{$projects}_{$userId}_{$dateFrom}_{$dateTo}_{$stages}";
     }
 }

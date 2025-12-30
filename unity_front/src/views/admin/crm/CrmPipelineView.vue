@@ -4,26 +4,22 @@
  * Unified sales pipeline - leads automatically flow in from website forms
  */
 
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import { useCrmStore } from '@/stores/admin/crm'
 import { useToastStore } from '@/stores/ui/toast'
-import { getAdminProjects } from '@/services/projects'
-import { crmApi } from '@/services/crmApi'
+import { usePerformanceMonitor } from '@/composables/crm/usePerformanceMonitor'
 import KanbanBoard from './components/KanbanBoard.vue'
 import DealDrawer from './components/DealDrawer.vue'
 import LostReasonModal from './components/LostReasonModal.vue'
 import StageChangeConfirmModal from './components/StageChangeConfirmModal.vue'
 import DealPricingModal from './components/DealPricingModal.vue'
+import CreateLeadModal from './components/CreateLeadModal.vue'
+import RegisterSoldDealModal from './components/RegisterSoldDealModal.vue'
 import type { CrmDeal } from '@/types/crm'
 import type { ProjectCalculatorSettings } from '@/types/admin/calculator'
-import { User, Phone, Mail, Building, FileText, Search } from 'lucide-vue-next'
-
-interface Project {
-  id: number
-  title: string
-}
+import { Search, ChevronDown, Plus, FileCheck } from 'lucide-vue-next'
 
 // Composables
 const { t } = useTranslations()
@@ -33,9 +29,14 @@ const { formatNumber, getCurrencySymbol } = useLocaleFormatter()
 const crmStore = useCrmStore()
 const toast = useToastStore()
 
+// Performance monitoring (dev mode only)
+const perfMonitor = usePerformanceMonitor()
+
 // State
 const showDealDrawer = ref(false)
-const showCreateModal = ref(false)
+const showCreateLeadModal = ref(false)
+const showRegisterSoldModal = ref(false)
+const showCreateDropdown = ref(false)
 const showLostModal = ref(false)
 const showStageChangeModal = ref(false)
 const showPricingModalFromStageChange = ref(false)
@@ -43,7 +44,6 @@ const pendingLostDeal = ref<{ dealId: number; targetStageId: number } | null>(nu
 const pendingStageChangeDeal = ref<{ deal: CrmDeal; targetStageId: number } | null>(null)
 const selectedDealId = ref<number | null>(null)
 const filterUserId = ref<number | null>(null)
-const isCreating = ref(false)
 
 // Extract calculator settings from pending deal for stage change modal
 const stageChangeCalculatorSettings = computed(() => {
@@ -56,28 +56,15 @@ const searchQuery = ref('')
 const filterPriority = ref<'high' | 'medium' | 'low' | ''>('')
 const showStaleOnly = ref(false)
 
-// Projects for multi-select
-const projects = ref<Project[]>([])
-const loadingProjects = ref(false)
-
-// New Lead Form
-const newLeadForm = ref({
-  name: '',
-  surname: '',
-  phone: '',
-  email: '',
-  project_ids: [] as number[],
-  apartment_info: '',
-  notes: '',
-})
-
 // Computed
 const isLoading = computed(() => crmStore.isLoadingPipeline)
 const statistics = computed(() => crmStore.statistics)
 
 // Filtered pipeline based on search and filters
 const filteredPipeline = computed(() => {
-  return crmStore.pipeline.map(column => ({
+  perfMonitor.markStart('filter')
+
+  const filtered = crmStore.pipeline.map(column => ({
     ...column,
     deals: column.deals.filter(deal => {
       // Search filter (name, phone, apartment)
@@ -102,35 +89,48 @@ const filteredPipeline = computed(() => {
       return true
     })
   }))
+
+  const filterTime = perfMonitor.markEnd('filter')
+
+  // Update metrics
+  const totalDeals = crmStore.pipeline.reduce((sum, col) => sum + col.deals.length, 0)
+  const visibleDeals = filtered.reduce((sum, col) => sum + col.deals.length, 0)
+  perfMonitor.updateDealCounts(totalDeals, visibleDeals)
+
+  // Warn if filter is slow
+  if (filterTime > 50 && import.meta.env.DEV) {
+    console.warn(`⚠️ Slow filter: ${filterTime.toFixed(2)}ms`)
+  }
+
+  return filtered
 })
 
-// Load pipeline and projects on mount
+// Load pipeline on mount
 onMounted(async () => {
+  perfMonitor.markApiStart()
+  perfMonitor.markRenderStart()
+
   try {
     await Promise.all([
       crmStore.fetchPipeline(filterUserId.value ?? undefined),
       crmStore.fetchStatistics(),
       crmStore.fetchStages(),
-      loadProjects(),
     ])
+
+    perfMonitor.markApiEnd()
+
+    // Wait for DOM to render
+    await nextTick()
+    perfMonitor.markRenderEnd()
+    perfMonitor.calculateInitialLoad()
+
   } catch (error) {
     console.error('Failed to load CRM data:', error)
     toast.error(t('admin.crm.messages.load_failed'))
+    perfMonitor.markApiEnd()
+    perfMonitor.markRenderEnd()
   }
 })
-
-// Load projects for multi-select
-async function loadProjects(): Promise<void> {
-  loadingProjects.value = true
-  try {
-    const response = await getAdminProjects()
-    projects.value = response.data.data || []
-  } catch (error) {
-    console.error('Failed to load projects:', error)
-  } finally {
-    loadingProjects.value = false
-  }
-}
 
 // Watch for filter changes
 watch(filterUserId, async (newUserId) => {
@@ -253,64 +253,17 @@ function handleLostModalCancel(): void {
 }
 
 
-// Toggle project selection
-function toggleProject(projectId: number): void {
-  const index = newLeadForm.value.project_ids.indexOf(projectId)
-  if (index === -1) {
-    newLeadForm.value.project_ids.push(projectId)
-  } else {
-    newLeadForm.value.project_ids.splice(index, 1)
-  }
+// Handle modal created event
+async function handleLeadCreated(dealId: number): Promise<void> {
+  await crmStore.fetchPipeline(filterUserId.value ?? undefined)
+  selectedDealId.value = dealId
+  showDealDrawer.value = true
 }
 
-// Check if project is selected
-function isProjectSelected(projectId: number): boolean {
-  return newLeadForm.value.project_ids.includes(projectId)
-}
-
-// Handle create lead
-async function handleCreateLead(): Promise<void> {
-  if (!newLeadForm.value.name || !newLeadForm.value.phone) {
-    toast.error(t('admin.crm.messages.fill_required'))
-    return
-  }
-
-  isCreating.value = true
-  try {
-    await crmApi.createLead({
-      name: newLeadForm.value.name,
-      surname: newLeadForm.value.surname || undefined,
-      phone: newLeadForm.value.phone,
-      email: newLeadForm.value.email || undefined,
-      project_ids: newLeadForm.value.project_ids.length > 0 ? newLeadForm.value.project_ids : undefined,
-      apartment_info: newLeadForm.value.apartment_info || undefined,
-      notes: newLeadForm.value.notes || undefined,
-    })
-    
-    showCreateModal.value = false
-    resetNewLeadForm()
-    toast.success(t('admin.crm.messages.lead_created'))
-
-    // Refresh pipeline
-    await crmStore.fetchPipeline(filterUserId.value ?? undefined)
-  } catch {
-    toast.error(t('admin.crm.messages.lead_create_failed'))
-  } finally {
-    isCreating.value = false
-  }
-}
-
-// Reset new lead form
-function resetNewLeadForm(): void {
-  newLeadForm.value = {
-    name: '',
-    surname: '',
-    phone: '',
-    email: '',
-    project_ids: [],
-    apartment_info: '',
-    notes: '',
-  }
+async function handleSoldDealCreated(dealId: number): Promise<void> {
+  await crmStore.fetchPipeline(filterUserId.value ?? undefined)
+  selectedDealId.value = dealId
+  showDealDrawer.value = true
 }
 
 // Close deal drawer
@@ -361,26 +314,47 @@ function formatCurrency(value: number): string {
             </div>
           </div>
 
-          <!-- Add Deal Button -->
-          <button
-            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            @click="showCreateModal = true"
-          >
-            <svg
-              class="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <!-- Create Deal Dropdown -->
+          <div class="relative">
+            <button
+              class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              @click="showCreateDropdown = !showCreateDropdown"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-            {{ t('admin.crm.pipeline.new_lead') }}
-          </button>
+              <Plus class="w-5 h-5 mr-2" />
+              {{ t('admin.crm.pipeline.create_deal') }}
+              <ChevronDown class="w-4 h-4 ml-2" />
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div
+              v-if="showCreateDropdown"
+              class="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
+              @click="showCreateDropdown = false"
+            >
+              <div class="py-1">
+                <button
+                  class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3"
+                  @click="showCreateLeadModal = true"
+                >
+                  <Plus class="w-4 h-4 text-blue-600" />
+                  <div>
+                    <div class="font-medium">{{ t('admin.crm.pipeline.new_lead') }}</div>
+                    <div class="text-xs text-gray-500">{{ t('admin.crm.pipeline.new_lead_desc') }}</div>
+                  </div>
+                </button>
+                <button
+                  class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3"
+                  @click="showRegisterSoldModal = true"
+                >
+                  <FileCheck class="w-4 h-4 text-emerald-600" />
+                  <div>
+                    <div class="font-medium">{{ t('admin.crm.pipeline.register_sold') }}</div>
+                    <div class="text-xs text-gray-500">{{ t('admin.crm.pipeline.register_sold_desc') }}</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -493,163 +467,17 @@ function formatCurrency(value: number): string {
       @saved="handlePricingSavedFromStageChange"
     />
 
-    <!-- Create Lead Modal -->
-    <Teleport to="body">
-      <div
-        v-if="showCreateModal"
-        class="fixed inset-0 z-50 flex items-center justify-center"
-      >
-        <div
-          class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-          @click="showCreateModal = false"
-        ></div>
+    <!-- Modals -->
+    <CreateLeadModal
+      :is-open="showCreateLeadModal"
+      @close="showCreateLeadModal = false"
+      @created="handleLeadCreated"
+    />
 
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden max-h-[90vh] flex flex-col">
-          <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
-            <h3 class="text-lg font-semibold text-white">{{ t('admin.crm.pipeline.new_lead') }}</h3>
-            <p class="text-sm text-blue-100 mt-1">{{ t('admin.crm.form.add_lead_subtitle') }}</p>
-          </div>
-
-          <div class="p-6 space-y-4 overflow-y-auto flex-1">
-            <!-- Name & Surname -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-900 mb-1">{{ t('admin.crm.form.first_name') }}</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User class="h-5 w-5 text-gray-500" />
-                  </div>
-                  <input
-                    v-model="newLeadForm.name"
-                    type="text"
-                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                    :placeholder="t('admin.crm.form.first_name_placeholder')"
-                  />
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-900 mb-1">{{ t('admin.crm.form.last_name') }}</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User class="h-5 w-5 text-gray-500" />
-                  </div>
-                  <input
-                    v-model="newLeadForm.surname"
-                    type="text"
-                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                    :placeholder="t('admin.crm.form.last_name_placeholder')"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Phone -->
-            <div>
-              <label class="block text-sm font-medium text-gray-900 mb-1">{{ t('admin.crm.form.phone') }}</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone class="h-5 w-5 text-gray-500" />
-                </div>
-                <input
-                  v-model="newLeadForm.phone"
-                  type="tel"
-                  class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 font-medium"
-                  :placeholder="t('admin.crm.form.phone_placeholder')"
-                />
-              </div>
-            </div>
-
-            <!-- Email (optional) -->
-            <div>
-              <label class="block text-sm font-medium text-gray-900 mb-1">{{ t('admin.crm.form.email') }}</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail class="h-5 w-5 text-gray-500" />
-                </div>
-                <input
-                  v-model="newLeadForm.email"
-                  type="email"
-                  class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                  :placeholder="t('admin.crm.form.email_placeholder')"
-                />
-              </div>
-            </div>
-
-            <!-- Projects Multi-select -->
-            <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">{{ t('admin.crm.form.interested_projects') }}</label>
-              <div v-if="loadingProjects" class="text-sm text-gray-700">{{ t('admin.crm.messages.loading') }}</div>
-              <div v-else class="flex flex-wrap gap-2">
-                <button
-                  v-for="project in projects"
-                  :key="project.id"
-                  type="button"
-                  class="px-3 py-1.5 text-sm rounded-full border transition-all"
-                  :class="isProjectSelected(project.id)
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'"
-                  @click="toggleProject(project.id)"
-                >
-                  {{ project.title }}
-                </button>
-              </div>
-              <p v-if="projects.length === 0 && !loadingProjects" class="text-sm text-gray-700 mt-1">
-                {{ t('admin.crm.messages.no_projects') }}
-              </p>
-            </div>
-
-            <!-- Block/Apartment Info (optional) -->
-            <div>
-              <label class="block text-sm font-medium text-gray-900 mb-1">{{ t('admin.crm.form.apartment_info') }}</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Building class="h-5 w-5 text-gray-500" />
-                </div>
-                <input
-                  v-model="newLeadForm.apartment_info"
-                  type="text"
-                  class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                  :placeholder="t('admin.crm.form.apartment_info_placeholder')"
-                />
-              </div>
-            </div>
-
-            <!-- Notes -->
-            <div>
-              <label class="block text-sm font-medium text-gray-900 mb-1">{{ t('admin.crm.form.notes') }}</label>
-              <div class="relative">
-                <div class="absolute top-3 left-3 pointer-events-none">
-                  <FileText class="h-5 w-5 text-gray-500" />
-                </div>
-                <textarea
-                  v-model="newLeadForm.notes"
-                  rows="3"
-                  class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 resize-none"
-                  :placeholder="t('admin.crm.form.notes_placeholder')"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t">
-            <button
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              @click="showCreateModal = false"
-              :disabled="isCreating"
-            >
-              {{ t('admin.crm.form.cancel') }}
-            </button>
-            <button
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="handleCreateLead"
-              :disabled="isCreating"
-            >
-              <span v-if="isCreating">{{ t('admin.crm.messages.creating') }}</span>
-              <span v-else>{{ t('admin.crm.form.create') }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <RegisterSoldDealModal
+      :is-open="showRegisterSoldModal"
+      @close="showRegisterSoldModal = false"
+      @created="handleSoldDealCreated"
+    />
   </div>
 </template>

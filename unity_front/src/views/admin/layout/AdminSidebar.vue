@@ -52,6 +52,24 @@
             :sidebar-open="sidebarOpen"
           />
 
+          <!-- CRM Section -->
+          <div class="pt-4 mt-4 border-t border-slate-200">
+            <transition name="fade">
+              <p v-if="sidebarOpen" class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                {{ t('admin.sidebar.crm') }}
+              </p>
+            </transition>
+            <SidebarLink
+              v-for="item in crmItems"
+              :key="item.id"
+              :to="item.to"
+              :icon="item.icon"
+              :name="item.name"
+              :color="item.color"
+              :sidebar-open="sidebarOpen"
+            />
+          </div>
+
           <!-- Apartment Section -->
           <div v-if="isAdmin" class="pt-4 mt-4 border-t border-slate-200">
             <transition name="fade">
@@ -147,6 +165,7 @@ defineProps<{
   isMarketing: boolean
   user: { name?: string; email?: string } | null
   navItems: NavItem[]
+  crmItems: NavItem[]
   apartmentItems: NavItem[]
   customerItems: NavItem[]
   calculatorItems: NavItem[]

@@ -9,11 +9,14 @@ import type { PaymentScheduleItem } from '@/types/admin/calculator'
 /**
  * Generate standard monthly payment schedule
  */
+/**
+ * Generate standard monthly payment schedule
+ */
 export function generateStandardSchedule(
   downPayment: number,
   monthlyPayment: number,
   numberOfMonths: number,
-  startDate: Date,
+  startDate: Date = new Date(),
 ): PaymentScheduleItem[] {
   const schedule: PaymentScheduleItem[] = []
   let remaining = downPayment > 0 ? monthlyPayment * numberOfMonths : 0
@@ -54,9 +57,9 @@ export function generateBalloonSchedule(
   monthsUntilCompletion: number,
   balloonPayment: number,
   completionDate: Date,
+  startDate: Date = new Date(),
 ): PaymentScheduleItem[] {
   const schedule: PaymentScheduleItem[] = []
-  const startDate = new Date()
   let remaining = monthlyPayment * monthsUntilCompletion + balloonPayment
 
   if (downPayment > 0) {
@@ -105,13 +108,14 @@ export function generateOneTimeSchedule(
   customDate?: string,
   customAmount?: number,
   customPayments?: Array<{ date: string; amount: number }>,
+  startDate: Date = new Date(),
 ): PaymentScheduleItem[] {
   const schedule: PaymentScheduleItem[] = []
   let remaining = totalPrice - downPayment
 
   schedule.push({
     month: 0,
-    date: new Date(),
+    date: startDate,
     amount: downPayment,
     remainingBalance: remaining,
     description: 'Down Payment / შენატანი',
@@ -159,13 +163,14 @@ export function generateNegotiatedSchedule(
   customDate?: string,
   customAmount?: number,
   customPayments?: Array<{ date: string; amount: number }>,
+  startDate: Date = new Date(),
 ): PaymentScheduleItem[] {
   const schedule: PaymentScheduleItem[] = []
   let remaining = remainingPayment
 
   schedule.push({
     month: 0,
-    date: new Date(),
+    date: startDate,
     amount: downPayment,
     remainingBalance: remaining,
     description: 'Down Payment / შენატანი',

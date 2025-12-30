@@ -18,6 +18,72 @@ class PaymentScheduleCalculatorService
     }
 
     /**
+     * Generate and save payment schedule for a deal
+     */
+    public function generate(int $dealId): void
+    {
+        $deal = \App\Models\CrmDeal::with(['apartment.building.project'])->findOrFail($dealId);
+        $project = $deal->apartment->building->project;
+
+        if (!$project || !$project->calculator_settings) {
+            throw new \Exception("Project calculator settings not found");
+        }
+
+        // Prepare parameters
+        $alternativeId = $deal->selected_payment_alternative;
+        $params = $deal->payment_alternative_params ?? [];
+
+        $basePrice = $params['price_per_sqm'] ?? $deal->final_price_per_sqm; // Use param override or deal price
+        $area = $deal->apartment->area_total;
+
+        // Extract start date and paid installments
+        $startDate = isset($params['start_date']) ? Carbon::parse($params['start_date']) : Carbon::now();
+        $paidInstallments = $params['paid_installments'] ?? [];
+
+        // Calculate schedule
+        $result = $this->calculate(
+            $alternativeId,
+            $basePrice,
+            $area,
+            $project->calculator_settings,
+            $params['initial_payment_percent'] ?? null,
+            isset($params['monthly_payment']) ? (float)$params['monthly_payment'] : null,
+            $startDate
+        );
+
+        // Save payments
+        foreach ($result['schedule'] as $paymentData) {
+            $isPaid = in_array($paymentData['month'], $paidInstallments);
+
+            \App\Models\CrmPayment::create([
+                'deal_id' => $deal->id,
+                'title' => $paymentData['description'],
+                'installment_number' => $paymentData['month'],
+                'amount_due' => $paymentData['amount'],
+                'currency' => $deal->currency,
+                'due_date' => $paymentData['date'],
+                'status' => $isPaid ? 'paid' : 'pending',
+                'amount_paid' => $isPaid ? $paymentData['amount'] : 0,
+                'paid_at' => $isPaid ? Carbon::now() : null, // Assuming paid now if marked as paid
+            ]);
+        }
+
+        // Log activity
+        \App\Models\CrmActivity::create([
+            'deal_id' => $deal->id,
+            'user_id' => auth()->id(),
+            'type' => 'system',
+            'content' => "გადახდის გრაფიკი დაგენერირდა (ალტერნატივა #{$alternativeId})",
+            'metadata' => [
+                'total_price' => $result['totalPrice'],
+                'alternative_id' => $alternativeId,
+                'start_date' => $startDate->toDateString(),
+                'paid_installments_count' => count($paidInstallments)
+            ]
+        ]);
+    }
+
+    /**
      * Main dispatcher - calculates payment schedule based on alternative
      */
     public function calculate(
@@ -26,15 +92,18 @@ class PaymentScheduleCalculatorService
         float $area,
         array $calculatorSettings,
         ?float $downPaymentPercent = null,
-        ?float $monthlyPayment = null
+        ?float $monthlyPayment = null,
+        ?Carbon $startDate = null
     ): array {
+        $startDate = $startDate ?? Carbon::now();
+
         return match ($alternative) {
-            1 => $this->calculateAlternative1($basePrice, $area, $calculatorSettings, $downPaymentPercent),
-            2 => $this->calculateAlternative2($basePrice, $area, $calculatorSettings, $downPaymentPercent, $monthlyPayment),
-            3 => $this->calculateAlternative3($basePrice, $area, $calculatorSettings, $downPaymentPercent),
-            4 => $this->calculateAlternative4($basePrice, $area, $calculatorSettings, $downPaymentPercent),
-            5 => $this->calculateAlternative5($basePrice, $area, $calculatorSettings, $monthlyPayment),
-            6 => $this->calculateAlternative6($basePrice, $area, $calculatorSettings, $monthlyPayment),
+            1 => $this->calculateAlternative1($basePrice, $area, $calculatorSettings, $downPaymentPercent, $startDate),
+            2 => $this->calculateAlternative2($basePrice, $area, $calculatorSettings, $downPaymentPercent, $monthlyPayment, $startDate),
+            3 => $this->calculateAlternative3($basePrice, $area, $calculatorSettings, $downPaymentPercent, $startDate),
+            4 => $this->calculateAlternative4($basePrice, $area, $calculatorSettings, $downPaymentPercent, $startDate),
+            5 => $this->calculateAlternative5($basePrice, $area, $calculatorSettings, $monthlyPayment, $startDate),
+            6 => $this->calculateAlternative6($basePrice, $area, $calculatorSettings, $monthlyPayment, $startDate),
             default => throw new \InvalidArgumentException("Invalid alternative: {$alternative}"),
         };
     }
@@ -46,7 +115,8 @@ class PaymentScheduleCalculatorService
         float $basePrice,
         float $area,
         array $settings,
-        ?float $downPaymentPercent
+        ?float $downPaymentPercent,
+        Carbon $startDate
     ): array {
         $baseTotal = $basePrice * $area;
         $downPaymentPercent = $downPaymentPercent ?? 20;
@@ -54,12 +124,18 @@ class PaymentScheduleCalculatorService
         $remaining = $baseTotal - $downPayment;
 
         $deadline = Carbon::parse($settings['alternatives']['alt1']['deadline']);
-        $monthsUntilDeadline = max(1, Carbon::now()->diffInMonths($deadline));
+        // Calculate months from START DATE until deadline
+        $monthsUntilDeadline = max(1, (int) $startDate->floatDiffInMonths($deadline, false));
+        // Recalculate monthly payment based on months available from start date
+        // Note: If start date is close to deadline, monthly payment spikes. This matches logic if we kept deadline fixed.
+        // However, if we want fixed terms, we should use interval.
+        // Assuming current logic: Deadline is fixed per project. 
+
         $monthlyPayment = $monthsUntilDeadline > 0 ? $remaining / $monthsUntilDeadline : $remaining;
 
         return [
             'totalPrice' => $baseTotal,
-            'schedule' => $this->generateStandardSchedule($downPayment, $monthlyPayment, $monthsUntilDeadline)
+            'schedule' => $this->generateStandardSchedule($downPayment, $monthlyPayment, $monthsUntilDeadline, $startDate)
         ];
     }
 
@@ -71,7 +147,8 @@ class PaymentScheduleCalculatorService
         float $area,
         array $settings,
         ?float $downPaymentPercent,
-        ?float $monthlyPayment
+        ?float $monthlyPayment,
+        Carbon $startDate
     ): array {
         $baseTotal = $basePrice * $area;
         $surchargePercent = $settings['alternatives']['alt2']['surcharge_percent'];
@@ -83,14 +160,14 @@ class PaymentScheduleCalculatorService
 
         $monthlyPayment = $monthlyPayment ?? 800;
         $deadline = Carbon::parse($settings['alternatives']['alt2']['deadline']);
-        $monthsUntilDeadline = max(1, Carbon::now()->diffInMonths($deadline));
+        $monthsUntilDeadline = max(1, (int) $startDate->floatDiffInMonths($deadline, false));
 
         $totalMonthlyPayments = $monthlyPayment * $monthsUntilDeadline;
         $balloonPayment = max(0, $remaining - $totalMonthlyPayments);
 
         return [
             'totalPrice' => $totalPrice,
-            'schedule' => $this->generateBalloonSchedule($downPayment, $monthlyPayment, $monthsUntilDeadline, $balloonPayment, $deadline)
+            'schedule' => $this->generateBalloonSchedule($downPayment, $monthlyPayment, $monthsUntilDeadline, $balloonPayment, $deadline, $startDate)
         ];
     }
 
@@ -101,7 +178,8 @@ class PaymentScheduleCalculatorService
         float $basePrice,
         float $area,
         array $settings,
-        ?float $downPaymentPercent
+        ?float $downPaymentPercent,
+        Carbon $startDate
     ): array {
         $baseTotal = $basePrice * $area;
         $discountPercent = $settings['alternatives']['alt3']['discount_percent'];
@@ -114,7 +192,7 @@ class PaymentScheduleCalculatorService
 
         return [
             'totalPrice' => $totalPrice,
-            'schedule' => $this->generateOneTimeSchedule($downPayment, $remaining, $deadline)
+            'schedule' => $this->generateOneTimeSchedule($downPayment, $remaining, $deadline, $startDate)
         ];
     }
 
@@ -125,7 +203,8 @@ class PaymentScheduleCalculatorService
         float $basePrice,
         float $area,
         array $settings,
-        ?float $downPaymentPercent
+        ?float $downPaymentPercent,
+        Carbon $startDate
     ): array {
         $baseTotal = $basePrice * $area;
         $discountPercent = $settings['alternatives']['alt4']['discount_percent'];
@@ -138,7 +217,7 @@ class PaymentScheduleCalculatorService
 
         return [
             'totalPrice' => $totalPrice,
-            'schedule' => $this->generateNegotiatedSchedule($downPayment, $remaining, $deadline)
+            'schedule' => $this->generateNegotiatedSchedule($downPayment, $remaining, $deadline, $startDate)
         ];
     }
 
@@ -149,7 +228,8 @@ class PaymentScheduleCalculatorService
         float $basePrice,
         float $area,
         array $settings,
-        ?float $monthlyPayment
+        ?float $monthlyPayment,
+        Carbon $startDate
     ): array {
         $baseTotal = $basePrice * $area;
         $priceIncreasePerSqm = $settings['alternatives']['alt5']['price_increase_per_sqm'];
@@ -158,14 +238,14 @@ class PaymentScheduleCalculatorService
 
         $monthlyPayment = max(800, $monthlyPayment ?? 800);
         $deadline = Carbon::parse($settings['alternatives']['alt5']['deadline']);
-        $monthsUntilDeadline = max(1, Carbon::now()->diffInMonths($deadline));
+        $monthsUntilDeadline = max(1, (int) $startDate->floatDiffInMonths($deadline, false));
 
         $totalMonthlyPayments = $monthlyPayment * $monthsUntilDeadline;
         $remainingForBank = max(0, $totalPrice - $totalMonthlyPayments);
 
         return [
             'totalPrice' => $totalPrice,
-            'schedule' => $this->generateBalloonSchedule(0, $monthlyPayment, $monthsUntilDeadline, $remainingForBank, $deadline)
+            'schedule' => $this->generateBalloonSchedule(0, $monthlyPayment, $monthsUntilDeadline, $remainingForBank, $deadline, $startDate)
         ];
     }
 
@@ -176,7 +256,8 @@ class PaymentScheduleCalculatorService
         float $basePrice,
         float $area,
         array $settings,
-        ?float $monthlyPayment
+        ?float $monthlyPayment,
+        Carbon $startDate
     ): array {
         $baseTotal = $basePrice * $area;
         $priceIncreasePerSqm = $settings['alternatives']['alt6']['price_increase_per_sqm'];
@@ -185,14 +266,14 @@ class PaymentScheduleCalculatorService
 
         $monthlyPayment = max(1500, $monthlyPayment ?? 1500);
         $deadline = Carbon::parse($settings['alternatives']['alt6']['deadline']);
-        $monthsUntilDeadline = max(1, Carbon::now()->diffInMonths($deadline));
+        $monthsUntilDeadline = max(1, (int) $startDate->floatDiffInMonths($deadline, false));
 
         $totalMonthlyPayments = $monthlyPayment * $monthsUntilDeadline;
         $remainingForBank = max(0, $totalPrice - $totalMonthlyPayments);
 
         return [
             'totalPrice' => $totalPrice,
-            'schedule' => $this->generateBalloonSchedule(0, $monthlyPayment, $monthsUntilDeadline, $remainingForBank, $deadline)
+            'schedule' => $this->generateBalloonSchedule(0, $monthlyPayment, $monthsUntilDeadline, $remainingForBank, $deadline, $startDate)
         ];
     }
 
@@ -204,10 +285,11 @@ class PaymentScheduleCalculatorService
     private function generateStandardSchedule(
         float $downPayment,
         float $monthlyPayment,
-        int $numberOfMonths
+        int $numberOfMonths,
+        Carbon $startDate
     ): array {
         $schedule = [];
-        $startDate = Carbon::now();
+        // $startDate passed in
         $remaining = $downPayment > 0 ? $monthlyPayment * $numberOfMonths : 0;
 
         if ($downPayment > 0) {
@@ -245,10 +327,10 @@ class PaymentScheduleCalculatorService
         float $monthlyPayment,
         int $monthsUntilCompletion,
         float $balloonPayment,
-        Carbon $completionDate
+        Carbon $completionDate,
+        Carbon $startDate
     ): array {
         $schedule = [];
-        $startDate = Carbon::now();
         $remaining = $monthlyPayment * $monthsUntilCompletion + $balloonPayment;
 
         if ($downPayment > 0) {
@@ -293,10 +375,10 @@ class PaymentScheduleCalculatorService
     private function generateOneTimeSchedule(
         float $downPayment,
         float $remaining,
-        Carbon $completionDate
+        Carbon $completionDate,
+        Carbon $startDate
     ): array {
         $schedule = [];
-        $startDate = Carbon::now();
 
         $schedule[] = [
             'month' => 0,
@@ -325,10 +407,10 @@ class PaymentScheduleCalculatorService
     private function generateNegotiatedSchedule(
         float $downPayment,
         float $remainingPayment,
-        Carbon $completionDate
+        Carbon $completionDate,
+        Carbon $startDate
     ): array {
         $schedule = [];
-        $startDate = Carbon::now();
 
         $schedule[] = [
             'month' => 0,

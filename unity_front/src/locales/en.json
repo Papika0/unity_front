@@ -123,6 +123,7 @@
             "calculator": "Calculator",
             "bank_rates": "Bank Rates",
             "crm": "CRM Sales",
+            "crm_financial": "Financial Dashboard",
             "apartments_nav": "Apartments Navigation",
             "logout": "Logout"
         },
@@ -829,7 +830,11 @@
             "subtitle": "Manage customers and deals",
             "pipeline": {
                 "title": "Sales Pipeline",
+                "create_deal": "Create Deal",
                 "new_lead": "New Lead",
+                "new_lead_desc": "Active lead entering pipeline",
+                "register_sold": "Register Sold Deal",
+                "register_sold_desc": "Already sold apartment with payments",
                 "search_placeholder": "Search by name, phone, or apartment...",
                 "all_priorities": "All Priorities",
                 "stale_deals": "Overdue",
@@ -906,7 +911,9 @@
                 "add_stages_hint": "Please add stages from settings",
                 "no_deals": "No deals",
                 "empty_column_hint": "Drag here or create new",
-                "average_value": "Average Value"
+                "average_value": "Average Value",
+                "average_agreed_price": "Average Agreed Price",
+                "average_sale_price": "Average Sale Price"
             },
             "payment": {
                 "payments": "Payments",
@@ -916,6 +923,7 @@
                 "down_payment": "Down Payment",
                 "monthly_payment": "Monthly Payment",
                 "installments": "Number of Installments",
+                "installments_count": "{count} Installments",
                 "start_date": "Start Date",
                 "interval": "Interval (months)",
                 "remaining": "Remaining Amount",
@@ -942,23 +950,25 @@
                 "payments_kept": "Kept",
                 "payments_replaced": "Replaced",
                 "no_pricing_set": "No Pricing Set",
+                "create_payment_schedule": "Create Payment Schedule",
+                "define_terms": "Define payment terms",
+                "number_of_installments": "Number of Installments",
+                "payment_plan": "Payment Plan",
+                "per_month": "per month",
+                "installment_amount": "Installment Amount",
+                "create_schedule": "Create Schedule",
+                "intervals": {
+                    "monthly": "Monthly",
+                    "bimonthly": "Bi-monthly",
+                    "quarterly": "Quarterly",
+                    "semiannual": "Semi-annual",
+                    "annual": "Annual"
+                },
                 "set_pricing_first": "Set pricing first to generate automatic payment schedule.",
                 "set_pricing_button": "Set Pricing",
                 "manual_schedule": "Manual Schedule",
                 "payment_history": "Payment History",
                 "schedule_regenerated": "Payment schedule regenerated successfully"
-            },
-            "pricing": {
-                "constraints": {
-                    "down_payment_range": "Down payment: {min}-{max}%",
-                    "min_monthly": "Minimum monthly payment: {amount}",
-                    "fixed_down_payment": "Down payment: {percent}%"
-                },
-                "validation": {
-                    "down_payment_range": "Down payment must be between {min}% and {max}%",
-                    "monthly_minimum": "Monthly payment must be at least {min}",
-                    "pricing_saved": "Pricing saved successfully"
-                }
             },
             "lost_reason": {
                 "title": "Lost Reason",
@@ -986,7 +996,51 @@
                 "creating": "Creating...",
                 "saving": "Saving...",
                 "confirm": "Confirm",
-                "select_date": "Select date"
+                "back": "Back",
+                "next": "Next",
+                "select_date": "Select date",
+                "add_lead_subtitle": "Add new potential customer to the pipeline",
+                "project": "Project",
+                "select_project": "Select Project",
+                "building": "Building",
+                "select_building": "Select Building",
+                "floor": "Floor",
+                "select_floor": "Select Floor",
+                "apartment_unit": "Apartment Unit",
+                "select_apartment": "Select Apartment",
+                "floor_number": "Floor {number}",
+                "interest_details": "Interest Details",
+                "interested_projects": "Interested Projects",
+                "specific_apartment": "Specific Apartment",
+                "optional": "Optional",
+                "price_per_sqm": "Price per m²",
+                "notes": "Notes"
+            },
+            "sold_deal": {
+                "title": "Register Sold Deal",
+                "subtitle": "Add already-sold apartment with payment schedule",
+                "steps": {
+                    "customer": "Customer Info",
+                    "unit": "Apartment",
+                    "pricing": "Pricing",
+                    "schedule": "Payment Schedule"
+                },
+                "customer_details": "Customer Details",
+                "select_unit": "Select Unit",
+                "pricing_terms": "Pricing Terms",
+                "schedule_config": "Schedule Configuration",
+                "total_contract_value": "Total Contract Value",
+                "schedule_type": "Schedule Type",
+                "manual_entry": "Manual Schedule Entry",
+                "manual_entry_desc": "Define custom payment terms",
+                "calculator": "Calculator",
+                "calculator_desc": "Auto-generate schedule",
+                "full_payment": "Full Payment",
+                "full_payment_desc": "No payment schedule needed",
+                "payment_plan": "Payment Plan",
+                "payment_plan_desc": "Create custom payment schedule",
+                "selected_unit": "Selected Unit",
+                "create_deal": "Create Deal"
             },
             "tabs": {
                 "details": "Details",
@@ -1029,7 +1083,14 @@
                 "no_projects": "No projects found",
                 "apartment_connected": "Apartment successfully connected",
                 "save_failed": "Failed to save",
-                "saved": "Successfully saved"
+                "saved": "Successfully saved",
+                "validation": {
+                    "required_fields": "Please fill in all required fields",
+                    "invalid_phone": "Invalid phone number format",
+                    "invalid_email": "Invalid email format",
+                    "select_apartment": "Please select an apartment",
+                    "valid_pricing": "Please enter valid pricing"
+                }
             },
             "pricing": {
                 "title": "Set Deal Pricing",
@@ -1064,7 +1125,18 @@
                 "payment_plan": "Payment Plan",
                 "down_payment_range": "Down Payment Range",
                 "min_monthly_payment": "Minimum Monthly Payment",
-                "alternative_disabled": "Disabled"
+                "alternative_disabled": "Disabled",
+                "constraints": {
+                    "down_payment_range": "Down payment: {min}-{max}%",
+                    "min_monthly": "Minimum monthly payment: {amount}",
+                    "fixed_down_payment": "Down payment: {percent}%",
+                    "fixed_value": "Fixed Value"
+                },
+                "validation": {
+                    "down_payment_range": "Down payment must be between {min}% and {max}%",
+                    "monthly_minimum": "Monthly payment must be at least {min}",
+                    "pricing_saved": "Pricing saved successfully"
+                }
             },
             "stage_change": {
                 "title": "Pricing Confirmation",
@@ -1139,6 +1211,40 @@
                 "modal": {
                     "create_deal_title": "Create Deal"
                 }
+            },
+            "financial": {
+                "title": "Financial Dashboard",
+                "subtitle": "Comprehensive financial analytics and payment tracking",
+                "menu_title": "Financial Dashboard",
+                "total_sold_value": "Total Sold Value",
+                "total_paid": "Total Paid",
+                "total_outstanding": "Total Outstanding",
+                "collection_rate": "Collection Rate",
+                "apartments_available": "Available",
+                "apartments_reserved": "Reserved",
+                "apartments_sold": "Sold",
+                "overdue_payments": "Overdue Payments",
+                "upcoming_payments": "Upcoming Payments (Next 90 Days)",
+                "no_upcoming_payments": "No upcoming payments",
+                "filter_project": "Project",
+                "filter_user": "Salesperson",
+                "date_from": "Date From",
+                "date_to": "Date To",
+                "all_users": "All Users",
+                "apply_filters": "Apply Filters",
+                "reset_filters": "Reset",
+                "customer": "Customer",
+                "apartment": "Apartment",
+                "amount": "Amount",
+                "due_date": "Due Date",
+                "status": "Status",
+                "days_until_due": "Days Until Due",
+                "days": "days",
+                "status_paid": "Paid",
+                "status_pending": "Pending",
+                "status_overdue": "Overdue",
+                "status_partially_paid": "Partially Paid",
+                "status_cancelled": "Cancelled"
             }
         },
         "months": {

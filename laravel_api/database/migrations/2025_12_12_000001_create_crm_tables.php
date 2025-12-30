@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('days_until_stale')->nullable(); // If set, card turns RED after X days of inactivity
             $table->boolean('requires_apartment')->default(false); // Must have apartment_id to enter this stage
             $table->boolean('requires_lost_reason')->default(false); // Must have lost_reason to enter this stage
+            $table->boolean('is_active')->default(true);
 
             $table->timestamps();
         });

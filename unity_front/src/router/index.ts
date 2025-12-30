@@ -286,6 +286,12 @@ const router = createRouter({
               component: () => import('@/views/admin/crm/CrmPipelineView.vue'),
               beforeEnter: requireAdminOrMarketing,
             },
+            {
+              path: 'crm/financial-dashboard',
+              name: 'admin-crm-financial-dashboard',
+              component: () => import('@/views/admin/crm/CrmFinancialDashboardView.vue'),
+              beforeEnter: requireAdminOrMarketing,
+            },
           ],
         },
       ],

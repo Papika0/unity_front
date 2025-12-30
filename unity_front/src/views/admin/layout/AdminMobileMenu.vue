@@ -30,6 +30,19 @@
               @click="emit('close')"
             />
 
+            <!-- CRM Section -->
+            <div class="pt-4 mt-4 border-t border-slate-200">
+              <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{{ t('admin.sidebar.crm') }}</p>
+              <MobileNavLink
+                v-for="item in crmItems"
+                :key="item.id"
+                :to="item.to"
+                :name="item.name"
+                :color="item.color"
+                @click="emit('close')"
+              />
+            </div>
+
             <!-- Customers Section -->
             <div class="pt-4 mt-4 border-t border-slate-200">
               <MobileNavLink
@@ -94,6 +107,7 @@ defineProps<{
   isAdmin: boolean
   isMarketing: boolean
   navItems: NavItem[]
+  crmItems: NavItem[]
   customerItems: NavItem[]
   calculatorItems: NavItem[]
 }>()

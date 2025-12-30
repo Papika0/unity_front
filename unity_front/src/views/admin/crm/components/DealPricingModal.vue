@@ -89,8 +89,8 @@
           <span class="text-sm font-medium text-gray-900 w-12">{{ downPaymentPercent }}%</span>
         </div>
         <p v-if="currentConstraints" class="mt-1 text-xs text-gray-500">
-          Range: {{ currentConstraints.downPayment.min }}%-{{ currentConstraints.downPayment.max }}%
-          <span v-if="isDownPaymentFixed" class="text-amber-600">(Fixed for this alternative)</span>
+          {{ t('admin.crm.pricing.constraints.down_payment_range', { min: currentConstraints.downPayment.min, max: currentConstraints.downPayment.max }) }}
+          <span v-if="isDownPaymentFixed" class="text-amber-600">({{ t('admin.crm.pricing.constraints.fixed_value') }})</span>
         </p>
       </div>
 
@@ -114,7 +114,7 @@
           />
         </div>
         <p v-if="currentConstraints?.monthlyPayment" class="mt-1 text-xs text-gray-500">
-          Minimum: {{ currencySymbol }}{{ currentConstraints.monthlyPayment }}
+          {{ t('admin.crm.pricing.constraints.min_monthly', { amount: currencySymbol + currentConstraints.monthlyPayment }) }}
         </p>
       </div>
     </div>
@@ -162,11 +162,11 @@
           <div class="flex flex-wrap gap-2 mb-3">
             <span v-if="getAlternativeInfo(alt.id)?.downPaymentRange"
                   class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded">
-              {{ getAlternativeInfo(alt.id)!.downPaymentRange!.min }}%-{{ getAlternativeInfo(alt.id)!.downPaymentRange!.max }}% down
+              {{ t('admin.crm.pricing.constraints.down_payment_range', { min: getAlternativeInfo(alt.id)!.downPaymentRange!.min, max: getAlternativeInfo(alt.id)!.downPaymentRange!.max }) }}
             </span>
             <span v-if="getAlternativeInfo(alt.id)?.minMonthlyPayment"
                   class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-50 text-green-700 rounded">
-              Min. {{ currencySymbol }}{{ getAlternativeInfo(alt.id)!.minMonthlyPayment }}/mo
+              {{ t('admin.crm.pricing.constraints.min_monthly', { amount: currencySymbol + getAlternativeInfo(alt.id)!.minMonthlyPayment }) }}
             </span>
           </div>
 
@@ -239,7 +239,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close', 'saved'])
 
-const { t } = useTranslations()
+const { t, currentLocale } = useTranslations()
 const { formatNumber: formatNum, getCurrencySymbol } = useLocaleFormatter()
 const store = useCrmStore()
 const toast = useToastStore()
@@ -247,12 +247,7 @@ const { calculate } = usePaymentCalculator()
 
 // Get current language (default to 'en')
 const currentLanguage = computed<'ka' | 'en' | 'ru'>(() => {
-  // Try to detect from document or localStorage, fallback to 'en'
-  const savedLang = localStorage.getItem('language')
-  if (savedLang === 'ka' || savedLang === 'en' || savedLang === 'ru') {
-    return savedLang
-  }
-  return 'en'
+  return (currentLocale as 'ka' | 'en' | 'ru') || 'ka'
 })
 
 // State

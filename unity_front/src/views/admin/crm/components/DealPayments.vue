@@ -13,9 +13,12 @@ import { useCrmStore } from '@/stores/admin/crm'
 import type { CrmDeal, PaymentScheduleData, PaymentStatus, CrmPayment } from '@/types/crm'
 import type { ProjectCalculatorSettings } from '@/types/admin/calculator'
 import { CURRENCY_SYMBOLS } from '@/types/crm'
-import PaymentScheduleModal from './PaymentScheduleModal.vue'
+
 import MarkPaymentModal from './MarkPaymentModal.vue'
 import EditPaymentModal from './EditPaymentModal.vue'
+
+import { storeToRefs } from 'pinia'
+import { useTranslationsStore } from '@/stores/ui/translations'
 
 // Props
 interface Props {
@@ -30,6 +33,8 @@ const { formatNumber: formatNum, formatDate: formatDt } = useLocaleFormatter()
 
 // Store
 const crmStore = useCrmStore()
+const translationsStore = useTranslationsStore()
+const { currentLocale } = storeToRefs(translationsStore)
 
 // Get calculator settings for alternative descriptions
 const calculatorSettings = computed(() => {
@@ -40,24 +45,22 @@ const calculatorSettings = computed(() => {
 // Get alternative descriptions with dynamic constraints
 const alternativeDescriptions = useAlternativeDescriptions(calculatorSettings.value)
 
-// Get current language for alternative title
-const currentLanguage = computed<'ka' | 'en' | 'ru'>(() => {
-  const savedLang = localStorage.getItem('language')
-  if (savedLang === 'ka' || savedLang === 'en' || savedLang === 'ru') {
-    return savedLang
-  }
-  return 'en'
-})
-
 // Get alternative title in current language
 const alternativeTitle = computed(() => {
   if (!props.deal?.selected_payment_alternative) return null
   const alt = alternativeDescriptions.find(a => a.id === props.deal.selected_payment_alternative)
-  return alt ? alt.title[currentLanguage.value] : `${t('admin.crm.pricing.option')} ${props.deal.selected_payment_alternative}`
+  return alt ? alt.title[currentLocale.value] : `${t('admin.crm.pricing.option')} ${props.deal.selected_payment_alternative}`
+})
+
+// Get alternative description in current language
+const alternativeDescription = computed(() => {
+  if (!props.deal?.selected_payment_alternative) return null
+  const alt = alternativeDescriptions.find(a => a.id === props.deal.selected_payment_alternative)
+  return alt ? alt.description[currentLocale.value] : null
 })
 
 // State
-const showScheduleModal = ref(false)
+
 const showMarkPaidModal = ref(false)
 const showEditModal = ref(false)
 const selectedPayment = ref<CrmPayment | null>(null)
@@ -198,16 +201,6 @@ async function loadPayments(page: number = 1): Promise<void> {
     if (!timedOut) {
       isLoading.value = false
     }
-  }
-}
-
-// Handle generate schedule (manual entry)
-async function handleGenerateSchedule(data: PaymentScheduleData): Promise<void> {
-  try {
-    await crmStore.generatePaymentSchedule(props.deal.id, data)
-    showScheduleModal.value = false
-  } catch (error) {
-    console.error('Failed to generate schedule:', error)
   }
 }
 
@@ -385,18 +378,27 @@ function formatDate(dateStr: string): string {
       <!-- Header with Alternative Info -->
       <div class="flex items-center justify-between">
         <div>
-          <h4 class="font-semibold text-gray-900">{{ t('admin.crm.payment.schedule') }}</h4>
-          <p class="text-sm text-gray-600 mt-1">
-            <span v-if="alternativeTitle" class="font-medium text-blue-700">
-              {{ alternativeTitle }}
-            </span>
-            <span v-else-if="deal.selected_payment_alternative">
-              {{ t('admin.crm.pricing.option') }} {{ deal.selected_payment_alternative }}
-            </span>
-            <span class="mx-2">•</span>
-            {{ totalPaymentsCount }} {{ t('admin.crm.payment.installments') }}
-            <span v-if="!hasCalculatorSchedule" class="text-amber-600 ml-2">({{ t('admin.crm.payment.create_manual_schedule') }})</span>
-          </p>
+          <h4 class="font-semibold text-gray-900 text-lg">{{ t('admin.crm.payment.schedule') }}</h4>
+          <div class="mt-2 flex flex-col gap-1">
+            <div class="flex items-center flex-wrap gap-2 text-sm text-gray-600">
+              <span v-if="alternativeTitle" class="font-bold text-blue-700 text-base">
+                {{ alternativeTitle }}
+              </span>
+              <span v-else-if="deal.selected_payment_alternative" class="font-bold text-blue-700 text-base">
+                {{ t('admin.crm.pricing.option') }} {{ deal.selected_payment_alternative }}
+              </span>
+              
+              <span class="text-gray-300 mx-1">|</span>
+              
+              <span class="font-medium text-gray-700">{{ t('admin.crm.payment.installments_count', { count: totalPaymentsCount }) }}</span>
+              
+
+            </div>
+            
+            <p v-if="alternativeDescription" class="text-sm text-gray-500 font-medium">
+              {{ alternativeDescription }}
+            </p>
+          </div>
         </div>
         <button
           v-if="deal.selected_payment_alternative"
@@ -415,37 +417,60 @@ function formatDate(dateStr: string): string {
         </button>
       </div>
 
-      <!-- Progress Bar -->
-      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-100 shadow-sm">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-sm font-semibold text-gray-700">{{ t('admin.crm.payment.progress') }}</span>
-          <span class="text-2xl font-bold text-blue-600">{{ paymentProgress }}%</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
-          <div
-            class="h-4 rounded-full transition-all duration-500 ease-out"
-            :class="paymentProgress === 100 ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-blue-500 to-indigo-600'"
-            :style="{ width: `${paymentProgress}%` }"
-          ></div>
-        </div>
-        <div class="grid grid-cols-3 gap-3 mt-3 text-sm">
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-green-500"></div>
-            <span class="text-gray-700 font-medium">
-              {{ t('admin.crm.payment.paid') }}: <span class="text-green-700 font-bold">{{ currencySymbol }}{{ formatNumber(totalPaid) }}</span>
-            </span>
+      <!-- Progress Bar Card -->
+      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 shadow-sm relative overflow-hidden">
+        <!-- Decorative bg filter -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-blue-400/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+        <div class="relative z-10">
+          <div class="flex items-end justify-between mb-4">
+            <div>
+              <span class="text-sm uppercase tracking-wider font-bold text-gray-500 block mb-1">{{ t('admin.crm.payment.progress') }}</span>
+              <div class="h-1 w-12 bg-blue-500 rounded-full"></div>
+            </div>
+            <span class="text-4xl font-black text-slate-800 tracking-tight">{{ paymentProgress }}<span class="text-2xl text-slate-400 font-bold ml-0.5">%</span></span>
           </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-orange-500"></div>
-            <span class="text-gray-700 font-medium">
-              {{ t('admin.crm.payment.remaining') }}: <span class="text-orange-700 font-bold">{{ currencySymbol }}{{ formatNumber(remainingBalance) }}</span>
-            </span>
+          
+          <div class="w-full bg-white/60 backdrop-blur-sm rounded-full h-5 overflow-hidden shadow-inner border border-white/50 mb-6">
+            <div
+              class="h-full rounded-full transition-all duration-1000 ease-out shadow-sm relative overflow-hidden"
+              :class="paymentProgress === 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500'"
+              :style="{ width: `${paymentProgress}%` }"
+            >
+              <div class="absolute inset-0 bg-white/20 animate-[pulse_2s_infinite]"></div>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-            <span class="text-gray-700 font-medium">
-              {{ t('admin.crm.payment.total') }}: <span class="text-blue-700 font-bold">{{ currencySymbol }}{{ formatNumber(totalDue) }}</span>
-            </span>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="bg-white/60 backdrop-blur-md rounded-lg p-3 border border-white/50 shadow-sm flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-gray-500 uppercase">{{ t('admin.crm.payment.paid') }}</span>
+                <span class="text-lg font-bold text-gray-900 tracking-tight">{{ currencySymbol }}{{ formatNumber(totalPaid) }}</span>
+              </div>
+            </div>
+            
+            <div class="bg-white/60 backdrop-blur-md rounded-lg p-3 border border-white/50 shadow-sm flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 text-amber-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-gray-500 uppercase">{{ t('admin.crm.payment.remaining') }}</span>
+                <span class="text-lg font-bold text-gray-900 tracking-tight">{{ currencySymbol }}{{ formatNumber(remainingBalance) }}</span>
+              </div>
+            </div>
+            
+            <div class="bg-white/60 backdrop-blur-md rounded-lg p-3 border border-white/50 shadow-sm flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-gray-500 uppercase">{{ t('admin.crm.payment.total') }}</span>
+                <span class="text-lg font-bold text-gray-900 tracking-tight">{{ currencySymbol }}{{ formatNumber(totalDue) }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -497,24 +522,36 @@ function formatDate(dateStr: string): string {
                     {{ getStatusLabel(payment.status) }}
                   </span>
                 </td>
-                <td class="px-3 py-2 text-center">
-                  <div v-if="payment.status !== 'paid'" class="flex items-center justify-center gap-1.5">
+                <td class="px-3 py-2 text-center whitespace-nowrap">
+                  <div v-if="payment.status !== 'paid'" class="flex items-center justify-center gap-2">
+                    <!-- Mark as Paid Button -->
                     <button
-                      class="px-2.5 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 hover:shadow-sm transition-all"
                       @click="openMarkPaidModal(payment)"
+                      :title="t('admin.crm.payment.mark_as_paid')"
                     >
-                      {{ t('admin.crm.payment.mark_as_paid') }}
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
                     </button>
+                    
+                    <!-- Edit Button -->
                     <button
                       v-if="payment.status === 'pending' || payment.status === 'partially_paid'"
-                      class="px-2.5 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:text-blue-600 hover:border-blue-200 hover:shadow-sm transition-all"
                       @click="openEditModal(payment)"
+                      :title="t('admin.crm.form.edit')"
                     >
-                      {{ t('admin.crm.form.edit') }}
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
                     </button>
                   </div>
-                  <span v-else class="text-xs text-green-700 font-medium">
-                    ✓ {{ payment.paid_date ? formatDate(payment.paid_date) : '' }}
+                  <span v-else class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {{ payment.paid_date ? formatDate(payment.paid_date) : t('admin.crm.payment.paid') }}
                   </span>
                 </td>
               </tr>
@@ -583,12 +620,7 @@ function formatDate(dateStr: string): string {
         </svg>
         <p class="text-sm text-gray-700 font-medium mb-2">{{ t('admin.crm.payment.no_pricing') }}</p>
         <p class="text-xs text-gray-600 mb-4">{{ t('admin.crm.payment.set_pricing_first') }}</p>
-        <button
-          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-          @click="showScheduleModal = true"
-        >
-          {{ t('admin.crm.payment.create_manual_schedule') }}
-        </button>
+
       </div>
 
       <!-- Pricing Set but No Schedule Generated Yet -->
@@ -621,14 +653,7 @@ function formatDate(dateStr: string): string {
       </div>
     </template>
 
-    <!-- Payment Schedule Modal (Manual Entry) -->
-    <PaymentScheduleModal
-      v-if="showScheduleModal"
-      :currency="deal.currency"
-      :total-amount="deal.budget ?? 0"
-      @submit="handleGenerateSchedule"
-      @cancel="showScheduleModal = false"
-    />
+
 
     <!-- Mark Payment as Paid Modal -->
     <MarkPaymentModal

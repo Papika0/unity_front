@@ -98,12 +98,12 @@ export const useAlternativeDescriptions = (
       title: {
         ka: 'ალტერნატივა 5: 0% შენატანი',
         en: 'Alternative 5: 0% Down Payment',
-        ru: 'Альტერნატива 5: 0% первоначальный взнос'
+        ru: 'Альтернатива 5: 0% первоначальный взнос'
       },
       description: {
         ka: `0% შენატანი, მინ. $${minMonthly}/თვე, +$${alt5PriceIncrease}/კვ.მ`,
         en: `0% down, min. $${minMonthly}/month, +$${alt5PriceIncrease}/m²`,
-        ru: `0% первоначальный взნ ос, мин. $${minMonthly}/месяц, +$${alt5PriceIncrease}/м²`
+        ru: `0% первоначальный взнос, мин. $${minMonthly}/месяц, +$${alt5PriceIncrease}/м²`
       },
       downPaymentRange: { min: 0, max: 0 },
       minMonthlyPayment: minMonthly
@@ -118,7 +118,7 @@ export const useAlternativeDescriptions = (
       description: {
         ka: `0% შენატანი, მინ. $${minMonthlyAlt6}/თვე, +$${alt6PriceIncrease}/კვ.მ`,
         en: `0% down, min. $${minMonthlyAlt6}/month, +$${alt6PriceIncrease}/m²`,
-        ru: `0% первоначальный взнос, мін. $${minMonthlyAlt6}/месяц, +$${alt6PriceIncrease}/м²`
+        ru: `0% первоначальный взнос, мин. $${minMonthlyAlt6}/месяц, +$${alt6PriceIncrease}/м²`
       },
       downPaymentRange: { min: 0, max: 0 },
       minMonthlyPayment: minMonthlyAlt6

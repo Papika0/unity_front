@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class CrmStage extends Model
 {
@@ -20,6 +21,7 @@ class CrmStage extends Model
         'days_until_stale',
         'requires_apartment',
         'requires_lost_reason',
+        'is_active',
     ];
 
     protected $casts = [
@@ -28,6 +30,7 @@ class CrmStage extends Model
         'requires_lost_reason' => 'boolean',
         'days_until_stale' => 'integer',
         'sort_order' => 'integer',
+        'is_active' => 'boolean',
     ];
 
     /**

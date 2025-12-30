@@ -2,9 +2,12 @@
 /**
  * Kanban Column Component
  * Single stage column in the pipeline
+ * Features virtual scrolling for columns with > 30 deals
  */
 
 import { computed } from 'vue'
+import { RecycleScroller } from 'vue-virtual-scroller'
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { useTranslations } from '@/composables/i18n/useTranslations'
 import { useLocaleFormatter } from '@/composables/i18n/useLocaleFormatter'
 import type { KanbanColumn, CrmDeal } from '@/types/crm'
@@ -32,8 +35,17 @@ defineEmits<{
 const { t } = useTranslations()
 const { formatNumber, getCurrencySymbol } = useLocaleFormatter()
 
+// Virtual scrolling configuration
+const VIRTUAL_SCROLL_THRESHOLD = 30
+const ESTIMATED_ITEM_HEIGHT = 180
+
 // Computed
 const isDraggingOver = computed(() => false) // Can be enhanced with hover state
+
+// Use virtual scrolling for columns with > 30 deals
+const useVirtualScroll = computed(() => {
+  return props.column.deals.length > VIRTUAL_SCROLL_THRESHOLD
+})
 
 // Get currency from first deal in column, default to USD
 const columnCurrency = computed(() => {
@@ -42,6 +54,25 @@ const columnCurrency = computed(() => {
 
 // Currency symbol
 const currencySymbol = computed(() => getCurrencySymbol(columnCurrency.value))
+
+// Average price display logic (only for Reserved and Won stages)
+const shouldShowAveragePrice = computed(() => {
+  // Only show for contract (Reserved) and won (Sold) stages
+  return ['contract', 'won'].includes(props.column.slug ?? '') &&
+         props.column.deal_count > 0
+})
+
+const averagePriceLabel = computed(() => {
+  if (props.column.slug === 'won') {
+    return t('admin.crm.kanban.average_sale_price')
+  }
+  return t('admin.crm.kanban.average_agreed_price')
+})
+
+const averagePrice = computed(() => {
+  if (props.column.deal_count === 0) return 0
+  return props.column.total_value / props.column.deal_count
+})
 
 // Format currency
 function formatCurrency(value: number | undefined | null): string {
@@ -75,8 +106,31 @@ function formatCurrency(value: number | undefined | null): string {
       </div>
     </div>
 
-    <!-- Deals List -->
-    <div class="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px]">
+    <!-- Deals List - Virtual Scrolling for large columns (> 30 deals) -->
+    <RecycleScroller
+      v-if="useVirtualScroll"
+      class="flex-1 p-3 kanban-scroller"
+      :items="column.deals"
+      :item-size="ESTIMATED_ITEM_HEIGHT"
+      key-field="id"
+      :buffer="200"
+      list-tag="div"
+      item-tag="div"
+    >
+      <template #default="{ item: deal }">
+        <div class="mb-3">
+          <KanbanCard
+            :deal="deal"
+            :is-dragging="draggedDealId === deal.id"
+            @click="$emit('deal-click', deal)"
+            @dragstart="$emit('dragstart', deal, column.id)"
+          />
+        </div>
+      </template>
+    </RecycleScroller>
+
+    <!-- Deals List - Regular rendering for small columns (<= 30 deals) -->
+    <div v-else class="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px]">
       <KanbanCard
         v-for="deal in column.deals"
         :key="deal.id"
@@ -104,14 +158,12 @@ function formatCurrency(value: number | undefined | null): string {
       </div>
     </div>
 
-    <!-- Column Footer (Stats) -->
-    <div v-if="column.deals.length > 0" class="px-4 py-2 bg-white rounded-b-xl border-t border-gray-200">
+    <!-- Column Footer (Stats) - Only for Reserved and Won stages -->
+    <div v-if="shouldShowAveragePrice" class="px-4 py-2 bg-white rounded-b-xl border-t border-gray-200">
       <div class="flex items-center justify-between text-xs text-gray-500">
-        <span>{{ t('admin.crm.kanban.average_value') }}</span>
+        <span>{{ averagePriceLabel }}</span>
         <span class="font-medium text-gray-700">
-          {{ currencySymbol }}{{
-            formatCurrency(column.deal_count > 0 ? column.total_value / column.deal_count : 0)
-          }}
+          {{ currencySymbol }}{{ formatCurrency(averagePrice) }}
         </span>
       </div>
     </div>

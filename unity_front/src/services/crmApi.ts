@@ -27,6 +27,8 @@ import type {
   CrmStatisticsResponse,
   DealPricingFormData,
   CrmPaymentSummary,
+  FinancialDashboardData,
+  FinancialDashboardResponse,
 } from '@/types/crm'
 
 export const crmApi = {
@@ -85,10 +87,40 @@ export const crmApi = {
     phone: string
     email?: string
     project_ids?: number[]
-    apartment_info?: string
+    apartment_id?: number
+    stage_id?: number
     notes?: string
   }): Promise<CrmDeal> {
     const response = await api.post<CrmDealResponse>('/admin/crm/deals/lead', data)
+    return response.data.data
+  },
+
+  async createSoldDeal(data: {
+    customer: {
+      name: string
+      surname?: string
+      phone: string
+      email?: string
+    }
+    apartment_id: number
+    final_price_per_sqm: number
+    payment_alternative?: number
+    payment_params?: {
+      initial_payment_percent?: number
+      internal_installment_months?: number
+      price_per_sqm?: number
+    }
+    payment_schedule?: {
+      total_amount: number
+      down_payment: number
+      number_of_installments: number
+      start_date: string
+      interval_months: number
+    }
+    notes?: string
+    closed_at?: string
+  }): Promise<CrmDeal> {
+    const response = await api.post<CrmDealResponse>('/admin/crm/deals/sold', data)
     return response.data.data
   },
 
@@ -260,6 +292,28 @@ export const crmApi = {
   async getStatistics(userId?: number): Promise<CrmStatistics> {
     const params = userId ? { user_id: userId } : {}
     const response = await api.get<CrmStatisticsResponse>('/admin/crm/deals/statistics', { params })
+    return response.data.data
+  },
+
+  // ======================
+  // Financial Dashboard
+  // ======================
+  async getFinancialDashboard(filters: {
+    projectIds?: number[]
+    userId?: number | null
+    dateFrom?: string | null
+    dateTo?: string | null
+    stageIds?: number[]
+  }): Promise<FinancialDashboardData> {
+    const response = await api.get<FinancialDashboardResponse>('/admin/crm/deals/financial-dashboard', {
+      params: {
+        project_ids: filters.projectIds,
+        user_id: filters.userId,
+        date_from: filters.dateFrom,
+        date_to: filters.dateTo,
+        stage_ids: filters.stageIds,
+      },
+    })
     return response.data.data
   },
 }

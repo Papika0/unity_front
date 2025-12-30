@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email');
+            $table->string('email')->nullable();
             $table->string('phone');
             $table->string('subject')->nullable();
             $table->text('message')->nullable();
-            $table->enum('source', ['contact_form', 'call_request'])->default('contact_form');
+            $table->enum('source', ['contact_form', 'call_request', 'admin_panel'])->default('contact_form');
             $table->enum('status', ['new', 'contacted', 'in_progress', 'completed', 'cancelled'])->default('new');
             $table->text('notes')->nullable();
             $table->timestamps();

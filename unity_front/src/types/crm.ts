@@ -268,6 +268,7 @@ export interface PaymentScheduleData {
 export interface KanbanColumn {
   id: number
   name: string
+  slug: string // Stage slug (e.g., 'new-lead', 'contract', 'won')
   type: StageType
   color: string
   deals: CrmDeal[]
@@ -340,4 +341,45 @@ export interface CrmPaymentsResponse {
 
 export interface CrmStatisticsResponse {
   data: CrmStatistics
+}
+
+// ============================================================
+// Financial Dashboard Types
+// ============================================================
+
+export interface FinancialDashboardMetrics {
+  total_sold_value: number
+  total_paid: number
+  total_outstanding: number
+  apartments_available: number
+  apartments_reserved: number
+  apartments_sold: number
+  overdue_payments_count: number
+  overdue_payments_value: number
+  payment_collection_rate: number
+}
+
+export interface UpcomingPayment {
+  id: number
+  deal_id: number
+  customer_name: string
+  apartment_number: string
+  project_title: string
+  amount_due: number
+  amount_paid: number
+  remaining_amount: number
+  currency: string
+  due_date: string
+  status: string
+  days_until_due: number
+  is_overdue: boolean
+}
+
+export interface FinancialDashboardData {
+  metrics: FinancialDashboardMetrics
+  upcoming_payments: UpcomingPayment[]
+}
+
+export interface FinancialDashboardResponse {
+  data: FinancialDashboardData
 }

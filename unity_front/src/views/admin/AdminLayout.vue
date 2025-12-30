@@ -9,6 +9,7 @@
       :nav-items="NAV_ITEMS"
       :apartment-items="APARTMENT_NAV_ITEMS"
       :customer-items="CUSTOMER_NAV_ITEMS"
+      :crm-items="CRM_NAV_ITEMS"
       :calculator-items="CALCULATOR_NAV_ITEMS"
       @logout="handleLogout"
     />
@@ -20,6 +21,7 @@
       :is-marketing="!!authStore.isMarketing"
       :nav-items="NAV_ITEMS"
       :customer-items="CUSTOMER_NAV_ITEMS"
+      :crm-items="CRM_NAV_ITEMS"
       :calculator-items="CALCULATOR_NAV_ITEMS"
       @close="mobileMenuOpen = false"
     />
@@ -77,6 +79,7 @@ import {
   APARTMENT_NAV_ITEMS,
   CUSTOMER_NAV_ITEMS,
   CALCULATOR_NAV_ITEMS,
+  CRM_NAV_ITEMS,
 } from './layout/navigation'
 
 const { t } = useTranslations()
