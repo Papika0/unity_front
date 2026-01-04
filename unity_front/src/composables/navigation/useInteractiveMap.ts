@@ -81,11 +81,11 @@ export function useInteractiveMap(
       
       switch (apartment.status) {
         case 'available':
-          return `rgba(16, 185, 129, ${opacity})`
+          return `rgba(255, 205, 75, ${opacity})`
         case 'reserved':
           return `rgba(255, 205, 75, ${opacity})`
         case 'sold':
-          return `rgba(161, 161, 170, ${opacity})`
+          return `rgba(39, 39, 42, ${opacity})`
         default:
           return 'rgba(255, 255, 255, 0)'
       }
@@ -107,11 +107,11 @@ export function useInteractiveMap(
       
       switch (apartment.status) {
         case 'available':
-          return `rgba(16, 185, 129, ${opacity})`
+          return `rgba(255, 205, 75, ${opacity})`
         case 'reserved':
           return `rgba(255, 205, 75, ${opacity})`
         case 'sold':
-          return `rgba(161, 161, 170, ${opacity})`
+          return `rgba(39, 39, 42, ${opacity})`
         default:
           return 'rgba(255, 255, 255, 0.2)'
       }
