@@ -59,7 +59,8 @@ export function useNewsList() {
   }))
 
   const featuredArticle = computed(() => {
-    return newsStore.featuredArticles.find((article) => article.is_featured) || null
+    // Get featured article from main articles list (no separate API call needed)
+    return newsStore.articles.find((article) => article.is_featured) || null
   })
 
   // ============================================
@@ -107,13 +108,8 @@ export function useNewsList() {
     }
   }
 
-  const loadFeaturedArticle = async () => {
-    try {
-      await newsStore.loadFeaturedArticles()
-    } catch {
-      // Error handling
-    }
-  }
+  // Removed loadFeaturedArticle - no longer needed since featured articles
+  // are already included in the main articles list
 
   const handleCategoryChange = async (category: string) => {
     if (category === selectedCategory.value || isTransitioning.value) return
@@ -180,7 +176,7 @@ export function useNewsList() {
   // ============================================
   onMounted(async () => {
     await loadArticles(1)
-    await loadFeaturedArticle()
+    // Removed loadFeaturedArticle() - featured articles are in the main list
     window.addEventListener('scroll', handleScroll)
   })
 

@@ -148,7 +148,7 @@ class ProjectsController extends Controller
 
             // Check cache first
             if ($this->pageCacheService->has($cacheKey)) {
-                return $this->pageCacheService->get($cacheKey);
+                return response()->json($this->pageCacheService->get($cacheKey));
             }
 
             // Get translations if groups are requested
@@ -217,7 +217,7 @@ class ProjectsController extends Controller
             // Cache the data array (not the JsonResponse)
             $this->pageCacheService->put($cacheKey, $response, null);
 
-            return $this->success($response);
+            return response()->json($response);
         } catch (\Exception $e) {
             return $this->error('Project not found', 404);
         }

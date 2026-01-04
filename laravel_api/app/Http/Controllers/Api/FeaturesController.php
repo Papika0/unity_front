@@ -133,18 +133,17 @@ class FeaturesController extends Controller
 
         // Check cache first
         if ($this->pageCacheService->has($cacheKey)) {
-            return $this->pageCacheService->get($cacheKey);
+            $cachedData = $this->pageCacheService->get($cacheKey);
+            return $this->success($cachedData);
         }
 
         $project = Projects::findOrFail($projectId);
         $features = $project->features()->get();
 
-        $result = $this->success($features);
+        // Cache the data array (not the response)
+        $this->pageCacheService->put($cacheKey, $features, null);
 
-        // Cache forever
-        $this->pageCacheService->put($cacheKey, $result, null);
-
-        return $result;
+        return $this->success($features);
     }
 
     /**

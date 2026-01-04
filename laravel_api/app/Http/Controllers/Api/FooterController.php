@@ -45,7 +45,8 @@ class FooterController extends Controller
 
             // Check cache first
             if ($this->pageCacheService->has($cacheKey)) {
-                return $this->pageCacheService->get($cacheKey);
+                $cachedData = $this->pageCacheService->get($cacheKey);
+                return $this->success($cachedData);
             }
 
             // Get footer-specific projects (limited for performance)
@@ -60,12 +61,10 @@ class FooterController extends Controller
                 'social_links' => $footerData['social_links'],
             ];
 
-            $result = $this->success($response, 'Footer data retrieved successfully');
+            // Cache the data array (not the response)
+            $this->pageCacheService->put($cacheKey, $response, null);
 
-            // Cache forever
-            $this->pageCacheService->put($cacheKey, $result, null);
-
-            return $result;
+            return $this->success($response);
         } catch (\Exception $e) {
             Log::error('FooterController: Failed to get footer data', [
                 'error' => $e->getMessage(),

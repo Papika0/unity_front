@@ -47,7 +47,8 @@ class NewsController extends Controller
 
             // Check cache first
             if ($this->pageCacheService->has($cacheKey)) {
-                return $this->pageCacheService->get($cacheKey);
+                $cachedData = $this->pageCacheService->get($cacheKey);
+                return $this->success($cachedData);
             }
 
             // Get translations if groups are requested
@@ -190,7 +191,8 @@ class NewsController extends Controller
 
             // Check cache first
             if ($this->pageCacheService->has($cacheKey)) {
-                return $this->pageCacheService->get($cacheKey);
+                $cachedData = $this->pageCacheService->get($cacheKey);
+                return $this->success($cachedData);
             }
 
             // Get translations if groups are requested
@@ -245,7 +247,8 @@ class NewsController extends Controller
 
             // Check cache first
             if ($this->pageCacheService->has($cacheKey)) {
-                return $this->pageCacheService->get($cacheKey);
+                $cachedData = $this->pageCacheService->get($cacheKey);
+                return $this->success($cachedData);
             }
 
             // Get translations if groups are requested
