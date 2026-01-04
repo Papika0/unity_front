@@ -78,6 +78,10 @@
         "pdf_generated": "PDF Generated",
         "pdf_download_started": "Download started",
         "pdf_error": "Failed to generate PDF",
+        "apartments_selected": "apartments selected",
+        "confirm_batch_status_change": "Are you sure you want to change the status of {count} apartments?",
+        "batch_status_changed": "Successfully changed status of {count} apartments",
+        "batch_status_error": "Error changing status",
         "rooms": {
             "dimensions": "Room Dimensions",
             "bedroom": "Bedroom",
@@ -274,7 +278,13 @@
             "view": "View",
             "dangerous": "Dangerous",
             "uploading": "Uploading...",
-            "upload_success": "Upload successful"
+            "upload_success": "Upload successful",
+            "clear_selection": "Clear Selection",
+            "change_status": "Change Status",
+            "select_status": "Select Status",
+            "apply": "Apply",
+            "applying": "Applying...",
+            "confirm_action": "Confirm Action"
         },
         "errors": {
             "loading_failed": "Loading failed",

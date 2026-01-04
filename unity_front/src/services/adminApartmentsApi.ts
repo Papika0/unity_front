@@ -134,4 +134,14 @@ export const adminApartmentsApi = {
       },
     )
   },
+
+  /**
+   * Batch update status for multiple apartments
+   */
+  batchUpdateStatus: async (apartmentIds: number[], status: ApartmentStatus) => {
+    return api.post('/admin/apartments/batch-status', {
+      apartment_ids: apartmentIds,
+      status: status,
+    })
+  },
 }

@@ -7,6 +7,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useApartmentsAdminStore } from '@/stores/admin/apartments'
 import { useBuildingsAdminStore } from '@/stores/admin/buildings'
 import { useAdminProjectsStore } from '@/stores/admin/projects'
+import { useTranslations } from '@/composables/i18n/useTranslations'
 import type { Apartment, Building, ApartmentStatus } from '@/types/apartments'
 import type { Project } from '@/types'
 
@@ -17,6 +18,7 @@ export function useApartmentsList() {
   const apartmentsStore = useApartmentsAdminStore()
   const buildingsStore = useBuildingsAdminStore()
   const projectsStore = useAdminProjectsStore()
+  const { t } = useTranslations()
 
   // ============================================
   // STATE
@@ -32,7 +34,18 @@ export function useApartmentsList() {
   const projects = ref<Project[]>([])
   const buildings = ref<Building[]>([])
 
+  // Batch selection state
+  const selectedApartmentIds = ref<number[]>([])
+  const bulkStatusValue = ref<ApartmentStatus | ''>('')
+  const isApplyingBulkStatus = ref(false)
+  const showBulkConfirmation = ref(false)
+
   const totalPages = computed(() => apartmentsStore.pagination.last_page)
+
+  const isAllSelected = computed(() =>
+    apartmentsStore.apartments.length > 0 &&
+    selectedApartmentIds.value.length === apartmentsStore.apartments.length
+  )
 
   // ============================================
   // ACTIONS
@@ -163,10 +176,71 @@ export function useApartmentsList() {
   }
 
   // ============================================
+  // BATCH SELECTION ACTIONS
+  // ============================================
+  const toggleApartmentSelection = (apartmentId: number) => {
+    const index = selectedApartmentIds.value.indexOf(apartmentId)
+    if (index > -1) {
+      selectedApartmentIds.value.splice(index, 1)
+    } else {
+      selectedApartmentIds.value.push(apartmentId)
+    }
+  }
+
+  const toggleSelectAll = () => {
+    if (isAllSelected.value) {
+      selectedApartmentIds.value = []
+    } else {
+      selectedApartmentIds.value = apartmentsStore.apartments.map(a => a.id)
+    }
+  }
+
+  const clearSelection = () => {
+    selectedApartmentIds.value = []
+    bulkStatusValue.value = ''
+  }
+
+  const applyBulkStatusChange = () => {
+    if (!bulkStatusValue.value || selectedApartmentIds.value.length === 0) return
+    showBulkConfirmation.value = true
+  }
+
+  const cancelBulkStatusChange = () => {
+    showBulkConfirmation.value = false
+  }
+
+  const confirmBulkStatusChange = async () => {
+    if (!bulkStatusValue.value || selectedApartmentIds.value.length === 0) return
+
+    isApplyingBulkStatus.value = true
+    showBulkConfirmation.value = false
+
+    try {
+      await apartmentsStore.batchUpdateStatus(
+        selectedApartmentIds.value,
+        bulkStatusValue.value as ApartmentStatus
+      )
+      alert(t('apartments.batch_status_changed', { count: selectedApartmentIds.value.length }))
+      clearSelection()
+      await loadApartments()
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string } }; message?: string }
+      alert(t('apartments.batch_status_error') + ': ' + (apiError.response?.data?.message || apiError.message || ''))
+    } finally {
+      isApplyingBulkStatus.value = false
+    }
+  }
+
+  // ============================================
   // WATCHERS
   // ============================================
   watch(currentPage, () => {
     loadApartments()
+  })
+
+  // Clear selections when filters change
+  watch([selectedProjectId, selectedBuildingId, filterStatus, currentPage], () => {
+    clearSelection()
   })
 
   // ============================================
@@ -196,6 +270,13 @@ export function useApartmentsList() {
     buildings,
     totalPages,
 
+    // Batch selection state
+    selectedApartmentIds,
+    bulkStatusValue,
+    isApplyingBulkStatus,
+    showBulkConfirmation,
+    isAllSelected,
+
     // Actions
     onProjectChange,
     loadApartments,
@@ -205,6 +286,14 @@ export function useApartmentsList() {
     handleSaved,
     handleImported,
     deleteApartment,
+
+    // Batch selection actions
+    toggleApartmentSelection,
+    toggleSelectAll,
+    clearSelection,
+    applyBulkStatusChange,
+    cancelBulkStatusChange,
+    confirmBulkStatusChange,
 
     // Helpers
     getStatusClass,

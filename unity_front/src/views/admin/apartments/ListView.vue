@@ -23,6 +23,43 @@
         </div>
       </div>
 
+      <!-- Batch Actions Toolbar -->
+      <Transition name="slide-down">
+        <div v-if="selectedApartmentIds.length > 0" class="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <span class="font-medium text-emerald-800">
+              {{ selectedApartmentIds.length }} {{ t('apartments.apartments_selected') }}
+            </span>
+            <button @click="clearSelection" class="text-emerald-600 hover:text-emerald-800 text-sm underline">
+              {{ t('admin.common.clear_selection') }}
+            </button>
+          </div>
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+            <label class="text-sm font-medium text-slate-700">{{ t('admin.common.change_status') }}:</label>
+            <select v-model="bulkStatusValue" class="px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 w-full sm:w-auto">
+              <option value="">-- {{ t('admin.common.select_status') }} --</option>
+              <option value="available">{{ t('status.available') }}</option>
+              <option value="reserved">{{ t('status.reserved') }}</option>
+              <option value="sold">{{ t('status.sold') }}</option>
+            </select>
+            <button
+              @click="applyBulkStatusChange"
+              :disabled="!bulkStatusValue || isApplyingBulkStatus"
+              class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+            >
+              <span v-if="!isApplyingBulkStatus">{{ t('admin.common.apply') }}</span>
+              <span v-else class="flex items-center gap-2 justify-center">
+                <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {{ t('admin.common.applying') }}
+              </span>
+            </button>
+          </div>
+        </div>
+      </Transition>
+
       <!-- Filters -->
       <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
@@ -87,12 +124,34 @@
         <p class="text-slate-500 text-lg">{{ t('apartments.no_apartments') }}</p>
       </div>
 
+      <!-- Select All Bar -->
+      <div v-else-if="apartmentsStore.apartments.length > 0" class="mb-4 flex items-center gap-3 px-4">
+        <input
+          type="checkbox"
+          :checked="isAllSelected"
+          @change="toggleSelectAll"
+          class="w-5 h-5 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 cursor-pointer"
+        />
+        <label class="text-sm font-medium text-slate-700 cursor-pointer select-none" @click="toggleSelectAll">
+          {{ isAllSelected ? t('admin.common.deselect_all') : t('admin.common.select_all') }}
+          ({{ apartmentsStore.apartments.length }})
+        </label>
+      </div>
+
       <!-- Apartments Grid -->
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div v-if="apartmentsStore.apartments.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <div v-for="apartment in apartmentsStore.apartments" :key="apartment.id" class="bg-white rounded-2xl shadow-sm border border-slate-200 hover:shadow-lg transition-all duration-300 overflow-hidden group">
           <div class="p-6">
             <div class="flex items-start justify-between mb-4">
-              <div class="flex-1">
+              <!-- Checkbox -->
+              <input
+                type="checkbox"
+                :checked="selectedApartmentIds.includes(apartment.id)"
+                @change="toggleApartmentSelection(apartment.id)"
+                class="w-5 h-5 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 cursor-pointer flex-shrink-0 mt-1"
+              />
+
+              <div class="flex-1 ml-3">
                 <h3 class="text-xl font-bold text-slate-800">{{ apartment.apartment_number }}</h3>
                 <p class="text-sm text-slate-500">{{ t('apartments.floor') }}: {{ apartment.floor_number }}</p>
               </div>
@@ -144,6 +203,44 @@
       @close="showBatchImageUpload = false"
       @uploaded="handleBatchImageUploaded"
     />
+
+    <!-- Batch Status Confirmation Modal -->
+    <Transition name="fade">
+      <div v-if="showBulkConfirmation" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="cancelBulkStatusChange">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-slate-800">{{ t('admin.common.confirm_action') }}</h3>
+            <button @click="cancelBulkStatusChange" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+          </div>
+
+          <div class="mb-6">
+            <p class="text-slate-600 mb-4">
+              {{ t('apartments.confirm_batch_status_change', { count: selectedApartmentIds.length }) }}
+            </p>
+            <div class="bg-slate-50 rounded-lg p-3 text-sm text-slate-600">
+              <strong>{{ t('apartments.apartments_selected') }}:</strong>
+              {{ selectedApartmentIds.length }}
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              @click="cancelBulkStatusChange"
+              class="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium"
+            >
+              {{ t('admin.common.cancel') }}
+            </button>
+            <button
+              @click="confirmBulkStatusChange"
+              :disabled="isApplyingBulkStatus"
+              class="flex-1 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors font-medium disabled:opacity-50"
+            >
+              {{ t('admin.common.confirm') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -173,6 +270,11 @@ const {
   projects,
   buildings,
   totalPages,
+  selectedApartmentIds,
+  bulkStatusValue,
+  isApplyingBulkStatus,
+  showBulkConfirmation,
+  isAllSelected,
   onProjectChange,
   loadApartments,
   openCreateModal,
@@ -181,6 +283,12 @@ const {
   handleSaved,
   handleImported,
   deleteApartment,
+  toggleApartmentSelection,
+  toggleSelectAll,
+  clearSelection,
+  applyBulkStatusChange,
+  cancelBulkStatusChange,
+  confirmBulkStatusChange,
   getStatusClass,
   getStatusLabel,
   formatPrice,
@@ -192,3 +300,30 @@ function handleBatchImageUploaded() {
   showBatchImageUpload.value = false
 }
 </script>
+
+<style scoped>
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

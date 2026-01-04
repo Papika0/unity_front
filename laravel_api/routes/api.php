@@ -493,6 +493,7 @@ Route::middleware(['auth:api', 'jwt.auth', 'throttle:api'])->group(function () {
 
     // Apartment Management (non-building context for updates/deletes)
     Route::prefix('admin/apartments')->controller(AdminApartmentController::class)->group(function () {
+        Route::post('/batch-status', 'batchUpdateStatus'); // Batch status update
         Route::put('/{apartmentId}', 'update');       // Update apartment
         Route::patch('/{apartmentId}/status', 'updateStatus'); // Quick status update
         Route::delete('/{apartmentId}', 'destroy');   // Delete apartment

@@ -78,6 +78,10 @@
         "pdf_generated": "PDF создан",
         "pdf_download_started": "Загрузка началась",
         "pdf_error": "Не удалось создать PDF",
+        "apartments_selected": "выбрано квартир",
+        "confirm_batch_status_change": "Вы уверены, что хотите изменить статус {count} квартир?",
+        "batch_status_changed": "Успешно изменен статус {count} квартир",
+        "batch_status_error": "Ошибка изменения статуса",
         "rooms": {
             "dimensions": "Размеры комнат",
             "bedroom": "Спальня",
@@ -272,7 +276,13 @@
             "success": "Успех",
             "error": "Ошибка",
             "view": "Просмотр",
-            "dangerous": "Опасно"
+            "dangerous": "Опасно",
+            "clear_selection": "Очистить",
+            "change_status": "Изменить статус",
+            "select_status": "Выберите статус",
+            "apply": "Применить",
+            "applying": "Применяется...",
+            "confirm_action": "Подтвердите действие"
         },
         "errors": {
             "loading_failed": "Ошибка загрузки",

@@ -164,6 +164,38 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
   }
 
   /**
+   * Batch update status for multiple apartments
+   */
+  async function batchUpdateStatus(apartmentIds: number[], status: ApartmentStatus) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const response = await adminApartmentsApi.batchUpdateStatus(apartmentIds, status)
+
+      if ('data' in response && response.data) {
+        // Update local state for successfully updated apartments
+        apartmentIds.forEach(id => {
+          const apartment = apartments.value.find(a => a.id === id)
+          if (apartment) {
+            apartment.status = status
+          }
+        })
+
+        return response.data
+      }
+
+      throw new Error('Invalid response from server')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to batch update status'
+      error.value = message
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
    * Delete an apartment
    */
   async function deleteApartment(apartmentId: number) {
@@ -280,6 +312,7 @@ export const useApartmentsAdminStore = defineStore('admin-apartments', () => {
     createApartment,
     updateApartment,
     updateStatus,
+    batchUpdateStatus,
     deleteApartment,
     bulkImport,
     downloadTemplate,

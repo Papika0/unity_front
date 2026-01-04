@@ -78,6 +78,10 @@
         "pdf_generated": "PDF შექმნილია",
         "pdf_download_started": "ფაილი იტვირთება",
         "pdf_error": "PDF-ის შექმნა ვერ მოხერხდა",
+        "apartments_selected": "ბინა არჩეულია",
+        "confirm_batch_status_change": "დარწმუნებული ხართ, რომ გსურთ {count} ბინის სტატუსის შეცვლა?",
+        "batch_status_changed": "წარმატებით შეიცვალა {count} ბინის სტატუსი",
+        "batch_status_error": "სტატუსის ცვლილება ვერ მოხერხდა",
         "rooms": {
             "dimensions": "ოთახების ზომები",
             "bedroom": "საძინებელი",
@@ -274,7 +278,13 @@
             "view": "ნახვა",
             "dangerous": "საშიში",
             "uploading": "იტვირთება...",
-            "upload_success": "წარმატებით აიტვირთა"
+            "upload_success": "წარმატებით აიტვირთა",
+            "clear_selection": "გასუფთავება",
+            "change_status": "სტატუსის შეცვლა",
+            "select_status": "აირჩიეთ სტატუსი",
+            "apply": "გამოყენება",
+            "applying": "მიმდინარეობს...",
+            "confirm_action": "დაადასტურეთ მოქმედება"
         },
         "errors": {
             "loading_failed": "ჩატვირთვა ვერ მოხერხდა",

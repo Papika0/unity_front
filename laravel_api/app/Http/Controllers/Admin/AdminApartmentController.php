@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreApartmentRequest;
 use App\Http\Requests\Admin\UpdateApartmentRequest;
 use App\Http\Requests\Admin\BulkImportApartmentsRequest;
 use App\Http\Requests\Admin\UpdateApartmentStatusRequest;
+use App\Http\Requests\Admin\BatchUpdateApartmentStatusRequest;
 use App\Http\Resources\Admin\AdminApartmentResource;
 use App\Models\Apartment;
 use App\Models\Building;
@@ -535,6 +536,62 @@ class AdminApartmentController extends Controller
             'message' => 'Status updated successfully',
             'data' => new AdminApartmentResource($apartment),
         ]);
+    }
+
+    /**
+     * Batch update status for multiple apartments
+     */
+    public function batchUpdateStatus(BatchUpdateApartmentStatusRequest $request): JsonResponse
+    {
+        $apartmentIds = $request->input('apartment_ids');
+        $status = $request->input('status');
+
+        $updated = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+        try {
+            foreach ($apartmentIds as $apartmentId) {
+                try {
+                    $apartment = Apartment::findOrFail($apartmentId);
+
+                    // Use model methods for status updates
+                    match($status) {
+                        'available' => $apartment->markAsAvailable(),
+                        'reserved' => $apartment->markAsReserved(),
+                        'sold' => $apartment->markAsSold(),
+                    };
+
+                    $updated++;
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'apartment_id' => $apartmentId,
+                        'error' => $e->getMessage(),
+                    ];
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully updated {$updated} apartment(s)",
+                'data' => [
+                    'updated_count' => $updated,
+                    'failed_count' => $failed,
+                    'errors' => $errors,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Batch status update failed: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
