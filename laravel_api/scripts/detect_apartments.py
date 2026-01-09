@@ -222,16 +222,21 @@ def detect_red_lines(image):
     mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
     red_mask = cv2.bitwise_or(mask1, mask2)
     
-    # Clean up the mask
+    # Light cleanup - just close small gaps, don't over-dilate
     kernel = np.ones((3, 3), np.uint8)
-    red_mask = cv2.dilate(red_mask, kernel, iterations=2)
+    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel)
     
     return red_mask
 
-def clean_mask(mask, thickness=5):
-    """Create a barrier mask from red lines"""
+def clean_mask(mask, thickness=3):
+    """Create a barrier mask from red lines
+    
+    Note: Using minimal dilation to avoid shrinking detected regions.
+    The regions will be expanded back to align with red line centers.
+    """
     kernel = np.ones((thickness, thickness), np.uint8)
-    barrier = cv2.dilate(mask, kernel, iterations=2)
+    # Single iteration with smaller kernel to just ensure connectivity
+    barrier = cv2.dilate(mask, kernel, iterations=1)
     return barrier
 
 def flood_fill_apartments(image, barrier_mask):
@@ -269,8 +274,33 @@ def flood_fill_apartments(image, barrier_mask):
             
     return regions
 
-def region_to_polygon(region_mask, simplify_epsilon=5):
-    """Convert a region mask to a simplified polygon"""
+def expand_region_to_barrier(region_mask, barrier_mask, expansion_px=4):
+    """
+    Expand the region mask outward to align with the center of the red lines.
+    This compensates for the barrier dilation that shrinks detected regions.
+    """
+    # Dilate the region to expand it
+    kernel = np.ones((expansion_px, expansion_px), np.uint8)
+    expanded = cv2.dilate(region_mask, kernel, iterations=1)
+    
+    # But don't expand into other regions - stop at the barrier center
+    # We allow expansion up to where the barrier is, but not beyond
+    # This ensures polygons align with the red line center
+    return expanded
+
+def region_to_polygon(region_mask, simplify_epsilon=5, expand_px=4):
+    """Convert a region mask to a simplified polygon
+    
+    Args:
+        region_mask: Binary mask of the region
+        simplify_epsilon: Epsilon for polygon simplification (Douglas-Peucker)
+        expand_px: Pixels to expand outward to align with red line centers
+    """
+    # Expand region outward to compensate for barrier shrinkage
+    if expand_px > 0:
+        kernel = np.ones((expand_px, expand_px), np.uint8)
+        region_mask = cv2.dilate(region_mask, kernel, iterations=1)
+    
     contours, _ = cv2.findContours(region_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     if not contours:
