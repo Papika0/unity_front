@@ -113,13 +113,105 @@
               <p class="text-green-700">✓ {{ t('admin.apartments.batch_upload.uploaded', { count: result.uploaded }) }}</p>
               <p v-if="result.failed > 0" class="text-amber-700">⚠ {{ t('admin.apartments.batch_upload.failed', { count: result.failed }) }}</p>
             </div>
-            <div v-if="result.errors?.length" class="mt-3 max-h-32 overflow-y-auto">
-              <p class="text-xs font-medium text-slate-500 mb-1">{{ t('admin.apartments.batch_upload.errors') }}:</p>
-              <ul class="text-xs text-red-600 space-y-0.5">
-              <!-- Show only first 10 errors to preserve performance if many fail -->
-                <li v-for="(err, i) in result.errors.slice(0, 50)" :key="i">{{ err }}</li>
-                <li v-if="result.errors.length > 50">... {{ result.errors.length - 50 }} more errors</li>
-              </ul>
+            <div v-if="result.errors?.length" class="mt-3 space-y-3">
+              <p class="text-xs font-medium text-slate-500">{{ t('admin.apartments.batch_upload.errors') }}:</p>
+
+              <!-- Error Summary -->
+              <div v-if="result.summary" class="grid grid-cols-3 gap-2 text-xs">
+                <div v-if="result.summary.parse_failures > 0" class="bg-orange-50 border border-orange-200 rounded-lg p-2">
+                  <div class="font-medium text-orange-700">{{ result.summary.parse_failures }}</div>
+                  <div class="text-orange-600">{{ t('apartments.batch_upload.parse_failures') }}</div>
+                </div>
+                <div v-if="result.summary.apartments_not_found > 0" class="bg-red-50 border border-red-200 rounded-lg p-2">
+                  <div class="font-medium text-red-700">{{ result.summary.apartments_not_found }}</div>
+                  <div class="text-red-600">{{ t('apartments.batch_upload.not_found') }}</div>
+                </div>
+                <div v-if="result.summary.upload_failures > 0" class="bg-purple-50 border border-purple-200 rounded-lg p-2">
+                  <div class="font-medium text-purple-700">{{ result.summary.upload_failures }}</div>
+                  <div class="text-purple-600">{{ t('apartments.batch_upload.upload_failed') }}</div>
+                </div>
+              </div>
+
+              <!-- Categorized Errors -->
+              <div class="max-h-64 overflow-y-auto space-y-3">
+                <!-- Parse Failures -->
+                <div v-if="categorizedErrors?.parse_failure.length" class="space-y-1">
+                  <h5 class="text-xs font-semibold text-orange-700 flex items-center gap-1">
+                    <span>⚠️</span> {{ t('apartments.batch_upload.parse_failures') }} ({{ categorizedErrors.parse_failure.length }})
+                  </h5>
+                  <div v-for="(err, i) in categorizedErrors.parse_failure.slice(0, 10)" :key="`parse-${i}`"
+                       class="text-xs bg-orange-50 border border-orange-200 rounded p-2">
+                    <div class="font-medium text-orange-800">{{ err.message }}</div>
+                    <div class="text-orange-600 mt-0.5 truncate" :title="err.path">{{ err.path }}</div>
+                    <div v-if="err.suggestion" class="text-orange-700 mt-1 text-xs italic">💡 {{ err.suggestion }}</div>
+                  </div>
+                  <div v-if="categorizedErrors.parse_failure.length > 10" class="text-xs text-orange-600 italic">
+                    ... {{ categorizedErrors.parse_failure.length - 10 }} {{ t('apartments.batch_upload.more_parse_failures') }}
+                  </div>
+                </div>
+
+                <!-- Apartments Not Found -->
+                <div v-if="categorizedErrors?.apartment_not_found.length" class="space-y-1">
+                  <h5 class="text-xs font-semibold text-red-700 flex items-center gap-1">
+                    <span>❌</span> {{ t('apartments.batch_upload.apartments_not_found') }} ({{ categorizedErrors.apartment_not_found.length }})
+                  </h5>
+                  <div v-for="(err, i) in categorizedErrors.apartment_not_found.slice(0, 10)" :key="`notfound-${i}`"
+                       class="text-xs bg-red-50 border border-red-200 rounded p-2">
+                    <div class="font-medium text-red-800">{{ err.message }}</div>
+                    <div class="text-red-600 mt-0.5 truncate" :title="err.path">{{ err.path }}</div>
+                    <div v-if="err.parsed" class="text-xs text-slate-600 mt-1">
+                      {{ t('apartments.batch_upload.parsed_prefix') }}: {{ t('apartments.batch_upload.floor_label') }} {{ err.parsed.floor }}, {{ t('apartments.batch_upload.apt_label') }} {{ err.parsed.apartment }}, {{ t('apartments.batch_upload.type_label') }} {{ err.parsed.type }}
+                    </div>
+                    <div v-if="err.suggestion" class="text-red-700 mt-1 text-xs bg-red-100 rounded p-1">
+                      💡 {{ err.suggestion }}
+                    </div>
+                  </div>
+                  <div v-if="categorizedErrors.apartment_not_found.length > 10" class="text-xs text-red-600 italic">
+                    ... {{ categorizedErrors.apartment_not_found.length - 10 }} {{ t('apartments.batch_upload.more_not_found') }}
+                  </div>
+                </div>
+
+                <!-- Upload Failures -->
+                <div v-if="categorizedErrors?.upload_failure.length" class="space-y-1">
+                  <h5 class="text-xs font-semibold text-purple-700 flex items-center gap-1">
+                    <span>🚫</span> {{ t('apartments.batch_upload.upload_failures') }} ({{ categorizedErrors.upload_failure.length }})
+                  </h5>
+                  <div v-for="(err, i) in categorizedErrors.upload_failure.slice(0, 10)" :key="`upload-${i}`"
+                       class="text-xs bg-purple-50 border border-purple-200 rounded p-2">
+                    <div class="font-medium text-purple-800">{{ err.message }}</div>
+                    <div class="text-purple-600 mt-0.5">{{ err.apartment }}</div>
+                    <div v-if="err.reason" class="text-purple-700 mt-1 text-xs">{{ t('apartments.batch_upload.reason_label') }}: {{ err.reason }}</div>
+                  </div>
+                  <div v-if="categorizedErrors.upload_failure.length > 10" class="text-xs text-purple-600 italic">
+                    ... {{ categorizedErrors.upload_failure.length - 10 }} {{ t('apartments.batch_upload.more_upload_failures') }}
+                  </div>
+                </div>
+
+                <!-- Unknown Errors (Backward Compatibility) -->
+                <div v-if="categorizedErrors?.unknown.length" class="space-y-1">
+                  <h5 class="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                    <span>❓</span> {{ t('apartments.batch_upload.other_errors') }} ({{ categorizedErrors.unknown.length }})
+                  </h5>
+                  <div v-for="(err, i) in categorizedErrors.unknown.slice(0, 10)" :key="`unknown-${i}`"
+                       class="text-xs bg-slate-50 border border-slate-200 rounded p-2">
+                    <div class="font-medium text-slate-800">{{ err.message }}</div>
+                    <div v-if="err.path" class="text-slate-600 mt-0.5 truncate" :title="err.path">{{ err.path }}</div>
+                  </div>
+                  <div v-if="categorizedErrors.unknown.length > 10" class="text-xs text-slate-600 italic">
+                    ... {{ categorizedErrors.unknown.length - 10 }} {{ t('apartments.batch_upload.more_errors') }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Export Errors Button -->
+              <div class="flex justify-end">
+                <button
+                  @click="exportErrors"
+                  class="text-xs bg-slate-100 border border-slate-300 px-3 py-1.5 rounded hover:bg-slate-200 transition flex items-center gap-1"
+                >
+                  <span>📥</span> {{ t('apartments.batch_upload.export_errors_csv') }}
+                </button>
+              </div>
             </div>
             
             <div class="mt-4 flex justify-end">
@@ -189,11 +281,31 @@ const emit = defineEmits<Emits>()
 const { t } = useTranslations()
 const { success, error: showError } = useToast()
 
+interface ErrorDetail {
+  type?: string
+  message: string
+  path?: string
+  parsed?: {
+    floor: number | string
+    apartment: number | string
+    type: string
+  }
+  suggestion?: string
+  apartment?: string
+  reason?: string
+}
+
+interface ErrorSummary {
+  parse_failures: number
+  apartments_not_found: number
+  upload_failures: number
+}
+
 const folderInput = ref<HTMLInputElement | null>(null)
 const selectedFiles = ref<File[]>([])
 const uploading = ref(false)
 const error = ref('')
-const result = ref<{ uploaded: number; failed: number; errors: string[] } | null>(null)
+const result = ref<{ uploaded: number; failed: number; errors: (string | ErrorDetail)[]; summary?: ErrorSummary } | null>(null)
 
 // Progress tracking
 const processedCount = ref(0)
@@ -201,6 +313,39 @@ const totalFiles = ref(0)
 const progressPercentage = computed(() => {
   if (totalFiles.value === 0) return 0
   return Math.min(Math.round((processedCount.value / totalFiles.value) * 100), 100)
+})
+
+// Categorize errors by type
+const categorizedErrors = computed(() => {
+  if (!result.value?.errors) return null
+
+  const categories: {
+    parse_failure: ErrorDetail[]
+    apartment_not_found: ErrorDetail[]
+    upload_failure: ErrorDetail[]
+    unknown: ErrorDetail[]
+  } = {
+    parse_failure: [],
+    apartment_not_found: [],
+    upload_failure: [],
+    unknown: []
+  }
+
+  result.value.errors.forEach(err => {
+    if (typeof err === 'object') {
+      const type = err.type || 'unknown'
+      if (type in categories) {
+        categories[type as keyof typeof categories].push(err as ErrorDetail)
+      } else {
+        categories.unknown.push(err as ErrorDetail)
+      }
+    } else {
+      // Backward compatibility with string errors
+      categories.unknown.push({ message: err, path: '' })
+    }
+  })
+
+  return categories
 })
 
 function handleFolderSelect(event: Event) {
@@ -228,6 +373,45 @@ function clearSelection() {
   if (folderInput.value) {
     folderInput.value.value = ''
   }
+}
+
+function exportErrors() {
+  if (!result.value?.errors) return
+
+  const csvRows = []
+  csvRows.push(['Type', 'Message', 'Path', 'Details', 'Suggestion'])
+
+  result.value.errors.forEach(err => {
+    if (typeof err === 'object') {
+      const details = err.parsed
+        ? `Floor: ${err.parsed.floor}, Apt: ${err.parsed.apartment}, Type: ${err.parsed.type}`
+        : err.apartment || ''
+
+      csvRows.push([
+        err.type || 'unknown',
+        err.message || '',
+        err.path || '',
+        details,
+        err.suggestion || ''
+      ])
+    } else {
+      csvRows.push(['unknown', err, '', '', ''])
+    }
+  })
+
+  const csvContent = csvRows.map(row =>
+    row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+  ).join('\n')
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+  link.setAttribute('href', url)
+  link.setAttribute('download', `apartment_upload_errors_${Date.now()}.csv`)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 async function uploadBatch() {
@@ -259,31 +443,75 @@ async function uploadBatch() {
         })
 
         // 2. Prepare for upload
-        // We need to preserve the relative path. 
+        // We need to preserve the relative path.
         // When we compress, we get a new File object which might lose webkitRelativePath.
         // We explicitly pass the original path.
         const originalPath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name
-        
-        // 3. Upload single file
-        await adminApartmentsApi.uploadBatchImage(
+
+        // 3. Upload single file and check response
+        const response = await adminApartmentsApi.uploadBatchImage(
           props.projectId,
           props.buildingId,
           compressionResult.file,
           originalPath
         )
-        
-        // 4. Update success count
-        if (result.value) {
-          result.value.uploaded++
+
+        // 4. Check if backend returned failures (backend returns 200 OK even with failures)
+        const responseData = response.data as { data?: { uploaded?: number; failed?: number; errors?: ErrorDetail[]; summary?: ErrorSummary } }
+
+        if (responseData.data?.failed && responseData.data.failed > 0) {
+          // Backend reported failures for this file
+          if (result.value) {
+            result.value.failed += responseData.data.failed
+            if (responseData.data.errors && Array.isArray(responseData.data.errors)) {
+              result.value.errors.push(...responseData.data.errors)
+            }
+            if (responseData.data.summary) {
+              // Merge summary counts
+              if (!result.value.summary) {
+                result.value.summary = {
+                  parse_failures: 0,
+                  apartments_not_found: 0,
+                  upload_failures: 0
+                }
+              }
+              result.value.summary.parse_failures += responseData.data.summary.parse_failures || 0
+              result.value.summary.apartments_not_found += responseData.data.summary.apartments_not_found || 0
+              result.value.summary.upload_failures += responseData.data.summary.upload_failures || 0
+            }
+          }
+        }
+
+        // Update success count
+        if (result.value && responseData.data?.uploaded) {
+          result.value.uploaded += responseData.data.uploaded
         }
       } catch (err: unknown) {
         // Collect errors but continue uploading other files
         if (result.value) {
-          result.value.failed++
           const fileName = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name
-          const apiError = err as { response?: { data?: { message?: string } }; message?: string }
-          const errorMessage = apiError.response?.data?.message || apiError.message || 'Unknown error'
-          result.value.errors.push(`${fileName}: ${errorMessage}`)
+          const apiError = err as { response?: { data?: { data?: { errors?: ErrorDetail[]; summary?: ErrorSummary }; message?: string } }; message?: string }
+
+          // Handle structured error from backend
+          if (apiError.response?.data?.data?.errors && Array.isArray(apiError.response.data.data.errors)) {
+            // Backend returned structured errors
+            result.value.failed += apiError.response.data.data.errors.length
+            result.value.errors.push(...apiError.response.data.data.errors)
+
+            // Update summary if provided
+            if (apiError.response.data.data.summary) {
+              result.value.summary = apiError.response.data.data.summary
+            }
+          } else {
+            // Fallback to simple error
+            result.value.failed++
+            const errorMessage = apiError.response?.data?.message || apiError.message || 'Unknown error'
+            result.value.errors.push({
+              type: 'unknown',
+              message: errorMessage,
+              path: fileName
+            })
+          }
         }
         console.error(`Failed to upload ${file.name}:`, err)
       } finally {

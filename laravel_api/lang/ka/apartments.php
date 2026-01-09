@@ -53,4 +53,24 @@ return [
     'view_2d' => '2D ხედი',
     'view_3d' => '3D ხედი',
     'no_image' => 'სურათი არ არის ხელმისაწვდომი',
+
+    // Batch Upload Error Handling
+    'batch_upload' => [
+        'parse_failures' => 'პარსვის შეცდომები',
+        'apartments_not_found' => 'ბინები ვერ მოიძებნა',
+        'upload_failures' => 'ატვირთვის შეცდომები',
+        'not_found' => 'ვერ მოიძებნა',
+        'upload_failed' => 'ატვირთვა ვერ მოხერხდა',
+        'other_errors' => 'სხვა შეცდომები',
+        'parsed_prefix' => 'გაპარსული',
+        'floor_label' => 'სართული',
+        'apt_label' => 'ბინა',
+        'type_label' => 'ტიპი',
+        'reason_label' => 'მიზეზი',
+        'export_errors_csv' => 'შეცდომების ექსპორტი CSV-ში',
+        'more_parse_failures' => 'კიდევ პარსვის შეცდომები',
+        'more_not_found' => 'კიდევ ვერ მოიძებნა',
+        'more_upload_failures' => 'კიდევ ატვირთვის შეცდომები',
+        'more_errors' => 'კიდევ შეცდომები',
+    ],
 ];

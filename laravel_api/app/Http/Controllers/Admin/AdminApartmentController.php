@@ -791,7 +791,12 @@ class AdminApartmentController extends Controller
                 $parsed = $this->parseBatchImagePath($path);
 
                 if (!$parsed) {
-                    $errors[] = "Could not parse path information (Type/Floor/Apt) from: {$path}";
+                    $errors[] = [
+                        'type' => 'parse_failure',
+                        'message' => "Could not parse apartment information from filename",
+                        'path' => $path,
+                        'suggestion' => "Expected format: 'Floor X/Apartment Y/image.png' or 'X floor/Y apartment/image.png' or 'X სართული/ბინა Y/image.png' or 'X სართული/Y ბინა/image.png'. Make sure floor and apartment numbers are clearly marked."
+                    ];
                     $failed++;
                     continue;
                 }
@@ -803,7 +808,37 @@ class AdminApartmentController extends Controller
                     ->first();
 
                 if (!$apartment) {
-                    $errors[] = "Apartment not found: Floor {$parsed['floor']}, Apt {$parsed['apartment']} (Path: {$path})";
+                    // Get available apartments on this floor to provide suggestions
+                    $availableApartments = Apartment::where('building_id', $buildingId)
+                        ->where('floor_number', $parsed['floor'])
+                        ->where('is_active', true)
+                        ->orderBy('apartment_number')
+                        ->pluck('apartment_number')
+                        ->toArray();
+
+                    $suggestion = '';
+                    if (!empty($availableApartments)) {
+                        $suggestion = "Available apartments on Floor {$parsed['floor']}: " . implode(', ', $availableApartments);
+                    } else {
+                        // Check if floor exists at all
+                        $floorExists = Apartment::where('building_id', $buildingId)
+                            ->where('floor_number', $parsed['floor'])
+                            ->exists();
+
+                        if (!$floorExists) {
+                            $suggestion = "Floor {$parsed['floor']} does not exist in this building.";
+                        } else {
+                            $suggestion = "No active apartments found on Floor {$parsed['floor']}.";
+                        }
+                    }
+
+                    $errors[] = [
+                        'type' => 'apartment_not_found',
+                        'message' => "Apartment not found: Floor {$parsed['floor']}, Apt {$parsed['apartment']}",
+                        'path' => $path,
+                        'parsed' => $parsed,
+                        'suggestion' => $suggestion
+                    ];
                     $failed++;
                     continue;
                 }
@@ -815,29 +850,48 @@ class AdminApartmentController extends Controller
 
                 $storagePath = "apartments/{$projectName}/{$buildingName}/floor_{$parsed['floor']}/apt_{$apartment->apartment_number}";
 
-                // Upload the image
-                $image = $this->imageService->uploadImage(
-                    $file,
-                    "Apartment {$apartment->apartment_number} - " . strtoupper($parsed['type']),
-                    $storagePath
-                );
-
-                // Remove existing image of the same type
-                $existingRelation = $parsed['type'] === '2d' ? 'image2d' : 'image3d';
-                if ($apartment->$existingRelation->first()) {
-                    $this->imageService->detachImage(
-                        $apartment->$existingRelation->first(),
-                        $apartment,
-                        $parsed['type']
+                // Upload the image with error handling
+                try {
+                    $image = $this->imageService->uploadImage(
+                        $file,
+                        "Apartment {$apartment->apartment_number} - " . strtoupper($parsed['type']),
+                        $storagePath
                     );
-                }
 
-                // Attach new image
-                $this->imageService->attachImage($image, $apartment, $parsed['type']);
-                $uploaded++;
+                    // Remove existing image of the same type
+                    $existingRelation = $parsed['type'] === '2d' ? 'image2d' : 'image3d';
+                    if ($apartment->$existingRelation->first()) {
+                        $this->imageService->detachImage(
+                            $apartment->$existingRelation->first(),
+                            $apartment,
+                            $parsed['type']
+                        );
+                    }
+
+                    // Attach new image
+                    $this->imageService->attachImage($image, $apartment, $parsed['type']);
+                    $uploaded++;
+                } catch (\Exception $e) {
+                    $errors[] = [
+                        'type' => 'upload_failure',
+                        'message' => "Failed to upload image",
+                        'path' => $path,
+                        'apartment' => "Floor {$parsed['floor']}, Apt {$parsed['apartment']}",
+                        'reason' => $e->getMessage()
+                    ];
+                    $failed++;
+                    continue;
+                }
             }
 
             DB::commit();
+
+            // Calculate error summary
+            $summary = [
+                'parse_failures' => count(array_filter($errors, fn($e) => ($e['type'] ?? '') === 'parse_failure')),
+                'apartments_not_found' => count(array_filter($errors, fn($e) => ($e['type'] ?? '') === 'apartment_not_found')),
+                'upload_failures' => count(array_filter($errors, fn($e) => ($e['type'] ?? '') === 'upload_failure'))
+            ];
 
             return response()->json([
                 'success' => true,
@@ -846,6 +900,7 @@ class AdminApartmentController extends Controller
                     'uploaded' => $uploaded,
                     'failed' => $failed,
                     'errors' => $errors,
+                    'summary' => $summary,
                 ],
             ]);
         } catch (\Exception $e) {
@@ -883,21 +938,27 @@ class AdminApartmentController extends Controller
             $floor = (int) $matches[1];
         }
 
-        // Apartment extraction - matches patterns like "ბინა 70", "bina 70", "70.png"
+        // Apartment extraction - matches patterns like "ბინა 70", "70 ბინა", "bina 70", "70 bina", "apartment 70", "70 apartment"
         $apartment = null;
 
         // First try to extract from filename (e.g., "7. bina 70 sul 58.05.png")
         $filename = basename($path);
 
-        // Priority 1: Explicit "bina/apartment" keyword followed by number (handles "5. bina 54 ...")
-        if (preg_match('/(?:ბინა|bina|apartment)\s*(\d+)/i', $filename, $matches)) {
+        // Priority 1: Explicit "bina/apartment" keyword FOLLOWED BY number
+        // Handles: "bina 54", "ბინა 54", "apartment 54", "5. bina 54 ..."
+        if (preg_match('/(?:ბინა|bina|apartment)\s*(\d+)/iu', $filename, $matches)) {
             $apartment = $matches[1];
         }
-        // Priority 2: "Number. Number" format (e.g. "5. 54.png" -> 54)
+        // Priority 2: Number FOLLOWED BY "bina/apartment" keyword (NEW - added support)
+        // Handles: "54 bina", "54 ბინა", "54 apartment", "2 bina.png"
+        elseif (preg_match('/(\d+)\s*(?:ბინა|bina|apartment)(?:\.|$|\s)/iu', $filename, $matches)) {
+            $apartment = $matches[1];
+        }
+        // Priority 3: "Number. Number" format (e.g. "5. 54.png" -> 54)
         elseif (preg_match('/^\d+\.\s*(\d+)/i', $filename, $matches)) {
             $apartment = $matches[1];
         }
-        // Priority 3: Simple number (e.g. "54.png")
+        // Priority 4: Simple number (e.g. "54.png")
         elseif (preg_match('/^(\d+)\.(?:png|jpg|jpeg|webp)$/i', $filename, $matches)) {
             $apartment = $matches[1];
         }

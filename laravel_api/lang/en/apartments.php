@@ -53,4 +53,24 @@ return [
     'view_2d' => '2D View',
     'view_3d' => '3D View',
     'no_image' => 'No image available',
+
+    // Batch Upload Error Handling
+    'batch_upload' => [
+        'parse_failures' => 'Parse Failures',
+        'apartments_not_found' => 'Apartments Not Found',
+        'upload_failures' => 'Upload Failures',
+        'not_found' => 'Not Found',
+        'upload_failed' => 'Upload Failed',
+        'other_errors' => 'Other Errors',
+        'parsed_prefix' => 'Parsed',
+        'floor_label' => 'Floor',
+        'apt_label' => 'Apt',
+        'type_label' => 'Type',
+        'reason_label' => 'Reason',
+        'export_errors_csv' => 'Export Errors to CSV',
+        'more_parse_failures' => 'more parse failures',
+        'more_not_found' => 'more not found',
+        'more_upload_failures' => 'more upload failures',
+        'more_errors' => 'more errors',
+    ],
 ];
