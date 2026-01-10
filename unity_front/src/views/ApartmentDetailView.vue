@@ -875,7 +875,7 @@ async function downloadPDF() {
       const match = originalUrl.match(/\/storage\/(.+)$/)
       if (match) {
         // Use API proxy: /api/images/{path}
-        const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+        const apiBase = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
         return `${apiBase}/api/images/${match[1]}`
       }
       return originalUrl
